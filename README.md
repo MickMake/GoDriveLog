@@ -9,7 +9,8 @@ It starts, reads a JSON config, polls configured PIDs at their own refresh inter
 - Go app using Fyne v2.
 - JSON startup config.
 - Per-sensor PID, name, refresh rate, display style, position, and size.
-- Mock PID reader so the UI/logging can be tested without OBD hardware.
+- App-level mock PID reader so the UI/logging can be tested without OBD hardware.
+- Real OBD reader adapter using `github.com/rzetterberg/elmobd`.
 - JSON Lines logging.
 - Log rotation when the configured engine-start PID crosses the configured threshold.
 
@@ -23,6 +24,14 @@ go install fyne.io/tools/cmd/fyne@latest
 ```
 
 On Raspberry Pi OS you will also need normal desktop/OpenGL build dependencies for Fyne. If the build complains about missing GL/X11 headers, install the Raspberry Pi OS equivalents for gcc, pkg-config, libgl, x11, xcursor, xrandr, xinerama, xi, and xxf86vm development packages.
+
+For a USB ELM327 adapter, the default address is:
+
+```text
+serial:///dev/ttyUSB0
+```
+
+`elmobd` also supports address schemes such as `tcp://host:port` and `test:///dev/ttyUSB0`.
 
 ## Build
 
@@ -43,6 +52,24 @@ The binary will be written to the current directory as `pid-fyne-logger` unless 
 
 The mock engine sleeps for about three seconds, then RPM rises. That should trigger an `engine-start` log rotation.
 
+## Run with a real ELM327 adapter
+
+Set `mock_mode` to `false` and point `obd_address` at the adapter:
+
+```json
+{
+  "mock_mode": false,
+  "obd_address": "serial:///dev/ttyUSB0",
+  "obd_debug": false
+}
+```
+
+The current real OBD adapter supports these configured PIDs:
+
+- `0105` coolant temperature, Celsius
+- `010C` engine RPM
+- `010D` vehicle speed, km/h
+
 ## Log format
 
 Logs are JSON Lines, one reading per line:
@@ -59,6 +86,8 @@ Logs are JSON Lines, one reading per line:
   "engine_start_pid": "010C",
   "engine_start_threshold": 50,
   "mock_mode": true,
+  "obd_address": "serial:///dev/ttyUSB0",
+  "obd_debug": false,
   "sensors": [
     {
       "pid": "010C",
@@ -75,7 +104,7 @@ Logs are JSON Lines, one reading per line:
 
 ## Real OBD transport
 
-`internal/sensors/reader.go` includes an `ELM327Reader` placeholder. Keep the rest of the app unchanged and implement that `Read(ctx, pid)` method using the preferred transport: USB serial, Bluetooth serial, or TCP adapter.
+`internal/sensors/elmobd_reader.go` adapts `github.com/rzetterberg/elmobd` to the app's small `Reader` interface. Add new supported PIDs there as needed.
 
 ## Notes
 
