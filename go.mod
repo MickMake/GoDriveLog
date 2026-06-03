@@ -1,4 +1,4 @@
-module pid-fyne-logger
+module GoDriveLog
 
 go 1.23
 
