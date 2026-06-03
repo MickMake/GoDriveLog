@@ -59,15 +59,3 @@ func (m *MockReader) Read(ctx context.Context, pid string) (float64, string, err
 		return rand.Float64() * 100, "", nil
 	}
 }
-
-// ELM327Reader is a deliberately tiny placeholder for a real OBD transport.
-// Implement Read using serial, Bluetooth, or TCP transport later.
-type ELM327Reader struct{}
-
-func (e *ELM327Reader) Read(ctx context.Context, pid string) (float64, string, error) {
-	return 0, "", ErrNotImplemented{PID: pid}
-}
-
-type ErrNotImplemented struct{ PID string }
-
-func (e ErrNotImplemented) Error() string { return "real OBD reader not implemented for PID " + e.PID }
