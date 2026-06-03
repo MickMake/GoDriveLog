@@ -1,0 +1,35 @@
+{
+  "log_dir": "./logs",
+  "engine_start_pid": "010C",
+  "engine_start_threshold": 50,
+  "mock_mode": true,
+  "sensors": [
+    {
+      "pid": "010C",
+      "name": "RPM",
+      "refresh_ms": 250,
+      "style": "gauge",
+      "min": 0,
+      "max": 7000,
+      "display": { "x": 20, "y": 20, "width": 360, "height": 90 }
+    },
+    {
+      "pid": "010D",
+      "name": "Speed",
+      "refresh_ms": 500,
+      "style": "bar",
+      "min": 0,
+      "max": 160,
+      "display": { "x": 20, "y": 130, "width": 360, "height": 90 }
+    },
+    {
+      "pid": "0105",
+      "name": "Coolant Temp",
+      "refresh_ms": 1000,
+      "style": "graph",
+      "min": -40,
+      "max": 140,
+      "display": { "x": 20, "y": 240, "width": 360, "height": 120 }
+    }
+  ]
+}
