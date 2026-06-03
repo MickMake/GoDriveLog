@@ -11,6 +11,8 @@ type Config struct {
 	EngineStartPID       string         `json:"engine_start_pid"`
 	EngineStartThreshold float64        `json:"engine_start_threshold"`
 	MockMode             bool           `json:"mock_mode"`
+	OBDAddress           string         `json:"obd_address"`
+	OBDDebug             bool           `json:"obd_debug"`
 	Sensors              []SensorConfig `json:"sensors"`
 }
 
@@ -50,6 +52,9 @@ func Load(path string) (Config, error) {
 	}
 	if cfg.EngineStartThreshold <= 0 {
 		cfg.EngineStartThreshold = 50
+	}
+	if cfg.OBDAddress == "" {
+		cfg.OBDAddress = "serial:///dev/ttyUSB0"
 	}
 	if len(cfg.Sensors) == 0 {
 		return Config{}, fmt.Errorf("config has no sensors")
