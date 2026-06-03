@@ -12,10 +12,10 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 
-	"pid-fyne-logger/internal/config"
-	jsonlogger "pid-fyne-logger/internal/logger"
-	"pid-fyne-logger/internal/sensors"
-	"pid-fyne-logger/internal/ui"
+	"GoDriveLog/internal/config"
+	jsonlogger "GoDriveLog/internal/logger"
+	"GoDriveLog/internal/sensors"
+	"GoDriveLog/internal/ui"
 )
 
 func main() {
@@ -42,7 +42,7 @@ func main() {
 	defer cancel()
 
 	application := app.New()
-	window := application.NewWindow("PID Logger")
+	window := application.NewWindow("GoDriveLog")
 	window.Resize(fyne.NewSize(800, 480))
 
 	dash := ui.NewDashboard(cfg.Sensors)
@@ -65,6 +65,7 @@ func main() {
 					value, unit, err := reader.Read(ctx, sc.PID)
 					if err != nil {
 						log.Printf("read %s: %v", sc.PID, err)
+						fyne.Do(func() { dash.SetError(sc.PID, err) })
 						continue
 					}
 
