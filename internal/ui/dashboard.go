@@ -9,8 +9,8 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 
-	"github.com/MickMake/GoDriveLog/internal/config"
-	"github.com/MickMake/GoDriveLog/internal/sensors"
+	"GoDriveLog/internal/config"
+	"GoDriveLog/internal/sensors"
 )
 
 type Dashboard struct {
