@@ -1,4 +1,4 @@
-# PID Fyne Logger v0.1
+# GoDriveLog v0.1
 
 A deliberately small Go/Fyne PID dashboard for Raspberry Pi 4.
 
@@ -39,15 +39,15 @@ From the repository root:
 
 ```bash
 go mod tidy
-go build ./cmd/pid-fyne-logger
+go build ./cmd/GoDriveLog
 ```
 
-The binary will be written to the current directory as `pid-fyne-logger` unless you pass `-o`.
+The binary will be written to the current directory as `GoDriveLog` unless you pass `-o`.
 
 ## Run in mock mode
 
 ```bash
-./pid-fyne-logger -config config.example.json
+./GoDriveLog -config config.example.json
 ```
 
 The mock engine sleeps for about three seconds, then RPM rises. That should trigger an `engine-start` log rotation.
