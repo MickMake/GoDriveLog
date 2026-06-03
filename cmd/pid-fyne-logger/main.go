@@ -33,11 +33,9 @@ func main() {
 	}
 	defer logger.Close()
 
-	var reader sensors.Reader
-	if cfg.MockMode {
-		reader = sensors.NewMockReader()
-	} else {
-		reader = &sensors.ELM327Reader{}
+	reader, err := newReader(cfg)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -106,6 +104,13 @@ func main() {
 		window.Close()
 	})
 	window.ShowAndRun()
+}
+
+func newReader(cfg config.Config) (sensors.Reader, error) {
+	if cfg.MockMode {
+		return sensors.NewMockReader(), nil
+	}
+	return sensors.NewELMOBDReader(cfg.OBDAddress, cfg.OBDDebug)
 }
 
 func sourceName(mock bool) string {
