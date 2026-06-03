@@ -13,6 +13,7 @@ It starts, reads a JSON config, polls configured PIDs at their own refresh inter
 - Real OBD reader adapter using `github.com/rzetterberg/elmobd`.
 - JSON Lines logging.
 - Log rotation when the configured engine-start PID crosses the configured threshold.
+- Per-sensor error/stale display so failed reads are visible on screen.
 
 ## Pi 4 install notes
 
@@ -52,9 +53,29 @@ The binary will be written to the current directory as `GoDriveLog` unless you p
 
 The mock engine sleeps for about three seconds, then RPM rises. That should trigger an `engine-start` log rotation.
 
+## Test the elmobd backend without hardware
+
+Use the elmobd test address to exercise the real reader adapter without opening a serial device:
+
+```json
+{
+  "mock_mode": false,
+  "obd_address": "test:///dev/ttyUSB0",
+  "obd_debug": true
+}
+```
+
+You can temporarily set those fields in a copy of `config.example.json`.
+
 ## Run with a real ELM327 adapter
 
-Set `mock_mode` to `false` and point `obd_address` at the adapter:
+Use the real OBD example config:
+
+```bash
+./GoDriveLog -config config.obd.example.json
+```
+
+Or set `mock_mode` to `false` and point `obd_address` at the adapter:
 
 ```json
 {
