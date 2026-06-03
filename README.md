@@ -26,11 +26,14 @@ On Raspberry Pi OS you will also need normal desktop/OpenGL build dependencies f
 
 ## Build
 
+From the repository root:
+
 ```bash
-cd pid-fyne-logger_v0.1
 go mod tidy
 go build ./cmd/pid-fyne-logger
 ```
+
+The binary will be written to the current directory as `pid-fyne-logger` unless you pass `-o`.
 
 ## Run in mock mode
 
