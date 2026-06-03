@@ -3,6 +3,8 @@
   "engine_start_pid": "010C",
   "engine_start_threshold": 50,
   "mock_mode": true,
+  "obd_address": "serial:///dev/ttyUSB0",
+  "obd_debug": false,
   "sensors": [
     {
       "pid": "010C",
