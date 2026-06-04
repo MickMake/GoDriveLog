@@ -162,6 +162,8 @@ Build the dashboard from `display.enabled` PID entries only.
 
 ## Version 1.5 - Daily log rotation
 
+Status: IMPLEMENTED
+
 Replace engine-start log rotation with simple daily rotation.
 
 ### Scope
