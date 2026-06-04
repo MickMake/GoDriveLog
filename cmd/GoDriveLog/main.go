@@ -64,7 +64,9 @@ func main() {
 					value, unit, err := reader.Read(ctx, runtimePID.RawPID)
 					if err != nil {
 						log.Printf("read %s: %v", runtimePID.RawPID, err)
-						fyne.Do(func() { dash.SetError(runtimePID.RawPID, err) })
+						if runtimePID.Display.Enabled {
+							fyne.Do(func() { dash.SetError(runtimePID.RawPID, err) })
+						}
 						continue
 					}
 
@@ -81,11 +83,15 @@ func main() {
 						Source: sourceName(cfg.MockMode),
 					}
 
-					if err := logger.Write(reading); err != nil {
-						log.Printf("write log: %v", err)
+					if runtimePID.Log {
+						if err := logger.Write(reading); err != nil {
+							log.Printf("write log: %v", err)
+						}
 					}
 
-					fyne.Do(func() { dash.Update(reading) })
+					if runtimePID.Display.Enabled {
+						fyne.Do(func() { dash.Update(reading) })
+					}
 				}
 			}
 		}()
