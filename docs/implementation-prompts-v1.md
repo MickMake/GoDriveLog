@@ -255,7 +255,7 @@ Requirements:
 2. Open a date-based JSONL file inside log.directory.
 3. Before each write, check whether the date changed.
 4. If the date changed, close the current file and open a new one.
-5. Use a simple filename. Prefer YYYY-MM-DD.jsonl unless that conflicts with current behaviour.
+5. Use a simple filename. Prefer YYYYMMDD.jsonl unless that conflicts with current behaviour.
 6. Remove or stop using engine-start-based rotation.
 7. Keep logging synchronous and boring.
 
