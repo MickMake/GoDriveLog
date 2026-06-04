@@ -184,13 +184,13 @@ Implement:
 ### Suggested filename shape
 
 ```text
-YYYY-MM-DD.jsonl
+YYYYMMDD.jsonl
 ```
 
 or, if multiple runs per day need separate files later:
 
 ```text
-YYYY-MM-DD-HHMMSS.jsonl
+YYYYMMDD-HHMMSS.jsonl
 ```
 
 Start with the simplest workable option.
