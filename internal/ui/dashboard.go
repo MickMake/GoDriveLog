@@ -42,7 +42,7 @@ func NewDashboard(pids map[string]config.PIDConfig) *Dashboard {
 		box.Move(fyne.NewPos(pid.Display.Position.X, pid.Display.Position.Y))
 		box.Resize(fyne.NewSize(pid.Display.Position.Width, pid.Display.Position.Height))
 		root.Add(box)
-		d.panels[pid.PID] = p
+		d.panels[key] = p
 	}
 
 	return d
@@ -51,7 +51,7 @@ func NewDashboard(pids map[string]config.PIDConfig) *Dashboard {
 func (d *Dashboard) CanvasObject() fyne.CanvasObject { return d.root }
 
 func (d *Dashboard) Update(r sensors.Reading) {
-	p := d.panels[r.PID]
+	p := d.panelForReading(r)
 	if p == nil {
 		return
 	}
@@ -77,8 +77,8 @@ func (d *Dashboard) Update(r sensors.Reading) {
 	}
 }
 
-func (d *Dashboard) SetError(pid string, err error) {
-	p := d.panels[pid]
+func (d *Dashboard) SetError(key string, err error) {
+	p := d.panels[key]
 	if p == nil || err == nil {
 		return
 	}
@@ -92,6 +92,13 @@ func (d *Dashboard) SetError(pid string, err error) {
 
 	age := time.Since(p.lastUpdate).Round(time.Second)
 	p.errorLabel.SetText(fmt.Sprintf("stale %s: %v", age, err))
+}
+
+func (d *Dashboard) panelForReading(r sensors.Reading) *panel {
+	if r.SensorKey != "" {
+		return d.panels[r.SensorKey]
+	}
+	return d.panels[r.Name]
 }
 
 func newPanel(key string, pid config.PIDConfig) *panel {

@@ -126,6 +126,8 @@ Include both the sensor key and raw PID in each JSONL record:
 
 ## Version 1.4 - Dashboard from display config
 
+Status: IMPLEMENTED
+
 Build the dashboard from `display.enabled` PID entries only.
 
 ### Scope
