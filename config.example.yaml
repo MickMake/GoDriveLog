@@ -1,0 +1,139 @@
+mock_mode: true
+obd_address: serial:///dev/ttyUSB0
+obd_debug: false
+
+log:
+  rotate: daily
+  directory: ./log
+
+vehicle:
+  name: "VW Caddy"
+
+  pids:
+    rpm:
+      type: obd
+      pid: "010C"
+      unit: rpm
+      refresh: 250
+      min: 0
+      max: 7000
+      log: true
+      display:
+        enabled: true
+        style: gauge
+        position:
+          x: 20
+          y: 20
+          width: 360
+          height: 90
+
+    speed:
+      type: obd
+      pid: "010D"
+      unit: km/h
+      refresh: 500
+      min: 0
+      max: 160
+      log: true
+      display:
+        enabled: true
+        style: bar
+        position:
+          x: 20
+          y: 130
+          width: 360
+          height: 90
+
+    coolant_temp:
+      type: obd
+      pid: "0105"
+      unit: C
+      refresh: 1000
+      min: -40
+      max: 140
+      log: true
+      display:
+        enabled: true
+        style: graph
+        position:
+          x: 20
+          y: 240
+          width: 360
+          height: 120
+
+    engine_load:
+      type: obd
+      pid: "0104"
+      unit: "%"
+      refresh: 500
+      min: 0
+      max: 100
+      log: true
+      display:
+        enabled: false
+
+    intake_air_temp:
+      type: obd
+      pid: "010F"
+      unit: C
+      refresh: 2000
+      min: -40
+      max: 140
+      log: true
+      display:
+        enabled: false
+
+    throttle_position:
+      type: obd
+      pid: "0111"
+      unit: "%"
+      refresh: 500
+      min: 0
+      max: 100
+      log: true
+      display:
+        enabled: true
+        style: bar
+        position:
+          x: 400
+          y: 20
+          width: 360
+          height: 90
+
+    fuel_level:
+      type: obd
+      pid: "012F"
+      unit: "%"
+      refresh: 5000
+      min: 0
+      max: 100
+      log: true
+      display:
+        enabled: false
+
+    control_module_voltage:
+      type: obd
+      pid: "0142"
+      unit: V
+      refresh: 2000
+      min: 10
+      max: 16
+      log: true
+      display:
+        enabled: true
+        style: bar
+        position:
+          x: 400
+          y: 130
+          width: 360
+          height: 90
+
+    moving:
+      type: virtual
+      unit: bool
+      refresh: 1000
+      min: 0
+      max: 1
+      log: false
+      display:
+        enabled: false
