@@ -10,6 +10,67 @@ vehicle:
   name: "VW Caddy"
 
   pids:
+    engine_load:
+      type: obd
+      pid: "0104"
+      unit: "%"
+      refresh: 500
+      min: 0
+      max: 100
+      log: true
+      display:
+        enabled: false
+
+    coolant_temp:
+      type: obd
+      pid: "0105"
+      unit: C
+      refresh: 1000
+      min: -40
+      max: 140
+      log: true
+      display:
+        enabled: true
+        style: graph
+        position:
+          x: 20
+          y: 240
+          width: 360
+          height: 120
+
+    short_fuel_trim_bank1:
+      type: obd
+      pid: "0106"
+      unit: "%"
+      refresh: 1000
+      min: -100
+      max: 100
+      log: true
+      display:
+        enabled: false
+
+    long_fuel_trim_bank1:
+      type: obd
+      pid: "0107"
+      unit: "%"
+      refresh: 1000
+      min: -100
+      max: 100
+      log: true
+      display:
+        enabled: false
+
+    intake_manifold_pressure:
+      type: obd
+      pid: "010B"
+      unit: kPa
+      refresh: 1000
+      min: 0
+      max: 255
+      log: true
+      display:
+        enabled: false
+
     rpm:
       type: obd
       pid: "010C"
@@ -44,31 +105,14 @@ vehicle:
           width: 360
           height: 90
 
-    coolant_temp:
+    timing_advance:
       type: obd
-      pid: "0105"
-      unit: C
+      pid: "010E"
+      unit: deg
       refresh: 1000
-      min: -40
-      max: 140
-      log: true
-      display:
-        enabled: true
-        style: graph
-        position:
-          x: 20
-          y: 240
-          width: 360
-          height: 120
-
-    engine_load:
-      type: obd
-      pid: "0104"
-      unit: "%"
-      refresh: 500
-      min: 0
-      max: 100
-      log: true
+      min: -64
+      max: 64
+      log: false
       display:
         enabled: false
 
@@ -80,6 +124,17 @@ vehicle:
       min: -40
       max: 140
       log: true
+      display:
+        enabled: false
+
+    mass_air_flow:
+      type: obd
+      pid: "0110"
+      unit: g/s
+      refresh: 1000
+      min: 0
+      max: 655
+      log: false
       display:
         enabled: false
 
@@ -100,6 +155,39 @@ vehicle:
           width: 360
           height: 90
 
+    run_time_since_engine_start:
+      type: obd
+      pid: "011F"
+      unit: s
+      refresh: 5000
+      min: 0
+      max: 86400
+      log: false
+      display:
+        enabled: false
+
+    distance_with_mil_on:
+      type: obd
+      pid: "0121"
+      unit: km
+      refresh: 10000
+      min: 0
+      max: 65535
+      log: false
+      display:
+        enabled: false
+
+    fuel_rail_pressure:
+      type: obd
+      pid: "0123"
+      unit: kPa
+      refresh: 1000
+      min: 0
+      max: 655350
+      log: false
+      display:
+        enabled: false
+
     fuel_level:
       type: obd
       pid: "012F"
@@ -108,6 +196,17 @@ vehicle:
       min: 0
       max: 100
       log: true
+      display:
+        enabled: false
+
+    barometric_pressure:
+      type: obd
+      pid: "0133"
+      unit: kPa
+      refresh: 5000
+      min: 0
+      max: 255
+      log: false
       display:
         enabled: false
 
@@ -127,6 +226,17 @@ vehicle:
           y: 130
           width: 360
           height: 90
+
+    engine_oil_temp:
+      type: obd
+      pid: "015C"
+      unit: C
+      refresh: 5000
+      min: -40
+      max: 150
+      log: true
+      display:
+        enabled: false
 
     moving:
       type: virtual
