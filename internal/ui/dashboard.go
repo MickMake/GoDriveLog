@@ -3,13 +3,14 @@ package ui
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 
-	"pid-fyne-logger/internal/config"
-	"pid-fyne-logger/internal/sensors"
+	"GoDriveLog/internal/config"
+	"GoDriveLog/internal/sensors"
 )
 
 type Dashboard struct {
@@ -18,24 +19,30 @@ type Dashboard struct {
 }
 
 type panel struct {
-	cfg     config.SensorConfig
-	label   *widget.Label
-	value   *widget.Label
-	bar     *widget.ProgressBar
-	history []float64
+	key        string
+	cfg        config.PIDConfig
+	label      *widget.Label
+	value      *widget.Label
+	bar        *widget.ProgressBar
+	errorLabel *widget.Label
+	history    []float64
+	lastUpdate time.Time
 }
 
-func NewDashboard(sensors []config.SensorConfig) *Dashboard {
+func NewDashboard(pids map[string]config.PIDConfig) *Dashboard {
 	root := container.NewWithoutLayout()
 	d := &Dashboard{root: root, panels: map[string]*panel{}}
 
-	for _, sc := range sensors {
-		p := newPanel(sc)
-		box := container.NewVBox(p.label, p.value, p.bar)
-		box.Move(fyne.NewPos(sc.Display.X, sc.Display.Y))
-		box.Resize(fyne.NewSize(sc.Display.Width, sc.Display.Height))
+	for key, pid := range pids {
+		if !pid.Display.Enabled {
+			continue
+		}
+		p := newPanel(key, pid)
+		box := container.NewVBox(p.label, p.value, p.bar, p.errorLabel)
+		box.Move(fyne.NewPos(pid.Display.Position.X, pid.Display.Position.Y))
+		box.Resize(fyne.NewSize(pid.Display.Position.Width, pid.Display.Position.Height))
 		root.Add(box)
-		d.panels[sc.PID] = p
+		d.panels[pid.PID] = p
 	}
 
 	return d
@@ -49,6 +56,8 @@ func (d *Dashboard) Update(r sensors.Reading) {
 		return
 	}
 
+	p.lastUpdate = time.Now()
+	p.errorLabel.SetText("ok")
 	p.value.SetText(fmt.Sprintf("%.1f %s", r.Value, r.Unit))
 	norm := (r.Value - p.cfg.Min) / (p.cfg.Max - p.cfg.Min)
 	if norm < 0 {
@@ -59,7 +68,7 @@ func (d *Dashboard) Update(r sensors.Reading) {
 	}
 	p.bar.SetValue(norm)
 
-	if strings.EqualFold(p.cfg.Style, "graph") {
+	if strings.EqualFold(p.cfg.Display.Style, "graph") {
 		p.history = append(p.history, r.Value)
 		if len(p.history) > 24 {
 			p.history = p.history[len(p.history)-24:]
@@ -68,13 +77,31 @@ func (d *Dashboard) Update(r sensors.Reading) {
 	}
 }
 
-func newPanel(sc config.SensorConfig) *panel {
-	label := widget.NewLabel(sc.Name + " [" + sc.PID + "]")
+func (d *Dashboard) SetError(pid string, err error) {
+	p := d.panels[pid]
+	if p == nil || err == nil {
+		return
+	}
+
+	p.errorLabel.SetText("error: " + err.Error())
+	if p.lastUpdate.IsZero() {
+		p.value.SetText("--")
+		p.bar.SetValue(0)
+		return
+	}
+
+	age := time.Since(p.lastUpdate).Round(time.Second)
+	p.errorLabel.SetText(fmt.Sprintf("stale %s: %v", age, err))
+}
+
+func newPanel(key string, pid config.PIDConfig) *panel {
+	label := widget.NewLabel(key + " [" + pid.PID + "]")
 	value := widget.NewLabel("--")
 	bar := widget.NewProgressBar()
+	errorLabel := widget.NewLabel("waiting")
 	bar.Min = 0
 	bar.Max = 1
-	return &panel{cfg: sc, label: label, value: value, bar: bar}
+	return &panel{key: key, cfg: pid, label: label, value: value, bar: bar, errorLabel: errorLabel}
 }
 
 func spark(values []float64, min float64, max float64) string {
