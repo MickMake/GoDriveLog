@@ -34,8 +34,8 @@ func (l *JSONL) Rotate(reason string) error {
 		_ = l.file.Close()
 	}
 
-	stamp := time.Now().Format("20060102-150405")
-	path := filepath.Join(l.dir, fmt.Sprintf("%s-%s.jsonl", stamp, reason))
+	stamp := time.Now().Format("20060102")
+	path := filepath.Join(l.dir, fmt.Sprintf("%s.jsonl", stamp))
 	f, err := os.OpenFile(path, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
 	if err != nil {
 		return err
