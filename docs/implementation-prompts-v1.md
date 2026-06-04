@@ -7,7 +7,6 @@ Each prompt assumes:
 - The chat has access to the GitHub connector.
 - The chat should use the GitHub connector to inspect and edit files in `MickMake/GoDriveLog`.
 - The chat must not assume it can execute shell commands, run `go build`, run tests, or access a local checkout.
-- The chat should make focused commits directly to `main` unless instructed otherwise.
 - The chat should keep the implementation simple and aligned with `docs/config.md`.
 - The chat should avoid adding future-release features.
 
@@ -27,7 +26,6 @@ You are implementing GoDriveLog version 1.1 in GitHub repo MickMake/GoDriveLog.
 Important constraints:
 - You can access and edit files using the GitHub connector.
 - Do not assume you can execute shell commands, run go build, run go test, or use a local checkout.
-- Commit focused changes directly to main.
 - Keep it SIMPLE.
 - Do not implement virtual PID calculations.
 - Do not implement engine start/stop detection.
@@ -88,7 +86,6 @@ You are implementing GoDriveLog version 1.2 in GitHub repo MickMake/GoDriveLog.
 Important constraints:
 - You can access and edit files using the GitHub connector.
 - Do not assume you can execute shell commands, run go build, run go test, or use a local checkout.
-- Commit focused changes directly to main.
 - Keep it SIMPLE.
 - Do not implement virtual PID calculations.
 - Do not implement engine start/stop detection.
@@ -141,7 +138,6 @@ You are implementing GoDriveLog version 1.3 in GitHub repo MickMake/GoDriveLog.
 Important constraints:
 - You can access and edit files using the GitHub connector.
 - Do not assume you can execute shell commands, run go build, run go test, or use a local checkout.
-- Commit focused changes directly to main.
 - Keep it SIMPLE.
 - Do not implement virtual PID calculations.
 - Do not implement engine start/stop detection.
@@ -189,7 +185,6 @@ You are implementing GoDriveLog version 1.4 in GitHub repo MickMake/GoDriveLog.
 Important constraints:
 - You can access and edit files using the GitHub connector.
 - Do not assume you can execute shell commands, run go build, run go test, or use a local checkout.
-- Commit focused changes directly to main.
 - Keep it SIMPLE.
 - Do not implement virtual PID calculations.
 - Do not implement engine start/stop detection.
@@ -237,7 +232,6 @@ You are implementing GoDriveLog version 1.5 in GitHub repo MickMake/GoDriveLog.
 Important constraints:
 - You can access and edit files using the GitHub connector.
 - Do not assume you can execute shell commands, run go build, run go test, or use a local checkout.
-- Commit focused changes directly to main.
 - Keep it SIMPLE.
 - Do not implement engine start/stop detection.
 - Do not implement engine-state-based log rotation.
@@ -284,7 +278,6 @@ You are implementing GoDriveLog version 1.6 in GitHub repo MickMake/GoDriveLog.
 Important constraints:
 - You can access and edit files using the GitHub connector.
 - Do not assume you can execute shell commands, run go build, run go test, or use a local checkout.
-- Commit focused changes directly to main.
 - Keep it SIMPLE.
 - Do not implement generic PID decoding.
 - Do not implement PID auto-discovery.
@@ -336,7 +329,6 @@ You are implementing GoDriveLog version 1.7 in GitHub repo MickMake/GoDriveLog.
 Important constraints:
 - You can access and edit files using the GitHub connector.
 - Do not assume you can execute shell commands, run go build, run go test, or use a local checkout.
-- Commit focused changes directly to main.
 - Keep it SIMPLE.
 - This phase is documentation cleanup only unless tiny code references must be updated for consistency.
 
