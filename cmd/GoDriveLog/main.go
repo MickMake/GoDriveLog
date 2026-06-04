@@ -65,7 +65,7 @@ func main() {
 					if err != nil {
 						log.Printf("read %s: %v", runtimePID.RawPID, err)
 						if runtimePID.Display.Enabled {
-							fyne.Do(func() { dash.SetError(runtimePID.RawPID, err) })
+							fyne.Do(func() { dash.SetError(runtimePID.Key, err) })
 						}
 						continue
 					}
@@ -75,12 +75,13 @@ func main() {
 					}
 
 					reading := sensors.Reading{
-						Time:   time.Now(),
-						PID:    runtimePID.RawPID,
-						Name:   runtimePID.Key,
-						Value:  value,
-						Unit:   unit,
-						Source: sourceName(cfg.MockMode),
+						Time:      time.Now(),
+						SensorKey: runtimePID.Key,
+						PID:       runtimePID.RawPID,
+						Name:      runtimePID.Key,
+						Value:     value,
+						Unit:      unit,
+						Source:    sourceName(cfg.MockMode),
 					}
 
 					if runtimePID.Log {
