@@ -207,6 +207,8 @@ Start with the simplest workable option.
 
 ## Version 1.6 - OBD PID mappings
 
+Status: IMPLEMENTED
+
 Extend the current `elmobd` reader to support the PIDs in the reference config.
 
 ### Scope
@@ -217,12 +219,18 @@ Support these OBD PIDs:
 |---|---:|---|---|
 | `engine_load` | `0104` | `%` | Calculated engine load |
 | `coolant_temp` | `0105` | `C` | Engine coolant temperature |
+| `short_fuel_trim_bank1` | `0106` | `%` | Short term fuel trim, bank 1 |
+| `long_fuel_trim_bank1` | `0107` | `%` | Long term fuel trim, bank 1 |
+| `intake_manifold_pressure` | `010B` | `kPa` | Intake manifold absolute pressure |
 | `rpm` | `010C` | `rpm` | Engine RPM |
 | `speed` | `010D` | `km/h` | Vehicle speed |
 | `intake_air_temp` | `010F` | `C` | Intake air temperature |
 | `throttle_position` | `0111` | `%` | Throttle position |
 | `fuel_level` | `012F` | `%` | Fuel tank level |
 | `control_module_voltage` | `0142` | `V` | Control module voltage |
+| `engine_oil_temp` | `015C` | `C` | Engine oil temperature |
+
+The reference config also lists useful inactive catalogue PIDs that are not currently wired through the `elmobd` adapter.
 
 ### Implementation style
 
