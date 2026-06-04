@@ -86,6 +86,8 @@ type == obd AND (log == true OR display.enabled == true)
 
 ## Version 1.3 - Poll, log, and display split
 
+Status: IMPLEMENTED
+
 Separate polling from logging and display behaviour.
 
 ### Scope
