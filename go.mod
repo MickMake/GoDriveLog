@@ -1,4 +1,4 @@
-module https://github.com/MickMake/GoDriveLog
+module github.com/MickMake/GoDriveLog
 
 go 1.23
 
