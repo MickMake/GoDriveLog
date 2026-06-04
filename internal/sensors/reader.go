@@ -10,8 +10,9 @@ import (
 
 type Reading struct {
 	Time   time.Time `json:"time"`
+	Key    string    `json:"key"`
 	PID    string    `json:"pid"`
-	Name   string    `json:"name"`
+	Name   string    `json:"name,omitempty"`
 	Value  float64   `json:"value"`
 	Unit   string    `json:"unit,omitempty"`
 	Source string    `json:"source"`
