@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"GoDriveLog/internal/sensors"
+	"github.com/MickMake/GoDriveLog/internal/sensors"
 )
 
 type JSONL struct {
