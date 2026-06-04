@@ -9,12 +9,13 @@ import (
 )
 
 type Reading struct {
-	Time   time.Time `json:"time"`
-	PID    string    `json:"pid"`
-	Name   string    `json:"name"`
-	Value  float64   `json:"value"`
-	Unit   string    `json:"unit,omitempty"`
-	Source string    `json:"source"`
+	Time      time.Time `json:"time"`
+	SensorKey string    `json:"key"`
+	PID       string    `json:"pid"`
+	Name      string    `json:"name"`
+	Value     float64   `json:"value"`
+	Unit      string    `json:"unit,omitempty"`
+	Source    string    `json:"source"`
 }
 
 type Reader interface {
