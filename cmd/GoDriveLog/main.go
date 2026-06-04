@@ -4,7 +4,6 @@ import (
 	"context"
 	"flag"
 	"log"
-	"sync/atomic"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -55,7 +54,6 @@ func main() {
 	content := container.NewBorder(nil, status, nil, nil, dash.CanvasObject())
 	window.SetContent(content)
 
-	var engineWasRunning atomic.Bool
 	for _, item := range pollingPIDs(cfg) {
 		item := item
 		go func() {
@@ -85,19 +83,6 @@ func main() {
 						Value:  value,
 						Unit:   unit,
 						Source: sourceName(cfg.MockMode),
-					}
-
-					// TODO: daily rotation replaces engine-start rotation in version 1.5.
-					if item.PID.PID == "010C" {
-						running := value >= 50
-						if running && !engineWasRunning.Load() {
-							if err := logger.Rotate("engine-start"); err != nil {
-								log.Printf("rotate log: %v", err)
-							} else {
-								fyne.Do(func() { status.SetText("log: " + logger.ActivePath()) })
-							}
-						}
-						engineWasRunning.Store(running)
 					}
 
 					if err := logger.Write(reading); err != nil {
