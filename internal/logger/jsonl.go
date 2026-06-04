@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"pid-fyne-logger/internal/sensors"
+	"GoDriveLog/internal/sensors"
 )
 
 type JSONL struct {
