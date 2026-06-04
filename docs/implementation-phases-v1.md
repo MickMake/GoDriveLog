@@ -10,6 +10,8 @@ Reference config: [`config.example.yaml`](../config.example.yaml)
 
 ## Version 1.1 - YAML config loader
 
+Status: IMPLEMENTED
+
 Implement YAML configuration loading that matches the documented config shape one-for-one.
 
 ### Scope

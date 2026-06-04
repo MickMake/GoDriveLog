@@ -19,7 +19,8 @@ type Dashboard struct {
 }
 
 type panel struct {
-	cfg        config.SensorConfig
+	key        string
+	cfg        config.PIDConfig
 	label      *widget.Label
 	value      *widget.Label
 	bar        *widget.ProgressBar
@@ -28,17 +29,20 @@ type panel struct {
 	lastUpdate time.Time
 }
 
-func NewDashboard(sensors []config.SensorConfig) *Dashboard {
+func NewDashboard(pids map[string]config.PIDConfig) *Dashboard {
 	root := container.NewWithoutLayout()
 	d := &Dashboard{root: root, panels: map[string]*panel{}}
 
-	for _, sc := range sensors {
-		p := newPanel(sc)
+	for key, pid := range pids {
+		if !pid.Display.Enabled {
+			continue
+		}
+		p := newPanel(key, pid)
 		box := container.NewVBox(p.label, p.value, p.bar, p.errorLabel)
-		box.Move(fyne.NewPos(sc.Display.X, sc.Display.Y))
-		box.Resize(fyne.NewSize(sc.Display.Width, sc.Display.Height))
+		box.Move(fyne.NewPos(pid.Display.Position.X, pid.Display.Position.Y))
+		box.Resize(fyne.NewSize(pid.Display.Position.Width, pid.Display.Position.Height))
 		root.Add(box)
-		d.panels[sc.PID] = p
+		d.panels[pid.PID] = p
 	}
 
 	return d
@@ -64,7 +68,7 @@ func (d *Dashboard) Update(r sensors.Reading) {
 	}
 	p.bar.SetValue(norm)
 
-	if strings.EqualFold(p.cfg.Style, "graph") {
+	if strings.EqualFold(p.cfg.Display.Style, "graph") {
 		p.history = append(p.history, r.Value)
 		if len(p.history) > 24 {
 			p.history = p.history[len(p.history)-24:]
@@ -90,14 +94,14 @@ func (d *Dashboard) SetError(pid string, err error) {
 	p.errorLabel.SetText(fmt.Sprintf("stale %s: %v", age, err))
 }
 
-func newPanel(sc config.SensorConfig) *panel {
-	label := widget.NewLabel(sc.Name + " [" + sc.PID + "]")
+func newPanel(key string, pid config.PIDConfig) *panel {
+	label := widget.NewLabel(key + " [" + pid.PID + "]")
 	value := widget.NewLabel("--")
 	bar := widget.NewProgressBar()
 	errorLabel := widget.NewLabel("waiting")
 	bar.Min = 0
 	bar.Max = 1
-	return &panel{cfg: sc, label: label, value: value, bar: bar, errorLabel: errorLabel}
+	return &panel{key: key, cfg: pid, label: label, value: value, bar: bar, errorLabel: errorLabel}
 }
 
 func spark(values []float64, min float64, max float64) string {

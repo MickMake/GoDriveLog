@@ -4,7 +4,6 @@ import (
 	"context"
 	"flag"
 	"log"
-	"sync/atomic"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -18,8 +17,13 @@ import (
 	"GoDriveLog/internal/ui"
 )
 
+type configuredPID struct {
+	Key string
+	PID config.PIDConfig
+}
+
 func main() {
-	configPath := flag.String("config", "config.example.json", "path to JSON config")
+	configPath := flag.String("config", "config.example.yaml", "path to YAML config")
 	flag.Parse()
 
 	cfg, err := config.Load(*configPath)
@@ -27,7 +31,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	logger, err := jsonlogger.NewJSONL(cfg.LogDir)
+	logger, err := jsonlogger.NewJSONL(cfg.Log.Directory)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -45,16 +49,15 @@ func main() {
 	window := application.NewWindow("GoDriveLog")
 	window.Resize(fyne.NewSize(800, 480))
 
-	dash := ui.NewDashboard(cfg.Sensors)
+	dash := ui.NewDashboard(cfg.Vehicle.PIDs)
 	status := widget.NewLabel("log: " + logger.ActivePath())
 	content := container.NewBorder(nil, status, nil, nil, dash.CanvasObject())
 	window.SetContent(content)
 
-	var engineWasRunning atomic.Bool
-	for _, sc := range cfg.Sensors {
-		sc := sc
+	for _, item := range pollingPIDs(cfg) {
+		item := item
 		go func() {
-			ticker := time.NewTicker(time.Duration(sc.RefreshMS) * time.Millisecond)
+			ticker := time.NewTicker(time.Duration(item.PID.Refresh) * time.Millisecond)
 			defer ticker.Stop()
 
 			for {
@@ -62,32 +65,24 @@ func main() {
 				case <-ctx.Done():
 					return
 				case <-ticker.C:
-					value, unit, err := reader.Read(ctx, sc.PID)
+					value, unit, err := reader.Read(ctx, item.PID.PID)
 					if err != nil {
-						log.Printf("read %s: %v", sc.PID, err)
-						fyne.Do(func() { dash.SetError(sc.PID, err) })
+						log.Printf("read %s: %v", item.PID.PID, err)
+						fyne.Do(func() { dash.SetError(item.PID.PID, err) })
 						continue
+					}
+
+					if item.PID.Unit != "" {
+						unit = item.PID.Unit
 					}
 
 					reading := sensors.Reading{
 						Time:   time.Now(),
-						PID:    sc.PID,
-						Name:   sc.Name,
+						PID:    item.PID.PID,
+						Name:   item.Key,
 						Value:  value,
 						Unit:   unit,
 						Source: sourceName(cfg.MockMode),
-					}
-
-					if sc.PID == cfg.EngineStartPID {
-						running := value >= cfg.EngineStartThreshold
-						if running && !engineWasRunning.Load() {
-							if err := logger.Rotate("engine-start"); err != nil {
-								log.Printf("rotate log: %v", err)
-							} else {
-								fyne.Do(func() { status.SetText("log: " + logger.ActivePath()) })
-							}
-						}
-						engineWasRunning.Store(running)
 					}
 
 					if err := logger.Write(reading); err != nil {
@@ -105,6 +100,17 @@ func main() {
 		window.Close()
 	})
 	window.ShowAndRun()
+}
+
+func pollingPIDs(cfg config.Config) []configuredPID {
+	items := make([]configuredPID, 0, len(cfg.Vehicle.PIDs))
+	for key, pid := range cfg.Vehicle.PIDs {
+		if pid.Type != "obd" {
+			continue
+		}
+		items = append(items, configuredPID{Key: key, PID: pid})
+	}
+	return items
 }
 
 func newReader(cfg config.Config) (sensors.Reader, error) {
