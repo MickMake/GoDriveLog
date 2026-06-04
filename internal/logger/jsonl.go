@@ -11,7 +11,7 @@ import (
 	"github.com/MickMake/GoDriveLog/internal/sensors"
 )
 
-const DateFormat "20060102"
+const DateFormat = "20060102"
 
 type JSONL struct {
 	mu     sync.Mutex
