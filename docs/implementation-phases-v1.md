@@ -51,6 +51,8 @@ Fail fast if:
 
 ## Version 1.2 - Runtime PID list
 
+Status: IMPLEMENTED
+
 Build a simple runtime PID list from `vehicle.pids`.
 
 ### Scope

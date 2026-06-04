@@ -17,11 +17,6 @@ import (
 	"GoDriveLog/internal/ui"
 )
 
-type configuredPID struct {
-	Key string
-	PID config.PIDConfig
-}
-
 func main() {
 	configPath := flag.String("config", "config.example.yaml", "path to YAML config")
 	flag.Parse()
@@ -30,6 +25,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	activePIDs := config.ActivePIDs(cfg)
 
 	logger, err := jsonlogger.NewJSONL(cfg.Log.Directory)
 	if err != nil {
@@ -54,10 +50,10 @@ func main() {
 	content := container.NewBorder(nil, status, nil, nil, dash.CanvasObject())
 	window.SetContent(content)
 
-	for _, item := range pollingPIDs(cfg) {
-		item := item
+	for _, runtimePID := range activePIDs {
+		runtimePID := runtimePID
 		go func() {
-			ticker := time.NewTicker(time.Duration(item.PID.Refresh) * time.Millisecond)
+			ticker := time.NewTicker(time.Duration(runtimePID.Refresh) * time.Millisecond)
 			defer ticker.Stop()
 
 			for {
@@ -65,31 +61,37 @@ func main() {
 				case <-ctx.Done():
 					return
 				case <-ticker.C:
-					value, unit, err := reader.Read(ctx, item.PID.PID)
+					value, unit, err := reader.Read(ctx, runtimePID.RawPID)
 					if err != nil {
-						log.Printf("read %s: %v", item.PID.PID, err)
-						fyne.Do(func() { dash.SetError(item.PID.PID, err) })
+						log.Printf("read %s: %v", runtimePID.RawPID, err)
+						if runtimePID.Display.Enabled {
+							fyne.Do(func() { dash.SetError(runtimePID.RawPID, err) })
+						}
 						continue
 					}
 
-					if item.PID.Unit != "" {
-						unit = item.PID.Unit
+					if runtimePID.Unit != "" {
+						unit = runtimePID.Unit
 					}
 
 					reading := sensors.Reading{
 						Time:   time.Now(),
-						PID:    item.PID.PID,
-						Name:   item.Key,
+						PID:    runtimePID.RawPID,
+						Name:   runtimePID.Key,
 						Value:  value,
 						Unit:   unit,
 						Source: sourceName(cfg.MockMode),
 					}
 
-					if err := logger.Write(reading); err != nil {
-						log.Printf("write log: %v", err)
+					if runtimePID.Log {
+						if err := logger.Write(reading); err != nil {
+							log.Printf("write log: %v", err)
+						}
 					}
 
-					fyne.Do(func() { dash.Update(reading) })
+					if runtimePID.Display.Enabled {
+						fyne.Do(func() { dash.Update(reading) })
+					}
 				}
 			}
 		}()
@@ -100,17 +102,6 @@ func main() {
 		window.Close()
 	})
 	window.ShowAndRun()
-}
-
-func pollingPIDs(cfg config.Config) []configuredPID {
-	items := make([]configuredPID, 0, len(cfg.Vehicle.PIDs))
-	for key, pid := range cfg.Vehicle.PIDs {
-		if pid.Type != "obd" {
-			continue
-		}
-		items = append(items, configuredPID{Key: key, PID: pid})
-	}
-	return items
 }
 
 func newReader(cfg config.Config) (sensors.Reader, error) {
