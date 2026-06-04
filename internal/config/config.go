@@ -1,36 +1,58 @@
 package config
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
+
+	"gopkg.in/yaml.v3"
+)
+
+const (
+	DefaultLogRotate   = "daily"
+	DefaultLogDirectory = "./log"
+	DefaultOBDAddress  = "serial:///dev/ttyUSB0"
 )
 
 type Config struct {
-	LogDir               string         `json:"log_dir"`
-	EngineStartPID       string         `json:"engine_start_pid"`
-	EngineStartThreshold float64        `json:"engine_start_threshold"`
-	MockMode             bool           `json:"mock_mode"`
-	OBDAddress           string         `json:"obd_address"`
-	OBDDebug             bool           `json:"obd_debug"`
-	Sensors              []SensorConfig `json:"sensors"`
+	MockMode   bool          `yaml:"mock_mode"`
+	OBDAddress string        `yaml:"obd_address"`
+	OBDDebug   bool          `yaml:"obd_debug"`
+	Log        LogConfig     `yaml:"log"`
+	Vehicle    VehicleConfig `yaml:"vehicle"`
 }
 
-type SensorConfig struct {
-	PID       string        `json:"pid"`
-	Name      string        `json:"name"`
-	RefreshMS int           `json:"refresh_ms"`
-	Style     string        `json:"style"`
-	Min       float64       `json:"min"`
-	Max       float64       `json:"max"`
-	Display   DisplayConfig `json:"display"`
+type LogConfig struct {
+	Rotate    string `yaml:"rotate"`
+	Directory string `yaml:"directory"`
+}
+
+type VehicleConfig struct {
+	Name string               `yaml:"name"`
+	PIDs map[string]PIDConfig `yaml:"pids"`
+}
+
+type PIDConfig struct {
+	Type    string        `yaml:"type"`
+	PID     string        `yaml:"pid"`
+	Unit    string        `yaml:"unit"`
+	Refresh int           `yaml:"refresh"`
+	Min     float64       `yaml:"min"`
+	Max     float64       `yaml:"max"`
+	Log     bool          `yaml:"log"`
+	Display DisplayConfig `yaml:"display"`
 }
 
 type DisplayConfig struct {
-	X      float32 `json:"x"`
-	Y      float32 `json:"y"`
-	Width  float32 `json:"width"`
-	Height float32 `json:"height"`
+	Enabled  bool           `yaml:"enabled"`
+	Style    string         `yaml:"style"`
+	Position PositionConfig `yaml:"position"`
+}
+
+type PositionConfig struct {
+	X      float32 `yaml:"x"`
+	Y      float32 `yaml:"y"`
+	Width  float32 `yaml:"width"`
+	Height float32 `yaml:"height"`
 }
 
 func Load(path string) (Config, error) {
@@ -40,42 +62,78 @@ func Load(path string) (Config, error) {
 	}
 
 	var cfg Config
-	if err := json.Unmarshal(data, &cfg); err != nil {
+	if err := yaml.Unmarshal(data, &cfg); err != nil {
 		return Config{}, err
 	}
 
-	if cfg.LogDir == "" {
-		cfg.LogDir = "./logs"
-	}
-	if cfg.EngineStartPID == "" {
-		cfg.EngineStartPID = "010C"
-	}
-	if cfg.EngineStartThreshold <= 0 {
-		cfg.EngineStartThreshold = 50
-	}
-	if cfg.OBDAddress == "" {
-		cfg.OBDAddress = "serial:///dev/ttyUSB0"
-	}
-	if len(cfg.Sensors) == 0 {
-		return Config{}, fmt.Errorf("config has no sensors")
-	}
-	for i := range cfg.Sensors {
-		if cfg.Sensors[i].PID == "" || cfg.Sensors[i].Name == "" {
-			return Config{}, fmt.Errorf("sensor %d requires pid and name", i)
-		}
-		if cfg.Sensors[i].RefreshMS <= 0 {
-			cfg.Sensors[i].RefreshMS = 1000
-		}
-		if cfg.Sensors[i].Max <= cfg.Sensors[i].Min {
-			cfg.Sensors[i].Max = cfg.Sensors[i].Min + 100
-		}
-		if cfg.Sensors[i].Display.Width <= 0 {
-			cfg.Sensors[i].Display.Width = 300
-		}
-		if cfg.Sensors[i].Display.Height <= 0 {
-			cfg.Sensors[i].Display.Height = 90
-		}
+	applyDefaults(&cfg)
+	if err := validate(cfg); err != nil {
+		return Config{}, err
 	}
 
 	return cfg, nil
+}
+
+func applyDefaults(cfg *Config) {
+	if cfg.Log.Rotate == "" {
+		cfg.Log.Rotate = DefaultLogRotate
+	}
+	if cfg.Log.Directory == "" {
+		cfg.Log.Directory = DefaultLogDirectory
+	}
+	if cfg.OBDAddress == "" {
+		cfg.OBDAddress = DefaultOBDAddress
+	}
+}
+
+func validate(cfg Config) error {
+	if cfg.Vehicle.Name == "" {
+		return fmt.Errorf("vehicle.name must not be empty")
+	}
+	if len(cfg.Vehicle.PIDs) == 0 {
+		return fmt.Errorf("vehicle.pids must not be empty")
+	}
+	if cfg.Log.Rotate != DefaultLogRotate {
+		return fmt.Errorf("log.rotate must be %q", DefaultLogRotate)
+	}
+	if cfg.Log.Directory == "" {
+		return fmt.Errorf("log.directory must not be empty")
+	}
+
+	for key, pid := range cfg.Vehicle.PIDs {
+		if pid.Type != "obd" && pid.Type != "virtual" {
+			return fmt.Errorf("vehicle.pids.%s.type must be obd or virtual", key)
+		}
+		if pid.Type == "obd" && pid.PID == "" {
+			return fmt.Errorf("vehicle.pids.%s.pid must not be empty for obd PIDs", key)
+		}
+		if (pid.Log || pid.Display.Enabled) && pid.Refresh <= 0 {
+			return fmt.Errorf("vehicle.pids.%s.refresh must be positive for active PIDs", key)
+		}
+		if pid.Max <= pid.Min {
+			return fmt.Errorf("vehicle.pids.%s.max must be greater than min", key)
+		}
+		if pid.Display.Enabled {
+			if pid.Display.Style == "" {
+				return fmt.Errorf("vehicle.pids.%s.display.style must not be empty when display is enabled", key)
+			}
+			if !validDisplayStyle(pid.Display.Style) {
+				return fmt.Errorf("vehicle.pids.%s.display.style must be gauge, bar, or graph", key)
+			}
+			if pid.Display.Position.Width <= 0 || pid.Display.Position.Height <= 0 {
+				return fmt.Errorf("vehicle.pids.%s.display.position width and height must be positive", key)
+			}
+		}
+	}
+
+	return nil
+}
+
+func validDisplayStyle(style string) bool {
+	switch style {
+	case "gauge", "bar", "graph":
+		return true
+	default:
+		return false
+	}
 }
