@@ -11,10 +11,10 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 
-	"GoDriveLog/internal/config"
-	jsonlogger "GoDriveLog/internal/logger"
-	"GoDriveLog/internal/sensors"
-	"GoDriveLog/internal/ui"
+	"github.com/MickMake/GoDriveLog/internal/config"
+	jsonlogger "github.com/MickMake/GoDriveLog/internal/logger"
+	"github.com/MickMake/GoDriveLog/internal/sensors"
+	"github.com/MickMake/GoDriveLog/internal/ui"
 )
 
 func main() {
