@@ -3,6 +3,7 @@ package model
 import (
 	"math"
 	"strings"
+	"time"
 )
 
 // Range describes an inclusive numeric range for warnings, danger zones, or scale limits.
@@ -106,6 +107,76 @@ func (c GaugeConfig) Normalize() GaugeConfig {
 		c.Theme = DefaultTheme()
 	}
 	return c
+}
+
+// AlertState is the current threshold state derived from WarningRange/DangerRange.
+type AlertState int
+
+const (
+	AlertNormal AlertState = iota
+	AlertWarning
+	AlertDanger
+)
+
+// PulseTracker implements a small state machine for edge-triggered warning/danger pulses.
+//
+// - It only triggers when entering Warning or Danger.
+// - It re-triggers only after leaving that state and re-entering ("re-arm on exit").
+// - If Warning/Danger ranges are not set, it stays idle.
+type PulseTracker struct {
+	state       AlertState
+	pulseState  AlertState
+	pulseStart  time.Time
+	pulseLength time.Duration
+}
+
+func NewPulseTracker() PulseTracker {
+	return PulseTracker{state: AlertNormal, pulseState: AlertNormal, pulseLength: 1500 * time.Millisecond}
+}
+
+// Update recalculates the current state and arms/triggers pulses on state transitions.
+func (p *PulseTracker) Update(value float64, warn, danger *Range) AlertState {
+	newState := AlertNormal
+	if inRange(value, danger) {
+		newState = AlertDanger
+	} else if inRange(value, warn) {
+		newState = AlertWarning
+	}
+
+	if newState != p.state {
+		// Trigger on entry to warning/danger.
+		switch newState {
+		case AlertWarning:
+			p.pulseState = AlertWarning
+			p.pulseStart = time.Now()
+		case AlertDanger:
+			p.pulseState = AlertDanger
+			p.pulseStart = time.Now()
+		}
+		p.state = newState
+	}
+
+	return p.state
+}
+
+// Pulse returns the currently active pulse type and intensity (0..1), if any.
+func (p *PulseTracker) Pulse(now time.Time) (AlertState, float64) {
+	if p.pulseState == AlertNormal || p.pulseStart.IsZero() {
+		return AlertNormal, 0
+	}
+	age := now.Sub(p.pulseStart)
+	if age >= p.pulseLength {
+		p.pulseState = AlertNormal
+		return AlertNormal, 0
+	}
+	intensity := 1.0 - float64(age)/float64(p.pulseLength)
+	if intensity < 0 {
+		intensity = 0
+	}
+	if intensity > 1 {
+		intensity = 1
+	}
+	return p.pulseState, intensity
 }
 
 // Widget is the small runtime contract GoDriveLog can call without knowing widget internals.
