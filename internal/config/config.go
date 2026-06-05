@@ -142,8 +142,8 @@ func validDisplayStyle(style string) bool {
 	switch strings.ToLower(strings.TrimSpace(style)) {
 	case "gauge", "bar", "graph":
 		return true
-	// Widget style ids (preferred)
-	case "radial1", "radial2", "radial3", "bar1", "graph1", "led1":
+	// Widget style ids
+	case "radial1", "radial2", "radial3", "ramped1", "ramped2", "ramped3", "speedhud1", "speedhud2", "speedhud3", "bar1", "bar2", "bar3", "graph1", "led1":
 		return true
 	default:
 		return false
