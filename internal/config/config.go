@@ -47,6 +47,9 @@ type DisplayConfig struct {
 	Enabled         bool           `yaml:"enabled"`
 	Style           string         `yaml:"style"`
 	SmoothingWindow int            `yaml:"smoothing_window"`
+	DialRotation    int            `yaml:"dial_rotation"`
+	ViewRotation    int            `yaml:"view_rotation"`
+	ScaleDirection  string         `yaml:"scale_direction"`
 	Position        PositionConfig `yaml:"position"`
 }
 
@@ -132,10 +135,41 @@ func validate(cfg Config) error {
 			if pid.Display.Position.Width <= 0 || pid.Display.Position.Height <= 0 {
 				return fmt.Errorf("vehicle.pids.%s.display.position width and height must be positive", key)
 			}
+			if !validRotation(pid.Display.DialRotation) {
+				return fmt.Errorf("vehicle.pids.%s.display.dial_rotation must be one of 0, 90, 180, 270", key)
+			}
+			if !validRotation(pid.Display.ViewRotation) {
+				return fmt.Errorf("vehicle.pids.%s.display.view_rotation must be one of 0, 90, 180, 270", key)
+			}
+			if !validScaleDirection(pid.Display.ScaleDirection) {
+				return fmt.Errorf("vehicle.pids.%s.display.scale_direction must be forward or reverse", key)
+			}
 		}
 	}
 
 	return nil
+}
+
+func validRotation(deg int) bool {
+	switch deg {
+	case 0, 90, 180, 270:
+		return true
+	default:
+		return false
+	}
+}
+
+func validScaleDirection(dir string) bool {
+	dir = strings.ToLower(strings.TrimSpace(dir))
+	if dir == "" {
+		return true // default handled elsewhere
+	}
+	switch dir {
+	case "forward", "reverse":
+		return true
+	default:
+		return false
+	}
 }
 
 func validDisplayStyle(style string) bool {
