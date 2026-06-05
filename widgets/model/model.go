@@ -50,6 +50,19 @@ type GaugeConfig struct {
 	Min   float64
 	Max   float64
 
+	// DialRotation rotates gauge geometry (arc/ticks/needle) in degrees.
+	// Valid values are 0, 90, 180, 270. 0 is the natural orientation.
+	DialRotation int
+
+	// ViewRotation describes how the viewer is oriented relative to the display,
+	// intended for text/layout adjustments. Valid values are 0, 90, 180, 270.
+	ViewRotation int
+
+	// ScaleDirection controls whether the scale runs forward (min->max) or reverse
+	// (max->min) along the widget's sweep.
+	// Valid values are "forward" (default) and "reverse".
+	ScaleDirection string
+
 	ShowLabel       bool
 	ShowUnit        bool
 	ShowMin         bool
@@ -75,6 +88,9 @@ func DefaultGaugeConfig() GaugeConfig {
 		Unit:            "%",
 		Min:             0,
 		Max:             100,
+		DialRotation:    0,
+		ViewRotation:    0,
+		ScaleDirection:  "forward",
 		ShowLabel:       true,
 		ShowUnit:        true,
 		ShowMin:         true,
@@ -99,6 +115,9 @@ func (c GaugeConfig) Normalize() GaugeConfig {
 	}
 	if c.Max < c.Min {
 		c.Min, c.Max = c.Max, c.Min
+	}
+	if strings.TrimSpace(c.ScaleDirection) == "" {
+		c.ScaleDirection = "forward"
 	}
 	if c.SmoothingWindow <= 0 {
 		c.SmoothingWindow = 1
