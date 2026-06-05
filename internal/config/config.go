@@ -3,14 +3,15 @@ package config
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
 
 const (
-	DefaultLogRotate   = "daily"
+	DefaultLogRotate    = "daily"
 	DefaultLogDirectory = "./log"
-	DefaultOBDAddress  = "serial:///dev/ttyUSB0"
+	DefaultOBDAddress   = "serial:///dev/ttyUSB0"
 )
 
 type Config struct {
@@ -43,9 +44,10 @@ type PIDConfig struct {
 }
 
 type DisplayConfig struct {
-	Enabled  bool           `yaml:"enabled"`
-	Style    string         `yaml:"style"`
-	Position PositionConfig `yaml:"position"`
+	Enabled         bool           `yaml:"enabled"`
+	Style           string         `yaml:"style"`
+	SmoothingWindow int            `yaml:"smoothing_window"`
+	Position        PositionConfig `yaml:"position"`
 }
 
 type PositionConfig struct {
@@ -53,6 +55,7 @@ type PositionConfig struct {
 	Y      float32 `yaml:"y"`
 	Width  float32 `yaml:"width"`
 	Height float32 `yaml:"height"`
+	Z      float32 `yaml:"z"`
 }
 
 func Load(path string) (Config, error) {
@@ -121,7 +124,10 @@ func validate(cfg Config) error {
 				return fmt.Errorf("vehicle.pids.%s.display.style must not be empty when display is enabled", key)
 			}
 			if !validDisplayStyle(pid.Display.Style) {
-				return fmt.Errorf("vehicle.pids.%s.display.style must be gauge, bar, or graph", key)
+				return fmt.Errorf("vehicle.pids.%s.display.style must be a supported widget style", key)
+			}
+			if pid.Display.SmoothingWindow < 0 {
+				return fmt.Errorf("vehicle.pids.%s.display.smoothing_window must be >= 0", key)
 			}
 			if pid.Display.Position.Width <= 0 || pid.Display.Position.Height <= 0 {
 				return fmt.Errorf("vehicle.pids.%s.display.position width and height must be positive", key)
@@ -133,8 +139,11 @@ func validate(cfg Config) error {
 }
 
 func validDisplayStyle(style string) bool {
-	switch style {
+	switch strings.ToLower(strings.TrimSpace(style)) {
 	case "gauge", "bar", "graph":
+		return true
+	// Widget style ids (preferred)
+	case "radial1", "radial2", "radial3", "bar1", "graph1", "led1":
 		return true
 	default:
 		return false
