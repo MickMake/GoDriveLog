@@ -107,8 +107,11 @@ func validate(cfg Config) error {
 		if pid.Type == "obd" && pid.PID == "" {
 			return fmt.Errorf("vehicle.pids.%s.pid must not be empty for obd PIDs", key)
 		}
-		if (pid.Log || pid.Display.Enabled) && pid.Refresh <= 0 {
-			return fmt.Errorf("vehicle.pids.%s.refresh must be positive for active PIDs", key)
+		if pid.Unit == "" {
+			return fmt.Errorf("vehicle.pids.%s.unit must not be empty", key)
+		}
+		if pid.Refresh <= 0 {
+			return fmt.Errorf("vehicle.pids.%s.refresh must be positive", key)
 		}
 		if pid.Max <= pid.Min {
 			return fmt.Errorf("vehicle.pids.%s.max must be greater than min", key)
