@@ -14,7 +14,7 @@ type Range struct {
 }
 
 // Theme groups dashboard colours by purpose. Colour strings are intentionally plain
-// so this package can stay independent of Fyne internals until renderers need them.
+// so widgets can keep a small surface area for now (renderers can translate as needed).
 type Theme struct {
 	Background string
 	Foreground string
@@ -58,6 +58,7 @@ type GaugeConfig struct {
 	ShowValue       bool
 	ShowTicks       bool
 	ShowMajorLabels bool
+	ShowPeak        bool
 
 	WarningRange *Range
 	DangerRange  *Range
@@ -78,6 +79,7 @@ func DefaultGaugeConfig() GaugeConfig {
 		ShowValue:       true,
 		ShowTicks:       true,
 		ShowMajorLabels: true,
+		ShowPeak:        false,
 		Theme:           DefaultTheme(),
 	}
 }
@@ -122,8 +124,7 @@ type Snapshot struct {
 	Danger     bool
 }
 
-// NumericWidget is a first-pass reusable numeric widget stub. Fyne renderers can wrap
-// this state object later without creating GoDriveLog dependencies.
+// NumericWidget is a first-pass reusable numeric widget stub.
 type NumericWidget struct {
 	style  string
 	config GaugeConfig
@@ -173,8 +174,6 @@ func New(style string, cfg GaugeConfig) (Widget, error) {
 		return nil, fmt.Errorf("unknown widget style %q", style)
 	}
 }
-
-func NewRadial1(cfg GaugeConfig) Widget { return newNumericWidget("radial1", cfg) }
 
 func NewBar1(cfg GaugeConfig) Widget { return newNumericWidget("bar1", cfg) }
 
