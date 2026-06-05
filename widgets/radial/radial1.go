@@ -18,57 +18,128 @@ import (
 const (
 	radial1ProgressSegments = 72
 	radial1TickCount        = 50
-	radial1PeakFade         = 600 * time.Millisecond
+
+	radialTrailLen  = 28
+	radialTrailFade = 900 * time.Millisecond
 )
 
-// Radial1 is a reusable dark-dashboard radial gauge.
-// It is configured entirely by model.GaugeConfig and updated by SetValue.
-type Radial1 struct {
-	widget.BaseWidget
-	config model.GaugeConfig
+type radialMode int
 
-	value     float64
-	lastValue float64
+const (
+	radialModePlain radialMode = iota
+	radialModeTrail
+	radialModePeakDaily
+)
 
-	peakValue float64
-	peakAt    time.Time
+type trailSample struct {
+	value float64
+	at    time.Time
 }
 
-func NewRadial1(cfg model.GaugeConfig) model.Widget {
-	n := &Radial1{config: cfg.Normalize()}
+// Radial is a reusable dark-dashboard radial gauge.
+// It is configured entirely by model.GaugeConfig and updated by SetValue.
+type Radial struct {
+	widget.BaseWidget
+	style  string
+	mode   radialMode
+	config model.GaugeConfig
+
+	value float64 // displayed (smoothed) value
+
+	smoothBuf   []float64
+	smoothNext  int
+	smoothCount int
+
+	trail     [radialTrailLen]trailSample
+	trailNext int
+
+	peakValue float64
+	peakDay   string // YYYY-MM-DD
+}
+
+func NewRadial(style string, mode radialMode, cfg model.GaugeConfig) model.Widget {
+	cfg = cfg.Normalize()
+
+	w := cfg.SmoothingWindow
+	if w <= 1 {
+		w = 1
+	}
+
+	n := &Radial{style: style, mode: mode, config: cfg}
 	n.value = n.config.Min
-	n.lastValue = n.value
+	n.peakValue = n.value
+	n.peakDay = time.Now().Format("2006-01-02")
+	// Prime smoothing buffer so the first few samples don't jitter.
+	n.smoothBuf = make([]float64, w)
+	n.smoothBuf[0] = n.value
+	n.smoothCount = 1
+
 	n.ExtendBaseWidget(n)
 	return n
 }
 
-func (g *Radial1) Style() string { return "radial1" }
+func NewRadial1(cfg model.GaugeConfig) model.Widget { return NewRadial("radial1", radialModePlain, cfg) }
+func NewRadial2(cfg model.GaugeConfig) model.Widget { return NewRadial("radial2", radialModeTrail, cfg) }
+func NewRadial3(cfg model.GaugeConfig) model.Widget { return NewRadial("radial3", radialModePeakDaily, cfg) }
 
-func (g *Radial1) Config() model.GaugeConfig { return g.config }
+func (g *Radial) Style() string { return g.style }
 
-func (g *Radial1) Value() float64 { return g.value }
+func (g *Radial) Config() model.GaugeConfig { return g.config }
 
-func (g *Radial1) SetValue(value float64) {
+func (g *Radial) Value() float64 { return g.value }
+
+func (g *Radial) SetValue(value float64) {
 	value = clamp(value, g.config.Min, g.config.Max)
 
-	if g.config.ShowPeak {
-		span := g.config.Max - g.config.Min
-		if span <= 0 {
-			span = 1
-		}
-		drop := span * 0.03 // pragmatic: "noticeable" drop triggers the peak marker
-		if g.lastValue-value >= drop {
-			g.peakValue = g.lastValue
-			g.peakAt = time.Now()
-		}
+	smoothed := g.smooth(value)
+	g.value = smoothed
+
+	switch g.mode {
+	case radialModeTrail:
+		g.pushTrail(smoothed)
+	case radialModePeakDaily:
+		g.updatePeakDaily(smoothed)
 	}
-	g.value = value
-	g.lastValue = value
 
 	g.Refresh()
 }
 
-func (g *Radial1) Snapshot() model.Snapshot {
+func (g *Radial) smooth(value float64) float64 {
+	if len(g.smoothBuf) <= 1 {
+		return value
+	}
+
+	g.smoothBuf[g.smoothNext] = value
+	g.smoothNext = (g.smoothNext + 1) % len(g.smoothBuf)
+	if g.smoothCount < len(g.smoothBuf) {
+		g.smoothCount++
+	}
+
+	var sum float64
+	for i := 0; i < g.smoothCount; i++ {
+		sum += g.smoothBuf[i]
+	}
+	return sum / float64(g.smoothCount)
+}
+
+func (g *Radial) pushTrail(value float64) {
+	g.trail[g.trailNext] = trailSample{value: value, at: time.Now()}
+	g.trailNext = (g.trailNext + 1) % radialTrailLen
+}
+
+func (g *Radial) updatePeakDaily(value float64) {
+	today := time.Now().Format("2006-01-02")
+	if today != g.peakDay {
+		g.peakDay = today
+		g.peakValue = value
+		return
+	}
+	if value > g.peakValue {
+		g.peakValue = value
+	}
+}
+
+func (g *Radial) Snapshot() model.Snapshot {
 	value := g.Value()
 	return model.Snapshot{
 		Style:      g.Style(),
@@ -83,7 +154,7 @@ func (g *Radial1) Snapshot() model.Snapshot {
 	}
 }
 
-func (g *Radial1) CreateRenderer() fyne.WidgetRenderer {
+func (g *Radial) CreateRenderer() fyne.WidgetRenderer {
 	bg := canvas.NewRectangle(parseHex(g.config.Theme.Background, color.NRGBA{R: 5, G: 7, B: 10, A: 255}))
 
 	dial := canvas.NewCircle(color.NRGBA{R: 0, G: 0, B: 0, A: 0})
@@ -144,6 +215,14 @@ func (g *Radial1) CreateRenderer() fyne.WidgetRenderer {
 		labels = append(labels, lt)
 	}
 
+	trailLines := make([]*canvas.Line, 0, radialTrailLen)
+	for i := 0; i < radialTrailLen; i++ {
+		line := canvas.NewLine(parseHex(g.config.Theme.Danger, color.NRGBA{R: 255, G: 48, B: 48, A: 255}))
+		line.StrokeWidth = 2
+		line.Hide()
+		trailLines = append(trailLines, line)
+	}
+
 	peakLine := canvas.NewLine(parseHex(g.config.Theme.Danger, color.NRGBA{R: 255, G: 48, B: 48, A: 255}))
 	peakLine.StrokeWidth = 2
 	peakLine.Hide()
@@ -158,29 +237,30 @@ func (g *Radial1) CreateRenderer() fyne.WidgetRenderer {
 	cap.StrokeColor = parseHex(g.config.Theme.Needle, color.NRGBA{R: 240, G: 244, B: 255, A: 255})
 	cap.StrokeWidth = 2
 
-	r := &radial1Renderer{
-		gauge:     g,
-		bg:        bg,
-		dial:      dial,
-		ticks:     ticks,
-		rangeArc:  rangeArc,
-		valueArc:  valueArc,
-		labels:    labels,
-		labelText: labelText,
-		valueText: valueText,
-		unitText:  unitText,
-		minText:   minText,
-		maxText:   maxText,
-		peakLine:  peakLine,
-		needle:    needle,
-		cap:       cap,
+	r := &radialRenderer{
+		gauge:      g,
+		bg:         bg,
+		dial:       dial,
+		ticks:      ticks,
+		rangeArc:   rangeArc,
+		valueArc:   valueArc,
+		labels:     labels,
+		labelText:  labelText,
+		valueText:  valueText,
+		unitText:   unitText,
+		minText:    minText,
+		maxText:    maxText,
+		trailLines: trailLines,
+		peakLine:   peakLine,
+		needle:     needle,
+		cap:        cap,
 	}
 	r.Refresh()
 	return r
 }
 
-type radial1Renderer struct {
-	gauge *Radial1
+type radialRenderer struct {
+	gauge *Radial
 
 	bg   *canvas.Rectangle
 	dial *canvas.Circle
@@ -197,12 +277,13 @@ type radial1Renderer struct {
 	minText   *canvas.Text
 	maxText   *canvas.Text
 
-	peakLine *canvas.Line
-	needle   []*canvas.Line
-	cap      *canvas.Circle
+	trailLines []*canvas.Line
+	peakLine   *canvas.Line
+	needle     []*canvas.Line
+	cap        *canvas.Circle
 }
 
-func (r *radial1Renderer) Layout(size fyne.Size) {
+func (r *radialRenderer) Layout(size fyne.Size) {
 	r.bg.Resize(size)
 	r.dial.Resize(size)
 
@@ -316,7 +397,8 @@ func (r *radial1Renderer) Layout(size fyne.Size) {
 		pct := float64(i) / float64(len(r.labels)-1)
 		value := cfg.Min + pct*span
 		label.Text = formatTick(value, span)
-		label.TextSize = float32(math.Max(10, radius/24))
+		// Slightly larger than before.
+		label.TextSize = float32(math.Max(12, radius/22))
 		label.Refresh()
 
 		angle := startAngle + pct*angleRange
@@ -330,26 +412,9 @@ func (r *radial1Renderer) Layout(size fyne.Size) {
 		label.Show()
 	}
 
-	// Peak marker
-	if !cfg.ShowPeak || r.gauge.peakAt.IsZero() {
-		r.peakLine.Hide()
-	} else {
-		fade := 1.0 - float64(time.Since(r.gauge.peakAt))/float64(radial1PeakFade)
-		if fade <= 0 {
-			r.peakLine.Hide()
-		} else {
-			peakPct := clamp((r.gauge.peakValue-cfg.Min)/span, 0, 1)
-			peakAngle := startAngle + peakPct*angleRange
-			r.peakLine.Position1 = fyne.NewPos(cx, cy)
-			r.peakLine.Position2 = fyne.NewPos(
-				cx+float32((radius-30)*math.Cos(peakAngle)),
-				cy+float32((radius-30)*math.Sin(peakAngle)),
-			)
-			base := parseHex(cfg.Theme.Danger, color.NRGBA{R: 255, G: 48, B: 48, A: 255})
-			r.peakLine.StrokeColor = withAlpha(base, uint8(255*fade))
-			r.peakLine.Show()
-		}
-	}
+	// Trail / peak overlays
+	r.layoutTrail(cfg, cx, cy, radius, startAngle, angleRange, span)
+	r.layoutPeak(cfg, cx, cy, radius, startAngle, angleRange, span)
 
 	// Needle
 	currentAngle := startAngle + currentPct*angleRange
@@ -418,7 +483,69 @@ func (r *radial1Renderer) Layout(size fyne.Size) {
 	}
 }
 
-func (r *radial1Renderer) layoutNeedle(cx, cy float32, radius, angle float64) {
+func (r *radialRenderer) layoutTrail(cfg model.GaugeConfig, cx, cy float32, radius float64, startAngle, angleRange, span float64) {
+	if r.gauge.mode != radialModeTrail {
+		for _, line := range r.trailLines {
+			line.Hide()
+		}
+		return
+	}
+
+	now := time.Now()
+	base := parseHex(cfg.Theme.Danger, color.NRGBA{R: 255, G: 48, B: 48, A: 255})
+	n := len(r.trailLines)
+	for i := 0; i < n; i++ {
+		idx := (r.gauge.trailNext - 1 - i) % radialTrailLen
+		if idx < 0 {
+			idx += radialTrailLen
+		}
+		sample := r.gauge.trail[idx]
+		line := r.trailLines[i]
+
+		if sample.at.IsZero() {
+			line.Hide()
+			continue
+		}
+
+		age := now.Sub(sample.at)
+		if age >= radialTrailFade {
+			line.Hide()
+			continue
+		}
+
+		pct := clamp((sample.value-cfg.Min)/span, 0, 1)
+		angle := startAngle + pct*angleRange
+
+		line.Position1 = fyne.NewPos(cx, cy)
+		line.Position2 = fyne.NewPos(
+			cx+float32((radius-30)*math.Cos(angle)),
+			cy+float32((radius-30)*math.Sin(angle)),
+		)
+
+		fade := 1.0 - float64(age)/float64(radialTrailFade)
+		line.StrokeColor = withAlpha(base, uint8(255*fade))
+		line.Show()
+	}
+}
+
+func (r *radialRenderer) layoutPeak(cfg model.GaugeConfig, cx, cy float32, radius float64, startAngle, angleRange, span float64) {
+	if r.gauge.mode != radialModePeakDaily {
+		r.peakLine.Hide()
+		return
+	}
+
+	pct := clamp((r.gauge.peakValue-cfg.Min)/span, 0, 1)
+	angle := startAngle + pct*angleRange
+
+	r.peakLine.Position1 = fyne.NewPos(cx, cy)
+	r.peakLine.Position2 = fyne.NewPos(
+		cx+float32((radius-30)*math.Cos(angle)),
+		cy+float32((radius-30)*math.Sin(angle)),
+	)
+	r.peakLine.Show()
+}
+
+func (r *radialRenderer) layoutNeedle(cx, cy float32, radius, angle float64) {
 	tipRadius := radius - 30
 	baseBack := 18.0
 	baseHalfWidth := 7.0
@@ -453,9 +580,9 @@ func (r *radial1Renderer) layoutNeedle(cx, cy float32, radius, angle float64) {
 	r.cap.Move(fyne.NewPos(cx-capSize/2, cy-capSize/2))
 }
 
-func (r *radial1Renderer) MinSize() fyne.Size { return fyne.NewSize(480, 480) }
+func (r *radialRenderer) MinSize() fyne.Size { return fyne.NewSize(480, 480) }
 
-func (r *radial1Renderer) Refresh() {
+func (r *radialRenderer) Refresh() {
 	r.Layout(r.gauge.Size())
 	canvas.Refresh(r.bg)
 	canvas.Refresh(r.dial)
@@ -471,19 +598,22 @@ func (r *radial1Renderer) Refresh() {
 	for _, label := range r.labels {
 		canvas.Refresh(label)
 	}
+	for _, line := range r.trailLines {
+		canvas.Refresh(line)
+	}
+	canvas.Refresh(r.peakLine)
 	canvas.Refresh(r.labelText)
 	canvas.Refresh(r.valueText)
 	canvas.Refresh(r.unitText)
 	canvas.Refresh(r.minText)
 	canvas.Refresh(r.maxText)
-	canvas.Refresh(r.peakLine)
 	for _, line := range r.needle {
 		canvas.Refresh(line)
 	}
 	canvas.Refresh(r.cap)
 }
 
-func (r *radial1Renderer) Objects() []fyne.CanvasObject {
+func (r *radialRenderer) Objects() []fyne.CanvasObject {
 	objects := []fyne.CanvasObject{
 		r.bg,
 		r.dial,
@@ -500,8 +630,11 @@ func (r *radial1Renderer) Objects() []fyne.CanvasObject {
 	for _, label := range r.labels {
 		objects = append(objects, label)
 	}
+	objects = append(objects, r.peakLine)
+	for _, line := range r.trailLines {
+		objects = append(objects, line)
+	}
 	objects = append(objects,
-		r.peakLine,
 		r.labelText,
 		r.valueText,
 		r.unitText,
@@ -515,7 +648,7 @@ func (r *radial1Renderer) Objects() []fyne.CanvasObject {
 	return objects
 }
 
-func (r *radial1Renderer) Destroy() {}
+func (r *radialRenderer) Destroy() {}
 
 func formatValue(value, span float64) string {
 	if span >= 1000 {
@@ -559,17 +692,22 @@ func withAlpha(c color.NRGBA, a uint8) color.NRGBA {
 	return c
 }
 
-
 func clamp(value, min, max float64) float64 { return math.Max(min, math.Min(max, value)) }
 
 func normalise(value, min, max float64) float64 {
-	if max == min { return 0 }
+	if max == min {
+		return 0
+	}
 	return clamp((value-min)/(max-min), 0, 1)
 }
 
 func inRange(value float64, r *model.Range) bool {
-	if r == nil { return false }
+	if r == nil {
+		return false
+	}
 	min, max := r.Min, r.Max
-	if max < min { min, max = max, min }
+	if max < min {
+		min, max = max, min
+	}
 	return value >= min && value <= max
 }

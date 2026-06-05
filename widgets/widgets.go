@@ -25,6 +25,10 @@ func New(style string, cfg GaugeConfig) (Widget, error) {
 	switch strings.ToLower(strings.TrimSpace(style)) {
 	case "radial1":
 		return radial.NewRadial1(cfg), nil
+	case "radial2":
+		return radial.NewRadial2(cfg), nil
+	case "radial3":
+		return radial.NewRadial3(cfg), nil
 	case "bar1":
 		return model.NewNumericWidget("bar1", cfg), nil
 	case "graph1":
@@ -37,7 +41,7 @@ func New(style string, cfg GaugeConfig) (Widget, error) {
 }
 
 func Styles() []string {
-	styles := []string{"bar1", "graph1", "led1", "radial1"}
+	styles := []string{"bar1", "graph1", "led1", "radial1", "radial2", "radial3"}
 	sort.Strings(styles)
 	return styles
 }

@@ -47,12 +47,14 @@ vehicle:
       log: true
       display:
         enabled: true
-        style: gauge
+        style: radial1
+        smoothing_window: 0
         position:
           x: 20
           y: 20
           width: 360
           height: 90
+          z: 0
 ```
 
 ## Root fields
@@ -123,12 +125,14 @@ rpm:
   log: true
   display:
     enabled: true
-    style: gauge
+    style: radial1
+    smoothing_window: 0
     position:
       x: 20
       y: 20
       width: 360
       height: 90
+      z: 0
 ```
 
 | Field | Type | Required | Meaning |
@@ -147,18 +151,21 @@ rpm:
 ```yaml
 display:
   enabled: true
-  style: gauge
+  style: radial1
+  smoothing_window: 0
   position:
     x: 20
     y: 20
     width: 360
     height: 90
+    z: 0
 ```
 
 | Field | Type | Required | Meaning |
 |---|---:|---:|---|
 | `enabled` | bool | yes | Show this PID on screen. |
-| `style` | string | required when enabled | Display style. Current values: `gauge`, `bar`, `graph`. |
+| `style` | string | required when enabled | Display style. Use widget style ids (recommended): `radial1`, `radial2`, `radial3`, `bar1`, `graph1`, `led1`. Legacy values `gauge`, `bar`, `graph` are still accepted. |
+| `smoothing_window` | int | no | Moving average window for display smoothing. `0` or `1` disables smoothing. |
 | `position` | object | required when enabled | Widget position and size. |
 
 If `display.enabled` is `false`, `style` and `position` may be omitted.
@@ -171,6 +178,7 @@ position:
   y: 20
   width: 360
   height: 90
+  z: 0
 ```
 
 | Field | Type | Required | Meaning |
@@ -179,6 +187,7 @@ position:
 | `y` | number | yes | Y position in the Fyne window. |
 | `width` | number | yes | Widget width. |
 | `height` | number | yes | Widget height. |
+| `z` | number | no | Z layer for overlays. Higher values render on top. Default `0`. |
 
 ## Polling rule
 

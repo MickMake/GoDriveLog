@@ -32,11 +32,13 @@ vehicle:
       display:
         enabled: true
         style: graph
+        smoothing_window: 0
         position:
           x: 20
           y: 240
           width: 360
           height: 120
+          z: 0
 
     short_fuel_trim_bank1:
       type: obd
@@ -81,12 +83,14 @@ vehicle:
       log: true
       display:
         enabled: true
-        style: gauge
+        style: radial1
+        smoothing_window: 0
         position:
           x: 20
           y: 20
           width: 360
           height: 90
+          z: 0
 
     speed:
       type: obd
@@ -99,11 +103,13 @@ vehicle:
       display:
         enabled: true
         style: bar
+        smoothing_window: 0
         position:
           x: 20
           y: 130
           width: 360
           height: 90
+          z: 0
 
     timing_advance:
       type: obd
@@ -149,11 +155,13 @@ vehicle:
       display:
         enabled: true
         style: bar
+        smoothing_window: 0
         position:
           x: 400
           y: 20
           width: 360
           height: 90
+          z: 0
 
     run_time_since_engine_start:
       type: obd
@@ -221,11 +229,13 @@ vehicle:
       display:
         enabled: true
         style: bar
+        smoothing_window: 0
         position:
           x: 400
           y: 130
           width: 360
           height: 90
+          z: 0
 
     engine_oil_temp:
       type: obd

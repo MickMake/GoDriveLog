@@ -58,6 +58,10 @@ type GaugeConfig struct {
 	ShowMajorLabels bool
 	ShowPeak        bool
 
+	// SmoothingWindow applies a simple moving average over N samples.
+	// 1 means no smoothing.
+	SmoothingWindow int
+
 	WarningRange *Range
 	DangerRange  *Range
 	Theme        Theme
@@ -78,6 +82,7 @@ func DefaultGaugeConfig() GaugeConfig {
 		ShowTicks:       true,
 		ShowMajorLabels: true,
 		ShowPeak:        false,
+		SmoothingWindow: 1,
 		Theme:           DefaultTheme(),
 	}
 }
@@ -93,6 +98,9 @@ func (c GaugeConfig) Normalize() GaugeConfig {
 	}
 	if c.Max < c.Min {
 		c.Min, c.Max = c.Max, c.Min
+	}
+	if c.SmoothingWindow <= 0 {
+		c.SmoothingWindow = 1
 	}
 	if c.Theme == (Theme{}) {
 		c.Theme = DefaultTheme()

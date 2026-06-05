@@ -164,14 +164,14 @@ func demoConfig(widgetName string) GaugeConfig {
 	cfg := DefaultGaugeConfig()
 
 	switch strings.ToLower(widgetName) {
-	case "radial1":
+	case "radial1", "radial2", "radial3":
 		cfg.Label = "RPM"
 		cfg.Unit = "rpm"
 		cfg.Min = 0
 		cfg.Max = 5000
 		cfg.WarningRange = &Range{Min: 4000, Max: 4499.999}
 		cfg.DangerRange = &Range{Min: 4500, Max: 5000}
-		cfg.ShowPeak = true
+		cfg.SmoothingWindow = 1
 	default:
 		cfg.Label = strings.ToUpper(widgetName)
 		cfg.Unit = "%"
