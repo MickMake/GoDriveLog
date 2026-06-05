@@ -6,6 +6,7 @@ import (
 	"math"
 	"strconv"
 	"strings"
+	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
@@ -26,6 +27,8 @@ type SpeedHUD1 struct {
 	smoothBuf   []float64
 	smoothNext  int
 	smoothCount int
+
+	pulse model.PulseTracker
 }
 
 func NewSpeedHUD1(cfg model.GaugeConfig) model.Widget {
@@ -34,7 +37,7 @@ func NewSpeedHUD1(cfg model.GaugeConfig) model.Widget {
 	if w <= 1 {
 		w = 1
 	}
-	g := &SpeedHUD1{config: cfg, value: cfg.Min, smoothBuf: make([]float64, w)}
+	g := &SpeedHUD1{config: cfg, value: cfg.Min, smoothBuf: make([]float64, w), pulse: model.NewPulseTracker()}
 	g.smoothBuf[0] = g.value
 	g.smoothCount = 1
 	g.ExtendBaseWidget(g)
@@ -50,6 +53,7 @@ func (g *SpeedHUD1) Value() float64 { return g.value }
 func (g *SpeedHUD1) SetValue(v float64) {
 	v = clamp(v, g.config.Min, g.config.Max)
 	g.value = g.smooth(v)
+	g.pulse.Update(g.value, g.config.WarningRange, g.config.DangerRange)
 	g.Refresh()
 }
 
@@ -86,6 +90,8 @@ func (g *SpeedHUD1) Snapshot() model.Snapshot {
 
 func (g *SpeedHUD1) CreateRenderer() fyne.WidgetRenderer {
 	bg := canvas.NewRectangle(parseHex(g.config.Theme.Background, color.NRGBA{R: 5, G: 7, B: 10, A: 255}))
+	pulse := canvas.NewRectangle(color.NRGBA{R: 0, G: 0, B: 0, A: 0})
+	pulse.Hide()
 
 	arcBg := make([]*canvas.Line, 0, hudSegments)
 	arcVal := make([]*canvas.Line, 0, hudSegments)
@@ -112,7 +118,7 @@ func (g *SpeedHUD1) CreateRenderer() fyne.WidgetRenderer {
 	unit.Alignment = fyne.TextAlignCenter
 	unit.TextStyle = fyne.TextStyle{Bold: true}
 
-	r := &speedHUDRenderer{g: g, bg: bg, arcBg: arcBg, arcVal: arcVal, label: label, value: value, unit: unit}
+	r := &speedHUDRenderer{g: g, bg: bg, pulse: pulse, arcBg: arcBg, arcVal: arcVal, label: label, value: value, unit: unit}
 	r.Refresh()
 	return r
 }
@@ -120,7 +126,8 @@ func (g *SpeedHUD1) CreateRenderer() fyne.WidgetRenderer {
 type speedHUDRenderer struct {
 	g *SpeedHUD1
 
-	bg     *canvas.Rectangle
+	bg    *canvas.Rectangle
+	pulse *canvas.Rectangle
 	arcBg  []*canvas.Line
 	arcVal []*canvas.Line
 
@@ -131,6 +138,7 @@ type speedHUDRenderer struct {
 
 func (r *speedHUDRenderer) Layout(size fyne.Size) {
 	r.bg.Resize(size)
+	r.pulse.Resize(size)
 
 	cfg := r.g.config.Normalize()
 	span := cfg.Max - cfg.Min
@@ -138,6 +146,21 @@ func (r *speedHUDRenderer) Layout(size fyne.Size) {
 		span = 1
 	}
 	pct := clamp((r.g.value-cfg.Min)/span, 0, 1)
+
+	pState, p := r.g.pulse.Pulse(time.Now())
+	if p > 0 {
+		col := color.NRGBA{R: 0, G: 0, B: 0, A: 0}
+		switch pState {
+		case model.AlertWarning:
+			col = parseHex(cfg.Theme.Warning, color.NRGBA{R: 255, G: 176, B: 0, A: 255})
+		case model.AlertDanger:
+			col = parseHex(cfg.Theme.Danger, color.NRGBA{R: 255, G: 48, B: 48, A: 255})
+		}
+		r.pulse.FillColor = withAlpha(col, uint8(70*p))
+		r.pulse.Show()
+	} else {
+		r.pulse.Hide()
+	}
 
 	// Bottom arc (HUD underline vibe)
 	cx := size.Width / 2
@@ -205,6 +228,7 @@ func (r *speedHUDRenderer) MinSize() fyne.Size { return fyne.NewSize(360, 240) }
 func (r *speedHUDRenderer) Refresh() {
 	r.Layout(r.g.Size())
 	canvas.Refresh(r.bg)
+	canvas.Refresh(r.pulse)
 	for _, l := range r.arcBg {
 		canvas.Refresh(l)
 	}
@@ -217,7 +241,7 @@ func (r *speedHUDRenderer) Refresh() {
 }
 
 func (r *speedHUDRenderer) Objects() []fyne.CanvasObject {
-	objs := []fyne.CanvasObject{r.bg}
+	objs := []fyne.CanvasObject{r.bg, r.pulse}
 	for _, l := range r.arcBg {
 		objs = append(objs, l)
 	}
