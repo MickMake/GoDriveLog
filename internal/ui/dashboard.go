@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
@@ -29,10 +30,18 @@ type panel struct {
 	lastUpdate time.Time
 }
 
+type panelBox struct {
+	key string
+	pid config.PIDConfig
+	p   *panel
+	box *fyne.Container
+}
+
 func NewDashboard(pids map[string]config.PIDConfig) *Dashboard {
 	root := container.NewWithoutLayout()
 	d := &Dashboard{root: root, panels: map[string]*panel{}}
 
+	boxes := make([]panelBox, 0, len(pids))
 	for key, pid := range pids {
 		if !pid.Display.Enabled {
 			continue
@@ -41,8 +50,21 @@ func NewDashboard(pids map[string]config.PIDConfig) *Dashboard {
 		box := container.NewVBox(p.label, p.value, p.bar, p.errorLabel)
 		box.Move(fyne.NewPos(pid.Display.Position.X, pid.Display.Position.Y))
 		box.Resize(fyne.NewSize(pid.Display.Position.Width, pid.Display.Position.Height))
-		root.Add(box)
+		boxes = append(boxes, panelBox{key: key, pid: pid, p: p, box: box})
 		d.panels[key] = p
+	}
+
+	// Deterministic z-layering for overlays.
+	sort.SliceStable(boxes, func(i, j int) bool {
+		zi := boxes[i].pid.Display.Position.Z
+		zj := boxes[j].pid.Display.Position.Z
+		if zi == zj {
+			return boxes[i].key < boxes[j].key
+		}
+		return zi < zj
+	})
+	for _, b := range boxes {
+		root.Add(b.box)
 	}
 
 	return d
