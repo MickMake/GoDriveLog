@@ -172,6 +172,30 @@ func demoConfig(widgetName string) GaugeConfig {
 		cfg.WarningRange = &Range{Min: 4000, Max: 4499.999}
 		cfg.DangerRange = &Range{Min: 4500, Max: 5000}
 		cfg.SmoothingWindow = 1
+	case "ramped1":
+		cfg.Label = "RPM"
+		cfg.Unit = "rpm"
+		cfg.Min = 0
+		cfg.Max = 7000
+		cfg.WarningRange = &Range{Min: 5500, Max: 6299.999}
+		cfg.DangerRange = &Range{Min: 6300, Max: 7000}
+		cfg.SmoothingWindow = 1
+	case "speedhud1":
+		cfg.Label = "SPEED"
+		cfg.Unit = "km/h"
+		cfg.Min = 0
+		cfg.Max = 160
+		cfg.WarningRange = &Range{Min: 110, Max: 129.999}
+		cfg.DangerRange = &Range{Min: 130, Max: 160}
+		cfg.SmoothingWindow = 1
+	case "bar2":
+		cfg.Label = "LOAD"
+		cfg.Unit = "%"
+		cfg.Min = 0
+		cfg.Max = 100
+		cfg.WarningRange = &Range{Min: 75, Max: 89.999}
+		cfg.DangerRange = &Range{Min: 90, Max: 100}
+		cfg.SmoothingWindow = 1
 	default:
 		cfg.Label = strings.ToUpper(widgetName)
 		cfg.Unit = "%"
