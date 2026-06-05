@@ -1,6 +1,7 @@
 package bar
 
 import (
+	"fmt"
 	"image/color"
 	"math"
 	"time"
