@@ -1,4 +1,4 @@
-package widgets
+package radial
 
 import (
 	"fmt"
@@ -11,6 +11,8 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/widget"
+
+	"github.com/MickMake/GoDriveLog/widgets/model"
 )
 
 const (
@@ -20,10 +22,10 @@ const (
 )
 
 // Radial1 is a reusable dark-dashboard radial gauge.
-// It is configured entirely by GaugeConfig and updated by SetValue.
+// It is configured entirely by model.GaugeConfig and updated by SetValue.
 type Radial1 struct {
 	widget.BaseWidget
-	config GaugeConfig
+	config model.GaugeConfig
 
 	value     float64
 	lastValue float64
@@ -32,7 +34,7 @@ type Radial1 struct {
 	peakAt    time.Time
 }
 
-func NewRadial1(cfg GaugeConfig) Widget {
+func NewRadial1(cfg model.GaugeConfig) model.Widget {
 	n := &Radial1{config: cfg.Normalize()}
 	n.value = n.config.Min
 	n.lastValue = n.value
@@ -42,7 +44,7 @@ func NewRadial1(cfg GaugeConfig) Widget {
 
 func (g *Radial1) Style() string { return "radial1" }
 
-func (g *Radial1) Config() GaugeConfig { return g.config }
+func (g *Radial1) Config() model.GaugeConfig { return g.config }
 
 func (g *Radial1) Value() float64 { return g.value }
 
@@ -66,9 +68,9 @@ func (g *Radial1) SetValue(value float64) {
 	g.Refresh()
 }
 
-func (g *Radial1) Snapshot() Snapshot {
+func (g *Radial1) Snapshot() model.Snapshot {
 	value := g.Value()
-	return Snapshot{
+	return model.Snapshot{
 		Style:      g.Style(),
 		Label:      g.config.Label,
 		Unit:       g.config.Unit,
@@ -555,4 +557,19 @@ func parseHex(s string, fallback color.NRGBA) color.NRGBA {
 func withAlpha(c color.NRGBA, a uint8) color.NRGBA {
 	c.A = a
 	return c
+}
+
+
+func clamp(value, min, max float64) float64 { return math.Max(min, math.Min(max, value)) }
+
+func normalise(value, min, max float64) float64 {
+	if max == min { return 0 }
+	return clamp((value-min)/(max-min), 0, 1)
+}
+
+func inRange(value float64, r *model.Range) bool {
+	if r == nil { return false }
+	min, max := r.Min, r.Max
+	if max < min { min, max = max, min }
+	return value >= min && value <= max
 }
