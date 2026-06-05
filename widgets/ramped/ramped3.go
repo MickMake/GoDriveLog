@@ -24,6 +24,8 @@ type Ramped3 struct {
 
 	peakValue float64
 	peakDay   string
+
+	pulse model.PulseTracker
 }
 
 func NewRamped3(cfg model.GaugeConfig) model.Widget {
@@ -32,7 +34,7 @@ func NewRamped3(cfg model.GaugeConfig) model.Widget {
 	if w <= 1 {
 		w = 1
 	}
-	g := &Ramped3{config: cfg, value: cfg.Min, smoothBuf: make([]float64, w)}
+	g := &Ramped3{config: cfg, value: cfg.Min, smoothBuf: make([]float64, w), pulse: model.NewPulseTracker()}
 	g.smoothBuf[0] = g.value
 	g.smoothCount = 1
 	g.peakValue = g.value
@@ -52,6 +54,7 @@ func (g *Ramped3) SetValue(v float64) {
 	v = clamp(v, cfg.Min, cfg.Max)
 	g.value = g.smooth(v)
 	g.updatePeakDaily(g.value)
+	g.pulse.Update(g.value, g.config.WarningRange, g.config.DangerRange)
 	g.Refresh()
 }
 
@@ -100,6 +103,8 @@ func (g *Ramped3) Snapshot() model.Snapshot {
 
 func (g *Ramped3) CreateRenderer() fyne.WidgetRenderer {
 	bg := canvas.NewRectangle(parseHex(g.config.Theme.Background, color.NRGBA{R: 5, G: 7, B: 10, A: 255}))
+	pulse := canvas.NewRectangle(color.NRGBA{R: 0, G: 0, B: 0, A: 0})
+	pulse.Hide()
 
 	arcBg := make([]*canvas.Line, 0, rampedSegments)
 	arcVal := make([]*canvas.Line, 0, rampedSegments)
@@ -136,10 +141,11 @@ func (g *Ramped3) CreateRenderer() fyne.WidgetRenderer {
 	needle := canvas.NewLine(parseHex(g.config.Theme.Needle, color.NRGBA{R: 240, G: 244, B: 255, A: 255}))
 	needle.StrokeWidth = 4
 
-	peak := canvas.NewLine(parseHex(g.config.Theme.Danger, color.NRGBA{R: 255, G: 48, B: 48, A: 255}))
-	peak.StrokeWidth = 6
+	peakLine := canvas.NewLine(parseHex(g.config.Theme.Danger, color.NRGBA{R: 255, G: 48, B: 48, A: 255}))
+	peakLine.StrokeWidth = 6
+	peakLine.Hide()
 
-	r := &ramped3Renderer{g: g, bg: bg, arcBg: arcBg, arcVal: arcVal, ticks: ticks, label: label, value: value, unit: unit, needle: needle, peak: peak}
+	r := &ramped3Renderer{g: g, bg: bg, pulse: pulse, arcBg: arcBg, arcVal: arcVal, ticks: ticks, label: label, value: value, unit: unit, needle: needle, peakLine: peakLine}
 	r.Refresh()
 	return r
 }
@@ -147,7 +153,9 @@ func (g *Ramped3) CreateRenderer() fyne.WidgetRenderer {
 type ramped3Renderer struct {
 	g *Ramped3
 
-	bg     *canvas.Rectangle
+	bg    *canvas.Rectangle
+	pulse *canvas.Rectangle
+
 	arcBg  []*canvas.Line
 	arcVal []*canvas.Line
 	ticks  []*canvas.Line
@@ -156,11 +164,13 @@ type ramped3Renderer struct {
 	value  *canvas.Text
 	unit   *canvas.Text
 	needle *canvas.Line
-	peak   *canvas.Line
+
+	peakLine *canvas.Line
 }
 
 func (r *ramped3Renderer) Layout(size fyne.Size) {
 	r.bg.Resize(size)
+	r.pulse.Resize(size)
 
 	cfg := r.g.config.Normalize()
 	span := cfg.Max - cfg.Min
@@ -169,6 +179,21 @@ func (r *ramped3Renderer) Layout(size fyne.Size) {
 	}
 	pct := clamp((r.g.value-cfg.Min)/span, 0, 1)
 	peakPct := clamp((r.g.peakValue-cfg.Min)/span, 0, 1)
+
+	pState, p := r.g.pulse.Pulse(time.Now())
+	if p > 0 {
+		col := color.NRGBA{R: 0, G: 0, B: 0, A: 0}
+		switch pState {
+		case model.AlertWarning:
+			col = parseHex(cfg.Theme.Warning, color.NRGBA{R: 255, G: 176, B: 0, A: 255})
+		case model.AlertDanger:
+			col = parseHex(cfg.Theme.Danger, color.NRGBA{R: 255, G: 48, B: 48, A: 255})
+		}
+		r.pulse.FillColor = withAlpha(col, uint8(70*p))
+		r.pulse.Show()
+	} else {
+		r.pulse.Hide()
+	}
 
 	cx := size.Width / 2
 	cy := size.Height * 0.72
@@ -225,11 +250,12 @@ func (r *ramped3Renderer) Layout(size fyne.Size) {
 	r.needle.Position1 = fyne.NewPos(cx, cy)
 	r.needle.Position2 = fyne.NewPos(cx+float32(needleLen*math.Cos(a)), cy+float32(needleLen*math.Sin(a)))
 
-	// Peak marker: short thick segment on arc
-	peakA := start + peakPct*arc
-	segHalf := (arc / float64(rampedSegments)) * 1.2
-	r.peak.Position1 = fyne.NewPos(cx+float32(radius*math.Cos(peakA-segHalf)), cy+float32(radius*math.Sin(peakA-segHalf)))
-	r.peak.Position2 = fyne.NewPos(cx+float32(radius*math.Cos(peakA+segHalf)), cy+float32(radius*math.Sin(peakA+segHalf)))
+	// Peak arc tick
+	segHalf := (arc / float64(rampedSegments)) * 0.9
+	pa := start + peakPct*arc
+	r.peakLine.Position1 = fyne.NewPos(cx+float32(radius*math.Cos(pa-segHalf)), cy+float32(radius*math.Sin(pa-segHalf)))
+	r.peakLine.Position2 = fyne.NewPos(cx+float32(radius*math.Cos(pa+segHalf)), cy+float32(radius*math.Sin(pa+segHalf)))
+	r.peakLine.Show()
 
 	// Text
 	r.label.Text = cfg.Label
@@ -256,6 +282,7 @@ func (r *ramped3Renderer) MinSize() fyne.Size { return fyne.NewSize(480, 240) }
 func (r *ramped3Renderer) Refresh() {
 	r.Layout(r.g.Size())
 	canvas.Refresh(r.bg)
+	canvas.Refresh(r.pulse)
 	for _, l := range r.arcBg {
 		canvas.Refresh(l)
 	}
@@ -265,7 +292,7 @@ func (r *ramped3Renderer) Refresh() {
 	for _, l := range r.ticks {
 		canvas.Refresh(l)
 	}
-	canvas.Refresh(r.peak)
+	canvas.Refresh(r.peakLine)
 	canvas.Refresh(r.needle)
 	canvas.Refresh(r.label)
 	canvas.Refresh(r.value)
@@ -273,7 +300,7 @@ func (r *ramped3Renderer) Refresh() {
 }
 
 func (r *ramped3Renderer) Objects() []fyne.CanvasObject {
-	objs := []fyne.CanvasObject{r.bg}
+	objs := []fyne.CanvasObject{r.bg, r.pulse}
 	for _, l := range r.arcBg {
 		objs = append(objs, l)
 	}
@@ -283,7 +310,7 @@ func (r *ramped3Renderer) Objects() []fyne.CanvasObject {
 	for _, l := range r.ticks {
 		objs = append(objs, l)
 	}
-	objs = append(objs, r.peak, r.needle, r.label, r.value, r.unit)
+	objs = append(objs, r.peakLine, r.needle, r.label, r.value, r.unit)
 	return objs
 }
 
