@@ -32,6 +32,18 @@ func New(style string, cfg GaugeConfig) (Widget, error) {
 		return radial.NewRadial2(cfg), nil
 	case "radial3":
 		return radial.NewRadial3(cfg), nil
+	case "half_top1":
+		return radial.NewHalfTop1(cfg), nil
+	case "half_bottom1":
+		return radial.NewHalfBottom1(cfg), nil
+	case "quarter_tl1":
+		return radial.NewQuarterTL1(cfg), nil
+	case "quarter_tr1":
+		return radial.NewQuarterTR1(cfg), nil
+	case "quarter_bl1":
+		return radial.NewQuarterBL1(cfg), nil
+	case "quarter_br1":
+		return radial.NewQuarterBR1(cfg), nil
 	case "ramped1":
 		return ramped.NewRamped1(cfg), nil
 	case "ramped2":
@@ -60,7 +72,7 @@ func New(style string, cfg GaugeConfig) (Widget, error) {
 }
 
 func Styles() []string {
-	styles := []string{"bar1", "bar2", "bar3", "graph1", "led1", "radial1", "radial2", "radial3", "ramped1", "ramped2", "ramped3", "speedhud1", "speedhud2", "speedhud3"}
+	styles := []string{"bar1", "bar2", "bar3", "graph1", "half_bottom1", "half_top1", "led1", "quarter_bl1", "quarter_br1", "quarter_tl1", "quarter_tr1", "radial1", "radial2", "radial3", "ramped1", "ramped2", "ramped3", "speedhud1", "speedhud2", "speedhud3"}
 	sort.Strings(styles)
 	return styles
 }
