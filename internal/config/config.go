@@ -143,7 +143,11 @@ func validDisplayStyle(style string) bool {
 	case "gauge", "bar", "graph":
 		return true
 	// Widget style ids
-	case "radial1", "radial2", "radial3", "ramped1", "ramped2", "ramped3", "speedhud1", "speedhud2", "speedhud3", "bar1", "bar2", "bar3", "graph1", "led1":
+	case "radial1", "radial2", "radial3",
+		"half_top1", "half_bottom1", "quarter_tl1", "quarter_tr1", "quarter_bl1", "quarter_br1",
+		"ramped1", "ramped2", "ramped3",
+		"speedhud1", "speedhud2", "speedhud3",
+		"bar1", "bar2", "bar3", "graph1", "led1":
 		return true
 	default:
 		return false
