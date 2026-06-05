@@ -29,6 +29,8 @@ type Bar3 struct {
 
 	peakValue float64
 	peakDay   string
+
+	pulse model.PulseTracker
 }
 
 func NewBar3(cfg model.GaugeConfig) model.Widget {
@@ -37,7 +39,7 @@ func NewBar3(cfg model.GaugeConfig) model.Widget {
 	if w <= 1 {
 		w = 1
 	}
-	b := &Bar3{config: cfg, value: cfg.Min, smoothBuf: make([]float64, w)}
+	b := &Bar3{config: cfg, value: cfg.Min, smoothBuf: make([]float64, w), pulse: model.NewPulseTracker()}
 	b.smoothBuf[0] = b.value
 	b.smoothCount = 1
 	b.peakValue = b.value
@@ -56,6 +58,7 @@ func (b *Bar3) SetValue(v float64) {
 	v = clamp(v, b.config.Min, b.config.Max)
 	b.value = b.smooth(v)
 	b.updatePeakDaily(b.value)
+	b.pulse.Update(b.value, b.config.WarningRange, b.config.DangerRange)
 	b.Refresh()
 }
 
@@ -104,6 +107,8 @@ func (b *Bar3) Snapshot() model.Snapshot {
 
 func (b *Bar3) CreateRenderer() fyne.WidgetRenderer {
 	bg := canvas.NewRectangle(parseHex(b.config.Theme.Background, color.NRGBA{R: 5, G: 7, B: 10, A: 255}))
+	pulse := canvas.NewRectangle(color.NRGBA{R: 0, G: 0, B: 0, A: 0})
+	pulse.Hide()
 
 	segments := make([]*canvas.Rectangle, 0, bar3Segments)
 	for i := 0; i < bar3Segments; i++ {
@@ -125,7 +130,7 @@ func (b *Bar3) CreateRenderer() fyne.WidgetRenderer {
 	value.TextStyle = fyne.TextStyle{Bold: true, Monospace: true}
 	value.Alignment = fyne.TextAlignTrailing
 
-	r := &bar3Renderer{b: b, bg: bg, segments: segments, marker: marker, peak: peak, label: label, value: value}
+	r := &bar3Renderer{b: b, bg: bg, pulse: pulse, segments: segments, marker: marker, peak: peak, label: label, value: value}
 	r.Refresh()
 	return r
 }
@@ -134,6 +139,7 @@ type bar3Renderer struct {
 	b *Bar3
 
 	bg       *canvas.Rectangle
+	pulse    *canvas.Rectangle
 	segments []*canvas.Rectangle
 	marker   *canvas.Rectangle
 	peak     *canvas.Rectangle
@@ -143,6 +149,7 @@ type bar3Renderer struct {
 
 func (r *bar3Renderer) Layout(size fyne.Size) {
 	r.bg.Resize(size)
+	r.pulse.Resize(size)
 
 	cfg := r.b.config.Normalize()
 	span := cfg.Max - cfg.Min
@@ -151,6 +158,21 @@ func (r *bar3Renderer) Layout(size fyne.Size) {
 	}
 	pct := clamp((r.b.value-cfg.Min)/span, 0, 1)
 	peakPct := clamp((r.b.peakValue-cfg.Min)/span, 0, 1)
+
+	pState, p := r.b.pulse.Pulse(time.Now())
+	if p > 0 {
+		col := color.NRGBA{R: 0, G: 0, B: 0, A: 0}
+		switch pState {
+		case model.AlertWarning:
+			col = parseHex(cfg.Theme.Warning, color.NRGBA{R: 255, G: 176, B: 0, A: 255})
+		case model.AlertDanger:
+			col = parseHex(cfg.Theme.Danger, color.NRGBA{R: 255, G: 48, B: 48, A: 255})
+		}
+		r.pulse.FillColor = withAlpha(col, uint8(70*p))
+		r.pulse.Show()
+	} else {
+		r.pulse.Hide()
+	}
 
 	pad := float32(14)
 	top := float32(10)
@@ -217,6 +239,7 @@ func (r *bar3Renderer) MinSize() fyne.Size { return fyne.NewSize(420, 120) }
 func (r *bar3Renderer) Refresh() {
 	r.Layout(r.b.Size())
 	canvas.Refresh(r.bg)
+	canvas.Refresh(r.pulse)
 	for _, s := range r.segments {
 		canvas.Refresh(s)
 	}
@@ -227,7 +250,7 @@ func (r *bar3Renderer) Refresh() {
 }
 
 func (r *bar3Renderer) Objects() []fyne.CanvasObject {
-	objs := []fyne.CanvasObject{r.bg, r.label, r.value}
+	objs := []fyne.CanvasObject{r.bg, r.pulse, r.label, r.value}
 	for _, s := range r.segments {
 		objs = append(objs, s)
 	}
