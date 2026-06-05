@@ -139,8 +139,8 @@ rpm:
 | `refresh` | int | yes | Poll refresh interval in milliseconds. |
 | `min` | number | yes | Minimum expected value for display scaling. |
 | `max` | number | yes | Maximum expected value for display scaling. |
-| `log` | bool | yes | Write readings to JSONL logs. |
-| `display` | object | yes | Display configuration. |
+| `log` | bool | no | Write readings to JSONL logs. If not defined assume log: FALSE. |
+| `display` | object | no | Display configuration. If not defined assume display.enabled: FALSE. |
 
 ## Display config
 

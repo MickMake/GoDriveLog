@@ -2,7 +2,7 @@
 
 A deliberately small Go/Fyne PID dashboard for Raspberry Pi 4.
 
-It starts, reads a YAML config, polls configured PIDs at their own refresh intervals, writes JSONL logs, rotates the log on engine start, and displays values in a Fyne window.
+It starts, reads a YAML config, polls configured PIDs at their own refresh intervals, writes JSONL logs, rotates the log daily, and displays values in a Fyne window.
 
 ## What is included
 
@@ -12,7 +12,7 @@ It starts, reads a YAML config, polls configured PIDs at their own refresh inter
 - App-level mock PID reader so the UI/logging can be tested without OBD hardware.
 - Real OBD reader adapter using `github.com/rzetterberg/elmobd`.
 - JSON Lines logging.
-- Log rotation when the configured engine-start PID crosses the configured threshold.
+- Log rotation will happen on a daily basis.
 - Per-sensor error/stale display so failed reads are visible on screen.
 
 ## Pi 4 install notes
@@ -51,7 +51,7 @@ The binary will be written to the current directory as `GoDriveLog` unless you p
 ./GoDriveLog -config config.example.yaml
 ```
 
-The mock engine sleeps for about three seconds, then RPM rises. That should trigger an `engine-start` log rotation.
+The mock engine sleeps for about three seconds, then RPM rises.
 
 ## Test the elmobd backend without hardware
 
@@ -70,7 +70,7 @@ You can temporarily set those fields in a copy of `config.example.yaml`.
 Use the real OBD example config:
 
 ```bash
-./GoDriveLog -config config.obd.example.yaml
+./GoDriveLog -config config.example.yaml
 ```
 
 Or set `mock_mode` to `false` and point `obd_address` at the adapter:
@@ -83,9 +83,21 @@ obd_debug: false
 
 The current real OBD adapter supports these configured PIDs:
 
-- `0105` coolant temperature, Celsius
-- `010C` engine RPM
-- `010D` vehicle speed, km/h
+| Key | PID | Unit | Meaning |
+|---|---:|---|---|
+| `engine_load` | `0104` | `%` | Calculated engine load |
+| `coolant_temp` | `0105` | `C` | Engine coolant temperature |
+| `short_fuel_trim_bank1` | `0106` | `%` | Short term fuel trim, bank 1 |
+| `long_fuel_trim_bank1` | `0107` | `%` | Long term fuel trim, bank 1 |
+| `intake_manifold_pressure` | `010B` | `kPa` | Intake manifold absolute pressure |
+| `rpm` | `010C` | `rpm` | Engine RPM |
+| `speed` | `010D` | `km/h` | Vehicle speed |
+| `intake_air_temp` | `010F` | `C` | Intake air temperature |
+| `throttle_position` | `0111` | `%` | Throttle position |
+| `fuel_level` | `012F` | `%` | Fuel tank level |
+| `control_module_voltage` | `0142` | `V` | Control module voltage |
+| `engine_oil_temp` | `015C` | `C` | Engine oil temperature |
+
 
 ## Log output format
 
