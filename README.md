@@ -1,8 +1,8 @@
-# GoDriveLog v0.1
+# GoDriveLog v1.x
 
 A deliberately small Go/Fyne PID dashboard for Raspberry Pi 4.
 
-It starts, reads a JSON config, polls configured PIDs at their own refresh intervals, writes JSONL logs, rotates the log on engine start, and displays values in a Fyne window.
+It starts, reads a YAML config, polls configured PIDs at their own refresh intervals, writes JSONL logs, rotates the log on engine start, and displays values in a Fyne window.
 
 ## What is included
 
@@ -48,7 +48,7 @@ The binary will be written to the current directory as `GoDriveLog` unless you p
 ## Run in mock mode
 
 ```bash
-./GoDriveLog -config config.example.json
+./GoDriveLog -config config.example.yaml
 ```
 
 The mock engine sleeps for about three seconds, then RPM rises. That should trigger an `engine-start` log rotation.
@@ -57,32 +57,28 @@ The mock engine sleeps for about three seconds, then RPM rises. That should trig
 
 Use the elmobd test address to exercise the real reader adapter without opening a serial device:
 
-```json
-{
-  "mock_mode": false,
-  "obd_address": "test:///dev/ttyUSB0",
-  "obd_debug": true
-}
+```yaml
+mock_mode: true
+obd_address: serial:///dev/ttyUSB0
+obd_debug: false
 ```
 
-You can temporarily set those fields in a copy of `config.example.json`.
+You can temporarily set those fields in a copy of `config.example.yaml`.
 
 ## Run with a real ELM327 adapter
 
 Use the real OBD example config:
 
 ```bash
-./GoDriveLog -config config.obd.example.json
+./GoDriveLog -config config.obd.example.yaml
 ```
 
 Or set `mock_mode` to `false` and point `obd_address` at the adapter:
 
-```json
-{
-  "mock_mode": false,
-  "obd_address": "serial:///dev/ttyUSB0",
-  "obd_debug": false
-}
+```yaml
+mock_mode: false
+obd_address: serial:///dev/ttyUSB0
+obd_debug: false
 ```
 
 The current real OBD adapter supports these configured PIDs:
@@ -91,9 +87,9 @@ The current real OBD adapter supports these configured PIDs:
 - `010C` engine RPM
 - `010D` vehicle speed, km/h
 
-## Log format
+## Log output format
 
-Logs are JSON Lines, one reading per line:
+Log output are JSON Lines, one reading per line:
 
 ```json
 {"time":"2026-06-03T10:15:30Z","pid":"010C","name":"RPM","value":1234.5,"unit":"rpm","source":"mock"}
@@ -101,26 +97,46 @@ Logs are JSON Lines, one reading per line:
 
 ## Config shape
 
-```json
-{
-  "log_dir": "./logs",
-  "engine_start_pid": "010C",
-  "engine_start_threshold": 50,
-  "mock_mode": true,
-  "obd_address": "serial:///dev/ttyUSB0",
-  "obd_debug": false,
-  "sensors": [
-    {
-      "pid": "010C",
-      "name": "RPM",
-      "refresh_ms": 250,
-      "style": "gauge",
-      "min": 0,
-      "max": 7000,
-      "display": { "x": 20, "y": 20, "width": 360, "height": 90 }
-    }
-  ]
-}
+```yaml
+mock_mode: true
+obd_address: serial:///dev/ttyUSB0
+obd_debug: false
+
+log:
+  rotate: daily
+  directory: ./log
+
+vehicle:
+  name: "VW Caddy"
+
+  pids:
+    engine_load:
+      type: obd
+      pid: "0104"
+      unit: "%"
+      refresh: 500
+      min: 0
+      max: 100
+      log: true
+      display:
+        enabled: false
+
+    coolant_temp:
+      type: obd
+      pid: "0105"
+      unit: C
+      refresh: 1000
+      min: -40
+      max: 140
+      log: true
+      display:
+        enabled: true
+        style: graph
+        position:
+          x: 20
+          y: 240
+          width: 360
+          height: 120
 ```
 
 ## Real OBD transport
