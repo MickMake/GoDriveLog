@@ -44,6 +44,9 @@ type Radial struct {
 	mode   radialMode
 	config model.GaugeConfig
 
+	startAngle float64
+	endAngle   float64
+
 	value float64 // displayed (smoothed) value
 
 	smoothBuf   []float64
@@ -55,9 +58,16 @@ type Radial struct {
 
 	peakValue float64
 	peakDay   string // YYYY-MM-DD
+
+	pulse model.PulseTracker
 }
 
 func NewRadial(style string, mode radialMode, cfg model.GaugeConfig) model.Widget {
+	// Default: classic 270-degree sweep.
+	return NewRadialArc(style, mode, cfg, 0.75*math.Pi, 2.25*math.Pi)
+}
+
+func NewRadialArc(style string, mode radialMode, cfg model.GaugeConfig, startAngle, endAngle float64) model.Widget {
 	cfg = cfg.Normalize()
 
 	w := cfg.SmoothingWindow
@@ -65,7 +75,7 @@ func NewRadial(style string, mode radialMode, cfg model.GaugeConfig) model.Widge
 		w = 1
 	}
 
-	n := &Radial{style: style, mode: mode, config: cfg}
+	n := &Radial{style: style, mode: mode, config: cfg, startAngle: startAngle, endAngle: endAngle, pulse: model.NewPulseTracker()}
 	n.value = n.config.Min
 	n.peakValue = n.value
 	n.peakDay = time.Now().Format("2006-01-02")
@@ -78,9 +88,41 @@ func NewRadial(style string, mode radialMode, cfg model.GaugeConfig) model.Widge
 	return n
 }
 
+// Classic full-size radial variants.
 func NewRadial1(cfg model.GaugeConfig) model.Widget { return NewRadial("radial1", radialModePlain, cfg) }
 func NewRadial2(cfg model.GaugeConfig) model.Widget { return NewRadial("radial2", radialModeTrail, cfg) }
 func NewRadial3(cfg model.GaugeConfig) model.Widget { return NewRadial("radial3", radialModePeakDaily, cfg) }
+
+// Half radials.
+func NewHalfTop1(cfg model.GaugeConfig) model.Widget {
+	// Top half: left->right across top.
+	return NewRadialArc("half_top1", radialModePlain, partialArcConfig(cfg), math.Pi, 2*math.Pi)
+}
+func NewHalfBottom1(cfg model.GaugeConfig) model.Widget {
+	return NewRadialArc("half_bottom1", radialModePlain, partialArcConfig(cfg), 0, math.Pi)
+}
+
+// Quarter radials (quadrants).
+func NewQuarterTL1(cfg model.GaugeConfig) model.Widget {
+	return NewRadialArc("quarter_tl1", radialModePlain, partialArcConfig(cfg), math.Pi, 1.5*math.Pi)
+}
+func NewQuarterTR1(cfg model.GaugeConfig) model.Widget {
+	return NewRadialArc("quarter_tr1", radialModePlain, partialArcConfig(cfg), 1.5*math.Pi, 2*math.Pi)
+}
+func NewQuarterBL1(cfg model.GaugeConfig) model.Widget {
+	return NewRadialArc("quarter_bl1", radialModePlain, partialArcConfig(cfg), 0.5*math.Pi, math.Pi)
+}
+func NewQuarterBR1(cfg model.GaugeConfig) model.Widget {
+	return NewRadialArc("quarter_br1", radialModePlain, partialArcConfig(cfg), 0, 0.5*math.Pi)
+}
+
+func partialArcConfig(cfg model.GaugeConfig) model.GaugeConfig {
+	cfg = cfg.Normalize()
+	cfg.ShowMin = false
+	cfg.ShowMax = false
+	cfg.ShowMajorLabels = false
+	return cfg
+}
 
 func (g *Radial) Style() string { return g.style }
 
@@ -93,6 +135,9 @@ func (g *Radial) SetValue(value float64) {
 
 	smoothed := g.smooth(value)
 	g.value = smoothed
+
+	// Built-in alert pulse (only does anything if ranges are set).
+	g.pulse.Update(g.value, g.config.WarningRange, g.config.DangerRange)
 
 	switch g.mode {
 	case radialModeTrail:
@@ -160,6 +205,11 @@ func (g *Radial) CreateRenderer() fyne.WidgetRenderer {
 	dial := canvas.NewCircle(color.NRGBA{R: 0, G: 0, B: 0, A: 0})
 	dial.StrokeColor = parseHex(g.config.Theme.Tick, color.NRGBA{R: 127, G: 138, B: 153, A: 255})
 	dial.StrokeWidth = 4
+
+	pulseRing := canvas.NewCircle(color.NRGBA{R: 0, G: 0, B: 0, A: 0})
+	pulseRing.StrokeColor = color.NRGBA{R: 0, G: 0, B: 0, A: 0}
+	pulseRing.StrokeWidth = 10
+	pulseRing.Hide()
 
 	ticks := make([]*canvas.Line, 0, radial1TickCount+1)
 	for i := 0; i <= radial1TickCount; i++ {
@@ -241,6 +291,7 @@ func (g *Radial) CreateRenderer() fyne.WidgetRenderer {
 		gauge:      g,
 		bg:         bg,
 		dial:       dial,
+		pulseRing:  pulseRing,
 		ticks:      ticks,
 		rangeArc:   rangeArc,
 		valueArc:   valueArc,
@@ -262,8 +313,9 @@ func (g *Radial) CreateRenderer() fyne.WidgetRenderer {
 type radialRenderer struct {
 	gauge *Radial
 
-	bg   *canvas.Rectangle
-	dial *canvas.Circle
+	bg        *canvas.Rectangle
+	dial      *canvas.Circle
+	pulseRing *canvas.Circle
 
 	ticks    []*canvas.Line
 	rangeArc []*canvas.Line
@@ -287,12 +339,57 @@ func (r *radialRenderer) Layout(size fyne.Size) {
 	r.bg.Resize(size)
 	r.dial.Resize(size)
 
-	cx, cy := size.Width/2, size.Height/2
-	radius := math.Min(float64(cx), float64(cy)) - 20
-
-	startAngle := 0.75 * math.Pi
-	endAngle := 2.25 * math.Pi
+	startAngle := r.gauge.startAngle
+	endAngle := r.gauge.endAngle
 	angleRange := endAngle - startAngle
+	partial := r.gauge.isPartialArc()
+
+	mid := startAngle + angleRange/2
+	vx := math.Cos(mid)
+	vy := math.Sin(mid)
+
+	margin := float32(18)
+	offsetScale := float32(0.18)
+	if partial {
+		offsetScale = 0
+	}
+	cx := size.Width/2 - float32(vx)*size.Width*offsetScale
+	cy := size.Height/2 - float32(vy)*size.Height*offsetScale
+
+	cx = clampF(cx, margin, size.Width-margin)
+	cy = clampF(cy, margin, size.Height-margin)
+
+	radius := math.Min(float64(size.Width), float64(size.Height)) * 0.45
+
+	// Ring bounds. Partial arcs deliberately hide the full 360 degree circle so
+	// half/quarter styles do not show a ghost dial behind the active sweep.
+	r.dial.Resize(fyne.NewSize(float32(radius*2), float32(radius*2)))
+	r.dial.Move(fyne.NewPos(cx-float32(radius), cy-float32(radius)))
+	if partial {
+		r.dial.Hide()
+	} else {
+		r.dial.Show()
+	}
+
+	r.pulseRing.Resize(r.dial.Size())
+	r.pulseRing.Move(r.dial.Position())
+
+	// Pulse overlay. Keep it off for partial arcs until this renderer has a
+	// sector-shaped pulse; otherwise the old ghost-ring problem comes back.
+	pState, p := r.gauge.pulse.Pulse(time.Now())
+	if !partial && p > 0 {
+		col := color.NRGBA{R: 0, G: 0, B: 0, A: 0}
+		switch pState {
+		case model.AlertWarning:
+			col = parseHex(r.gauge.config.Theme.Warning, color.NRGBA{R: 255, G: 176, B: 0, A: 255})
+		case model.AlertDanger:
+			col = parseHex(r.gauge.config.Theme.Danger, color.NRGBA{R: 255, G: 48, B: 48, A: 255})
+		}
+		r.pulseRing.StrokeColor = withAlpha(col, uint8(220*p))
+		r.pulseRing.Show()
+	} else {
+		r.pulseRing.Hide()
+	}
 
 	// Ticks
 	for i, tick := range r.ticks {
@@ -350,7 +447,6 @@ func (r *radialRenderer) Layout(size fyne.Size) {
 			cy+float32(arcRadius*math.Sin(segEnd)),
 		)
 
-		// Background range arc
 		bgSeg := r.rangeArc[i]
 		bgSeg.Position1, bgSeg.Position2 = pos1, pos2
 		if inRange(midValue, danger) {
@@ -363,7 +459,6 @@ func (r *radialRenderer) Layout(size fyne.Size) {
 			bgSeg.Hide()
 		}
 
-		// Foreground value arc
 		fgSeg := r.valueArc[i]
 		if segStartPct >= currentPct {
 			fgSeg.Hide()
@@ -397,30 +492,30 @@ func (r *radialRenderer) Layout(size fyne.Size) {
 		pct := float64(i) / float64(len(r.labels)-1)
 		value := cfg.Min + pct*span
 		label.Text = formatTick(value, span)
-		// Slightly larger than before.
 		label.TextSize = float32(math.Max(12, radius/22))
 		label.Refresh()
 
 		angle := startAngle + pct*angleRange
 		labelRadius := radius - 48
-		size := fyne.NewSize(60, 18)
-		label.Resize(size)
+		labelSize := fyne.NewSize(60, 18)
+		label.Resize(labelSize)
 		label.Move(fyne.NewPos(
-			cx+float32(labelRadius*math.Cos(angle))-size.Width/2,
-			cy+float32(labelRadius*math.Sin(angle))-size.Height/2,
+			cx+float32(labelRadius*math.Cos(angle))-labelSize.Width/2,
+			cy+float32(labelRadius*math.Sin(angle))-labelSize.Height/2,
 		))
 		label.Show()
 	}
 
-	// Trail / peak overlays
 	r.layoutTrail(cfg, cx, cy, radius, startAngle, angleRange, span)
 	r.layoutPeak(cfg, cx, cy, radius, startAngle, angleRange, span)
 
-	// Needle
 	currentAngle := startAngle + currentPct*angleRange
 	r.layoutNeedle(cx, cy, radius, currentAngle)
 
-	// Label/value/unit + min/max
+	r.layoutText(size, radius, span, cfg, partial)
+}
+
+func (r *radialRenderer) layoutText(size fyne.Size, radius, span float64, cfg model.GaugeConfig, partial bool) {
 	r.labelText.Text = cfg.Label
 	r.labelText.TextSize = float32(math.Max(12, radius/18))
 	r.labelText.Refresh()
@@ -438,7 +533,11 @@ func (r *radialRenderer) Layout(size fyne.Size) {
 		r.valueText.TextSize = float32(math.Max(18, radius/9))
 		r.valueText.Refresh()
 
-		valueY := float32(size.Height*0.66) - r.valueText.MinSize().Height/2
+		valueYRatio := float32(0.66)
+		if partial {
+			valueYRatio = 0.54
+		}
+		valueY := size.Height*valueYRatio - r.valueText.MinSize().Height/2
 		r.valueText.Resize(fyne.NewSize(size.Width, r.valueText.MinSize().Height))
 		r.valueText.Move(fyne.NewPos(0, valueY))
 		r.valueText.Show()
@@ -451,7 +550,7 @@ func (r *radialRenderer) Layout(size fyne.Size) {
 		r.unitText.TextSize = float32(math.Max(10, radius/20))
 		r.unitText.Refresh()
 
-		y := float32(size.Height*0.66) + r.valueText.MinSize().Height/2 + 2
+		y := r.valueText.Position().Y + r.valueText.MinSize().Height + 2
 		r.unitText.Resize(fyne.NewSize(size.Width, r.unitText.MinSize().Height))
 		r.unitText.Move(fyne.NewPos(0, y))
 		r.unitText.Show()
@@ -586,6 +685,7 @@ func (r *radialRenderer) Refresh() {
 	r.Layout(r.gauge.Size())
 	canvas.Refresh(r.bg)
 	canvas.Refresh(r.dial)
+	canvas.Refresh(r.pulseRing)
 	for _, tick := range r.ticks {
 		canvas.Refresh(tick)
 	}
@@ -617,6 +717,7 @@ func (r *radialRenderer) Objects() []fyne.CanvasObject {
 	objects := []fyne.CanvasObject{
 		r.bg,
 		r.dial,
+		r.pulseRing,
 	}
 	for _, seg := range r.rangeArc {
 		objects = append(objects, seg)
@@ -649,6 +750,10 @@ func (r *radialRenderer) Objects() []fyne.CanvasObject {
 }
 
 func (r *radialRenderer) Destroy() {}
+
+func (g *Radial) isPartialArc() bool {
+	return strings.HasPrefix(g.style, "half_") || strings.HasPrefix(g.style, "quarter_")
+}
 
 func formatValue(value, span float64) string {
 	if span >= 1000 {
@@ -693,6 +798,16 @@ func withAlpha(c color.NRGBA, a uint8) color.NRGBA {
 }
 
 func clamp(value, min, max float64) float64 { return math.Max(min, math.Min(max, value)) }
+
+func clampF(v, min, max float32) float32 {
+	if v < min {
+		return min
+	}
+	if v > max {
+		return max
+	}
+	return v
+}
 
 func normalise(value, min, max float64) float64 {
 	if max == min {

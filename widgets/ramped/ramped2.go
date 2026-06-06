@@ -34,6 +34,8 @@ type Ramped2 struct {
 
 	trail     [rampedTrailLen]rampedTrailSample
 	trailNext int
+
+	pulse model.PulseTracker
 }
 
 func NewRamped2(cfg model.GaugeConfig) model.Widget {
@@ -42,7 +44,7 @@ func NewRamped2(cfg model.GaugeConfig) model.Widget {
 	if w <= 1 {
 		w = 1
 	}
-	g := &Ramped2{config: cfg, value: cfg.Min, smoothBuf: make([]float64, w)}
+	g := &Ramped2{config: cfg, value: cfg.Min, smoothBuf: make([]float64, w), pulse: model.NewPulseTracker()}
 	g.smoothBuf[0] = g.value
 	g.smoothCount = 1
 	g.ExtendBaseWidget(g)
@@ -68,6 +70,7 @@ func (g *Ramped2) SetValue(v float64) {
 	g.trail[g.trailNext] = rampedTrailSample{pct: pct, at: time.Now()}
 	g.trailNext = (g.trailNext + 1) % rampedTrailLen
 
+	g.pulse.Update(g.value, g.config.WarningRange, g.config.DangerRange)
 	g.Refresh()
 }
 
@@ -105,6 +108,8 @@ func (g *Ramped2) Snapshot() model.Snapshot {
 func (g *Ramped2) CreateRenderer() fyne.WidgetRenderer {
 	// Reuse ramped1 visuals.
 	bg := canvas.NewRectangle(parseHex(g.config.Theme.Background, color.NRGBA{R: 5, G: 7, B: 10, A: 255}))
+	pulse := canvas.NewRectangle(color.NRGBA{R: 0, G: 0, B: 0, A: 0})
+	pulse.Hide()
 
 	arcBg := make([]*canvas.Line, 0, rampedSegments)
 	arcVal := make([]*canvas.Line, 0, rampedSegments)
@@ -149,7 +154,7 @@ func (g *Ramped2) CreateRenderer() fyne.WidgetRenderer {
 		trailSegs = append(trailSegs, l)
 	}
 
-	r := &ramped2Renderer{g: g, bg: bg, arcBg: arcBg, arcVal: arcVal, ticks: ticks, label: label, value: value, unit: unit, needle: needle, trailSegs: trailSegs}
+	r := &ramped2Renderer{g: g, bg: bg, pulse: pulse, arcBg: arcBg, arcVal: arcVal, ticks: ticks, label: label, value: value, unit: unit, needle: needle, trailSegs: trailSegs}
 	r.Refresh()
 	return r
 }
@@ -157,7 +162,9 @@ func (g *Ramped2) CreateRenderer() fyne.WidgetRenderer {
 type ramped2Renderer struct {
 	g *Ramped2
 
-	bg     *canvas.Rectangle
+	bg    *canvas.Rectangle
+	pulse *canvas.Rectangle
+
 	arcBg  []*canvas.Line
 	arcVal []*canvas.Line
 	ticks  []*canvas.Line
@@ -172,6 +179,7 @@ type ramped2Renderer struct {
 
 func (r *ramped2Renderer) Layout(size fyne.Size) {
 	r.bg.Resize(size)
+	r.pulse.Resize(size)
 
 	cfg := r.g.config.Normalize()
 	span := cfg.Max - cfg.Min
@@ -179,6 +187,22 @@ func (r *ramped2Renderer) Layout(size fyne.Size) {
 		span = 1
 	}
 	pct := clamp((r.g.value-cfg.Min)/span, 0, 1)
+
+	// Pulse overlay
+	pState, p := r.g.pulse.Pulse(time.Now())
+	if p > 0 {
+		col := color.NRGBA{R: 0, G: 0, B: 0, A: 0}
+		switch pState {
+		case model.AlertWarning:
+			col = parseHex(cfg.Theme.Warning, color.NRGBA{R: 255, G: 176, B: 0, A: 255})
+		case model.AlertDanger:
+			col = parseHex(cfg.Theme.Danger, color.NRGBA{R: 255, G: 48, B: 48, A: 255})
+		}
+		r.pulse.FillColor = withAlpha(col, uint8(70*p))
+		r.pulse.Show()
+	} else {
+		r.pulse.Hide()
+	}
 
 	cx := size.Width / 2
 	cy := size.Height * 0.72
@@ -289,6 +313,7 @@ func (r *ramped2Renderer) MinSize() fyne.Size { return fyne.NewSize(480, 240) }
 func (r *ramped2Renderer) Refresh() {
 	r.Layout(r.g.Size())
 	canvas.Refresh(r.bg)
+	canvas.Refresh(r.pulse)
 	for _, l := range r.arcBg {
 		canvas.Refresh(l)
 	}
@@ -308,7 +333,7 @@ func (r *ramped2Renderer) Refresh() {
 }
 
 func (r *ramped2Renderer) Objects() []fyne.CanvasObject {
-	objs := []fyne.CanvasObject{r.bg}
+	objs := []fyne.CanvasObject{r.bg, r.pulse}
 	for _, l := range r.arcBg {
 		objs = append(objs, l)
 	}

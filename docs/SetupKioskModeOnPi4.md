@@ -157,7 +157,7 @@ Check it exists:
 /usr/local/bin/godrivelog --help
 ```
 
-Expected display command once the Fyne renderer exists:
+Planned display command once the Fyne renderer exists:
 
 ```bash
 /usr/local/bin/godrivelog display fyne --config /etc/godrivelog/config.yaml

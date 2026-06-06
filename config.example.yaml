@@ -31,8 +31,14 @@ vehicle:
       log: true
       display:
         enabled: true
-        style: graph
-        smoothing_window: 0
+        widget: graph1
+        style:
+          smoothing_window: 0
+          # dial_rotation/view_rotation/scale_direction are accepted by config validation.
+          # They are currently placeholders (widgets may ignore them until implemented).
+          # dial_rotation: 0       # 0, 90, 180, 270
+          # view_rotation: 0       # 0, 90, 180, 270
+          # scale_direction: forward  # forward, reverse
         position:
           x: 20
           y: 240
@@ -83,8 +89,9 @@ vehicle:
       log: true
       display:
         enabled: true
-        style: radial1
-        smoothing_window: 0
+        widget: radial1
+        style:
+          smoothing_window: 0
         position:
           x: 20
           y: 20
@@ -102,8 +109,9 @@ vehicle:
       log: true
       display:
         enabled: true
-        style: bar
-        smoothing_window: 0
+        widget: bar1
+        style:
+          smoothing_window: 0
         position:
           x: 20
           y: 130
@@ -154,8 +162,9 @@ vehicle:
       log: true
       display:
         enabled: true
-        style: bar
-        smoothing_window: 0
+        widget: bar1
+        style:
+          smoothing_window: 0
         position:
           x: 400
           y: 20
@@ -228,8 +237,9 @@ vehicle:
       log: true
       display:
         enabled: true
-        style: bar
-        smoothing_window: 0
+        widget: bar2
+        style:
+          smoothing_window: 0
         position:
           x: 400
           y: 130

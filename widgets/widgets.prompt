@@ -48,7 +48,7 @@ widgets/
   WIDGETS.md
 ```
 
-Each widget type should live in its own directory based on primary style:
+Each widget type should live in its own directory based on primary widget:
 
 * `widgets/bar/`
 * `widgets/radial/`
@@ -76,7 +76,7 @@ The widgets must be:
 3. **Simple**
 
    * Keep the implementation practical and maintainable.
-   * Entry points to each style should be identically callable, with slight variances handled appropriately.
+   * Entry points to each widget should be identically callable, with slight variances handled appropriately.
 
 4. **Configurable**
 
@@ -122,7 +122,7 @@ Radial gauges should support:
 * pointer/needle
 * optional peak marker
 * dark background
-* real numeric value displayed in LED-style format
+* real numeric value displayed in LED-widget format
 * numeric LED value should be positioned about **two-thirds down** and horizontally centred
 
 The radial gauge should not be RPM-specific. RPM should just be one configuration of the radial gauge.
@@ -159,7 +159,7 @@ The graph should be reusable for any numeric time-series data, such as RPM, temp
 
 LED widgets should support:
 
-* displaying numeric values in a dashboard/LED-style way
+* displaying numeric values in a dashboard/LED-widget way
 * label and unit
 * configurable precision
 * dark dashboard styling
@@ -183,7 +183,7 @@ It should support testing individual widgets by name where practical.
 
 It should allow pulling in of "fake data" from stdin... (see data.go file for example of data generation)
 
-## Implementation style
+## Implementation widget
 
 Use Go and Fyne.
 

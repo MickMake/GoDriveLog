@@ -143,7 +143,7 @@ vehicle:
       log: true
       display:
         enabled: true
-        style: graph
+        widget: graph1
         position:
           x: 20
           y: 240
