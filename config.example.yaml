@@ -33,6 +33,11 @@ vehicle:
         enabled: true
         style: graph
         smoothing_window: 0
+        # dial_rotation/view_rotation/scale_direction are accepted by config validation.
+        # They are currently placeholders (widgets may ignore them until implemented).
+        # dial_rotation: 0       # 0, 90, 180, 270
+        # view_rotation: 0       # 0, 90, 180, 270
+        # scale_direction: forward  # forward, reverse
         position:
           x: 20
           y: 240
