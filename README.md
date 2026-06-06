@@ -8,7 +8,7 @@ It starts, reads a YAML config, polls configured PIDs at their own refresh inter
 
 - Go app using Fyne v2.
 - YAML startup config.
-- Per-sensor PID, name, refresh rate, display widget, position, and size.
+- Per-sensor PID, name, refresh rate, display style, position, and size.
 - App-level mock PID reader so the UI/logging can be tested without OBD hardware.
 - Real OBD reader adapter using `github.com/rzetterberg/elmobd`.
 - JSON Lines logging.
