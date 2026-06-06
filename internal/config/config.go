@@ -45,7 +45,7 @@ type PIDConfig struct {
 
 type DisplayConfig struct {
 	Enabled         bool           `yaml:"enabled"`
-	Style           string         `yaml:"style"`
+	Widget          string         `yaml:"widget"`
 	SmoothingWindow int            `yaml:"smoothing_window"`
 	DialRotation    int            `yaml:"dial_rotation"`
 	ViewRotation    int            `yaml:"view_rotation"`
@@ -123,11 +123,11 @@ func validate(cfg Config) error {
 			return fmt.Errorf("vehicle.pids.%s.max must be greater than min", key)
 		}
 		if pid.Display.Enabled {
-			if pid.Display.Style == "" {
-				return fmt.Errorf("vehicle.pids.%s.display.style must not be empty when display is enabled", key)
+			if pid.Display.Widget == "" {
+				return fmt.Errorf("vehicle.pids.%s.display.widget must not be empty when display is enabled", key)
 			}
-			if !validDisplayStyle(pid.Display.Style) {
-				return fmt.Errorf("vehicle.pids.%s.display.style must be a supported widget style", key)
+			if !validDisplayWidget(pid.Display.Widget) {
+				return fmt.Errorf("vehicle.pids.%s.display.widget must be a supported widget style", key)
 			}
 			if pid.Display.SmoothingWindow < 0 {
 				return fmt.Errorf("vehicle.pids.%s.display.smoothing_window must be >= 0", key)
@@ -172,11 +172,8 @@ func validScaleDirection(dir string) bool {
 	}
 }
 
-func validDisplayStyle(style string) bool {
-	switch strings.ToLower(strings.TrimSpace(style)) {
-	case "gauge", "bar", "graph":
-		return true
-	// Widget style ids
+func validDisplayWidget(widget string) bool {
+	switch strings.ToLower(strings.TrimSpace(widget)) {
 	case "radial1", "radial2", "radial3",
 		"half_top1", "half_bottom1", "quarter_tl1", "quarter_tr1", "quarter_bl1", "quarter_br1",
 		"ramped1", "ramped2", "ramped3",
