@@ -39,10 +39,10 @@ func (s *SevenSeg) Snapshot() model.Snapshot {
 func (s *SevenSeg) CreateRenderer() fyne.WidgetRenderer {
 	bg := canvas.NewRectangle(panelBG)
 	frame := canvas.NewRectangle(panelFrame)
-	face := canvas.NewRectangle(color.NRGBA{R: 14, G: 6, B: 0, A: 255})
-	ghost := make([]*canvas.Rectangle, 112)
-	glow := make([]*canvas.Rectangle, 112)
-	core := make([]*canvas.Rectangle, 112)
+	face := canvas.NewRectangle(color.NRGBA{R: 8, G: 2, B: 0, A: 255})
+	ghost := make([]*canvas.Rectangle, 28)
+	glow := make([]*canvas.Rectangle, 28)
+	core := make([]*canvas.Rectangle, 28)
 	for i := range ghost {
 		ghost[i] = canvas.NewRectangle(color.NRGBA{})
 		glow[i] = canvas.NewRectangle(color.NRGBA{})
@@ -80,42 +80,48 @@ func (r *sevenSegRenderer) Layout(size fyne.Size) {
 	lit := textAmber
 	if inRange(r.s.value, cfg.WarningRange) { lit = amberOn }
 	if inRange(r.s.value, cfg.DangerRange) { lit = redOn }
+
+	labelSize := float32(math.Max(12, float64(size.Height)*0.075))
 	r.label.Text = cfg.Label
-	r.label.TextSize = float32(math.Max(13, float64(size.Height)*0.09))
+	r.label.TextSize = labelSize
 	r.label.Refresh()
-	r.label.Move(fyne.NewPos(pad*1.4, pad*1.15))
+	r.label.Move(fyne.NewPos(pad*1.35, pad*1.05))
 	r.unit.Text = cfg.Unit
-	r.unit.TextSize = r.label.TextSize
+	r.unit.TextSize = labelSize
 	r.unit.Refresh()
-	r.unit.Move(fyne.NewPos(size.Width-pad*6, pad*1.15))
-	dw := (size.Width - pad*4.0) / 4
-	dh := size.Height - pad*4.3
-	x := pad * 1.55
-	y := pad * 2.55
+	r.unit.Move(fyne.NewPos(size.Width-pad*5.0, pad*1.05))
+
+	digitSlotW := (size.Width - pad*4.4) / 4
+	digitW := digitSlotW * 0.72
+	digitH := size.Height - pad*5.0
+	if digitH < 70 { digitH = 70 }
+	x := pad * 1.95
+	y := pad * 2.65
 	idx := 0
 	for _, ch := range text {
-		idx = r.layoutDigit(idx, x, y, dw*0.82, dh, sevenMask(ch), lit)
-		x += dw
+		idx = r.layoutDigit(idx, x, y, digitW, digitH, sevenMask(ch), lit)
+		x += digitSlotW
 	}
 }
 
 func (r *sevenSegRenderer) layoutDigit(idx int, x, y, w, h float32, mask [7]bool, lit color.NRGBA) int {
-	th := float32(math.Max(7, float64(w)*0.16))
-	gap := th * 0.35
+	th := float32(math.Max(7, math.Min(float64(w)*0.12, float64(h)*0.13)))
+	gap := th * 0.48
 	vh := (h - th*3 - gap*2) / 2
-	p := [7][4]float32{{x+gap,y,w-gap*2,th},{x+w-th,y+gap,th,vh},{x+w-th,y+th+vh+gap,th,vh},{x+gap,y+h-th,w-gap*2,th},{x,y+th+vh+gap,th,vh},{x,y+gap,th,vh},{x+gap,y+h/2-th/2,w-gap*2,th}}
+	if vh < th*1.5 { vh = th * 1.5 }
+	p := [7][4]float32{{x+gap,y,w-gap*2,th},{x+w-th,y+th+gap,th,vh},{x+w-th,y+th+vh+gap*2,th,vh},{x+gap,y+h-th,w-gap*2,th},{x,y+th+vh+gap*2,th,vh},{x,y+th+gap,th,vh},{x+gap,y+h/2-th/2,w-gap*2,th}}
 	for i := range p {
 		g1 := r.ghost[idx]
 		g2 := r.glow[idx]
 		g3 := r.core[idx]
 		idx++
 		setSeg(g1, p[i], color.NRGBA{})
-		setSeg(g2, inflateSeg(p[i], 7), color.NRGBA{})
+		setSeg(g2, inflateSeg(p[i], th*0.55), color.NRGBA{})
 		setSeg(g3, p[i], color.NRGBA{})
-		if r.s.level >= 2 { g1.FillColor = ghostAmber }
+		if r.s.level >= 2 { g1.FillColor = color.NRGBA{R: 110, G: 35, B: 12, A: 95} }
 		if mask[i] {
 			g3.FillColor = lit
-			if r.s.level >= 3 { g2.FillColor = withAlpha(lit, 70) }
+			if r.s.level >= 3 { g2.FillColor = withAlpha(lit, 85) }
 		}
 	}
 	return idx
