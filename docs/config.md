@@ -49,6 +49,9 @@ vehicle:
         enabled: true
         style: radial1
         smoothing_window: 0
+        dial_rotation: 0
+        view_rotation: 0
+        scale_direction: forward
         position:
           x: 20
           y: 20
@@ -127,6 +130,9 @@ rpm:
     enabled: true
     style: radial1
     smoothing_window: 0
+    dial_rotation: 0
+    view_rotation: 0
+    scale_direction: forward
     position:
       x: 20
       y: 20
@@ -153,6 +159,9 @@ display:
   enabled: true
   style: radial1
   smoothing_window: 0
+  dial_rotation: 0
+  view_rotation: 0
+  scale_direction: forward
   position:
     x: 20
     y: 20
@@ -164,8 +173,11 @@ display:
 | Field | Type | Required | Meaning |
 |---|---:|---:|---|
 | `enabled` | bool | yes | Show this PID on screen. |
-| `style` | string | required when enabled | Display style. Use widget style ids (recommended): `radial1`, `radial2`, `radial3`, `bar1`, `graph1`, `led1`. Legacy values `gauge`, `bar`, `graph` are still accepted. |
+| `style` | string | required when enabled | Display style. Use widget style ids (recommended): `radial1`, `radial2`, `radial3`, `half_top1`, `half_bottom1`, `quarter_tl1`, `quarter_tr1`, `quarter_bl1`, `quarter_br1`, `ramped1`, `ramped2`, `ramped3`, `speedhud1`, `speedhud2`, `speedhud3`, `bar1`, `bar2`, `bar3`, `graph1`, `led1`. Legacy values `gauge`, `bar`, `graph` are still accepted. |
 | `smoothing_window` | int | no | Moving average window for display smoothing. `0` or `1` disables smoothing. |
+| `dial_rotation` | int | no | Rotate dial geometry in degrees. Allowed values: `0`, `90`, `180`, `270`. Default `0`. |
+| `view_rotation` | int | no | Rotate view/layout in degrees (intended for display mounting/viewer orientation). Allowed values: `0`, `90`, `180`, `270`. Default `0`. |
+| `scale_direction` | string | no | Scale direction along the sweep. Allowed values: `forward`, `reverse`. Default `forward`. |
 | `position` | object | required when enabled | Widget position and size. |
 
 If `display.enabled` is `false`, `style` and `position` may be omitted.
