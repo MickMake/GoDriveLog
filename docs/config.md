@@ -177,7 +177,7 @@ display:
 |---|---:|---:|---|
 | `enabled` | bool | yes | Show this PID on screen. |
 | `widget` | string | required when enabled | Display widget. Use widget ids: `radial1`, `radial2`, `radial3`, `half_top1`, `half_bottom1`, `quarter_tl1`, `quarter_tr1`, `quarter_bl1`, `quarter_br1`, `ramped1`, `ramped2`, `ramped3`, `speedhud1`, `speedhud2`, `speedhud3`, `bar1`, `bar2`, `bar3`, `graph1`, `led1`. |
-| `style` | object | no | Display style settings.
+| `style` | object | no | Display style settings. |
 | `style.smoothing_window` | int | no | Moving average window for display smoothing. `0` or `1` disables smoothing. |
 | `style.dial_rotation` | int | no | Rotate dial geometry in degrees. Allowed values: `0`, `90`, `180`, `270`. Default `0`. |
 | `style.view_rotation` | int | no | Rotate view/layout in degrees (intended for display mounting/viewer orientation). Allowed values: `0`, `90`, `180`, `270`. Default `0`. |
