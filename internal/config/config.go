@@ -44,13 +44,17 @@ type PIDConfig struct {
 }
 
 type DisplayConfig struct {
-	Enabled         bool           `yaml:"enabled"`
-	Widget          string         `yaml:"widget"`
-	SmoothingWindow int            `yaml:"smoothing_window"`
-	DialRotation    int            `yaml:"dial_rotation"`
-	ViewRotation    int            `yaml:"view_rotation"`
-	ScaleDirection  string         `yaml:"scale_direction"`
-	Position        PositionConfig `yaml:"position"`
+	Enabled  bool               `yaml:"enabled"`
+	Widget   string             `yaml:"widget"`
+	Style    DisplayStyleConfig `yaml:"style"`
+	Position PositionConfig     `yaml:"position"`
+}
+
+type DisplayStyleConfig struct {
+	SmoothingWindow int    `yaml:"smoothing_window"`
+	DialRotation    int    `yaml:"dial_rotation"`
+	ViewRotation    int    `yaml:"view_rotation"`
+	ScaleDirection  string `yaml:"scale_direction"`
 }
 
 type PositionConfig struct {
@@ -129,20 +133,20 @@ func validate(cfg Config) error {
 			if !validDisplayWidget(pid.Display.Widget) {
 				return fmt.Errorf("vehicle.pids.%s.display.widget must be a supported widget style", key)
 			}
-			if pid.Display.SmoothingWindow < 0 {
-				return fmt.Errorf("vehicle.pids.%s.display.smoothing_window must be >= 0", key)
+			if pid.Display.Style.SmoothingWindow < 0 {
+				return fmt.Errorf("vehicle.pids.%s.display.style.smoothing_window must be >= 0", key)
 			}
 			if pid.Display.Position.Width <= 0 || pid.Display.Position.Height <= 0 {
 				return fmt.Errorf("vehicle.pids.%s.display.position width and height must be positive", key)
 			}
-			if !validRotation(pid.Display.DialRotation) {
-				return fmt.Errorf("vehicle.pids.%s.display.dial_rotation must be one of 0, 90, 180, 270", key)
+			if !validRotation(pid.Display.Style.DialRotation) {
+				return fmt.Errorf("vehicle.pids.%s.display.style.dial_rotation must be one of 0, 90, 180, 270", key)
 			}
-			if !validRotation(pid.Display.ViewRotation) {
-				return fmt.Errorf("vehicle.pids.%s.display.view_rotation must be one of 0, 90, 180, 270", key)
+			if !validRotation(pid.Display.Style.ViewRotation) {
+				return fmt.Errorf("vehicle.pids.%s.display.style.view_rotation must be one of 0, 90, 180, 270", key)
 			}
-			if !validScaleDirection(pid.Display.ScaleDirection) {
-				return fmt.Errorf("vehicle.pids.%s.display.scale_direction must be forward or reverse", key)
+			if !validScaleDirection(pid.Display.Style.ScaleDirection) {
+				return fmt.Errorf("vehicle.pids.%s.display.style.scale_direction must be forward or reverse", key)
 			}
 		}
 	}
