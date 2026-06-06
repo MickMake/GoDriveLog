@@ -90,7 +90,7 @@ func (d *Dashboard) Update(r sensors.Reading) {
 	}
 	p.bar.SetValue(norm)
 
-	if strings.EqualFold(p.cfg.Display.Style, "graph") {
+	if strings.EqualFold(p.cfg.Display.Widget, "graph1") {
 		p.history = append(p.history, r.Value)
 		if len(p.history) > 24 {
 			p.history = p.history[len(p.history)-24:]
