@@ -47,11 +47,12 @@ vehicle:
       log: true
       display:
         enabled: true
-        style: radial1
-        smoothing_window: 0
-        dial_rotation: 0
-        view_rotation: 0
-        scale_direction: forward
+        widget: radial1
+        style:
+          smoothing_window: 0
+          dial_rotation: 0
+          view_rotation: 0
+          scale_direction: forward
         position:
           x: 20
           y: 20
