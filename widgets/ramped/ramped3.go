@@ -12,7 +12,7 @@ import (
 	"github.com/MickMake/GoDriveLog/widgets/model"
 )
 
-// Ramped3 is ramped1 with a daily peak marker line along the arc.
+// Ramped3 is sweep1 with a daily peak marker line along the arc.
 type Ramped3 struct {
 	widget.BaseWidget
 	config model.GaugeConfig
@@ -43,7 +43,7 @@ func NewRamped3(cfg model.GaugeConfig) model.Widget {
 	return g
 }
 
-func (g *Ramped3) Style() string { return "ramped3" }
+func (g *Ramped3) Style() string { return "sweep3" }
 
 func (g *Ramped3) Config() model.GaugeConfig { return g.config }
 

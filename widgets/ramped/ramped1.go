@@ -47,7 +47,7 @@ func NewRamped1(cfg model.GaugeConfig) model.Widget {
 	return g
 }
 
-func (g *Ramped1) Style() string { return "ramped1" }
+func (g *Ramped1) Style() string { return "sweep1" }
 
 func (g *Ramped1) Config() model.GaugeConfig { return g.config }
 

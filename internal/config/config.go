@@ -180,7 +180,7 @@ func validDisplayWidget(widget string) bool {
 	switch strings.ToLower(strings.TrimSpace(widget)) {
 	case "radial1", "radial2", "radial3",
 		"half_top1", "half_bottom1", "quarter_tl1", "quarter_tr1", "quarter_bl1", "quarter_br1",
-		"ramped1", "ramped2", "ramped3",
+		"sweep1", "sweep2", "sweep3",
 		"speedhud1", "speedhud2", "speedhud3",
 		"bar1", "bar2", "bar3", "graph1", "led1":
 		return true

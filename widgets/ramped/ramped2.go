@@ -22,7 +22,7 @@ type rampedTrailSample struct {
 	at  time.Time
 }
 
-// Ramped2 is ramped1 with a fading trail along the arc.
+// Ramped2 is sweep1 with a fading trail along the arc.
 type Ramped2 struct {
 	widget.BaseWidget
 	config model.GaugeConfig
@@ -51,7 +51,7 @@ func NewRamped2(cfg model.GaugeConfig) model.Widget {
 	return g
 }
 
-func (g *Ramped2) Style() string { return "ramped2" }
+func (g *Ramped2) Style() string { return "sweep2" }
 
 func (g *Ramped2) Config() model.GaugeConfig { return g.config }
 
@@ -106,7 +106,7 @@ func (g *Ramped2) Snapshot() model.Snapshot {
 }
 
 func (g *Ramped2) CreateRenderer() fyne.WidgetRenderer {
-	// Reuse ramped1 visuals.
+	// Reuse sweep1 visuals.
 	bg := canvas.NewRectangle(parseHex(g.config.Theme.Background, color.NRGBA{R: 5, G: 7, B: 10, A: 255}))
 	pulse := canvas.NewRectangle(color.NRGBA{R: 0, G: 0, B: 0, A: 0})
 	pulse.Hide()

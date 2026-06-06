@@ -173,7 +173,7 @@ func demoConfig(widgetName string) GaugeConfig {
 		cfg.DangerRange = &Range{Min: 4500, Max: 5000}
 		cfg.SmoothingWindow = 1
 
-	case "ramped1", "ramped2", "ramped3":
+	case "sweep1", "sweep2", "sweep3":
 		cfg.Label = "RPM"
 		cfg.Unit = "rpm"
 		cfg.Min = 0
