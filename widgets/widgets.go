@@ -57,7 +57,7 @@ func New(style string, cfg GaugeConfig) (Widget, error) {
 	case "speedhud3":
 		return speedhud.NewSpeedHUD3(cfg), nil
 	case "bar1":
-		return model.NewNumericWidget("bar1", cfg), nil
+		return bar.NewBar1(cfg), nil
 	case "bar2":
 		return bar.NewBar2(cfg), nil
 	case "bar3":
