@@ -39,23 +39,24 @@ func (s *SevenSeg) Snapshot() model.Snapshot {
 func (s *SevenSeg) CreateRenderer() fyne.WidgetRenderer {
 	bg := canvas.NewRectangle(panelBG)
 	frame := canvas.NewRectangle(panelFrame)
-	face := canvas.NewRectangle(color.NRGBA{R: 8, G: 2, B: 0, A: 255})
-	ghost := make([]*canvas.Rectangle, 28)
-	glow := make([]*canvas.Rectangle, 28)
-	core := make([]*canvas.Rectangle, 28)
+	face := canvas.NewRectangle(color.NRGBA{R: 5, G: 10, B: 4, A: 255})
+	windows := make([]*canvas.Rectangle, 4)
+	ghost := make([]*canvas.Polygon, 28)
+	glow := make([]*canvas.Polygon, 28)
+	core := make([]*canvas.Polygon, 28)
+	for i := range windows {
+		windows[i] = canvas.NewRectangle(color.NRGBA{R: 0, G: 7, B: 2, A: 255})
+	}
 	for i := range ghost {
-		ghost[i] = canvas.NewRectangle(color.NRGBA{})
-		glow[i] = canvas.NewRectangle(color.NRGBA{})
-		core[i] = canvas.NewRectangle(color.NRGBA{})
-		ghost[i].CornerRadius = 4
-		glow[i].CornerRadius = 7
-		core[i].CornerRadius = 4
+		ghost[i] = canvas.NewPolygon([]fyne.Position{})
+		glow[i] = canvas.NewPolygon([]fyne.Position{})
+		core[i] = canvas.NewPolygon([]fyne.Position{})
 	}
 	label := canvas.NewText(s.config.Label, labelGreen)
 	label.TextStyle = fyne.TextStyle{Bold: true, Monospace: true}
 	unit := canvas.NewText(s.config.Unit, labelGreen)
 	unit.TextStyle = fyne.TextStyle{Bold: true, Monospace: true}
-	r := &sevenSegRenderer{s: s, bg: bg, frame: frame, face: face, ghost: ghost, glow: glow, core: core, label: label, unit: unit}
+	r := &sevenSegRenderer{s: s, bg: bg, frame: frame, face: face, windows: windows, ghost: ghost, glow: glow, core: core, label: label, unit: unit}
 	r.Refresh()
 	return r
 }
@@ -63,7 +64,8 @@ func (s *SevenSeg) CreateRenderer() fyne.WidgetRenderer {
 type sevenSegRenderer struct {
 	s *SevenSeg
 	bg, frame, face *canvas.Rectangle
-	ghost, glow, core []*canvas.Rectangle
+	windows []*canvas.Rectangle
+	ghost, glow, core []*canvas.Polygon
 	label, unit *canvas.Text
 }
 
@@ -91,22 +93,25 @@ func (r *sevenSegRenderer) Layout(size fyne.Size) {
 	r.unit.Refresh()
 	r.unit.Move(fyne.NewPos(size.Width-pad*5.0, pad*1.05))
 
-	digitSlotW := (size.Width - pad*4.4) / 4
-	digitW := digitSlotW * 0.72
-	digitH := size.Height - pad*5.0
+	slotW := (size.Width - pad*4.4) / 4
+	digitW := slotW * 0.70
+	digitH := size.Height - pad*5.1
 	if digitH < 70 { digitH = 70 }
 	x := pad * 1.95
-	y := pad * 2.65
+	y := pad * 2.7
 	idx := 0
-	for _, ch := range text {
+	for i, ch := range text {
+		winPad := pad * 0.18
+		r.windows[i].Move(fyne.NewPos(x-winPad, y-winPad))
+		r.windows[i].Resize(fyne.NewSize(digitW+winPad*2, digitH+winPad*2))
 		idx = r.layoutDigit(idx, x, y, digitW, digitH, sevenMask(ch), lit)
-		x += digitSlotW
+		x += slotW
 	}
 }
 
 func (r *sevenSegRenderer) layoutDigit(idx int, x, y, w, h float32, mask [7]bool, lit color.NRGBA) int {
 	th := float32(math.Max(7, math.Min(float64(w)*0.12, float64(h)*0.13)))
-	gap := th * 0.48
+	gap := th * 0.52
 	vh := (h - th*3 - gap*2) / 2
 	if vh < th*1.5 { vh = th * 1.5 }
 	p := [7][4]float32{{x+gap,y,w-gap*2,th},{x+w-th,y+th+gap,th,vh},{x+w-th,y+th+vh+gap*2,th,vh},{x+gap,y+h-th,w-gap*2,th},{x,y+th+vh+gap*2,th,vh},{x,y+th+gap,th,vh},{x+gap,y+h/2-th/2,w-gap*2,th}}
@@ -115,26 +120,47 @@ func (r *sevenSegRenderer) layoutDigit(idx int, x, y, w, h float32, mask [7]bool
 		g2 := r.glow[idx]
 		g3 := r.core[idx]
 		idx++
-		setSeg(g1, p[i], color.NRGBA{})
-		setSeg(g2, inflateSeg(p[i], th*0.55), color.NRGBA{})
-		setSeg(g3, p[i], color.NRGBA{})
-		if r.s.level >= 2 { g1.FillColor = color.NRGBA{R: 110, G: 35, B: 12, A: 95} }
+		pts := segmentPoints(p[i], i == 0 || i == 3 || i == 6)
+		setPoly(g1, pts, color.NRGBA{})
+		setPoly(g2, inflatePoints(pts, th*0.5), color.NRGBA{})
+		setPoly(g3, pts, color.NRGBA{})
+		if r.s.level >= 2 { g1.FillColor = color.NRGBA{R: 30, G: 95, B: 22, A: 85} }
 		if mask[i] {
 			g3.FillColor = lit
-			if r.s.level >= 3 { g2.FillColor = withAlpha(lit, 85) }
+			if r.s.level >= 3 { g2.FillColor = withAlpha(lit, 80) }
 		}
 	}
 	return idx
 }
 
-func setSeg(r *canvas.Rectangle, p [4]float32, c color.NRGBA) {
-	r.Move(fyne.NewPos(p[0], p[1]))
-	r.Resize(fyne.NewSize(p[2], p[3]))
-	r.FillColor = c
+func segmentPoints(p [4]float32, horizontal bool) []fyne.Position {
+	x, y, w, h := p[0], p[1], p[2], p[3]
+	cut := h * 0.45
+	if !horizontal { cut = w * 0.45 }
+	if horizontal {
+		return []fyne.Position{{X:x+cut, Y:y}, {X:x+w-cut, Y:y}, {X:x+w, Y:y+h/2}, {X:x+w-cut, Y:y+h}, {X:x+cut, Y:y+h}, {X:x, Y:y+h/2}}
+	}
+	return []fyne.Position{{X:x+w/2, Y:y}, {X:x+w, Y:y+cut}, {X:x+w, Y:y+h-cut}, {X:x+w/2, Y:y+h}, {X:x, Y:y+h-cut}, {X:x, Y:y+cut}}
 }
 
-func inflateSeg(p [4]float32, d float32) [4]float32 {
-	return [4]float32{p[0]-d, p[1]-d, p[2]+d*2, p[3]+d*2}
+func setPoly(p *canvas.Polygon, pts []fyne.Position, c color.NRGBA) {
+	p.Points = pts
+	p.FillColor = c
+	p.StrokeWidth = 0
+}
+
+func inflatePoints(in []fyne.Position, d float32) []fyne.Position {
+	out := make([]fyne.Position, len(in))
+	var cx, cy float32
+	for _, p := range in { cx += p.X; cy += p.Y }
+	cx /= float32(len(in)); cy /= float32(len(in))
+	for i, p := range in {
+		dx, dy := p.X-cx, p.Y-cy
+		l := float32(math.Hypot(float64(dx), float64(dy)))
+		if l == 0 { out[i] = p; continue }
+		out[i] = fyne.NewPos(p.X+dx/l*d, p.Y+dy/l*d)
+	}
+	return out
 }
 
 func sevenMask(ch rune) [7]bool {
@@ -157,6 +183,7 @@ func (r *sevenSegRenderer) MinSize() fyne.Size { return fyne.NewSize(520, 170) }
 func (r *sevenSegRenderer) Refresh() { r.Layout(r.s.Size()); for _, obj := range r.Objects() { canvas.Refresh(obj) } }
 func (r *sevenSegRenderer) Objects() []fyne.CanvasObject {
 	objs := []fyne.CanvasObject{r.bg,r.frame,r.face}
+	for _, x := range r.windows { objs = append(objs, x) }
 	for _, x := range r.ghost { objs = append(objs, x) }
 	for _, x := range r.glow { objs = append(objs, x) }
 	for _, x := range r.core { objs = append(objs, x) }
