@@ -1,5 +1,13 @@
 # CHANGES
 
+## 0.3 - 2026-06-08
+
+- Implemented dashboard v2.2.x sensor state boundary.
+- Added a neutral sensor state store with current value, unit, min, max, status, error text, and update time.
+- Added store tests for initial definitions, value updates, error updates, stale status, and sorted snapshots.
+- Wired active sensor polling to write latest success/error state while preserving existing JSONL logging behaviour.
+- Passed the state store into the dashboard placeholder so future dashboard stages can consume state instead of sensor config.
+
 ## 0.2 - 2026-06-08
 
 - Implemented dashboard v2.1.x config validation schema for assets, decoders, blocks, and layers.
