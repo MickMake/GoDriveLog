@@ -163,8 +163,16 @@ func TestDashboardV21ValidationRejectsInvalidConfigs(t *testing.T) {
 `),
 		},
 		{
+			name: "missing asset id",
+			content: replaceConfigText(validDashboardV21Config(), `id: background`, `id: ""`),
+		},
+		{
 			name: "unknown asset type",
 			content: replaceConfigText(validDashboardV21Config(), `type: image`, `type: nonsense`),
+		},
+		{
+			name: "unknown decoder type",
+			content: replaceConfigText(validDashboardV21Config(), `type: digits`, `type: nonsense`),
 		},
 		{
 			name: "decoder missing sensor reference",
@@ -179,6 +187,10 @@ func TestDashboardV21ValidationRejectsInvalidConfigs(t *testing.T) {
 			content: replaceConfigText(validDashboardV21Config(), `frame_count: 10`, `frame_count: 0`),
 		},
 		{
+			name: "unknown block type",
+			content: replaceConfigText(validDashboardV21Config(), `type: sprite_text`, `type: nonsense`),
+		},
+		{
 			name: "block missing asset reference",
 			content: replaceConfigText(validDashboardV21Config(), `asset: background`, `asset: missing_asset`),
 		},
@@ -188,7 +200,7 @@ func TestDashboardV21ValidationRejectsInvalidConfigs(t *testing.T) {
 		},
 		{
 			name: "invalid geometry",
-			content: replaceConfigText(validDashboardV21Config(), `width: 800`, `width: 0`),
+			content: replaceConfigText(validDashboardV21Config(), `      width: 800`, `      width: 0`),
 		},
 		{
 			name: "group missing child block reference",
@@ -308,16 +320,12 @@ sensors:
 }
 
 func replaceConfigText(config string, old string, new string) string {
-	return stringsReplace(config, old, new)
-}
-
-func stringsReplace(s string, old string, new string) string {
-	for i := 0; i+len(old) <= len(s); i++ {
-		if s[i:i+len(old)] == old {
-			return s[:i] + new + s[i+len(old):]
+	for i := 0; i+len(old) <= len(config); i++ {
+		if config[i:i+len(old)] == old {
+			return config[:i] + new + config[i+len(old):]
 		}
 	}
-	return s
+	return config
 }
 
 func loadConfig(t *testing.T, content string) Config {
