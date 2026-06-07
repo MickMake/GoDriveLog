@@ -1,0 +1,14 @@
+{
+  "source": "Display_skew.gif",
+  "n_frames": 17,
+  "method": "quick synthetic atlas from uploaded source digit",
+  "digit_canvas_size": [
+    169,
+    300
+  ],
+  "notes": [
+    "Quick prototype to judge visual direction.",
+    "Digits are generated using 7-seg masks, not extracted as true source digits.",
+    "Glow is approximate but whole-digit assets keep renderer simple."
+  ]
+}

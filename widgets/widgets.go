@@ -9,6 +9,7 @@ import (
 	"github.com/MickMake/GoDriveLog/widgets/model"
 	"github.com/MickMake/GoDriveLog/widgets/radial"
 	"github.com/MickMake/GoDriveLog/widgets/ramped"
+	"github.com/MickMake/GoDriveLog/widgets/retro1"
 	"github.com/MickMake/GoDriveLog/widgets/speedhud"
 )
 
@@ -50,6 +51,18 @@ func New(style string, cfg GaugeConfig) (Widget, error) {
 		return ramped.NewRamped2(cfg), nil
 	case "sweep3":
 		return ramped.NewRamped3(cfg), nil
+	case "retro1_ramp1":
+		return retro1.NewRamp1(cfg), nil
+	case "retro1_ramp2":
+		return retro1.NewRamp2(cfg), nil
+	case "retro1_ramp3":
+		return retro1.NewRamp3(cfg), nil
+	case "retro1_7seg1":
+		return retro1.New7Seg1(cfg), nil
+	case "retro1_7seg2":
+		return retro1.New7Seg2(cfg), nil
+	case "retro1_7seg3", "retro1_seg7_1":
+		return retro1.New7Seg3(cfg), nil
 	case "speedhud1":
 		return speedhud.NewSpeedHUD1(cfg), nil
 	case "speedhud2":
@@ -57,7 +70,7 @@ func New(style string, cfg GaugeConfig) (Widget, error) {
 	case "speedhud3":
 		return speedhud.NewSpeedHUD3(cfg), nil
 	case "bar1":
-		return model.NewNumericWidget("bar1", cfg), nil
+		return bar.NewBar1(cfg), nil
 	case "bar2":
 		return bar.NewBar2(cfg), nil
 	case "bar3":
@@ -72,7 +85,7 @@ func New(style string, cfg GaugeConfig) (Widget, error) {
 }
 
 func Styles() []string {
-	styles := []string{"bar1", "bar2", "bar3", "graph1", "half_bottom1", "half_top1", "led1", "quarter_bl1", "quarter_br1", "quarter_tl1", "quarter_tr1", "radial1", "radial2", "radial3", "sweep1", "sweep2", "sweep3", "speedhud1", "speedhud2", "speedhud3"}
+	styles := []string{"bar1", "bar2", "bar3", "graph1", "half_bottom1", "half_top1", "led1", "quarter_bl1", "quarter_br1", "quarter_tl1", "quarter_tr1", "radial1", "radial2", "radial3", "retro1_7seg1", "retro1_7seg2", "retro1_7seg3", "retro1_ramp1", "retro1_ramp2", "retro1_ramp3", "retro1_seg7_1", "sweep1", "sweep2", "sweep3", "speedhud1", "speedhud2", "speedhud3"}
 	sort.Strings(styles)
 	return styles
 }

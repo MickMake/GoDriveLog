@@ -181,6 +181,8 @@ func validDisplayWidget(widget string) bool {
 	case "radial1", "radial2", "radial3",
 		"half_top1", "half_bottom1", "quarter_tl1", "quarter_tr1", "quarter_bl1", "quarter_br1",
 		"sweep1", "sweep2", "sweep3",
+		"retro1_ramp1", "retro1_ramp2", "retro1_ramp3",
+		"retro1_7seg1", "retro1_7seg2", "retro1_7seg3", "retro1_seg7_1",
 		"speedhud1", "speedhud2", "speedhud3",
 		"bar1", "bar2", "bar3", "graph1", "led1":
 		return true
