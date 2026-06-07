@@ -171,6 +171,14 @@ func TestDashboardV21ValidationRejectsInvalidConfigs(t *testing.T) {
 			content: replaceConfigText(validDashboardV21Config(), `type: image`, `type: nonsense`),
 		},
 		{
+			name: "missing decoder id",
+			content: replaceConfigText(validDashboardV21Config(), `id: rpm_digits`, `id: ""`),
+		},
+		{
+			name: "duplicate decoder id",
+			content: replaceConfigText(validDashboardV21Config(), `id: throttle_frame`, `id: rpm_digits`),
+		},
+		{
 			name: "unknown decoder type",
 			content: replaceConfigText(validDashboardV21Config(), `type: digits`, `type: nonsense`),
 		},
@@ -185,6 +193,14 @@ func TestDashboardV21ValidationRejectsInvalidConfigs(t *testing.T) {
 		{
 			name: "invalid frame count",
 			content: replaceConfigText(validDashboardV21Config(), `frame_count: 10`, `frame_count: 0`),
+		},
+		{
+			name: "missing block id",
+			content: replaceConfigText(validDashboardV21Config(), `id: background_panel`, `id: ""`),
+		},
+		{
+			name: "duplicate block id",
+			content: replaceConfigText(validDashboardV21Config(), `id: rpm_display`, `id: background_panel`),
 		},
 		{
 			name: "unknown block type",
@@ -205,6 +221,18 @@ func TestDashboardV21ValidationRejectsInvalidConfigs(t *testing.T) {
 		{
 			name: "group missing child block reference",
 			content: replaceConfigText(validDashboardV21Config(), `- throttle_bar`, `- missing_block`),
+		},
+		{
+			name: "missing layer id",
+			content: replaceConfigText(validDashboardV21Config(), `id: base`, `id: ""`),
+		},
+		{
+			name: "duplicate layer id",
+			content: replaceConfigText(validDashboardV21Config(), `id: base`, `id: base
+  - id: base
+    z: 1
+    blocks:
+    - background_panel`),
 		},
 		{
 			name: "layer missing block reference",
