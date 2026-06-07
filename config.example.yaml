@@ -13,6 +13,82 @@ dashboard:
   canvas:
     width: 800
     height: 480
+  assets:
+    - id: background
+      type: image
+      path: assets/dashboard/bttf/background.png
+    - id: throttle_frames
+      type: frame_set
+      frames:
+        - assets/dashboard/bttf/throttle/frame_000.png
+        - assets/dashboard/bttf/throttle/frame_001.png
+    - id: yellow_digits
+      type: charset
+      glyphs:
+        "0": assets/dashboard/bttf/digits/yellow/0.png
+        "1": assets/dashboard/bttf/digits/yellow/1.png
+        "2": assets/dashboard/bttf/digits/yellow/2.png
+        "3": assets/dashboard/bttf/digits/yellow/3.png
+        "4": assets/dashboard/bttf/digits/yellow/4.png
+        "5": assets/dashboard/bttf/digits/yellow/5.png
+        "6": assets/dashboard/bttf/digits/yellow/6.png
+        "7": assets/dashboard/bttf/digits/yellow/7.png
+        "8": assets/dashboard/bttf/digits/yellow/8.png
+        "9": assets/dashboard/bttf/digits/yellow/9.png
+  decoders:
+    - id: rpm_digits
+      type: digits
+      sensor: rpm
+      asset: yellow_digits
+    - id: throttle_frame
+      type: frame_index
+      sensor: throttle_position
+      asset: throttle_frames
+      frame_count: 10
+    - id: rpm_warning
+      type: threshold
+      sensor: rpm
+      thresholds:
+        - at: 6000
+          value: warning
+  blocks:
+    - id: background_panel
+      type: image
+      asset: background
+      geometry:
+        x: 0
+        y: 0
+        width: 800
+        height: 480
+    - id: rpm_display
+      type: sprite_text
+      asset: yellow_digits
+      decoder: rpm_digits
+      geometry:
+        x: 100
+        y: 60
+        width: 240
+        height: 80
+    - id: throttle_bar
+      type: sprite_frame
+      asset: throttle_frames
+      decoder: throttle_frame
+      geometry:
+        x: 100
+        y: 170
+        width: 300
+        height: 40
+    - id: main_cluster
+      type: group
+      blocks:
+        - rpm_display
+        - throttle_bar
+  layers:
+    - id: base
+      z: 0
+      blocks:
+        - background_panel
+        - main_cluster
 
 sensors:
   engine_load:
