@@ -43,15 +43,6 @@ type SensorConfig struct {
 	Log     bool    `yaml:"log"`
 }
 
-type DashboardConfig struct {
-	Canvas CanvasConfig `yaml:"canvas"`
-}
-
-type CanvasConfig struct {
-	Width  int `yaml:"width"`
-	Height int `yaml:"height"`
-}
-
 func Load(path string) (Config, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -92,12 +83,6 @@ func validate(cfg Config) error {
 	if len(cfg.Sensors) == 0 {
 		return fmt.Errorf("sensors must not be empty")
 	}
-	if cfg.Dashboard.Canvas.Width <= 0 {
-		return fmt.Errorf("dashboard.canvas.width must be positive")
-	}
-	if cfg.Dashboard.Canvas.Height <= 0 {
-		return fmt.Errorf("dashboard.canvas.height must be positive")
-	}
 	if cfg.Log.Rotate != DefaultLogRotate {
 		return fmt.Errorf("log.rotate must be %q", DefaultLogRotate)
 	}
@@ -121,6 +106,10 @@ func validate(cfg Config) error {
 		if sensor.Max <= sensor.Min {
 			return fmt.Errorf("sensors.%s.max must be greater than min", key)
 		}
+	}
+
+	if err := validateDashboard(cfg); err != nil {
+		return err
 	}
 
 	return nil
