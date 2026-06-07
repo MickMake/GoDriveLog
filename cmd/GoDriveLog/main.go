@@ -3,11 +3,11 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log"
+	"os"
 	"sync"
 	"time"
-	"os"
-	"fmt"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -37,7 +37,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	activePIDs := config.ActivePIDs(cfg)
+	activeSensors := config.ActiveSensors(cfg)
 
 	logger, err := jsonlogger.NewJSONL(cfg.Log.Directory)
 	if err != nil {
@@ -55,9 +55,9 @@ func main() {
 
 	application := app.New()
 	window := application.NewWindow("GoDriveLog")
-	window.Resize(fyne.NewSize(800, 480))
+	window.Resize(fyne.NewSize(float32(cfg.Dashboard.Canvas.Width), float32(cfg.Dashboard.Canvas.Height)))
 
-	dash := ui.NewDashboard(cfg.Vehicle.PIDs)
+	dash := ui.NewDashboard(cfg.Dashboard)
 
 	lastLogPath := logger.ActivePath()
 	status := widget.NewLabel("log: " + lastLogPath)
@@ -82,10 +82,10 @@ func main() {
 	content := container.NewBorder(nil, status, nil, nil, dash.CanvasObject())
 	window.SetContent(content)
 
-	for _, runtimePID := range activePIDs {
-		runtimePID := runtimePID
+	for _, runtimeSensor := range activeSensors {
+		runtimeSensor := runtimeSensor
 		go func() {
-			ticker := time.NewTicker(time.Duration(runtimePID.Refresh) * time.Millisecond)
+			ticker := time.NewTicker(time.Duration(runtimeSensor.Refresh) * time.Millisecond)
 			defer ticker.Stop()
 
 			for {
@@ -93,39 +93,32 @@ func main() {
 				case <-ctx.Done():
 					return
 				case <-ticker.C:
-					value, unit, err := reader.Read(ctx, runtimePID.RawPID)
+					value, unit, err := reader.Read(ctx, runtimeSensor.RawPID)
 					if err != nil {
-						log.Printf("read %s: %v", runtimePID.RawPID, err)
-						if runtimePID.Display.Enabled {
-							fyne.Do(func() { dash.SetError(runtimePID.Key, err) })
-						}
+						log.Printf("read %s: %v", runtimeSensor.RawPID, err)
 						continue
 					}
 
-					if runtimePID.Unit != "" {
-						unit = runtimePID.Unit
+					if runtimeSensor.Unit != "" {
+						unit = runtimeSensor.Unit
 					}
 
 					reading := sensors.Reading{
 						Time:      time.Now(),
-						SensorKey: runtimePID.Key,
-						PID:       runtimePID.RawPID,
-						Name:      runtimePID.Key,
+						SensorKey: runtimeSensor.Key,
+						PID:       runtimeSensor.RawPID,
+						Name:      runtimeSensor.Key,
 						Value:     value,
 						Unit:      unit,
 						Source:    sourceName(cfg.MockMode),
 					}
 
-					if runtimePID.Log {
+					if runtimeSensor.Log {
 						if err := logger.Write(reading); err != nil {
 							log.Printf("write log: %v", err)
 						} else {
 							updateLogStatus()
 						}
-					}
-
-					if runtimePID.Display.Enabled {
-						fyne.Do(func() { dash.Update(reading) })
 					}
 				}
 			}

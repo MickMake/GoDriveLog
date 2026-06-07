@@ -9,261 +9,178 @@ log:
 vehicle:
   name: "VW Caddy"
 
-  pids:
-    engine_load:
-      type: obd
-      pid: "0104"
-      unit: "%"
-      refresh: 500
-      min: 0
-      max: 100
-      log: true
-      display:
-        enabled: false
+dashboard:
+  canvas:
+    width: 800
+    height: 480
 
-    coolant_temp:
-      type: obd
-      pid: "0105"
-      unit: C
-      refresh: 1000
-      min: -40
-      max: 140
-      log: true
-      display:
-        enabled: true
-        widget: graph1
-        style:
-          smoothing_window: 0
-          # dial_rotation/view_rotation/scale_direction are accepted by config validation.
-          # They are currently placeholders (widgets may ignore them until implemented).
-          # dial_rotation: 0       # 0, 90, 180, 270
-          # view_rotation: 0       # 0, 90, 180, 270
-          # scale_direction: forward  # forward, reverse
-        position:
-          x: 20
-          y: 240
-          width: 360
-          height: 120
-          z: 0
+sensors:
+  engine_load:
+    type: obd
+    pid: "0104"
+    unit: "%"
+    refresh: 500
+    min: 0
+    max: 100
+    log: true
 
-    short_fuel_trim_bank1:
-      type: obd
-      pid: "0106"
-      unit: "%"
-      refresh: 1000
-      min: -100
-      max: 100
-      log: true
-      display:
-        enabled: false
+  coolant_temp:
+    type: obd
+    pid: "0105"
+    unit: C
+    refresh: 1000
+    min: -40
+    max: 140
+    log: true
 
-    long_fuel_trim_bank1:
-      type: obd
-      pid: "0107"
-      unit: "%"
-      refresh: 1000
-      min: -100
-      max: 100
-      log: true
-      display:
-        enabled: false
+  short_fuel_trim_bank1:
+    type: obd
+    pid: "0106"
+    unit: "%"
+    refresh: 1000
+    min: -100
+    max: 100
+    log: true
 
-    intake_manifold_pressure:
-      type: obd
-      pid: "010B"
-      unit: kPa
-      refresh: 1000
-      min: 0
-      max: 255
-      log: true
-      display:
-        enabled: false
+  long_fuel_trim_bank1:
+    type: obd
+    pid: "0107"
+    unit: "%"
+    refresh: 1000
+    min: -100
+    max: 100
+    log: true
 
-    rpm:
-      type: obd
-      pid: "010C"
-      unit: rpm
-      refresh: 250
-      min: 0
-      max: 7000
-      log: true
-      display:
-        enabled: true
-        widget: radial1
-        style:
-          smoothing_window: 0
-        position:
-          x: 20
-          y: 20
-          width: 360
-          height: 90
-          z: 0
+  intake_manifold_pressure:
+    type: obd
+    pid: "010B"
+    unit: kPa
+    refresh: 1000
+    min: 0
+    max: 255
+    log: true
 
-    speed:
-      type: obd
-      pid: "010D"
-      unit: km/h
-      refresh: 500
-      min: 0
-      max: 160
-      log: true
-      display:
-        enabled: true
-        widget: bar1
-        style:
-          smoothing_window: 0
-        position:
-          x: 20
-          y: 130
-          width: 360
-          height: 90
-          z: 0
+  rpm:
+    type: obd
+    pid: "010C"
+    unit: rpm
+    refresh: 250
+    min: 0
+    max: 7000
+    log: true
 
-    timing_advance:
-      type: obd
-      pid: "010E"
-      unit: deg
-      refresh: 1000
-      min: -64
-      max: 64
-      log: false
-      display:
-        enabled: false
+  speed:
+    type: obd
+    pid: "010D"
+    unit: km/h
+    refresh: 500
+    min: 0
+    max: 160
+    log: true
 
-    intake_air_temp:
-      type: obd
-      pid: "010F"
-      unit: C
-      refresh: 2000
-      min: -40
-      max: 140
-      log: true
-      display:
-        enabled: false
+  timing_advance:
+    type: obd
+    pid: "010E"
+    unit: deg
+    refresh: 1000
+    min: -64
+    max: 64
+    log: false
 
-    mass_air_flow:
-      type: obd
-      pid: "0110"
-      unit: g/s
-      refresh: 1000
-      min: 0
-      max: 655
-      log: false
-      display:
-        enabled: false
+  intake_air_temp:
+    type: obd
+    pid: "010F"
+    unit: C
+    refresh: 2000
+    min: -40
+    max: 140
+    log: true
 
-    throttle_position:
-      type: obd
-      pid: "0111"
-      unit: "%"
-      refresh: 500
-      min: 0
-      max: 100
-      log: true
-      display:
-        enabled: true
-        widget: bar1
-        style:
-          smoothing_window: 0
-        position:
-          x: 400
-          y: 20
-          width: 360
-          height: 90
-          z: 0
+  mass_air_flow:
+    type: obd
+    pid: "0110"
+    unit: g/s
+    refresh: 1000
+    min: 0
+    max: 655
+    log: false
 
-    run_time_since_engine_start:
-      type: obd
-      pid: "011F"
-      unit: s
-      refresh: 5000
-      min: 0
-      max: 86400
-      log: false
-      display:
-        enabled: false
+  throttle_position:
+    type: obd
+    pid: "0111"
+    unit: "%"
+    refresh: 500
+    min: 0
+    max: 100
+    log: true
 
-    distance_with_mil_on:
-      type: obd
-      pid: "0121"
-      unit: km
-      refresh: 10000
-      min: 0
-      max: 65535
-      log: false
-      display:
-        enabled: false
+  run_time_since_engine_start:
+    type: obd
+    pid: "011F"
+    unit: s
+    refresh: 5000
+    min: 0
+    max: 86400
+    log: false
 
-    fuel_rail_pressure:
-      type: obd
-      pid: "0123"
-      unit: kPa
-      refresh: 1000
-      min: 0
-      max: 655350
-      log: false
-      display:
-        enabled: false
+  distance_with_mil_on:
+    type: obd
+    pid: "0121"
+    unit: km
+    refresh: 10000
+    min: 0
+    max: 65535
+    log: false
 
-    fuel_level:
-      type: obd
-      pid: "012F"
-      unit: "%"
-      refresh: 5000
-      min: 0
-      max: 100
-      log: true
-      display:
-        enabled: false
+  fuel_rail_pressure:
+    type: obd
+    pid: "0123"
+    unit: kPa
+    refresh: 1000
+    min: 0
+    max: 655350
+    log: false
 
-    barometric_pressure:
-      type: obd
-      pid: "0133"
-      unit: kPa
-      refresh: 5000
-      min: 0
-      max: 255
-      log: false
-      display:
-        enabled: false
+  fuel_level:
+    type: obd
+    pid: "012F"
+    unit: "%"
+    refresh: 5000
+    min: 0
+    max: 100
+    log: true
 
-    control_module_voltage:
-      type: obd
-      pid: "0142"
-      unit: V
-      refresh: 2000
-      min: 10
-      max: 16
-      log: true
-      display:
-        enabled: true
-        widget: bar2
-        style:
-          smoothing_window: 0
-        position:
-          x: 400
-          y: 130
-          width: 360
-          height: 90
-          z: 0
+  barometric_pressure:
+    type: obd
+    pid: "0133"
+    unit: kPa
+    refresh: 5000
+    min: 0
+    max: 255
+    log: false
 
-    engine_oil_temp:
-      type: obd
-      pid: "015C"
-      unit: C
-      refresh: 5000
-      min: -40
-      max: 150
-      log: true
-      display:
-        enabled: false
+  control_module_voltage:
+    type: obd
+    pid: "0142"
+    unit: V
+    refresh: 2000
+    min: 10
+    max: 16
+    log: true
 
-    moving:
-      type: virtual
-      unit: bool
-      refresh: 1000
-      min: 0
-      max: 1
-      log: false
-      display:
-        enabled: false
+  engine_oil_temp:
+    type: obd
+    pid: "015C"
+    unit: C
+    refresh: 5000
+    min: -40
+    max: 150
+    log: true
+
+  moving:
+    type: virtual
+    unit: bool
+    refresh: 1000
+    min: 0
+    max: 1
+    log: false

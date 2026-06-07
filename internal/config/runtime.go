@@ -2,43 +2,41 @@ package config
 
 import "sort"
 
-type RuntimePID struct {
+type RuntimeSensor struct {
 	Key     string
 	RawPID  string
 	Unit    string
 	Refresh int
 	Log     bool
-	Display DisplayConfig
 	Min     float64
 	Max     float64
 }
 
-func ActivePIDs(cfg Config) []RuntimePID {
-	keys := make([]string, 0, len(cfg.Vehicle.PIDs))
-	for key := range cfg.Vehicle.PIDs {
+func ActiveSensors(cfg Config) []RuntimeSensor {
+	keys := make([]string, 0, len(cfg.Sensors))
+	for key := range cfg.Sensors {
 		keys = append(keys, key)
 	}
 	sort.Strings(keys)
 
-	active := make([]RuntimePID, 0, len(keys))
+	active := make([]RuntimeSensor, 0, len(keys))
 	for _, key := range keys {
-		pid := cfg.Vehicle.PIDs[key]
-		if pid.Type != "obd" {
+		sensor := cfg.Sensors[key]
+		if sensor.Type != "obd" {
 			continue
 		}
-		if !pid.Log && !pid.Display.Enabled {
+		if !sensor.Log {
 			continue
 		}
 
-		active = append(active, RuntimePID{
+		active = append(active, RuntimeSensor{
 			Key:     key,
-			RawPID:  pid.PID,
-			Unit:    pid.Unit,
-			Refresh: pid.Refresh,
-			Log:     pid.Log,
-			Display: pid.Display,
-			Min:     pid.Min,
-			Max:     pid.Max,
+			RawPID:  sensor.PID,
+			Unit:    sensor.Unit,
+			Refresh: sensor.Refresh,
+			Log:     sensor.Log,
+			Min:     sensor.Min,
+			Max:     sensor.Max,
 		})
 	}
 
