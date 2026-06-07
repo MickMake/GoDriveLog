@@ -43,14 +43,14 @@ type DashboardAssetConfig struct {
 }
 
 type DashboardDecoderConfig struct {
-	ID         string             `yaml:"id"`
-	Type       string             `yaml:"type"`
-	Sensor     string             `yaml:"sensor"`
-	Input      string             `yaml:"input"`
-	Asset      string             `yaml:"asset"`
-	Format     string             `yaml:"format"`
-	FrameCount int                `yaml:"frame_count"`
-	Thresholds []ThresholdConfig  `yaml:"thresholds"`
+	ID         string            `yaml:"id"`
+	Type       string            `yaml:"type"`
+	Sensor     string            `yaml:"sensor"`
+	Input      string            `yaml:"input"`
+	Asset      string            `yaml:"asset"`
+	Format     string            `yaml:"format"`
+	FrameCount int               `yaml:"frame_count"`
+	Thresholds []ThresholdConfig `yaml:"thresholds"`
 }
 
 type ThresholdConfig struct {
@@ -59,12 +59,12 @@ type ThresholdConfig struct {
 }
 
 type DashboardBlockConfig struct {
-	ID       string       `yaml:"id"`
-	Type     string       `yaml:"type"`
-	Asset    string       `yaml:"asset"`
-	Decoder  string       `yaml:"decoder"`
-	Blocks   []string     `yaml:"blocks"`
-	Geometry RectConfig   `yaml:"geometry"`
+	ID       string     `yaml:"id"`
+	Type     string     `yaml:"type"`
+	Asset    string     `yaml:"asset"`
+	Decoder  string     `yaml:"decoder"`
+	Blocks   []string   `yaml:"blocks"`
+	Geometry RectConfig `yaml:"geometry"`
 }
 
 type RectConfig struct {
@@ -226,6 +226,10 @@ func validateBlocks(blocks []DashboardBlockConfig, assets map[string]bool, decod
 }
 
 func validateLayers(layers []DashboardLayerConfig, blocks map[string]bool) error {
+	if len(layers) == 0 {
+		return fmt.Errorf("dashboard.layers must not be empty")
+	}
+
 	ids := map[string]bool{}
 	for i, layer := range layers {
 		path := fmt.Sprintf("dashboard.layers[%d]", i)
@@ -236,6 +240,9 @@ func validateLayers(layers []DashboardLayerConfig, blocks map[string]bool) error
 			return fmt.Errorf("dashboard.layers id %q must be unique", layer.ID)
 		}
 		ids[layer.ID] = true
+		if len(layer.Blocks) == 0 {
+			return fmt.Errorf("%s.blocks must not be empty", path)
+		}
 		for _, blockID := range layer.Blocks {
 			if !blocks[blockID] {
 				return fmt.Errorf("%s.blocks %q must reference a configured block", path, blockID)
