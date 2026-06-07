@@ -38,7 +38,7 @@ sensors:
 		t.Fatalf("len(Sensors) = %d, want 1", len(cfg.Sensors))
 	}
 	if cfg.Log.Rotate != DefaultLogRotate {
-		t.Fatalf("Log.Rotate = %q, want %q", DefaultLogRotate)
+		t.Fatalf("Log.Rotate = %q, want %q", cfg.Log.Rotate, DefaultLogRotate)
 	}
 	if cfg.OBDAddress != DefaultOBDAddress {
 		t.Fatalf("OBDAddress = %q, want %q", cfg.OBDAddress, DefaultOBDAddress)
