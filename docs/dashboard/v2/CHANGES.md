@@ -1,5 +1,14 @@
 # CHANGES
 
+## 0.2 - 2026-06-08
+
+- Implemented dashboard v2.1.x config validation schema for assets, decoders, blocks, and layers.
+- Added validation for duplicate and missing IDs across dashboard config sections.
+- Added validation for unsupported dashboard asset, decoder, and block types.
+- Added validation for sensor, asset, decoder, block, and layer references.
+- Added geometry validation for non-group dashboard blocks.
+- Updated `config.example.yaml` and `docs/config.md` to show the v2.1.x schema.
+
 ## 0.1 - 2026-06-07
 
 - Created dashboard implementation planning document set for the GoDriveLog v2.x.x dashboard rewrite.
