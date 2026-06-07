@@ -38,7 +38,7 @@ sensors:
 		t.Fatalf("len(Sensors) = %d, want 1", len(cfg.Sensors))
 	}
 	if cfg.Log.Rotate != DefaultLogRotate {
-		t.Fatalf("Log.Rotate = %q, want %q", cfg.Log.Rotate, DefaultLogRotate)
+		t.Fatalf("Log.Rotate = %q, want %q", DefaultLogRotate)
 	}
 	if cfg.OBDAddress != DefaultOBDAddress {
 		t.Fatalf("OBDAddress = %q, want %q", cfg.OBDAddress, DefaultOBDAddress)
@@ -223,6 +223,15 @@ func TestDashboardV21ValidationRejectsInvalidConfigs(t *testing.T) {
 			content: replaceConfigText(validDashboardV21Config(), `- throttle_bar`, `- missing_block`),
 		},
 		{
+			name: "empty layers",
+			content: replaceConfigText(validDashboardV21Config(), `  layers:
+  - id: base
+    z: 0
+    blocks:
+    - background_panel
+    - main_cluster`, `  layers: []`),
+		},
+		{
 			name: "missing layer id",
 			content: replaceConfigText(validDashboardV21Config(), `id: base`, `id: ""`),
 		},
@@ -233,6 +242,12 @@ func TestDashboardV21ValidationRejectsInvalidConfigs(t *testing.T) {
     z: 1
     blocks:
     - background_panel`),
+		},
+		{
+			name: "layer with empty blocks",
+			content: replaceConfigText(validDashboardV21Config(), `    blocks:
+    - background_panel
+    - main_cluster`, `    blocks: []`),
 		},
 		{
 			name: "layer missing block reference",
