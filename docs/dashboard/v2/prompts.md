@@ -26,6 +26,7 @@ Project: MickMake/GoDriveLog
 
 Hard rule:
 Do not implement compatibility with the old per-PID display.widget dashboard model.
+Read and obey docs/dashboard/v2/repo-structure-guardrails.md
 
 Architecture rule:
 Sensors produce state. The dashboard scene consumes state. The dashboard scene must not own polling, OBD reading, or logging.
@@ -70,6 +71,7 @@ Required outcome:
 - Update config.example.yaml to the new v2.0.x shape.
 
 Guardrails:
+- Read and obey docs/dashboard/v2/repo-structure-guardrails.md
 - Do not implement rendering.
 - Do not implement assets, decoders, blocks, or layers beyond placeholder structs if required.
 - Do not support old vehicle.pids.*.display.
@@ -101,6 +103,7 @@ Required outcome:
 - Tests cover valid and invalid config examples.
 
 Guardrails:
+- Read and obey docs/dashboard/v2/repo-structure-guardrails.md
 - Do not load images yet.
 - Do not implement Fyne rendering.
 - Do not implement decoder execution.
@@ -127,6 +130,7 @@ Required outcome:
 - Add tests for state updates, error/stale handling, and retrieval.
 
 Guardrails:
+- Read and obey docs/dashboard/v2/repo-structure-guardrails.md
 - Do not implement decoders.
 - Do not implement asset loading.
 - Do not render the new dashboard yet.
@@ -161,6 +165,7 @@ Required outcome:
 - Errors are clear for unknown inputs, invalid thresholds, bad frame counts, and invalid formats.
 
 Guardrails:
+- Read and obey docs/dashboard/v2/repo-structure-guardrails.md
 - Do not implement arbitrary eval.
 - Do not implement a scripting language.
 - Do not render images.
@@ -193,6 +198,7 @@ Required outcome:
 - Add tests using small fixture assets.
 
 Guardrails:
+- Read and obey docs/dashboard/v2/repo-structure-guardrails.md
 - Do not implement scene rendering yet.
 - Do not silently substitute missing images.
 - Do not load assets every frame.
@@ -227,6 +233,7 @@ Required outcome:
 - Add tests for z-order, condition evaluation, frame resolution, and text/glyph resolution.
 
 Guardrails:
+- Read and obey docs/dashboard/v2/repo-structure-guardrails.md
 - Do not implement full Fyne renderer if that becomes large; keep this stage model/evaluation focused.
 - Do not add gauges.
 - Do not hardcode RPM, speed, throttle, or coolant.
@@ -254,6 +261,7 @@ Required outcome:
 - Add tests where practical and keep manual mock-mode verification simple.
 
 Guardrails:
+- Read and obey docs/dashboard/v2/repo-structure-guardrails.md
 - Do not keep old panel renderer wired in.
 - Do not make Fyne renderer responsible for polling or logging.
 - Do not implement visual editor.
@@ -287,6 +295,7 @@ Required outcome:
 - Tests remain green.
 
 Guardrails:
+- Read and obey docs/dashboard/v2/repo-structure-guardrails.md
 - Do not try to implement every dashboard style.
 - Do not add editor tooling.
 - Do not add Google Drive sync.
@@ -319,6 +328,7 @@ Required outcome:
 - Dead code is removed, not left as a decorative fossil.
 
 Guardrails:
+- Read and obey docs/dashboard/v2/repo-structure-guardrails.md
 - Do not keep compatibility shims.
 - Do not leave old widget names in docs.
 - Do not delete useful non-dashboard code.
@@ -354,6 +364,7 @@ Required outcome:
 - Documentation lists block names, inputs, and examples.
 
 Guardrails:
+- Read and obey docs/dashboard/v2/repo-structure-guardrails.md
 - Do not make blocks hardcode rpm/speed/throttle unless they are example instances.
 - Do not add a plugin system.
 - Do not add a scripting language.
