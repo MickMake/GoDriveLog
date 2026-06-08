@@ -8,13 +8,22 @@ import (
 )
 
 func decodeDigits(decoder config.DashboardDecoderConfig, inputs Inputs) (Value, error) {
-	formatted, err := decodeFormatNumber(decoder, inputs)
+	input, err := resolveInput(decoder, inputs)
 	if err != nil {
 		return Value{}, err
 	}
 
-	digits := make([]string, 0, len(formatted.Text))
-	for _, r := range formatted.Text {
+	text := input.Text
+	if input.Type != ValueTypeText {
+		formatted, err := decodeFormatNumber(decoder, inputs)
+		if err != nil {
+			return Value{}, err
+		}
+		text = formatted.Text
+	}
+
+	digits := make([]string, 0, len(text))
+	for _, r := range text {
 		if r < '0' || r > '9' {
 			return Value{}, fmt.Errorf("decoder %q digits output contains non-digit character %q", decoder.ID, r)
 		}
