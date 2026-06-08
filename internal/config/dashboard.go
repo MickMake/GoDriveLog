@@ -233,6 +233,19 @@ func validateBlocks(blocks []DashboardBlockConfig, assets map[string]bool, decod
 			return nil, fmt.Errorf("%s.geometry.height must be positive", path)
 		}
 	}
+
+	for i, block := range blocks {
+		if block.Type != DashboardBlockGroup {
+			continue
+		}
+		path := fmt.Sprintf("dashboard.blocks[%d]", i)
+		for _, childID := range block.Blocks {
+			if !ids[childID] {
+				return nil, fmt.Errorf("%s.blocks %q must reference a configured block", path, childID)
+			}
+		}
+	}
+
 	return ids, nil
 }
 
