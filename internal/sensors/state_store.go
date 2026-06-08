@@ -18,11 +18,12 @@ func NewStateStore(definitions []SensorDefinition) *StateStore {
 			continue
 		}
 		store.states[definition.ID] = SensorState{
-			ID:     definition.ID,
-			Unit:   definition.Unit,
-			Min:    definition.Min,
-			Max:    definition.Max,
-			Status: StatusUnknown,
+			ID:         definition.ID,
+			Unit:       definition.Unit,
+			Min:        definition.Min,
+			Max:        definition.Max,
+			Status:     StatusUnknown,
+			StaleAfter: definition.StaleAfter,
 		}
 	}
 	return store
@@ -66,12 +67,12 @@ func (s *StateStore) Get(id string) (SensorState, bool) {
 	return state, ok
 }
 
-func (s *StateStore) GetWithStale(id string, staleAfter time.Duration, now time.Time) (SensorState, bool) {
+func (s *StateStore) GetWithStale(id string, now time.Time) (SensorState, bool) {
 	state, ok := s.Get(id)
 	if !ok {
 		return SensorState{}, false
 	}
-	return withStaleStatus(state, staleAfter, now), true
+	return withStaleStatus(state, now), true
 }
 
 func (s *StateStore) Snapshot() []SensorState {
@@ -87,19 +88,19 @@ func (s *StateStore) Snapshot() []SensorState {
 	return states
 }
 
-func (s *StateStore) SnapshotWithStale(staleAfter time.Duration, now time.Time) []SensorState {
+func (s *StateStore) SnapshotWithStale(now time.Time) []SensorState {
 	states := s.Snapshot()
 	for i := range states {
-		states[i] = withStaleStatus(states[i], staleAfter, now)
+		states[i] = withStaleStatus(states[i], now)
 	}
 	return states
 }
 
-func withStaleStatus(state SensorState, staleAfter time.Duration, now time.Time) SensorState {
-	if staleAfter <= 0 || state.UpdatedAt.IsZero() || state.Status != StatusOK {
+func withStaleStatus(state SensorState, now time.Time) SensorState {
+	if state.StaleAfter <= 0 || state.UpdatedAt.IsZero() || state.Status != StatusOK {
 		return state
 	}
-	if now.Sub(state.UpdatedAt) > staleAfter {
+	if now.Sub(state.UpdatedAt) > state.StaleAfter {
 		state.Status = StatusStale
 	}
 	return state
