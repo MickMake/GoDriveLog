@@ -1,5 +1,15 @@
 # CHANGES
 
+## 0.8 - 2026-06-08
+
+- Implemented dashboard v2.7.x first real dashboard vertical slice in `config.example.yaml`.
+- Added small local SVG fixture assets for a static background, yellow RPM digits, throttle frame bar, redline glow overlay, and status badges.
+- Added YAML-backed dashboard block conditions for sensor/decoder status and value checks.
+- Added configured scene-condition tests for decoder-driven redline overlays and sensor-status indicators.
+- Preserved sensor status/error metadata through decoder outputs so dashboard status elements can respond to stale/error state.
+- Removed the standalone old `widget` command path from app startup.
+- Retired the unsafe `ui.NewDashboard` constructor so normal dashboard construction keeps the config path for asset resolution.
+
 ## 0.7 - 2026-06-08
 
 - Implemented dashboard v2.6.x Fyne scene renderer under `internal/dashboard/renderer/fyne`.
