@@ -56,7 +56,7 @@ func (r *Renderer) renderElement(element scene.Element) (fyneui.CanvasObject, er
 		if err != nil {
 			return nil, fmt.Errorf("element %q: %w", element.ID, err)
 		}
-		return imageObject(element.AssetID, asset.Data, element.Geometry), nil
+		return imageObject(asset.Path, asset.Data, element.Geometry), nil
 	case config.DashboardBlockSpriteFrame:
 		if !element.HasFrame {
 			return nil, fmt.Errorf("element %q has no resolved frame", element.ID)
@@ -140,9 +140,15 @@ func applyGeometry(object fyneui.CanvasObject, geometry config.RectConfig) {
 }
 
 func frameResourceName(element scene.Element) string {
+	if element.Frame.Path != "" {
+		return element.Frame.Path
+	}
 	return fmt.Sprintf("%s-frame-%d", element.ID, element.Frame.Index)
 }
 
 func glyphResourceName(element scene.Element, index int, glyph assets.Glyph) string {
+	if glyph.Path != "" {
+		return glyph.Path
+	}
 	return fmt.Sprintf("%s-glyph-%d-%s", element.ID, index, glyph.Char)
 }
