@@ -1,5 +1,14 @@
 # CHANGES
 
+## 0.7 - 2026-06-08
+
+- Implemented dashboard v2.6.x Fyne scene renderer under `internal/dashboard/renderer/fyne`.
+- Added rendering support for image, sprite_frame, sprite_text, and group scene elements.
+- Wired the app dashboard through asset loading, decoder execution, scene evaluation, and renderer updates.
+- Added periodic dashboard refresh from `StateStore` snapshots so scene output follows live sensor state.
+- Added renderer tests for visible element rendering, sprite text glyph layout, and group rendering.
+- Kept decoder logic outside the renderer and kept polling/logging ownership unchanged.
+
 ## 0.6 - 2026-06-08
 
 - Implemented dashboard v2.5.x scene primitive evaluation under `internal/dashboard/scene`.
