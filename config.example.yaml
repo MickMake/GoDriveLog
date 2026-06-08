@@ -13,28 +13,28 @@ dashboard:
   canvas:
     width: 800
     height: 480
+  asset_root: assets/dashboard/bttf
   assets:
     - id: background
       type: image
-      path: assets/dashboard/bttf/background.png
+      path: background.png
     - id: throttle_frames
       type: frame_set
-      frames:
-        - assets/dashboard/bttf/throttle/frame_000.png
-        - assets/dashboard/bttf/throttle/frame_001.png
+      pattern: throttle/frame_{index:03}.png
+      frame_count: 2
     - id: yellow_digits
       type: charset
       glyphs:
-        "0": assets/dashboard/bttf/digits/yellow/0.png
-        "1": assets/dashboard/bttf/digits/yellow/1.png
-        "2": assets/dashboard/bttf/digits/yellow/2.png
-        "3": assets/dashboard/bttf/digits/yellow/3.png
-        "4": assets/dashboard/bttf/digits/yellow/4.png
-        "5": assets/dashboard/bttf/digits/yellow/5.png
-        "6": assets/dashboard/bttf/digits/yellow/6.png
-        "7": assets/dashboard/bttf/digits/yellow/7.png
-        "8": assets/dashboard/bttf/digits/yellow/8.png
-        "9": assets/dashboard/bttf/digits/yellow/9.png
+        "0": digits/yellow/0.png
+        "1": digits/yellow/1.png
+        "2": digits/yellow/2.png
+        "3": digits/yellow/3.png
+        "4": digits/yellow/4.png
+        "5": digits/yellow/5.png
+        "6": digits/yellow/6.png
+        "7": digits/yellow/7.png
+        "8": digits/yellow/8.png
+        "9": digits/yellow/9.png
   decoders:
     - id: rpm_digits
       type: digits
@@ -224,39 +224,4 @@ sensors:
     refresh: 5000
     min: 0
     max: 100
-    log: true
-
-  barometric_pressure:
-    type: obd
-    pid: "0133"
-    unit: kPa
-    refresh: 5000
-    min: 0
-    max: 255
-    log: false
-
-  control_module_voltage:
-    type: obd
-    pid: "0142"
-    unit: V
-    refresh: 2000
-    min: 10
-    max: 16
-    log: true
-
-  engine_oil_temp:
-    type: obd
-    pid: "015C"
-    unit: C
-    refresh: 5000
-    min: -40
-    max: 150
-    log: true
-
-  moving:
-    type: virtual
-    unit: bool
-    refresh: 1000
-    min: 0
-    max: 1
     log: false
