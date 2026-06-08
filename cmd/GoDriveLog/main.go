@@ -17,7 +17,6 @@ import (
 	"github.com/MickMake/GoDriveLog/internal/config"
 	jsonlogger "github.com/MickMake/GoDriveLog/internal/logger"
 	"github.com/MickMake/GoDriveLog/internal/sensors"
-	"github.com/MickMake/GoDriveLog/internal/state"
 	"github.com/MickMake/GoDriveLog/internal/ui"
 	"github.com/MickMake/GoDriveLog/widgets"
 )
@@ -39,7 +38,7 @@ func main() {
 		log.Fatal(err)
 	}
 	activeSensors := config.ActiveSensors(cfg)
-	stateStore := state.NewStore(config.SensorStateDefinitions(activeSensors))
+	stateStore := sensors.NewStateStore(config.SensorStateDefinitions(activeSensors))
 
 	logger, err := jsonlogger.NewJSONL(cfg.Log.Directory)
 	if err != nil {
