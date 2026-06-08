@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/MickMake/GoDriveLog/internal/config"
 	"github.com/MickMake/GoDriveLog/internal/dashboard/assets"
@@ -65,7 +66,7 @@ func Evaluate(dashboard config.DashboardConfig, assetRegistry *assets.Registry, 
 			if !ok {
 				return Scene{}, fmt.Errorf("layer %q block %q is not configured", layer.ID, blockID)
 			}
-			element, err := resolveBlock(block, layer.ID, layer.Z, blocks, assetRegistry, decoderValues, sensorStates, options)
+			element, err := resolveBlock(block, layer.ID, layer.Z, blocks, assetRegistry, decoderValues, sensorStates, options, nil)
 			if err != nil {
 				return Scene{}, err
 			}
@@ -75,7 +76,12 @@ func Evaluate(dashboard config.DashboardConfig, assetRegistry *assets.Registry, 
 	return scene, nil
 }
 
-func resolveBlock(block config.DashboardBlockConfig, layerID string, z int, blocks map[string]config.DashboardBlockConfig, assetRegistry *assets.Registry, decoderValues map[string]decoders.Value, sensorStates map[string]sensors.SensorState, options Options) (Element, error) {
+func resolveBlock(block config.DashboardBlockConfig, layerID string, z int, blocks map[string]config.DashboardBlockConfig, assetRegistry *assets.Registry, decoderValues map[string]decoders.Value, sensorStates map[string]sensors.SensorState, options Options, stack []string) (Element, error) {
+	activeStack, err := pushResolutionStack(stack, block.ID)
+	if err != nil {
+		return Element{}, err
+	}
+
 	visible, err := evaluateCondition(options.Conditions[block.ID], decoderValues, sensorStates)
 	if err != nil {
 		return Element{}, fmt.Errorf("block %q condition: %w", block.ID, err)
@@ -130,7 +136,7 @@ func resolveBlock(block config.DashboardBlockConfig, layerID string, z int, bloc
 			if !ok {
 				return Element{}, fmt.Errorf("block %q child %q is not configured", block.ID, childID)
 			}
-			childElement, err := resolveBlock(child, layerID, z, blocks, assetRegistry, decoderValues, sensorStates, options)
+			childElement, err := resolveBlock(child, layerID, z, blocks, assetRegistry, decoderValues, sensorStates, options, activeStack)
 			if err != nil {
 				return Element{}, err
 			}
@@ -141,6 +147,16 @@ func resolveBlock(block config.DashboardBlockConfig, layerID string, z int, bloc
 	}
 
 	return element, nil
+}
+
+func pushResolutionStack(stack []string, blockID string) ([]string, error) {
+	for i, activeID := range stack {
+		if activeID == blockID {
+			cycle := append(append([]string(nil), stack[i:]...), blockID)
+			return nil, fmt.Errorf("cyclic dashboard scene block reference detected: %s", strings.Join(cycle, " -> "))
+		}
+	}
+	return append(append([]string(nil), stack...), blockID), nil
 }
 
 func requireAsset(registry *assets.Registry, id string, assetType string) (assets.Asset, error) {
