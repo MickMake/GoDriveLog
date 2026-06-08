@@ -31,5 +31,5 @@ func decodeThreshold(decoder config.DashboardDecoderConfig, inputs Inputs) (Valu
 		selected = threshold.Value
 	}
 
-	return Value{Type: ValueTypeText, Text: selected}, nil
+	return Value{Type: ValueTypeText, Text: selected, Status: input.Status, Error: input.Error}, nil
 }
