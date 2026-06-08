@@ -92,12 +92,13 @@ func resolveBlock(block config.DashboardBlockConfig, layerID string, z int, bloc
 		return Element{}, fmt.Errorf("block %q condition: %w", block.ID, err)
 	}
 
-	element := Element{ID: block.ID, Type: block.Type, LayerID: layerID, Z: z, AssetID: block.Asset, Decoder: block.Decoder, Geometry: block.Geometry, Visible: visible}
+	primitiveType := primitiveBlockType(block)
+	element := Element{ID: block.ID, Type: primitiveType, LayerID: layerID, Z: z, AssetID: block.Asset, Decoder: block.Decoder, Geometry: block.Geometry, Visible: visible}
 	if !visible {
 		return element, nil
 	}
 
-	switch block.Type {
+	switch primitiveType {
 	case config.DashboardBlockImage:
 		asset, err := requireAsset(assetRegistry, block.Asset, assets.TypeImage)
 		if err != nil {
@@ -152,6 +153,24 @@ func resolveBlock(block config.DashboardBlockConfig, layerID string, z int, bloc
 	}
 
 	return element, nil
+}
+
+func primitiveBlockType(block config.DashboardBlockConfig) string {
+	switch block.Type {
+	case config.DashboardBlockSevenSegmentNumber, config.DashboardBlockLabelledSensorValue:
+		return config.DashboardBlockSpriteText
+	case config.DashboardBlockPercentFrameBar:
+		return config.DashboardBlockSpriteFrame
+	case config.DashboardBlockStateLamp, config.DashboardBlockWarningOverlay, config.DashboardBlockStaleOverlay, config.DashboardBlockStaticPanel:
+		return config.DashboardBlockImage
+	case config.DashboardBlockGlowingNumberBox:
+		if len(block.Blocks) > 0 {
+			return config.DashboardBlockGroup
+		}
+		return config.DashboardBlockSpriteText
+	default:
+		return block.Type
+	}
 }
 
 func conditionFromConfig(condition config.DashboardConditionConfig) Condition {

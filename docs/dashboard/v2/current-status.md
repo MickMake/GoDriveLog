@@ -1,7 +1,7 @@
 # Dashboard v2 Current Status
 
 ## Active stage
-v2.8.x - Remove old widgets
+v2.9.x - Reusable block library
 
 ## Completed
 - v2.0.x - New config schema
@@ -12,9 +12,10 @@ v2.8.x - Remove old widgets
 - v2.5.x - Scene primitives
 - v2.6.x - Fyne scene renderer
 - v2.7.x - First real dashboard
+- v2.8.x - Remove old widgets
 
 ## Current branch
-- feature/v2-8-remove-widgets
+- feature/v2-9-reusable-block-library
 
 ## Decisions
 - No legacy dashboard compatibility.
@@ -28,12 +29,13 @@ v2.8.x - Remove old widgets
 - Dashboard scenes consume already-classified sensor status; dashboard rendering must not apply global stale timing.
 - The throttle example uses an 11-frame fixture set for 10% visual steps.
 - The old standalone widget package tree has been removed from the v2 application path.
+- Reusable dashboard block names resolve through existing scene primitives rather than adding a second renderer path.
 
 ## Next prompt
-Use v2.8.x prompt from prompts.md until merged. After merge, use v2.9.x prompt.
+Use v2.9.x prompt from prompts.md until merged. After merge, plan the next dashboard v2 increment from the parent planning chat.
 
 ## Known risks
 - Example dashboard assets are intentionally small SVG placeholders, not final artwork.
 - Sprite text currently distributes glyphs evenly across the configured text geometry.
 - Full visual verification remains manual in mock mode.
-- Broader reusable dashboard blocks remain a v2.9 cleanup/buildout task.
+- Reusable block types are semantic aliases over existing primitives; richer styling remains future work.
