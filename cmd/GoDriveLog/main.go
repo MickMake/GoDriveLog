@@ -58,7 +58,11 @@ func main() {
 	window := application.NewWindow("GoDriveLog")
 	window.Resize(fyne.NewSize(float32(cfg.Dashboard.Canvas.Width), float32(cfg.Dashboard.Canvas.Height)))
 
-	dash := ui.NewDashboard(cfg.Dashboard, stateStore)
+	dash, err := ui.NewDashboardWithConfigPath(cfg.Dashboard, *configPath, stateStore)
+	if err != nil {
+		log.Fatal(err)
+	}
+	dash.Start(ctx, 100*time.Millisecond)
 
 	lastLogPath := logger.ActivePath()
 	status := widget.NewLabel("log: " + lastLogPath)
