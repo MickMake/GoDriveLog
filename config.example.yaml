@@ -99,7 +99,6 @@ sensors:
     min: 0
     max: 100
     log: true
-
   coolant_temp:
     type: obd
     pid: "0105"
@@ -108,7 +107,6 @@ sensors:
     min: -40
     max: 140
     log: true
-
   short_fuel_trim_bank1:
     type: obd
     pid: "0106"
@@ -117,7 +115,6 @@ sensors:
     min: -100
     max: 100
     log: true
-
   long_fuel_trim_bank1:
     type: obd
     pid: "0107"
@@ -126,7 +123,6 @@ sensors:
     min: -100
     max: 100
     log: true
-
   intake_manifold_pressure:
     type: obd
     pid: "010B"
@@ -135,7 +131,6 @@ sensors:
     min: 0
     max: 255
     log: true
-
   rpm:
     type: obd
     pid: "010C"
@@ -144,7 +139,6 @@ sensors:
     min: 0
     max: 7000
     log: true
-
   speed:
     type: obd
     pid: "010D"
@@ -153,7 +147,6 @@ sensors:
     min: 0
     max: 160
     log: true
-
   timing_advance:
     type: obd
     pid: "010E"
@@ -162,7 +155,6 @@ sensors:
     min: -64
     max: 64
     log: false
-
   intake_air_temp:
     type: obd
     pid: "010F"
@@ -171,7 +163,6 @@ sensors:
     min: -40
     max: 140
     log: true
-
   mass_air_flow:
     type: obd
     pid: "0110"
@@ -180,7 +171,6 @@ sensors:
     min: 0
     max: 655
     log: false
-
   throttle_position:
     type: obd
     pid: "0111"
@@ -189,7 +179,6 @@ sensors:
     min: 0
     max: 100
     log: true
-
   run_time_since_engine_start:
     type: obd
     pid: "011F"
@@ -198,7 +187,6 @@ sensors:
     min: 0
     max: 86400
     log: false
-
   distance_with_mil_on:
     type: obd
     pid: "0121"
@@ -207,7 +195,6 @@ sensors:
     min: 0
     max: 65535
     log: false
-
   fuel_rail_pressure:
     type: obd
     pid: "0123"
@@ -216,7 +203,6 @@ sensors:
     min: 0
     max: 655350
     log: false
-
   fuel_level:
     type: obd
     pid: "012F"
@@ -224,4 +210,35 @@ sensors:
     refresh: 5000
     min: 0
     max: 100
+    log: true
+  barometric_pressure:
+    type: obd
+    pid: "0133"
+    unit: kPa
+    refresh: 5000
+    min: 0
+    max: 255
+    log: false
+  control_module_voltage:
+    type: obd
+    pid: "0142"
+    unit: V
+    refresh: 2000
+    min: 10
+    max: 16
+    log: true
+  engine_oil_temp:
+    type: obd
+    pid: "015C"
+    unit: C
+    refresh: 5000
+    min: -40
+    max: 150
+    log: true
+  moving:
+    type: virtual
+    unit: bool
+    refresh: 1000
+    min: 0
+    max: 1
     log: false
