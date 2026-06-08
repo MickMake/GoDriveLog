@@ -1,11 +1,8 @@
-# Changes
+# CHANGES
 
-## v0.1
+## 0.1 - 2026-06-08
 
-- Created initial Go/Fyne Raspberry Pi 4 PID logger scaffold.
-- Added YAML startup config with PID, name, refresh rate, widget, style, position, and size.
-- Added mock sensor reader for fast local testing.
-- Added JSONL logger.
-- Added log rotation on engine-start threshold crossing.
-- Added basic Fyne dashboard with gauge/bar/graph-style display handling.
-- Added README with build and run notes.
+- Created PR-tail package for GoDriveLog dashboard v2.7 throttle fixture completion.
+- Restored throttle frame count from 3 to 11 in `config.example.yaml`.
+- Added placeholder SVG throttle frames 003 through 010 for 30% through 100%.
+- Kept changes limited to the v2.7 example/dashboard fixture assets.
