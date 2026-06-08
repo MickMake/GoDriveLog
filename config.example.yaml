@@ -17,39 +17,57 @@ dashboard:
   assets:
     - id: background
       type: image
-      path: background.png
+      path: background.svg
+    - id: redline_glow
+      type: image
+      path: redline_glow.svg
+    - id: status_ok
+      type: image
+      path: status/ok.svg
+    - id: status_stale
+      type: image
+      path: status/stale.svg
+    - id: status_error
+      type: image
+      path: status/error.svg
     - id: throttle_frames
       type: frame_set
-      pattern: throttle/frame_{index:03}.png
-      frame_count: 2
+      pattern: throttle/frame_{index:03}.svg
+      frame_count: 11
     - id: yellow_digits
       type: charset
       glyphs:
-        "0": digits/yellow/0.png
-        "1": digits/yellow/1.png
-        "2": digits/yellow/2.png
-        "3": digits/yellow/3.png
-        "4": digits/yellow/4.png
-        "5": digits/yellow/5.png
-        "6": digits/yellow/6.png
-        "7": digits/yellow/7.png
-        "8": digits/yellow/8.png
-        "9": digits/yellow/9.png
+        "0": digits/yellow/0.svg
+        "1": digits/yellow/1.svg
+        "2": digits/yellow/2.svg
+        "3": digits/yellow/3.svg
+        "4": digits/yellow/4.svg
+        "5": digits/yellow/5.svg
+        "6": digits/yellow/6.svg
+        "7": digits/yellow/7.svg
+        "8": digits/yellow/8.svg
+        "9": digits/yellow/9.svg
   decoders:
+    - id: rpm_text
+      type: format_number
+      sensor: rpm
+      format: "0000"
     - id: rpm_digits
       type: digits
-      sensor: rpm
+      input: rpm_text
       asset: yellow_digits
     - id: throttle_frame
       type: frame_index
       sensor: throttle_position
       asset: throttle_frames
-      frame_count: 10
+      frame_count: 11
     - id: rpm_warning
       type: threshold
       sensor: rpm
       thresholds:
-        - at: 6000
+        - at: 0
+          value: normal
+        - at: 2100
           value: warning
   blocks:
     - id: background_panel
@@ -65,30 +83,84 @@ dashboard:
       asset: yellow_digits
       decoder: rpm_digits
       geometry:
-        x: 100
-        y: 60
-        width: 240
-        height: 80
+        x: 92
+        y: 58
+        width: 300
+        height: 100
     - id: throttle_bar
       type: sprite_frame
       asset: throttle_frames
       decoder: throttle_frame
       geometry:
-        x: 100
-        y: 170
-        width: 300
-        height: 40
+        x: 92
+        y: 220
+        width: 360
+        height: 48
+    - id: status_ok_indicator
+      type: image
+      asset: status_ok
+      condition:
+        sensor: rpm
+        status: ok
+      geometry:
+        x: 610
+        y: 58
+        width: 120
+        height: 42
+    - id: status_stale_indicator
+      type: image
+      asset: status_stale
+      condition:
+        sensor: rpm
+        status: stale
+      geometry:
+        x: 610
+        y: 58
+        width: 120
+        height: 42
+    - id: status_error_indicator
+      type: image
+      asset: status_error
+      condition:
+        sensor: rpm
+        status: error
+      geometry:
+        x: 610
+        y: 58
+        width: 120
+        height: 42
+    - id: redline_overlay
+      type: image
+      asset: redline_glow
+      condition:
+        decoder: rpm_warning
+        equals: warning
+      geometry:
+        x: 0
+        y: 0
+        width: 800
+        height: 480
     - id: main_cluster
       type: group
       blocks:
         - rpm_display
         - throttle_bar
+        - status_ok_indicator
+        - status_stale_indicator
+        - status_error_indicator
   layers:
     - id: base
       z: 0
       blocks:
         - background_panel
+    - id: dashboard
+      z: 10
+      blocks:
         - main_cluster
+    - id: alerts
+      z: 20
+      blocks:
+        - redline_overlay
 
 sensors:
   engine_load:
