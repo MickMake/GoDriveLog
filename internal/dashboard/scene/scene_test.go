@@ -3,6 +3,7 @@ package scene
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/MickMake/GoDriveLog/internal/config"
@@ -125,6 +126,66 @@ func TestEvaluateGroupContainsChildElements(t *testing.T) {
 	}
 	if group.Children[0].ID != "rpm_display" || group.Children[1].ID != "throttle_bar" {
 		t.Fatalf("group children = %s, %s; want rpm_display, throttle_bar", group.Children[0].ID, group.Children[1].ID)
+	}
+}
+
+func TestEvaluateRejectsDirectGroupCycle(t *testing.T) {
+	registry := makeRegistry(t)
+	dashboard := baseDashboard()
+	dashboard.Blocks = []config.DashboardBlockConfig{
+		{ID: "group_a", Type: config.DashboardBlockGroup, Blocks: []string{"group_a"}},
+	}
+	dashboard.Layers = []config.DashboardLayerConfig{{ID: "base", Z: 0, Blocks: []string{"group_a"}}}
+
+	_, err := Evaluate(dashboard, registry, baseDecoderValues(), nil, Options{})
+	if err == nil {
+		t.Fatal("Evaluate returned nil error, want direct cycle error")
+	}
+	if !strings.Contains(err.Error(), "group_a -> group_a") {
+		t.Fatalf("Evaluate error = %q, want direct cycle path", err.Error())
+	}
+}
+
+func TestEvaluateRejectsIndirectGroupCycle(t *testing.T) {
+	registry := makeRegistry(t)
+	dashboard := baseDashboard()
+	dashboard.Blocks = []config.DashboardBlockConfig{
+		{ID: "group_a", Type: config.DashboardBlockGroup, Blocks: []string{"group_b"}},
+		{ID: "group_b", Type: config.DashboardBlockGroup, Blocks: []string{"group_a"}},
+	}
+	dashboard.Layers = []config.DashboardLayerConfig{{ID: "base", Z: 0, Blocks: []string{"group_a"}}}
+
+	_, err := Evaluate(dashboard, registry, baseDecoderValues(), nil, Options{})
+	if err == nil {
+		t.Fatal("Evaluate returned nil error, want indirect cycle error")
+	}
+	if !strings.Contains(err.Error(), "group_a -> group_b -> group_a") {
+		t.Fatalf("Evaluate error = %q, want indirect cycle path", err.Error())
+	}
+}
+
+func TestEvaluateAllowsAcyclicNestedGroup(t *testing.T) {
+	registry := makeRegistry(t)
+	dashboard := baseDashboard()
+	dashboard.Blocks = []config.DashboardBlockConfig{
+		{ID: "outer", Type: config.DashboardBlockGroup, Blocks: []string{"inner"}},
+		{ID: "inner", Type: config.DashboardBlockGroup, Blocks: []string{"rpm_display"}},
+		{ID: "rpm_display", Type: config.DashboardBlockSpriteText, Asset: "yellow_digits", Decoder: "rpm_digits", Geometry: config.RectConfig{X: 100, Y: 60, Width: 240, Height: 80}},
+	}
+	dashboard.Layers = []config.DashboardLayerConfig{{ID: "base", Z: 0, Blocks: []string{"outer"}}}
+
+	scene, err := Evaluate(dashboard, registry, baseDecoderValues(), nil, Options{})
+	if err != nil {
+		t.Fatalf("Evaluate returned error: %v", err)
+	}
+
+	outer := findElement(t, scene.Elements, "outer")
+	if len(outer.Children) != 1 || outer.Children[0].ID != "inner" {
+		t.Fatalf("outer children = %#v, want inner", outer.Children)
+	}
+	rpm := findElement(t, scene.Elements, "rpm_display")
+	if rpm.Text != "10" {
+		t.Fatalf("rpm_display Text = %q, want 10", rpm.Text)
 	}
 }
 
