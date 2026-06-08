@@ -149,7 +149,6 @@ func validateDecoders(decoders []DashboardDecoderConfig, sensors map[string]Sens
 		if ids[decoder.ID] {
 			return nil, fmt.Errorf("dashboard.decoders id %q must be unique", decoder.ID)
 		}
-		ids[decoder.ID] = true
 
 		switch decoder.Type {
 		case DashboardDecoderNormalize, DashboardDecoderThreshold, DashboardDecoderFrameIndex, DashboardDecoderFormatNumber, DashboardDecoderDigits, DashboardDecoderBoolean:
@@ -157,10 +156,19 @@ func validateDecoders(decoders []DashboardDecoderConfig, sensors map[string]Sens
 			return nil, fmt.Errorf("%s.type must be a supported decoder type", path)
 		}
 
+		if decoder.Sensor == "" && decoder.Input == "" {
+			return nil, fmt.Errorf("%s must define sensor or input", path)
+		}
+		if decoder.Sensor != "" && decoder.Input != "" {
+			return nil, fmt.Errorf("%s must not define both sensor and input", path)
+		}
 		if decoder.Sensor != "" {
 			if _, ok := sensors[decoder.Sensor]; !ok {
 				return nil, fmt.Errorf("%s.sensor %q must reference a configured sensor", path, decoder.Sensor)
 			}
+		}
+		if decoder.Input != "" && !ids[decoder.Input] {
+			return nil, fmt.Errorf("%s.input %q must reference an earlier decoder", path, decoder.Input)
 		}
 		if decoder.Asset != "" && !assets[decoder.Asset] {
 			return nil, fmt.Errorf("%s.asset %q must reference a configured asset", path, decoder.Asset)
@@ -171,6 +179,8 @@ func validateDecoders(decoders []DashboardDecoderConfig, sensors map[string]Sens
 		if decoder.Type == DashboardDecoderThreshold && len(decoder.Thresholds) == 0 {
 			return nil, fmt.Errorf("%s.thresholds must not be empty for threshold decoders", path)
 		}
+
+		ids[decoder.ID] = true
 	}
 	return ids, nil
 }
