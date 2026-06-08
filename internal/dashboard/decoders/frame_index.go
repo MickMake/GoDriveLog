@@ -34,5 +34,5 @@ func decodeFrameIndex(decoder config.DashboardDecoderConfig, inputs Inputs) (Val
 	}
 
 	index := int(math.Round(normalized * float64(decoder.FrameCount-1)))
-	return Value{Type: ValueTypeFrameIndex, Number: float64(index), FrameIndex: index, Min: 0, Max: float64(decoder.FrameCount - 1), HasRange: true}, nil
+	return Value{Type: ValueTypeFrameIndex, Number: float64(index), FrameIndex: index, Status: input.Status, Error: input.Error, Min: 0, Max: float64(decoder.FrameCount - 1), HasRange: true}, nil
 }
