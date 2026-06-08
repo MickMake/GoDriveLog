@@ -19,6 +19,15 @@ const (
 	DashboardBlockSpriteText  = "sprite_text"
 	DashboardBlockGroup       = "group"
 	DashboardBlockText        = "text"
+
+	DashboardBlockSevenSegmentNumber  = "seven_segment_number"
+	DashboardBlockPercentFrameBar     = "percent_frame_bar"
+	DashboardBlockStateLamp           = "state_lamp"
+	DashboardBlockGlowingNumberBox    = "glowing_number_box"
+	DashboardBlockLabelledSensorValue = "labelled_sensor_value"
+	DashboardBlockWarningOverlay      = "warning_overlay"
+	DashboardBlockStaleOverlay        = "stale_overlay"
+	DashboardBlockStaticPanel         = "static_panel"
 )
 
 type DashboardConfig struct {
@@ -222,9 +231,7 @@ func validateBlocks(blocks []DashboardBlockConfig, assets map[string]bool, decod
 		}
 		ids[block.ID] = true
 
-		switch block.Type {
-		case DashboardBlockImage, DashboardBlockSpriteFrame, DashboardBlockSpriteText, DashboardBlockGroup, DashboardBlockText:
-		default:
+		if !isSupportedDashboardBlockType(block.Type) {
 			return nil, fmt.Errorf("%s.type must be a supported block type", path)
 		}
 
@@ -237,19 +244,19 @@ func validateBlocks(blocks []DashboardBlockConfig, assets map[string]bool, decod
 		if err := validateCondition(path, block.Condition, sensors, decoders); err != nil {
 			return nil, err
 		}
-		if block.Type == DashboardBlockGroup && len(block.Blocks) == 0 {
+		if isDashboardGroupBlock(block) && len(block.Blocks) == 0 {
 			return nil, fmt.Errorf("%s.blocks must not be empty for group blocks", path)
 		}
-		if block.Type != DashboardBlockGroup && block.Geometry.Width <= 0 {
+		if !isDashboardGroupBlock(block) && block.Geometry.Width <= 0 {
 			return nil, fmt.Errorf("%s.geometry.width must be positive", path)
 		}
-		if block.Type != DashboardBlockGroup && block.Geometry.Height <= 0 {
+		if !isDashboardGroupBlock(block) && block.Geometry.Height <= 0 {
 			return nil, fmt.Errorf("%s.geometry.height must be positive", path)
 		}
 	}
 
 	for i, block := range blocks {
-		if block.Type != DashboardBlockGroup {
+		if !isDashboardGroupBlock(block) {
 			continue
 		}
 		path := fmt.Sprintf("dashboard.blocks[%d]", i)
@@ -261,6 +268,21 @@ func validateBlocks(blocks []DashboardBlockConfig, assets map[string]bool, decod
 	}
 
 	return ids, nil
+}
+
+func isSupportedDashboardBlockType(blockType string) bool {
+	switch blockType {
+	case DashboardBlockImage, DashboardBlockSpriteFrame, DashboardBlockSpriteText, DashboardBlockGroup, DashboardBlockText,
+		DashboardBlockSevenSegmentNumber, DashboardBlockPercentFrameBar, DashboardBlockStateLamp, DashboardBlockGlowingNumberBox,
+		DashboardBlockLabelledSensorValue, DashboardBlockWarningOverlay, DashboardBlockStaleOverlay, DashboardBlockStaticPanel:
+		return true
+	default:
+		return false
+	}
+}
+
+func isDashboardGroupBlock(block DashboardBlockConfig) bool {
+	return block.Type == DashboardBlockGroup || (block.Type == DashboardBlockGlowingNumberBox && len(block.Blocks) > 0)
 }
 
 func validateCondition(path string, condition DashboardConditionConfig, sensors map[string]SensorConfig, decoders map[string]bool) error {
