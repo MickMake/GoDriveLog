@@ -1,5 +1,15 @@
 # CHANGES
 
+## 0.5 - 2026-06-08
+
+- Implemented dashboard v2.4.x asset registry under `internal/dashboard/assets`.
+- Added cached loading for image, frame_set, and charset assets.
+- Added dashboard `asset_root` support so relative asset paths can resolve from the config file directory.
+- Added generated frame-set support with `{index}` and zero-padded `{index:03}` patterns, while keeping explicit frame lists supported.
+- Added clear load errors for missing image, frame, and glyph files.
+- Added tests using small fixture assets for load, cache, missing asset, generated frames, explicit frames, charset glyphs, and remote-path rejection.
+- Kept this stage independent of scene primitives and rendering.
+
 ## 0.4 - 2026-06-08
 
 - Implemented dashboard v2.3.x decoder engine under `internal/dashboard/decoders`.
