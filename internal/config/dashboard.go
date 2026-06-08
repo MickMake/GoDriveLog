@@ -22,11 +22,12 @@ const (
 )
 
 type DashboardConfig struct {
-	Canvas   CanvasConfig             `yaml:"canvas"`
-	Assets   []DashboardAssetConfig   `yaml:"assets"`
-	Decoders []DashboardDecoderConfig `yaml:"decoders"`
-	Blocks   []DashboardBlockConfig   `yaml:"blocks"`
-	Layers   []DashboardLayerConfig   `yaml:"layers"`
+	Canvas    CanvasConfig             `yaml:"canvas"`
+	AssetRoot string                   `yaml:"asset_root"`
+	Assets    []DashboardAssetConfig   `yaml:"assets"`
+	Decoders  []DashboardDecoderConfig `yaml:"decoders"`
+	Blocks    []DashboardBlockConfig   `yaml:"blocks"`
+	Layers    []DashboardLayerConfig   `yaml:"layers"`
 }
 
 type CanvasConfig struct {
@@ -35,11 +36,13 @@ type CanvasConfig struct {
 }
 
 type DashboardAssetConfig struct {
-	ID     string            `yaml:"id"`
-	Type   string            `yaml:"type"`
-	Path   string            `yaml:"path"`
-	Frames []string          `yaml:"frames"`
-	Glyphs map[string]string `yaml:"glyphs"`
+	ID         string            `yaml:"id"`
+	Type       string            `yaml:"type"`
+	Path       string            `yaml:"path"`
+	Pattern    string            `yaml:"pattern"`
+	FrameCount int               `yaml:"frame_count"`
+	Frames     []string          `yaml:"frames"`
+	Glyphs     map[string]string `yaml:"glyphs"`
 }
 
 type DashboardDecoderConfig struct {
@@ -125,8 +128,19 @@ func validateAssets(assets []DashboardAssetConfig) (map[string]bool, error) {
 				return nil, fmt.Errorf("%s.path must not be empty for image assets", path)
 			}
 		case DashboardAssetFrameSet:
-			if len(asset.Frames) == 0 {
-				return nil, fmt.Errorf("%s.frames must not be empty for frame_set assets", path)
+			hasExplicitFrames := len(asset.Frames) > 0
+			hasGeneratedFrames := asset.Pattern != "" || asset.FrameCount > 0
+			if !hasExplicitFrames && !hasGeneratedFrames {
+				return nil, fmt.Errorf("%s.frames or pattern/frame_count must not be empty for frame_set assets", path)
+			}
+			if hasExplicitFrames && asset.Pattern != "" {
+				return nil, fmt.Errorf("%s must not define both frames and pattern", path)
+			}
+			if asset.Pattern != "" && asset.FrameCount <= 0 {
+				return nil, fmt.Errorf("%s.frame_count must be positive for generated frame_set assets", path)
+			}
+			if asset.Pattern == "" && asset.FrameCount > 0 && len(asset.Frames) != asset.FrameCount {
+				return nil, fmt.Errorf("%s.frame_count must match frames length", path)
 			}
 		case DashboardAssetCharset:
 			if len(asset.Glyphs) == 0 {
@@ -219,19 +233,6 @@ func validateBlocks(blocks []DashboardBlockConfig, assets map[string]bool, decod
 			return nil, fmt.Errorf("%s.geometry.height must be positive", path)
 		}
 	}
-
-	for i, block := range blocks {
-		if block.Type != DashboardBlockGroup {
-			continue
-		}
-		path := fmt.Sprintf("dashboard.blocks[%d]", i)
-		for _, childID := range block.Blocks {
-			if !ids[childID] {
-				return nil, fmt.Errorf("%s.blocks %q must reference a configured block", path, childID)
-			}
-		}
-	}
-
 	return ids, nil
 }
 
@@ -239,7 +240,6 @@ func validateLayers(layers []DashboardLayerConfig, blocks map[string]bool) error
 	if len(layers) == 0 {
 		return fmt.Errorf("dashboard.layers must not be empty")
 	}
-
 	ids := map[string]bool{}
 	for i, layer := range layers {
 		path := fmt.Sprintf("dashboard.layers[%d]", i)
