@@ -1,5 +1,12 @@
 # CHANGES
 
+## 2.8.0 - 2026-06-08
+
+- Removed the old standalone dashboard widget package tree.
+- Kept application startup on the dashboard v2 scene path.
+- Confirmed config examples and README describe the v2 scene dashboard shape.
+- Updated dashboard v2 status, overview, and decision notes for the old-widget removal stage.
+
 ## v2.7.1 PR22 stale-review fix
 
 - Added `StaleAfter` to `sensors.SensorDefinition` and `sensors.SensorState`.
@@ -78,6 +85,3 @@
 
 - Created dashboard implementation planning document set for the GoDriveLog v2.x.x dashboard rewrite.
 - Added implementation overview mapping stages 1-10 to v2.0.x through v2.9.x.
-- Added condensed implementation prompt series with guardrails per stage.
-- Added reference/checklist file for schema, decoders, assets, scene primitives, and validation.
-- Packaged documents into a zip archive with a top-level directory.

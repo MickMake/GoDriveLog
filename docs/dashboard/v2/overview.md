@@ -8,39 +8,25 @@ The core goal is:
 
 > Isolate coding from visuals.
 
-The old model makes each PID own its display widget. The new model makes sensor data available as state, and lets a configurable dashboard scene decide how to render that state using assets, decoders, reusable blocks, layers, and conditions.
+The old model made sensor/PID configuration own its visual presentation. The new model makes sensor data available as state, and lets a configurable dashboard scene decide how to render that state using assets, decoders, reusable blocks, layers, and conditions.
 
-No legacy compatibility is required. GoDriveLog is not in production, so the old dashboard model should be removed once the new scene renderer can render a real dashboard.
+No legacy compatibility is required. GoDriveLog is not in production, so the old dashboard model was removed once the new scene renderer could render a real dashboard.
 
 Tiny note from the goblin department: do not build two dashboard engines and hope they remain friends. They will not.
 
 ---
 
-## Current architecture problem
+## Current architecture result
 
-The current app is deliberately small, which is good. But the dashboard is still tied to hardcoded widget names.
+The app now uses the dashboard v2 scene path. Sensor configuration produces runtime state; dashboard configuration describes how that state becomes visuals.
 
-Current shape:
+The model:
 
-```yaml
-vehicle:
-  pids:
-    rpm:
-      display:
-        enabled: true
-        widget: radial1
-        position:
-          x: 20
-          y: 20
-          width: 360
-          height: 90
+```text
+sensor state -> decoders -> visual blocks -> layered scene
 ```
 
-The issue is not positioning. Positioning already exists.
-
-The issue is that `radial1`, `bar1`, `graph1`, and friends are coded visual meanings. That makes every new visual style drift toward more widget code.
-
-Target shape:
+Example target shape:
 
 ```yaml
 sensors:
@@ -58,30 +44,27 @@ dashboard:
     width: 800
     height: 480
 
-  layers:
+  assets:
     - id: background
       type: image
-      asset: bttf_background
+      path: background.svg
 
-    - id: rpm_box_glow
+  decoders:
+    - id: rpm_text
+      type: format_number
+      sensor: rpm
+      format: "0000"
+
+  blocks:
+    - id: background_panel
       type: image
-      asset: rpm_redline_glow
-      visible_when:
-        decoder: rpm_redline_state
-        equals: redline
+      asset: background
 
-    - id: rpm_digits
-      type: block
-      use: seven_segment_number
-      inputs:
-        value: sensor.rpm.value
-        charset: yellow_7seg
-```
-
-The new model:
-
-```text
-sensor state -> decoders -> visual blocks -> layered scene
+  layers:
+    - id: base
+      z: 0
+      blocks:
+        - background_panel
 ```
 
 ---
@@ -98,7 +81,7 @@ sensor state -> decoders -> visual blocks -> layered scene
 | 6 | v2.5.x | Scene primitives | Image, sprite frame, sprite text, groups, conditions, z-order |
 | 7 | v2.6.x | Fyne scene renderer | Configured scene renders instead of old panels |
 | 8 | v2.7.x | First real dashboard | Background, RPM digits, bar frame, redline glow |
-| 9 | v2.8.x | Remove old widgets | Old display widget model deleted |
+| 9 | v2.8.x | Remove old widgets | Old widget package tree removed |
 | 10 | v2.9.x | Reusable block library | Practical dashboard building blocks shipped |
 
 ---
@@ -113,23 +96,22 @@ Separate sensor definition from dashboard visual definition.
 
 - Introduce a new top-level `sensors` section.
 - Introduce a new top-level `dashboard` section.
-- Remove `display` from sensor/PID config.
-- Remove the idea that a PID owns a widget.
+- Remove visual ownership from sensor/PID config.
 - Keep OBD, mock mode, logging, vehicle metadata, PID polling, and existing sensor reading behaviour.
 - Do not render the new dashboard yet.
 
 ### Acceptance
 
 - Config loads with `sensors` and `dashboard`.
-- Old `vehicle.pids.*.display` is no longer required.
+- Sensor polling/logging does not require visual config.
 - Active polling/logging still works.
 - Tests prove config loading and sensor extraction.
 
 ### Do not
 
 - Do not build dashboard rendering yet.
-- Do not keep legacy display config compatibility.
-- Do not add widget names to the new schema.
+- Do not keep legacy visual config compatibility.
+- Do not add visual implementation names to the new sensor schema.
 
 ---
 
@@ -403,23 +385,11 @@ status/error indicator
 
 ### Goal
 
-Delete the old display widget architecture.
-
-### Remove or retire
-
-```text
-vehicle.pids.*.display
-DisplayConfig.Widget
-validDisplayWidget()
-old panel dashboard
-hardcoded widget factory if unused
-old radial/bar/speedhud dependency path if unused
-```
+Delete the old standalone widget package tree.
 
 ### Acceptance
 
-- No old `display.widget` examples remain.
-- No old widget validation remains.
+- No old widget package tree remains.
 - Build/tests pass.
 - App boots only through new dashboard scene config.
 
@@ -478,7 +448,7 @@ dashboard marketplace, unless the goblins get funding
 Old:
 
 ```text
-PID owns display widget
+PID owns visuals
 ```
 
 New:

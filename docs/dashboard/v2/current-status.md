@@ -1,7 +1,7 @@
 # Dashboard v2 Current Status
 
 ## Active stage
-v2.7.x - First real dashboard
+v2.8.x - Remove old widgets
 
 ## Completed
 - v2.0.x - New config schema
@@ -11,9 +11,10 @@ v2.7.x - First real dashboard
 - v2.4.x - Asset registry
 - v2.5.x - Scene primitives
 - v2.6.x - Fyne scene renderer
+- v2.7.x - First real dashboard
 
 ## Current branch
-- feature/dashboard-v2-real-dashboard
+- feature/v2-8-remove-widgets
 
 ## Decisions
 - No legacy dashboard compatibility.
@@ -26,12 +27,13 @@ v2.7.x - First real dashboard
 - Sensor stale status is owned by `StateStore` and derived per sensor from configured refresh intervals.
 - Dashboard scenes consume already-classified sensor status; dashboard rendering must not apply global stale timing.
 - The throttle example uses an 11-frame fixture set for 10% visual steps.
+- The old standalone widget package tree has been removed from the v2 application path.
 
 ## Next prompt
-Use v2.7.x prompt from prompts.md until merged. After merge, use v2.8.x prompt.
+Use v2.8.x prompt from prompts.md until merged. After merge, use v2.9.x prompt.
 
 ## Known risks
 - Example dashboard assets are intentionally small SVG placeholders, not final artwork.
 - Sprite text currently distributes glyphs evenly across the configured text geometry.
 - Full visual verification remains manual in mock mode.
-- Broader old-widget package deletion remains a v2.8 cleanup task.
+- Broader reusable dashboard blocks remain a v2.9 cleanup/buildout task.
