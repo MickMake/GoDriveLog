@@ -33,7 +33,7 @@ dashboard:
     - id: throttle_frames
       type: frame_set
       pattern: throttle/frame_{index:03}.svg
-      frame_count: 11
+      frame_count: 3
     - id: yellow_digits
       type: charset
       glyphs:
@@ -60,7 +60,7 @@ dashboard:
       type: frame_index
       sensor: throttle_position
       asset: throttle_frames
-      frame_count: 11
+      frame_count: 3
     - id: rpm_warning
       type: threshold
       sensor: rpm
