@@ -25,5 +25,10 @@ func decodeFormatNumber(decoder config.DashboardDecoderConfig, inputs Inputs) (V
 		return Value{}, fmt.Errorf("decoder %q format_number format must contain a format marker", decoder.ID)
 	}
 
-	return Value{Type: ValueTypeText, Text: fmt.Sprintf(format, number)}, nil
+	text := fmt.Sprintf(format, number)
+	if strings.Contains(text, "%!") {
+		return Value{}, fmt.Errorf("decoder %q format_number format %q is invalid for numeric input", decoder.ID, format)
+	}
+
+	return Value{Type: ValueTypeText, Text: text}, nil
 }
