@@ -15,29 +15,33 @@ import (
 	"github.com/MickMake/GoDriveLog/internal/sensors"
 )
 
-const defaultDashboardStaleAfter = 2 * time.Second
-
 type Dashboard struct {
-	renderer *fynerenderer.Renderer
-	store    *sensors.StateStore
-	cfg      config.DashboardConfig
-	assets   *assets.Registry
+	renderer   *fynerenderer.Renderer
+	store      *sensors.StateStore
+	cfg        config.DashboardConfig
+	assets     *assets.Registry
+	staleAfter time.Duration
 
 	mu      sync.RWMutex
 	lastErr error
 }
 
 func NewDashboardWithConfigPath(cfg config.DashboardConfig, configPath string, store *sensors.StateStore) (*Dashboard, error) {
+	return NewDashboardWithConfigPathAndStaleAfter(cfg, configPath, store, 0)
+}
+
+func NewDashboardWithConfigPathAndStaleAfter(cfg config.DashboardConfig, configPath string, store *sensors.StateStore, staleAfter time.Duration) (*Dashboard, error) {
 	assetRegistry, err := assets.Load(cfg, configPath)
 	if err != nil {
 		return nil, err
 	}
 
 	dashboard := &Dashboard{
-		renderer: fynerenderer.New(assetRegistry),
-		store:    store,
-		cfg:      cfg,
-		assets:   assetRegistry,
+		renderer:   fynerenderer.New(assetRegistry),
+		store:      store,
+		cfg:        cfg,
+		assets:     assetRegistry,
+		staleAfter: staleAfter,
 	}
 	if err := dashboard.Refresh(); err != nil {
 		dashboard.setLastError(err)
@@ -95,7 +99,7 @@ func (d *Dashboard) StateSnapshot() []sensors.SensorState {
 	if d.store == nil {
 		return nil
 	}
-	return d.store.SnapshotWithStale(defaultDashboardStaleAfter, time.Now())
+	return d.store.SnapshotWithStale(d.staleAfter, time.Now())
 }
 
 func (d *Dashboard) LastError() error {
