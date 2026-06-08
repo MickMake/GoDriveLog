@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -262,6 +263,17 @@ func TestDashboardV21ValidationRejectsInvalidConfigs(t *testing.T) {
 				t.Fatal("Load succeeded, want validation error")
 			}
 		})
+	}
+}
+
+func TestDashboardGroupBlockChildReferencesMustExist(t *testing.T) {
+	_, err := loadConfigFile(t, replaceConfigText(validDashboardV21Config(), `- throttle_bar`, `- missing_block`))
+	if err == nil {
+		t.Fatal("Load succeeded with missing group child block reference, want validation error")
+	}
+	want := `dashboard.blocks[3].blocks "missing_block" must reference a configured block`
+	if !strings.Contains(err.Error(), want) {
+		t.Fatalf("Load error = %q, want to contain %q", err.Error(), want)
 	}
 }
 
