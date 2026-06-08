@@ -23,6 +23,9 @@ v2.7.x - First real dashboard
 - Dashboard UI refreshes from `StateStore` snapshots and re-evaluates scene state for rendering.
 - First real dashboard uses configured assets, decoders, scene blocks, and YAML-backed scene conditions.
 - Decoder outputs preserve source sensor status/error metadata so configured status indicators can render.
+- Sensor stale status is owned by `StateStore` and derived per sensor from configured refresh intervals.
+- Dashboard scenes consume already-classified sensor status; dashboard rendering must not apply global stale timing.
+- The throttle example uses an 11-frame fixture set for 10% visual steps.
 
 ## Next prompt
 Use v2.7.x prompt from prompts.md until merged. After merge, use v2.8.x prompt.
