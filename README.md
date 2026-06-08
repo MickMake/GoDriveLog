@@ -1,19 +1,19 @@
-# GoDriveLog v1.x
+# GoDriveLog
 
-A deliberately small Go/Fyne PID dashboard for Raspberry Pi 4.
+A deliberately small Go/Fyne sensor dashboard for Raspberry Pi 4.
 
-It starts, reads a YAML config, polls configured PIDs at their own refresh intervals, writes JSONL logs, rotates the log daily, and displays values in a Fyne window.
+It starts, reads a YAML config, polls configured sensors at their own refresh intervals, writes JSONL logs, rotates the log daily, and renders a configured dashboard scene in a Fyne window.
 
 ## What is included
 
 - Go app using Fyne v2.
 - YAML startup config.
-- Per-sensor PID, name, refresh rate, display widget + style, position, and size.
-- App-level mock PID reader so the UI/logging can be tested without OBD hardware.
+- Dashboard v2 scene config with local assets, decoders, blocks, layers, and conditions.
+- App-level mock reader so the UI/logging can be tested without OBD hardware.
 - Real OBD reader adapter using `github.com/rzetterberg/elmobd`.
 - JSON Lines logging.
-- Log rotation will happen on a daily basis.
-- Per-sensor error/stale display so failed reads are visible on screen.
+- Daily log rotation.
+- Sensor status/stale/error state available to dashboard scenes.
 
 ## Pi 4 install notes
 
@@ -45,17 +45,31 @@ go build ./cmd/GoDriveLog
 
 The binary will be written to the current directory as `GoDriveLog` unless you pass `-o`.
 
-## Run in mock mode
+## Run the dashboard v2 example in mock mode
 
 ```bash
 ./GoDriveLog -config config.example.yaml
 ```
 
-The mock engine sleeps for about three seconds, then RPM rises.
+Or from source:
 
-## Test the elmobd backend without hardware
+```bash
+go run ./cmd/GoDriveLog -config config.example.yaml
+```
 
-Use the elmobd test address to exercise the real reader adapter without opening a serial device:
+`config.example.yaml` runs in mock mode and loads the local SVG fixture assets under `assets/dashboard/bttf`. The example dashboard shows:
+
+- static background
+- RPM sprite digits
+- throttle sprite-frame bar
+- redline glow overlay from a configured threshold condition
+- status/stale/error badges from sensor state
+
+The mock reader sleeps for about three seconds, then RPM rises. The redline overlay threshold is intentionally low in the example so the visual condition is easy to see without real hardware. Tiny demo goblin, useful boots.
+
+## Test the reader path without hardware
+
+Mock mode is enabled in the example config:
 
 ```yaml
 mock_mode: true
@@ -67,18 +81,18 @@ You can temporarily set those fields in a copy of `config.example.yaml`.
 
 ## Run with a real ELM327 adapter
 
-Use the real OBD example config:
-
-```bash
-./GoDriveLog -config config.example.yaml
-```
-
-Or set `mock_mode` to `false` and point `obd_address` at the adapter:
+Set `mock_mode` to `false` and point `obd_address` at the adapter:
 
 ```yaml
 mock_mode: false
 obd_address: serial:///dev/ttyUSB0
 obd_debug: false
+```
+
+Then run:
+
+```bash
+./GoDriveLog -config config.example.yaml
 ```
 
 The current real OBD adapter supports these configured PIDs:
@@ -98,10 +112,9 @@ The current real OBD adapter supports these configured PIDs:
 | `control_module_voltage` | `0142` | `V` | Control module voltage |
 | `engine_oil_temp` | `015C` | `C` | Engine oil temperature |
 
-
 ## Log output format
 
-Log output are JSON Lines, one reading per line:
+Log output is JSON Lines, one reading per line:
 
 ```json
 {"time":"2026-06-03T10:15:30Z","pid":"010C","name":"RPM","value":1234.5,"unit":"rpm","source":"mock"}
@@ -109,47 +122,50 @@ Log output are JSON Lines, one reading per line:
 
 ## Config shape
 
+The app separates sensor state production from dashboard scene rendering:
+
 ```yaml
-mock_mode: true
-obd_address: serial:///dev/ttyUSB0
-obd_debug: false
+sensors:
+  rpm:
+    type: obd
+    pid: "010C"
+    unit: rpm
+    refresh: 250
+    min: 0
+    max: 7000
+    log: true
 
-log:
-  rotate: daily
-  directory: ./log
-
-vehicle:
-  name: "VW Caddy"
-
-  pids:
-    engine_load:
-      type: obd
-      pid: "0104"
-      unit: "%"
-      refresh: 500
-      min: 0
-      max: 100
-      log: true
-      display:
-        enabled: false
-
-    coolant_temp:
-      type: obd
-      pid: "0105"
-      unit: C
-      refresh: 1000
-      min: -40
-      max: 140
-      log: true
-      display:
-        enabled: true
-        widget: graph1
-        position:
-          x: 20
-          y: 240
-          width: 360
-          height: 120
+dashboard:
+  canvas:
+    width: 800
+    height: 480
+  asset_root: assets/dashboard/bttf
+  assets:
+    - id: background
+      type: image
+      path: background.svg
+  decoders:
+    - id: rpm_text
+      type: format_number
+      sensor: rpm
+      format: "0000"
+  blocks:
+    - id: background_panel
+      type: image
+      asset: background
+      geometry:
+        x: 0
+        y: 0
+        width: 800
+        height: 480
+  layers:
+    - id: base
+      z: 0
+      blocks:
+        - background_panel
 ```
+
+Dashboard block visibility can be driven by configured conditions against sensor status or decoder values.
 
 ## Real OBD transport
 
