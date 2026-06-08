@@ -1,6 +1,10 @@
 package config
 
-import "sort"
+import (
+	"sort"
+
+	"github.com/MickMake/GoDriveLog/internal/sensors"
+)
 
 type RuntimeSensor struct {
 	Key     string
@@ -41,4 +45,17 @@ func ActiveSensors(cfg Config) []RuntimeSensor {
 	}
 
 	return active
+}
+
+func SensorStateDefinitions(runtimeSensors []RuntimeSensor) []sensors.SensorDefinition {
+	definitions := make([]sensors.SensorDefinition, 0, len(runtimeSensors))
+	for _, runtimeSensor := range runtimeSensors {
+		definitions = append(definitions, sensors.SensorDefinition{
+			ID:   runtimeSensor.Key,
+			Unit: runtimeSensor.Unit,
+			Min:  runtimeSensor.Min,
+			Max:  runtimeSensor.Max,
+		})
+	}
+	return definitions
 }

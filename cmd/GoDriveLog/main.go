@@ -38,6 +38,7 @@ func main() {
 		log.Fatal(err)
 	}
 	activeSensors := config.ActiveSensors(cfg)
+	stateStore := sensors.NewStateStore(config.SensorStateDefinitions(activeSensors))
 
 	logger, err := jsonlogger.NewJSONL(cfg.Log.Directory)
 	if err != nil {
@@ -57,7 +58,7 @@ func main() {
 	window := application.NewWindow("GoDriveLog")
 	window.Resize(fyne.NewSize(float32(cfg.Dashboard.Canvas.Width), float32(cfg.Dashboard.Canvas.Height)))
 
-	dash := ui.NewDashboard(cfg.Dashboard)
+	dash := ui.NewDashboard(cfg.Dashboard, stateStore)
 
 	lastLogPath := logger.ActivePath()
 	status := widget.NewLabel("log: " + lastLogPath)
@@ -93,8 +94,10 @@ func main() {
 				case <-ctx.Done():
 					return
 				case <-ticker.C:
+					now := time.Now()
 					value, unit, err := reader.Read(ctx, runtimeSensor.RawPID)
 					if err != nil {
+						stateStore.SetError(runtimeSensor.Key, err, now)
 						log.Printf("read %s: %v", runtimeSensor.RawPID, err)
 						continue
 					}
@@ -102,9 +105,10 @@ func main() {
 					if runtimeSensor.Unit != "" {
 						unit = runtimeSensor.Unit
 					}
+					stateStore.SetValue(runtimeSensor.Key, value, unit, now)
 
 					reading := sensors.Reading{
-						Time:      time.Now(),
+						Time:      now,
 						SensorKey: runtimeSensor.Key,
 						PID:       runtimeSensor.RawPID,
 						Name:      runtimeSensor.Key,
