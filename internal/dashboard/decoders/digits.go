@@ -14,12 +14,16 @@ func decodeDigits(decoder config.DashboardDecoderConfig, inputs Inputs) (Value, 
 	}
 
 	text := input.Text
+	status := input.Status
+	errorText := input.Error
 	if input.Type != ValueTypeText {
 		formatted, err := decodeFormatNumber(decoder, inputs)
 		if err != nil {
 			return Value{}, err
 		}
 		text = formatted.Text
+		status = formatted.Status
+		errorText = formatted.Error
 	}
 
 	digits := make([]string, 0, len(text))
@@ -33,5 +37,5 @@ func decodeDigits(decoder config.DashboardDecoderConfig, inputs Inputs) (Value, 
 		return Value{}, fmt.Errorf("decoder %q digits output must not be empty", decoder.ID)
 	}
 
-	return Value{Type: ValueTypeDigits, Text: strings.Join(digits, ""), Digits: digits}, nil
+	return Value{Type: ValueTypeDigits, Text: strings.Join(digits, ""), Digits: digits, Status: status, Error: errorText}, nil
 }

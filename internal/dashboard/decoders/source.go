@@ -18,9 +18,6 @@ func resolveInput(decoder config.DashboardDecoderConfig, inputs Inputs) (Value, 
 		if !ok {
 			return Value{}, fmt.Errorf("decoder %q sensor %q is not available", decoder.ID, decoder.Sensor)
 		}
-		if state.Status == sensors.StatusError {
-			return Value{}, fmt.Errorf("decoder %q sensor %q is in error: %s", decoder.ID, decoder.Sensor, state.Error)
-		}
 		return Value{
 			Type:     ValueTypeNumber,
 			Number:   state.Value,

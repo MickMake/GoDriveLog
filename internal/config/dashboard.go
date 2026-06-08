@@ -61,13 +61,24 @@ type ThresholdConfig struct {
 	Value string  `yaml:"value"`
 }
 
+type DashboardConditionConfig struct {
+	Sensor    string   `yaml:"sensor"`
+	Decoder   string   `yaml:"decoder"`
+	Status    string   `yaml:"status"`
+	Equals    string   `yaml:"equals"`
+	NotEquals string   `yaml:"not_equals"`
+	Min       *float64 `yaml:"min"`
+	Max       *float64 `yaml:"max"`
+}
+
 type DashboardBlockConfig struct {
-	ID       string     `yaml:"id"`
-	Type     string     `yaml:"type"`
-	Asset    string     `yaml:"asset"`
-	Decoder  string     `yaml:"decoder"`
-	Blocks   []string   `yaml:"blocks"`
-	Geometry RectConfig `yaml:"geometry"`
+	ID        string                   `yaml:"id"`
+	Type      string                   `yaml:"type"`
+	Asset     string                   `yaml:"asset"`
+	Decoder   string                   `yaml:"decoder"`
+	Blocks    []string                 `yaml:"blocks"`
+	Condition DashboardConditionConfig `yaml:"condition"`
+	Geometry  RectConfig               `yaml:"geometry"`
 }
 
 type RectConfig struct {
@@ -99,7 +110,7 @@ func validateDashboard(cfg Config) error {
 	if err != nil {
 		return err
 	}
-	blockIDs, err := validateBlocks(cfg.Dashboard.Blocks, assetIDs, decoderIDs)
+	blockIDs, err := validateBlocks(cfg.Dashboard.Blocks, assetIDs, decoderIDs, cfg.Sensors)
 	if err != nil {
 		return err
 	}
@@ -199,7 +210,7 @@ func validateDecoders(decoders []DashboardDecoderConfig, sensors map[string]Sens
 	return ids, nil
 }
 
-func validateBlocks(blocks []DashboardBlockConfig, assets map[string]bool, decoders map[string]bool) (map[string]bool, error) {
+func validateBlocks(blocks []DashboardBlockConfig, assets map[string]bool, decoders map[string]bool, sensors map[string]SensorConfig) (map[string]bool, error) {
 	ids := map[string]bool{}
 	for i, block := range blocks {
 		path := fmt.Sprintf("dashboard.blocks[%d]", i)
@@ -222,6 +233,9 @@ func validateBlocks(blocks []DashboardBlockConfig, assets map[string]bool, decod
 		}
 		if block.Decoder != "" && !decoders[block.Decoder] {
 			return nil, fmt.Errorf("%s.decoder %q must reference a configured decoder", path, block.Decoder)
+		}
+		if err := validateCondition(path, block.Condition, sensors, decoders); err != nil {
+			return nil, err
 		}
 		if block.Type == DashboardBlockGroup && len(block.Blocks) == 0 {
 			return nil, fmt.Errorf("%s.blocks must not be empty for group blocks", path)
@@ -247,6 +261,31 @@ func validateBlocks(blocks []DashboardBlockConfig, assets map[string]bool, decod
 	}
 
 	return ids, nil
+}
+
+func validateCondition(path string, condition DashboardConditionConfig, sensors map[string]SensorConfig, decoders map[string]bool) error {
+	if isEmptyDashboardCondition(condition) {
+		return nil
+	}
+	if condition.Sensor != "" && condition.Decoder != "" {
+		return fmt.Errorf("%s.condition must not define both sensor and decoder", path)
+	}
+	if condition.Sensor == "" && condition.Decoder == "" {
+		return fmt.Errorf("%s.condition must define sensor or decoder", path)
+	}
+	if condition.Sensor != "" {
+		if _, ok := sensors[condition.Sensor]; !ok {
+			return fmt.Errorf("%s.condition.sensor %q must reference a configured sensor", path, condition.Sensor)
+		}
+	}
+	if condition.Decoder != "" && !decoders[condition.Decoder] {
+		return fmt.Errorf("%s.condition.decoder %q must reference a configured decoder", path, condition.Decoder)
+	}
+	return nil
+}
+
+func isEmptyDashboardCondition(condition DashboardConditionConfig) bool {
+	return condition.Sensor == "" && condition.Decoder == "" && condition.Status == "" && condition.Equals == "" && condition.NotEquals == "" && condition.Min == nil && condition.Max == nil
 }
 
 func validateLayers(layers []DashboardLayerConfig, blocks map[string]bool) error {

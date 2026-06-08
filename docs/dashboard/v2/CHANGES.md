@@ -1,6 +1,24 @@
 # CHANGES
 
-## 0.7 - 2026-06-08
+## v2.7.1 PR22 stale-review fix
+
+- Added `StaleAfter` to `sensors.SensorDefinition` and `sensors.SensorState`.
+- Derived `StaleAfter` from configured sensor refresh interval using a 2x refresh grace window.
+- Updated `StateStore` stale evaluation to use each sensor state's own threshold.
+- Removed dashboard-level global stale timing.
+- Added a regression test proving fast sensors can become stale while slow sensors remain healthy.
+
+## 2.7.0 - 2026-06-08
+
+- Implemented dashboard v2.7.x first real dashboard vertical slice in `config.example.yaml`.
+- Added small local SVG fixture assets for a static background, yellow RPM digits, throttle frame bar, redline glow overlay, and status badges.
+- Added YAML-backed dashboard block conditions for sensor/decoder status and value checks.
+- Added configured scene-condition tests for decoder-driven redline overlays and sensor-status indicators.
+- Preserved sensor status/error metadata through decoder outputs so dashboard status elements can respond to stale/error state.
+- Removed the standalone old `widget` command path from app startup.
+- Retired the unsafe `ui.NewDashboard` constructor so normal dashboard construction keeps the config path for asset resolution.
+
+## 2.6.0 - 2026-06-08
 
 - Implemented dashboard v2.6.x Fyne scene renderer under `internal/dashboard/renderer/fyne`.
 - Added rendering support for image, sprite_frame, sprite_text, and group scene elements.
@@ -9,7 +27,7 @@
 - Added renderer tests for visible element rendering, sprite text glyph layout, and group rendering.
 - Kept decoder logic outside the renderer and kept polling/logging ownership unchanged.
 
-## 0.6 - 2026-06-08
+## 2.5.0 - 2026-06-08
 
 - Implemented dashboard v2.5.x scene primitive evaluation under `internal/dashboard/scene`.
 - Added renderer-independent scene elements for image, sprite_frame, sprite_text, and group blocks.
@@ -20,7 +38,7 @@
 - Added tests for z-order, conditions, frame resolution, text/glyph resolution, groups, and missing glyph errors.
 - Kept this stage independent of Fyne rendering, gauges, and legacy dashboard widgets.
 
-## 0.5 - 2026-06-08
+## 2.4.0 - 2026-06-08
 
 - Implemented dashboard v2.4.x asset registry under `internal/dashboard/assets`.
 - Added cached loading for image, frame_set, and charset assets.
@@ -30,7 +48,7 @@
 - Added tests using small fixture assets for load, cache, missing asset, generated frames, explicit frames, charset glyphs, and remote-path rejection.
 - Kept this stage independent of scene primitives and rendering.
 
-## 0.4 - 2026-06-08
+## 2.3.0 - 2026-06-08
 
 - Implemented dashboard v2.3.x decoder engine under `internal/dashboard/decoders`.
 - Added ordered decoder execution with support for sensor inputs and earlier decoder outputs.
@@ -39,7 +57,7 @@
 - Tightened dashboard decoder config validation so each decoder must define exactly one input source and decoder-to-decoder references must point backwards to an earlier decoder.
 - Kept decoder execution independent of Fyne, assets, scene primitives, and rendering.
 
-## 0.3 - 2026-06-08
+## 2.2.0 - 2026-06-08
 
 - Implemented dashboard v2.2.x sensor state boundary.
 - Added a neutral sensor state store with current value, unit, min, max, status, error text, and update time.
@@ -47,7 +65,7 @@
 - Wired active sensor polling to write latest success/error state while preserving existing JSONL logging behaviour.
 - Passed the state store into the dashboard placeholder so future dashboard stages can consume state instead of sensor config.
 
-## 0.2 - 2026-06-08
+## 2.1.0 - 2026-06-08
 
 - Implemented dashboard v2.1.x config validation schema for assets, decoders, blocks, and layers.
 - Added validation for duplicate and missing IDs across dashboard config sections.
@@ -56,7 +74,7 @@
 - Added geometry validation for non-group dashboard blocks.
 - Updated `config.example.yaml` and `docs/config.md` to show the v2.1.x schema.
 
-## 0.1 - 2026-06-07
+## 2.0.0 - 2026-06-07
 
 - Created dashboard implementation planning document set for the GoDriveLog v2.x.x dashboard rewrite.
 - Added implementation overview mapping stages 1-10 to v2.0.x through v2.9.x.

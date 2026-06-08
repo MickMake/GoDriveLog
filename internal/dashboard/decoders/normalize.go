@@ -21,5 +21,5 @@ func decodeNormalize(decoder config.DashboardDecoderConfig, inputs Inputs) (Valu
 	if normalized > 1 {
 		normalized = 1
 	}
-	return Value{Type: ValueTypeNumber, Number: normalized, Min: 0, Max: 1, HasRange: true}, nil
+	return Value{Type: ValueTypeNumber, Number: normalized, Status: input.Status, Error: input.Error, Min: 0, Max: 1, HasRange: true}, nil
 }

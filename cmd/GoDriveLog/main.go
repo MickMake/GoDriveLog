@@ -3,9 +3,7 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"log"
-	"os"
 	"sync"
 	"time"
 
@@ -18,18 +16,9 @@ import (
 	jsonlogger "github.com/MickMake/GoDriveLog/internal/logger"
 	"github.com/MickMake/GoDriveLog/internal/sensors"
 	"github.com/MickMake/GoDriveLog/internal/ui"
-	"github.com/MickMake/GoDriveLog/widgets"
 )
 
 func main() {
-	if len(os.Args) > 1 && os.Args[1] == "widget" {
-		if err := widgets.Show(os.Args[2:], os.Stdout, os.Stdin); err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			os.Exit(1)
-		}
-		return
-	}
-
 	configPath := flag.String("config", "config.example.yaml", "path to YAML config")
 	flag.Parse()
 

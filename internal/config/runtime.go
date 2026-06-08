@@ -2,9 +2,12 @@ package config
 
 import (
 	"sort"
+	"time"
 
 	"github.com/MickMake/GoDriveLog/internal/sensors"
 )
+
+const staleAfterRefreshMultiplier = 2
 
 type RuntimeSensor struct {
 	Key     string
@@ -51,11 +54,19 @@ func SensorStateDefinitions(runtimeSensors []RuntimeSensor) []sensors.SensorDefi
 	definitions := make([]sensors.SensorDefinition, 0, len(runtimeSensors))
 	for _, runtimeSensor := range runtimeSensors {
 		definitions = append(definitions, sensors.SensorDefinition{
-			ID:   runtimeSensor.Key,
-			Unit: runtimeSensor.Unit,
-			Min:  runtimeSensor.Min,
-			Max:  runtimeSensor.Max,
+			ID:         runtimeSensor.Key,
+			Unit:       runtimeSensor.Unit,
+			Min:        runtimeSensor.Min,
+			Max:        runtimeSensor.Max,
+			StaleAfter: staleAfterForRefresh(runtimeSensor.Refresh),
 		})
 	}
 	return definitions
+}
+
+func staleAfterForRefresh(refreshMilliseconds int) time.Duration {
+	if refreshMilliseconds <= 0 {
+		return 0
+	}
+	return time.Duration(refreshMilliseconds*staleAfterRefreshMultiplier) * time.Millisecond
 }
