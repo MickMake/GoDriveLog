@@ -28,7 +28,7 @@ func decodeFormatNumber(decoder config.DashboardDecoderConfig, inputs Inputs) (V
 	if err != nil {
 		return Value{}, err
 	}
-	return Value{Type: ValueTypeText, Text: text}, nil
+	return Value{Type: ValueTypeText, Text: text, Status: input.Status, Error: input.Error}, nil
 }
 
 func formatNumber(decoderID string, number float64, format string) (string, error) {
