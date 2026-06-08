@@ -1,5 +1,16 @@
 # CHANGES
 
+## 0.6 - 2026-06-08
+
+- Implemented dashboard v2.5.x scene primitive evaluation under `internal/dashboard/scene`.
+- Added renderer-independent scene elements for image, sprite_frame, sprite_text, and group blocks.
+- Added z-order layer sorting for evaluated scene elements.
+- Added runtime condition evaluation using supplied sensor or decoder values.
+- Added sprite_frame resolution from decoder frame indexes to frame_set assets.
+- Added sprite_text resolution from decoder text/digits to charset glyphs.
+- Added tests for z-order, conditions, frame resolution, text/glyph resolution, groups, and missing glyph errors.
+- Kept this stage independent of Fyne rendering, gauges, and legacy dashboard widgets.
+
 ## 0.5 - 2026-06-08
 
 - Implemented dashboard v2.4.x asset registry under `internal/dashboard/assets`.
