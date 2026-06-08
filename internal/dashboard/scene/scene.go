@@ -19,6 +19,7 @@ type Options struct {
 type Condition struct {
 	Sensor    string
 	Decoder   string
+	Status    string
 	Equals    string
 	NotEquals string
 	Min       *float64
@@ -82,7 +83,11 @@ func resolveBlock(block config.DashboardBlockConfig, layerID string, z int, bloc
 		return Element{}, err
 	}
 
-	visible, err := evaluateCondition(options.Conditions[block.ID], decoderValues, sensorStates)
+	condition := conditionFromConfig(block.Condition)
+	if override, ok := options.Conditions[block.ID]; ok {
+		condition = override
+	}
+	visible, err := evaluateCondition(condition, decoderValues, sensorStates)
 	if err != nil {
 		return Element{}, fmt.Errorf("block %q condition: %w", block.ID, err)
 	}
@@ -147,6 +152,18 @@ func resolveBlock(block config.DashboardBlockConfig, layerID string, z int, bloc
 	}
 
 	return element, nil
+}
+
+func conditionFromConfig(condition config.DashboardConditionConfig) Condition {
+	return Condition{
+		Sensor:    condition.Sensor,
+		Decoder:   condition.Decoder,
+		Status:    condition.Status,
+		Equals:    condition.Equals,
+		NotEquals: condition.NotEquals,
+		Min:       condition.Min,
+		Max:       condition.Max,
+	}
 }
 
 func pushResolutionStack(stack []string, blockID string) ([]string, error) {
@@ -216,6 +233,9 @@ func evaluateCondition(condition Condition, values map[string]decoders.Value, se
 	if err != nil {
 		return false, err
 	}
+	if condition.Status != "" && value.status != condition.Status {
+		return false, nil
+	}
 	if condition.Equals != "" && value.text != condition.Equals {
 		return false, nil
 	}
@@ -243,6 +263,7 @@ func evaluateCondition(condition Condition, values map[string]decoders.Value, se
 
 type comparableValue struct {
 	text      string
+	status    string
 	number    float64
 	hasNumber bool
 }
@@ -256,7 +277,7 @@ func conditionValue(condition Condition, values map[string]decoders.Value, senso
 		if !ok {
 			return comparableValue{}, fmt.Errorf("sensor %q is not available", condition.Sensor)
 		}
-		return comparableValue{text: strconv.FormatFloat(state.Value, 'f', -1, 64), number: state.Value, hasNumber: true}, nil
+		return comparableValue{text: strconv.FormatFloat(state.Value, 'f', -1, 64), status: state.Status, number: state.Value, hasNumber: true}, nil
 	}
 	if condition.Decoder != "" {
 		value, ok := values[condition.Decoder]
@@ -271,17 +292,17 @@ func conditionValue(condition Condition, values map[string]decoders.Value, senso
 func comparableDecoderValue(value decoders.Value) (comparableValue, error) {
 	switch value.Type {
 	case decoders.ValueTypeBoolean:
-		return comparableValue{text: strconv.FormatBool(value.Bool), number: boolNumber(value.Bool), hasNumber: true}, nil
+		return comparableValue{text: strconv.FormatBool(value.Bool), status: value.Status, number: boolNumber(value.Bool), hasNumber: true}, nil
 	case decoders.ValueTypeText:
-		return comparableValue{text: value.Text}, nil
+		return comparableValue{text: value.Text, status: value.Status}, nil
 	case decoders.ValueTypeDigits:
 		text := ""
 		for _, digit := range value.Digits {
 			text += digit
 		}
-		return comparableValue{text: text}, nil
+		return comparableValue{text: text, status: value.Status}, nil
 	case decoders.ValueTypeNumber, decoders.ValueTypeFrameIndex:
-		return comparableValue{text: strconv.FormatFloat(value.Number, 'f', -1, 64), number: value.Number, hasNumber: true}, nil
+		return comparableValue{text: strconv.FormatFloat(value.Number, 'f', -1, 64), status: value.Status, number: value.Number, hasNumber: true}, nil
 	default:
 		return comparableValue{}, fmt.Errorf("decoder value type %q cannot be used in a condition", value.Type)
 	}
@@ -295,5 +316,5 @@ func boolNumber(value bool) float64 {
 }
 
 func isEmptyCondition(condition Condition) bool {
-	return condition.Sensor == "" && condition.Decoder == "" && condition.Equals == "" && condition.NotEquals == "" && condition.Min == nil && condition.Max == nil
+	return condition.Sensor == "" && condition.Decoder == "" && condition.Status == "" && condition.Equals == "" && condition.NotEquals == "" && condition.Min == nil && condition.Max == nil
 }
