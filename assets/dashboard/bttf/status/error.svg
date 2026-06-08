@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 42">
+  <rect width="120" height="42" rx="10" fill="#2a0707" stroke="#ff4545" stroke-width="3"/>
+  <circle cx="22" cy="21" r="8" fill="#ff4545"/>
+  <text x="42" y="28" fill="#ff9b9b" font-family="monospace" font-size="18" font-weight="bold">ERROR</text>
+</svg>
