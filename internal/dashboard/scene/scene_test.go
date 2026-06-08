@@ -111,7 +111,8 @@ func TestEvaluateSpriteTextResolvesCharsetGlyphs(t *testing.T) {
 
 func TestEvaluateGroupContainsChildElements(t *testing.T) {
 	registry := makeRegistry(t)
-	dashboard := baseDashboard()	dashboard.Layers = []config.DashboardLayerConfig{{ID: "base", Z: 0, Blocks: []string{"main_cluster"}}}
+	dashboard := baseDashboard()
+	dashboard.Layers = []config.DashboardLayerConfig{{ID: "base", Z: 0, Blocks: []string{"main_cluster"}}}
 
 	scene, err := Evaluate(dashboard, registry, baseDecoderValues(), nil, Options{})
 	if err != nil {
