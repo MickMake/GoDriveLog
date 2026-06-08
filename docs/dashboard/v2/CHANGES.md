@@ -1,5 +1,14 @@
 # CHANGES
 
+## 0.4 - 2026-06-08
+
+- Implemented dashboard v2.3.x decoder engine under `internal/dashboard/decoders`.
+- Added ordered decoder execution with support for sensor inputs and earlier decoder outputs.
+- Added decoder implementations for normalize, threshold, frame_index, format_number, digits, and boolean.
+- Added decoder tests covering all decoder types and common error cases.
+- Tightened dashboard decoder config validation so each decoder must define exactly one input source and decoder-to-decoder references must point backwards to an earlier decoder.
+- Kept decoder execution independent of Fyne, assets, scene primitives, and rendering.
+
 ## 0.3 - 2026-06-08
 
 - Implemented dashboard v2.2.x sensor state boundary.
