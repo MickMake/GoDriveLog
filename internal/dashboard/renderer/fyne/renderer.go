@@ -59,8 +59,8 @@ func (r *Renderer) Update(sceneState scene.Scene) error {
 
 	visited := map[string]bool{}
 	objects := make([]fyneui.CanvasObject, 0, len(sceneState.Elements))
-	for _, element := range sceneState.Elements {
-		object, err := r.renderCachedElement(element, visited)
+	for index, element := range sceneState.Elements {
+		object, err := r.renderCachedElement(element, rootOccurrenceKey(index, element), visited)
 		if err != nil {
 			return err
 		}
@@ -78,11 +78,11 @@ func (r *Renderer) Update(sceneState scene.Scene) error {
 	return nil
 }
 
-func (r *Renderer) renderCachedElement(element scene.Element, visited map[string]bool) (fyneui.CanvasObject, error) {
-	visited[element.ID] = true
+func (r *Renderer) renderCachedElement(element scene.Element, cacheKey string, visited map[string]bool) (fyneui.CanvasObject, error) {
+	visited[cacheKey] = true
 
 	if !element.Visible {
-		r.elements[element.ID] = &renderedElement{
+		r.elements[cacheKey] = &renderedElement{
 			id:          element.ID,
 			elementType: element.Type,
 			signature:   elementSignature(element),
@@ -91,11 +91,11 @@ func (r *Renderer) renderCachedElement(element scene.Element, visited map[string
 	}
 
 	if element.Type == config.DashboardBlockGroup {
-		return r.updateGroupObject(element, visited)
+		return r.updateGroupObject(element, cacheKey, visited)
 	}
 
 	signature := elementSignature(element)
-	cached := r.elements[element.ID]
+	cached := r.elements[cacheKey]
 	if cached != nil && cached.elementType == element.Type && cached.signature == signature && cached.object != nil {
 		return cached.object, nil
 	}
@@ -114,7 +114,7 @@ func (r *Renderer) renderCachedElement(element scene.Element, visited map[string
 	if err != nil {
 		return nil, err
 	}
-	r.elements[element.ID] = &renderedElement{
+	r.elements[cacheKey] = &renderedElement{
 		id:          element.ID,
 		elementType: element.Type,
 		object:      object,
@@ -194,17 +194,17 @@ func (r *Renderer) requireImageAsset(assetID string) (assets.Asset, error) {
 	return asset, nil
 }
 
-func (r *Renderer) updateGroupObject(element scene.Element, visited map[string]bool) (fyneui.CanvasObject, error) {
+func (r *Renderer) updateGroupObject(element scene.Element, cacheKey string, visited map[string]bool) (fyneui.CanvasObject, error) {
 	signature := elementSignature(element)
-	cached := r.elements[element.ID]
+	cached := r.elements[cacheKey]
 	group, ok := cachedContainer(cached)
 	if !ok {
 		group = container.NewWithoutLayout()
 	}
 
 	children := make([]fyneui.CanvasObject, 0, len(element.Children))
-	for _, child := range element.Children {
-		object, err := r.renderCachedElement(child, visited)
+	for index, child := range element.Children {
+		object, err := r.renderCachedElement(child, childOccurrenceKey(cacheKey, index, child), visited)
 		if err != nil {
 			return nil, err
 		}
@@ -219,7 +219,7 @@ func (r *Renderer) updateGroupObject(element scene.Element, visited map[string]b
 	}
 	applyGeometry(group, element.Geometry)
 
-	r.elements[element.ID] = &renderedElement{
+	r.elements[cacheKey] = &renderedElement{
 		id:          element.ID,
 		elementType: element.Type,
 		object:      group,
@@ -337,6 +337,14 @@ func applyGeometry(object fyneui.CanvasObject, geometry config.RectConfig) {
 	if geometry.Width > 0 && geometry.Height > 0 {
 		object.Resize(fyneui.NewSize(float32(geometry.Width), float32(geometry.Height)))
 	}
+}
+
+func rootOccurrenceKey(index int, element scene.Element) string {
+	return "root[" + strconv.Itoa(index) + "]/" + element.ID
+}
+
+func childOccurrenceKey(parentKey string, index int, element scene.Element) string {
+	return parentKey + "/children[" + strconv.Itoa(index) + "]/" + element.ID
 }
 
 func elementSignature(element scene.Element) string {
