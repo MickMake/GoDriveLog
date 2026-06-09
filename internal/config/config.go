@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -11,9 +12,14 @@ import (
 const (
 	DefaultLogRotate            = "daily"
 	DefaultLogDirectory         = "./log"
+	DefaultOBDProvider          = OBDProviderOBD
 	DefaultOBDAddress           = "serial:///dev/ttyUSB0"
 	DefaultDashboardRefreshMS   = 100
 	DefaultDashboardRenderMinMS = 0
+
+	OBDProviderOBD      = "obd"
+	OBDProviderMock     = "mock"
+	OBDProviderRaceDemo = "race-demo"
 )
 
 type Config struct {
@@ -25,6 +31,7 @@ type Config struct {
 }
 
 type OBDConfig struct {
+	Provider string `yaml:"provider"`
 	MockMode bool   `yaml:"mock_mode"`
 	Address  string `yaml:"address"`
 	Debug    bool   `yaml:"debug"`
@@ -70,7 +77,26 @@ func Load(path string) (Config, error) {
 	return cfg, nil
 }
 
+func NormalizeOBDProvider(provider string, mockMode bool) string {
+	provider = strings.TrimSpace(strings.ToLower(provider))
+	switch provider {
+	case "":
+		if mockMode {
+			return OBDProviderMock
+		}
+		return DefaultOBDProvider
+	case OBDProviderOBD, OBDProviderMock, OBDProviderRaceDemo:
+		return provider
+	case "race_demo", "racedemo":
+		return OBDProviderRaceDemo
+	default:
+		return provider
+	}
+}
+
 func applyDefaults(cfg *Config) {
+	cfg.OBD.Provider = NormalizeOBDProvider(cfg.OBD.Provider, cfg.OBD.MockMode)
+
 	if cfg.Log.Rotate == "" {
 		cfg.Log.Rotate = DefaultLogRotate
 	}
@@ -100,6 +126,11 @@ func validate(cfg Config) error {
 	}
 	if cfg.Log.Directory == "" {
 		return fmt.Errorf("log.directory must not be empty")
+	}
+	switch cfg.OBD.Provider {
+	case OBDProviderOBD, OBDProviderMock, OBDProviderRaceDemo:
+	default:
+		return fmt.Errorf("obd.provider must be %q, %q, or %q", OBDProviderOBD, OBDProviderMock, OBDProviderRaceDemo)
 	}
 	if cfg.OBD.Address == "" {
 		return fmt.Errorf("obd.address must not be empty")
