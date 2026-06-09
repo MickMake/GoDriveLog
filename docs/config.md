@@ -25,10 +25,25 @@ dashboard:
   canvas:
     width: 800
     height: 480
-  assets: []
+  assets:
+    - id: background
+      type: image
+      path: assets/dashboard/bttf/background.png
   decoders: []
-  blocks: []
-  layers: []
+  blocks:
+    - id: background_panel
+      type: image
+      asset: background
+      geometry:
+        x: 0
+        y: 0
+        width: 800
+        height: 480
+  layers:
+    - id: base
+      z: 0
+      blocks:
+        - background_panel
 
 sensors:
   rpm:
@@ -103,10 +118,25 @@ dashboard:
   canvas:
     width: 800
     height: 480
-  assets: []
+  assets:
+    - id: background
+      type: image
+      path: assets/dashboard/bttf/background.png
   decoders: []
-  blocks: []
-  layers: []
+  blocks:
+    - id: background_panel
+      type: image
+      asset: background
+      geometry:
+        x: 0
+        y: 0
+        width: 800
+        height: 480
+  layers:
+    - id: base
+      z: 0
+      blocks:
+        - background_panel
 ```
 
 | Field | Type | Required | Meaning |
