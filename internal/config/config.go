@@ -9,19 +9,25 @@ import (
 )
 
 const (
-	DefaultLogRotate    = "daily"
-	DefaultLogDirectory = "./log"
-	DefaultOBDAddress   = "serial:///dev/ttyUSB0"
+	DefaultLogRotate            = "daily"
+	DefaultLogDirectory         = "./log"
+	DefaultOBDAddress           = "serial:///dev/ttyUSB0"
+	DefaultDashboardRefreshMS   = 100
+	DefaultDashboardRenderMinMS = 0
 )
 
 type Config struct {
-	MockMode   bool                       `yaml:"mock_mode"`
-	OBDAddress string                     `yaml:"obd_address"`
-	OBDDebug   bool                       `yaml:"obd_debug"`
-	Log        LogConfig                  `yaml:"log"`
-	Vehicle    VehicleConfig              `yaml:"vehicle"`
-	Sensors    map[string]SensorConfig    `yaml:"sensors"`
-	Dashboard  DashboardConfig            `yaml:"dashboard"`
+	OBD       OBDConfig               `yaml:"obd"`
+	Log       LogConfig               `yaml:"log"`
+	Vehicle   VehicleConfig           `yaml:"vehicle"`
+	Sensors   map[string]SensorConfig `yaml:"sensors"`
+	Dashboard DashboardConfig         `yaml:"dashboard"`
+}
+
+type OBDConfig struct {
+	MockMode bool   `yaml:"mock_mode"`
+	Address  string `yaml:"address"`
+	Debug    bool   `yaml:"debug"`
 }
 
 type LogConfig struct {
@@ -71,8 +77,14 @@ func applyDefaults(cfg *Config) {
 	if cfg.Log.Directory == "" {
 		cfg.Log.Directory = DefaultLogDirectory
 	}
-	if cfg.OBDAddress == "" {
-		cfg.OBDAddress = DefaultOBDAddress
+	if cfg.OBD.Address == "" {
+		cfg.OBD.Address = DefaultOBDAddress
+	}
+	if cfg.Dashboard.RefreshMS == 0 {
+		cfg.Dashboard.RefreshMS = DefaultDashboardRefreshMS
+	}
+	if cfg.Dashboard.RenderMinMS == 0 {
+		cfg.Dashboard.RenderMinMS = DefaultDashboardRenderMinMS
 	}
 }
 
@@ -88,6 +100,9 @@ func validate(cfg Config) error {
 	}
 	if cfg.Log.Directory == "" {
 		return fmt.Errorf("log.directory must not be empty")
+	}
+	if cfg.OBD.Address == "" {
+		return fmt.Errorf("obd.address must not be empty")
 	}
 
 	for key, sensor := range cfg.Sensors {
