@@ -174,7 +174,7 @@ func (r *Renderer) buildElementObject(element scene.Element) (fyneui.CanvasObjec
 		}
 		return r.imageObject(frameResourceName(element), element.Frame.Data, element.Geometry), nil
 	case config.DashboardBlockSpriteText:
-		return r.spriteTextObject(element), nil
+		return r.spriteTextObject(element)
 	default:
 		return nil, fmt.Errorf("element %q type %q is not supported by Fyne scene renderer", element.ID, element.Type)
 	}
