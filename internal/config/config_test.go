@@ -9,7 +9,8 @@ import (
 
 func TestLoadDashboardV2Config(t *testing.T) {
 	cfg := loadConfig(t, `
-mock_mode: true
+obd:
+  mock_mode: true
 log:
   directory: ./test-log
 vehicle:
@@ -18,6 +19,23 @@ dashboard:
   canvas:
     width: 800
     height: 480
+  assets:
+  - id: background
+    type: image
+    path: assets/dashboard/background.png
+  blocks:
+  - id: background_panel
+    type: image
+    asset: background
+    geometry:
+      x: 0
+      y: 0
+      width: 800
+      height: 480
+  layers:
+  - id: base
+    blocks:
+    - background_panel
 sensors:
   rpm:
     type: obd
@@ -35,14 +53,23 @@ sensors:
 	if cfg.Dashboard.Canvas.Width != 800 || cfg.Dashboard.Canvas.Height != 480 {
 		t.Fatalf("Dashboard.Canvas = %#v, want 800x480", cfg.Dashboard.Canvas)
 	}
+	if cfg.Dashboard.RefreshMS != DefaultDashboardRefreshMS {
+		t.Fatalf("Dashboard.RefreshMS = %d, want %d", cfg.Dashboard.RefreshMS, DefaultDashboardRefreshMS)
+	}
+	if cfg.Dashboard.RenderMinMS != DefaultDashboardRenderMinMS {
+		t.Fatalf("Dashboard.RenderMinMS = %d, want %d", cfg.Dashboard.RenderMinMS, DefaultDashboardRenderMinMS)
+	}
 	if len(cfg.Sensors) != 1 {
 		t.Fatalf("len(Sensors) = %d, want 1", len(cfg.Sensors))
 	}
 	if cfg.Log.Rotate != DefaultLogRotate {
 		t.Fatalf("Log.Rotate = %q, want %q", cfg.Log.Rotate, DefaultLogRotate)
 	}
-	if cfg.OBDAddress != DefaultOBDAddress {
-		t.Fatalf("OBDAddress = %q, want %q", cfg.OBDAddress, DefaultOBDAddress)
+	if cfg.OBD.Address != DefaultOBDAddress {
+		t.Fatalf("OBD.Address = %q, want %q", cfg.OBD.Address, DefaultOBDAddress)
+	}
+	if !cfg.OBD.MockMode {
+		t.Fatal("OBD.MockMode = false, want true")
 	}
 }
 
@@ -61,11 +88,18 @@ func TestLoadDashboardV21Config(t *testing.T) {
 	if len(cfg.Dashboard.Layers) != 1 {
 		t.Fatalf("len(Dashboard.Layers) = %d, want 1", len(cfg.Dashboard.Layers))
 	}
+	if cfg.Dashboard.RefreshMS != 1000 {
+		t.Fatalf("Dashboard.RefreshMS = %d, want 1000", cfg.Dashboard.RefreshMS)
+	}
+	if cfg.Dashboard.RenderMinMS != 5000 {
+		t.Fatalf("Dashboard.RenderMinMS = %d, want 5000", cfg.Dashboard.RenderMinMS)
+	}
 }
 
 func TestLoadRejectsOldPIDOnlyConfig(t *testing.T) {
 	_, err := loadConfigFile(t, `
-mock_mode: true
+obd:
+  mock_mode: true
 vehicle:
   name: Test Van
   pids:
@@ -83,6 +117,32 @@ vehicle:
 `)
 	if err == nil {
 		t.Fatal("Load succeeded for old PID/display-only config, want error")
+	}
+}
+
+func TestLoadRejectsLegacyTopLevelOBDConfig(t *testing.T) {
+	_, err := loadConfigFile(t, `
+mock_mode: true
+obd_address: serial:///dev/ttyUSB0
+obd_debug: false
+vehicle:
+  name: Test Van
+dashboard:
+  canvas:
+    width: 800
+    height: 480
+sensors:
+  rpm:
+    type: obd
+    pid: "010C"
+    unit: rpm
+    refresh: 250
+    min: 0
+    max: 7000
+    log: true
+`)
+	if err == nil {
+		t.Fatal("Load succeeded for legacy top-level OBD config, want error")
 	}
 }
 
@@ -129,7 +189,8 @@ func TestActiveSensorsUsesTopLevelSensors(t *testing.T) {
 
 func TestValidateRequiresDashboardCanvas(t *testing.T) {
 	_, err := loadConfigFile(t, `
-mock_mode: true
+obd:
+  mock_mode: true
 vehicle:
   name: Test Van
 sensors:
@@ -164,63 +225,63 @@ func TestDashboardV21ValidationRejectsInvalidConfigs(t *testing.T) {
 `),
 		},
 		{
-			name: "missing asset id",
+			name:    "missing asset id",
 			content: replaceConfigText(validDashboardV21Config(), `id: background`, `id: ""`),
 		},
 		{
-			name: "unknown asset type",
+			name:    "unknown asset type",
 			content: replaceConfigText(validDashboardV21Config(), `type: image`, `type: nonsense`),
 		},
 		{
-			name: "missing decoder id",
+			name:    "missing decoder id",
 			content: replaceConfigText(validDashboardV21Config(), `id: rpm_digits`, `id: ""`),
 		},
 		{
-			name: "duplicate decoder id",
+			name:    "duplicate decoder id",
 			content: replaceConfigText(validDashboardV21Config(), `id: throttle_frame`, `id: rpm_digits`),
 		},
 		{
-			name: "unknown decoder type",
+			name:    "unknown decoder type",
 			content: replaceConfigText(validDashboardV21Config(), `type: digits`, `type: nonsense`),
 		},
 		{
-			name: "decoder missing sensor reference",
+			name:    "decoder missing sensor reference",
 			content: replaceConfigText(validDashboardV21Config(), `sensor: rpm`, `sensor: missing_sensor`),
 		},
 		{
-			name: "decoder missing asset reference",
+			name:    "decoder missing asset reference",
 			content: replaceConfigText(validDashboardV21Config(), `asset: throttle_frames`, `asset: missing_asset`),
 		},
 		{
-			name: "invalid frame count",
+			name:    "invalid frame count",
 			content: replaceConfigText(validDashboardV21Config(), `frame_count: 10`, `frame_count: 0`),
 		},
 		{
-			name: "missing block id",
+			name:    "missing block id",
 			content: replaceConfigText(validDashboardV21Config(), `id: background_panel`, `id: ""`),
 		},
 		{
-			name: "duplicate block id",
+			name:    "duplicate block id",
 			content: replaceConfigText(validDashboardV21Config(), `id: rpm_display`, `id: background_panel`),
 		},
 		{
-			name: "unknown block type",
+			name:    "unknown block type",
 			content: replaceConfigText(validDashboardV21Config(), `type: sprite_text`, `type: nonsense`),
 		},
 		{
-			name: "block missing asset reference",
+			name:    "block missing asset reference",
 			content: replaceConfigText(validDashboardV21Config(), `asset: background`, `asset: missing_asset`),
 		},
 		{
-			name: "block missing decoder reference",
+			name:    "block missing decoder reference",
 			content: replaceConfigText(validDashboardV21Config(), `decoder: throttle_frame`, `decoder: missing_decoder`),
 		},
 		{
-			name: "invalid geometry",
+			name:    "invalid geometry",
 			content: replaceConfigText(validDashboardV21Config(), `      width: 800`, `      width: 0`),
 		},
 		{
-			name: "group missing child block reference",
+			name:    "group missing child block reference",
 			content: replaceConfigText(validDashboardV21Config(), `- throttle_bar`, `- missing_block`),
 		},
 		{
@@ -233,7 +294,7 @@ func TestDashboardV21ValidationRejectsInvalidConfigs(t *testing.T) {
     - main_cluster`, `  layers: []`),
 		},
 		{
-			name: "missing layer id",
+			name:    "missing layer id",
 			content: replaceConfigText(validDashboardV21Config(), `id: base`, `id: ""`),
 		},
 		{
@@ -251,7 +312,7 @@ func TestDashboardV21ValidationRejectsInvalidConfigs(t *testing.T) {
     - main_cluster`, `    blocks: []`),
 		},
 		{
-			name: "layer missing block reference",
+			name:    "layer missing block reference",
 			content: replaceConfigText(validDashboardV21Config(), `- main_cluster`, `- missing_block`),
 		},
 	}
@@ -279,10 +340,13 @@ func TestDashboardGroupBlockChildReferencesMustExist(t *testing.T) {
 
 func validDashboardV21Config() string {
 	return `
-mock_mode: true
+obd:
+  mock_mode: true
 vehicle:
   name: Test Van
 dashboard:
+  refresh_ms: 1000
+  render_min_ms: 5000
   canvas:
     width: 800
     height: 480
