@@ -31,12 +31,14 @@ const (
 )
 
 type DashboardConfig struct {
-	Canvas    CanvasConfig             `yaml:"canvas"`
-	AssetRoot string                   `yaml:"asset_root"`
-	Assets    []DashboardAssetConfig   `yaml:"assets"`
-	Decoders  []DashboardDecoderConfig `yaml:"decoders"`
-	Blocks    []DashboardBlockConfig   `yaml:"blocks"`
-	Layers    []DashboardLayerConfig   `yaml:"layers"`
+	RefreshMS   int                      `yaml:"refresh_ms"`
+	RenderMinMS int                      `yaml:"render_min_ms"`
+	Canvas      CanvasConfig             `yaml:"canvas"`
+	AssetRoot   string                   `yaml:"asset_root"`
+	Assets      []DashboardAssetConfig   `yaml:"assets"`
+	Decoders    []DashboardDecoderConfig `yaml:"decoders"`
+	Blocks      []DashboardBlockConfig   `yaml:"blocks"`
+	Layers      []DashboardLayerConfig   `yaml:"layers"`
 }
 
 type CanvasConfig struct {
@@ -104,6 +106,12 @@ type DashboardLayerConfig struct {
 }
 
 func validateDashboard(cfg Config) error {
+	if cfg.Dashboard.RefreshMS <= 0 {
+		return fmt.Errorf("dashboard.refresh_ms must be positive")
+	}
+	if cfg.Dashboard.RenderMinMS < 0 {
+		return fmt.Errorf("dashboard.render_min_ms must not be negative")
+	}
 	if cfg.Dashboard.Canvas.Width <= 0 {
 		return fmt.Errorf("dashboard.canvas.width must be positive")
 	}
@@ -301,7 +309,7 @@ func validateCondition(path string, condition DashboardConditionConfig, sensors 
 		}
 	}
 	if condition.Decoder != "" && !decoders[condition.Decoder] {
-		return fmt.Errorf("%s.condition.decoder %q must reference a configured decoder", path, condition.Decoder)
+		return fmt.Errorf("%s.condition.decoder %q must reference a configured decoder", path)
 	}
 	return nil
 }

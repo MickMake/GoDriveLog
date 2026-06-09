@@ -2,6 +2,7 @@ package fyne
 
 import (
 	"fmt"
+	"time"
 
 	fyneui "fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
@@ -13,8 +14,10 @@ import (
 )
 
 type Renderer struct {
-	root          *fyneui.Container
-	assetRegistry *assets.Registry
+	root              *fyneui.Container
+	assetRegistry     *assets.Registry
+	minRenderInterval time.Duration
+	lastRender        time.Time
 }
 
 func New(assetRegistry *assets.Registry) *Renderer {
@@ -24,11 +27,23 @@ func New(assetRegistry *assets.Registry) *Renderer {
 	}
 }
 
+func (r *Renderer) SetMinRenderInterval(interval time.Duration) {
+	if interval < 0 {
+		interval = 0
+	}
+	r.minRenderInterval = interval
+}
+
 func (r *Renderer) CanvasObject() fyneui.CanvasObject {
 	return r.root
 }
 
 func (r *Renderer) Update(sceneState scene.Scene) error {
+	now := time.Now()
+	if r.minRenderInterval > 0 && !r.lastRender.IsZero() && now.Sub(r.lastRender) < r.minRenderInterval {
+		return nil
+	}
+
 	objects := make([]fyneui.CanvasObject, 0, len(sceneState.Elements))
 	for _, element := range sceneState.Elements {
 		object, err := r.renderElement(element)
@@ -42,6 +57,7 @@ func (r *Renderer) Update(sceneState scene.Scene) error {
 
 	r.root.Objects = objects
 	r.root.Refresh()
+	r.lastRender = now
 	return nil
 }
 

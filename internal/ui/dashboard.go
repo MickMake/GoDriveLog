@@ -31,8 +31,11 @@ func NewDashboardWithConfigPath(cfg config.DashboardConfig, configPath string, s
 		return nil, err
 	}
 
+	renderer := fynerenderer.New(assetRegistry)
+	renderer.SetMinRenderInterval(time.Duration(cfg.RenderMinMS) * time.Millisecond)
+
 	dashboard := &Dashboard{
-		renderer: fynerenderer.New(assetRegistry),
+		renderer: renderer,
 		store:    store,
 		cfg:      cfg,
 		assets:   assetRegistry,
@@ -49,7 +52,7 @@ func (d *Dashboard) CanvasObject() fyne.CanvasObject {
 
 func (d *Dashboard) Start(ctx context.Context, interval time.Duration) {
 	if interval <= 0 {
-		interval = 100 * time.Millisecond
+		interval = time.Duration(config.DefaultDashboardRefreshMS) * time.Millisecond
 	}
 	go func() {
 		ticker := time.NewTicker(interval)

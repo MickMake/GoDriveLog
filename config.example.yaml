@@ -1,6 +1,7 @@
-mock_mode: true
-obd_address: serial:///dev/ttyUSB0
-obd_debug: false
+obd:
+  mock_mode: true
+  address: serial:///dev/ttyUSB0
+  debug: false
 
 log:
   rotate: daily
@@ -10,6 +11,8 @@ vehicle:
   name: "VW Caddy"
 
 dashboard:
+  refresh_ms: 1000
+  render_min_ms: 5000
   canvas:
     width: 800
     height: 480

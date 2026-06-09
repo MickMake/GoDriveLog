@@ -51,7 +51,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	dash.Start(ctx, 100*time.Millisecond)
+	dash.Start(ctx, time.Duration(cfg.Dashboard.RefreshMS)*time.Millisecond)
 
 	lastLogPath := logger.ActivePath()
 	status := widget.NewLabel("log: " + lastLogPath)
@@ -107,7 +107,7 @@ func main() {
 						Name:      runtimeSensor.Key,
 						Value:     value,
 						Unit:      unit,
-						Source:    sourceName(cfg.MockMode),
+						Source:    sourceName(cfg.OBD.MockMode),
 					}
 
 					if runtimeSensor.Log {
@@ -130,10 +130,10 @@ func main() {
 }
 
 func newReader(cfg config.Config) (sensors.Reader, error) {
-	if cfg.MockMode {
+	if cfg.OBD.MockMode {
 		return sensors.NewMockReader(), nil
 	}
-	return sensors.NewELMOBDReader(cfg.OBDAddress, cfg.OBDDebug)
+	return sensors.NewELMOBDReader(cfg.OBD.Address, cfg.OBD.Debug)
 }
 
 func sourceName(mock bool) string {
