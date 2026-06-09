@@ -157,6 +157,46 @@ func TestRendererReusesGroupAndUpdatesChildSpriteFrame(t *testing.T) {
 	}
 }
 
+func TestRendererDoesNotReuseCanvasObjectForRepeatedElementID(t *testing.T) {
+	renderer := New(nil)
+	repeated := spriteFrameElement("rpm", 1, "frame-1.png")
+	firstScene := scene.Scene{Elements: []scene.Element{
+		groupElement("left", repeated),
+		groupElement("right", repeated),
+	}}
+	secondScene := scene.Scene{Elements: []scene.Element{
+		groupElement("left", spriteFrameElement("rpm", 2, "frame-2.png")),
+		groupElement("right", spriteFrameElement("rpm", 2, "frame-2.png")),
+	}}
+
+	if err := renderer.Update(firstScene); err != nil {
+		t.Fatalf("first update: %v", err)
+	}
+	leftGroup := renderer.root.Objects[0].(*fyneui.Container)
+	rightGroup := renderer.root.Objects[1].(*fyneui.Container)
+	leftImage := leftGroup.Objects[0].(*canvas.Image)
+	rightImage := rightGroup.Objects[0].(*canvas.Image)
+	if leftImage == rightImage {
+		t.Fatalf("repeated element ID reused one canvas object across occurrences")
+	}
+
+	if err := renderer.Update(secondScene); err != nil {
+		t.Fatalf("second update: %v", err)
+	}
+	if leftGroup.Objects[0] != leftImage {
+		t.Fatalf("left repeated occurrence image was rebuilt")
+	}
+	if rightGroup.Objects[0] != rightImage {
+		t.Fatalf("right repeated occurrence image was rebuilt")
+	}
+	if leftImage.Resource == nil || leftImage.Resource.Name() != "frame-2.png" {
+		t.Fatalf("left resource = %v, want frame-2.png", resourceName(leftImage.Resource))
+	}
+	if rightImage.Resource == nil || rightImage.Resource.Name() != "frame-2.png" {
+		t.Fatalf("right resource = %v, want frame-2.png", resourceName(rightImage.Resource))
+	}
+}
+
 func makeRegistry(t *testing.T) *assets.Registry {
 	t.Helper()
 	root := t.TempDir()
