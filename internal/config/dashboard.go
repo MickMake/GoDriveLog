@@ -329,7 +329,7 @@ func validateLayers(layers []DashboardLayerConfig, blocks map[string]bool) error
 			return fmt.Errorf("%s.id must not be empty", path)
 		}
 		if ids[layer.ID] {
-			return fmt.Errorf("dashboard.layers id %q must be unique")
+			return fmt.Errorf("dashboard.layers id %q must be unique", layer.ID)
 		}
 		ids[layer.ID] = true
 		if len(layer.Blocks) == 0 {
