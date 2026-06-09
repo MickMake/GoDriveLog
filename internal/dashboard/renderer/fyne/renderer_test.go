@@ -5,6 +5,9 @@ import (
 	"path/filepath"
 	"testing"
 
+	fyneui "fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
+
 	"github.com/MickMake/GoDriveLog/internal/config"
 	"github.com/MickMake/GoDriveLog/internal/dashboard/assets"
 	"github.com/MickMake/GoDriveLog/internal/dashboard/scene"
@@ -76,6 +79,84 @@ func TestUpdateRendersGroupChildren(t *testing.T) {
 	}
 }
 
+func TestRendererReusesUnchangedSpriteFrameObject(t *testing.T) {
+	renderer := New(nil)
+	sceneState := scene.Scene{Elements: []scene.Element{spriteFrameElement("rpm", 1, "frame-1.png")}}
+
+	if err := renderer.Update(sceneState); err != nil {
+		t.Fatalf("first update: %v", err)
+	}
+	if len(renderer.root.Objects) != 1 {
+		t.Fatalf("root objects = %d, want 1", len(renderer.root.Objects))
+	}
+	firstObject := renderer.root.Objects[0]
+
+	if err := renderer.Update(sceneState); err != nil {
+		t.Fatalf("second update: %v", err)
+	}
+	if got := renderer.root.Objects[0]; got != firstObject {
+		t.Fatalf("unchanged sprite frame object was rebuilt")
+	}
+}
+
+func TestRendererUpdatesSpriteFrameResourceInPlace(t *testing.T) {
+	renderer := New(nil)
+	firstScene := scene.Scene{Elements: []scene.Element{spriteFrameElement("rpm", 1, "frame-1.png")}}
+	secondScene := scene.Scene{Elements: []scene.Element{spriteFrameElement("rpm", 2, "frame-2.png")}}
+
+	if err := renderer.Update(firstScene); err != nil {
+		t.Fatalf("first update: %v", err)
+	}
+	imageObject, ok := renderer.root.Objects[0].(*canvas.Image)
+	if !ok {
+		t.Fatalf("root object type = %T, want *canvas.Image", renderer.root.Objects[0])
+	}
+	if imageObject.Resource == nil || imageObject.Resource.Name() != "frame-1.png" {
+		t.Fatalf("first resource = %v, want frame-1.png", resourceName(imageObject.Resource))
+	}
+
+	if err := renderer.Update(secondScene); err != nil {
+		t.Fatalf("second update: %v", err)
+	}
+	if got := renderer.root.Objects[0]; got != imageObject {
+		t.Fatalf("changed sprite frame rebuilt image object")
+	}
+	if imageObject.Resource == nil || imageObject.Resource.Name() != "frame-2.png" {
+		t.Fatalf("second resource = %v, want frame-2.png", resourceName(imageObject.Resource))
+	}
+}
+
+func TestRendererReusesGroupAndUpdatesChildSpriteFrame(t *testing.T) {
+	renderer := New(nil)
+	firstScene := scene.Scene{Elements: []scene.Element{groupElement("panel", spriteFrameElement("rpm", 1, "frame-1.png"))}}
+	secondScene := scene.Scene{Elements: []scene.Element{groupElement("panel", spriteFrameElement("rpm", 2, "frame-2.png"))}}
+
+	if err := renderer.Update(firstScene); err != nil {
+		t.Fatalf("first update: %v", err)
+	}
+	group, ok := renderer.root.Objects[0].(*fyneui.Container)
+	if !ok {
+		t.Fatalf("root object type = %T, want *fyne.Container", renderer.root.Objects[0])
+	}
+	childImage, ok := group.Objects[0].(*canvas.Image)
+	if !ok {
+		t.Fatalf("child object type = %T, want *canvas.Image", group.Objects[0])
+	}
+
+	if err := renderer.Update(secondScene); err != nil {
+		t.Fatalf("second update: %v", err)
+	}
+	if got := renderer.root.Objects[0]; got != group {
+		t.Fatalf("group object was rebuilt")
+	}
+	if got := group.Objects[0]; got != childImage {
+		t.Fatalf("child image object was rebuilt")
+	}
+	if childImage.Resource == nil || childImage.Resource.Name() != "frame-2.png" {
+		t.Fatalf("child resource = %v, want frame-2.png", resourceName(childImage.Resource))
+	}
+}
+
 func makeRegistry(t *testing.T) *assets.Registry {
 	t.Helper()
 	root := t.TempDir()
@@ -97,4 +178,32 @@ func makeRegistry(t *testing.T) *assets.Registry {
 		t.Fatalf("assets.Load returned error: %v", err)
 	}
 	return registry
+}
+
+func spriteFrameElement(id string, frameIndex int, path string) scene.Element {
+	return scene.Element{
+		ID:       id,
+		Type:     config.DashboardBlockSpriteFrame,
+		Visible:  true,
+		Geometry: config.RectConfig{X: 1, Y: 2, Width: 30, Height: 40},
+		Frame:    assets.Frame{Index: frameIndex, Path: path, Data: []byte{byte(frameIndex)}},
+		HasFrame: true,
+	}
+}
+
+func groupElement(id string, children ...scene.Element) scene.Element {
+	return scene.Element{
+		ID:       id,
+		Type:     config.DashboardBlockGroup,
+		Visible:  true,
+		Geometry: config.RectConfig{X: 0, Y: 0, Width: 100, Height: 100},
+		Children: children,
+	}
+}
+
+func resourceName(resource fyneui.Resource) string {
+	if resource == nil {
+		return "<nil>"
+	}
+	return resource.Name()
 }
