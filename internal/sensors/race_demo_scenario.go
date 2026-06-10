@@ -102,17 +102,33 @@ func (RaceDemoScenario) SampleAt(elapsed time.Duration) RaceDemoSample {
 }
 
 func valueForRaceDemoPID(sample RaceDemoSample, pid string) (float64, string, error) {
+	scenarioSeconds := float64(sample.TimestampMS) / 1000
+
 	switch pid {
 	case "0104", "DEMO_ENGINE_LOAD":
 		return sample.EngineLoadPercent, "%", nil
 	case "0105", "DEMO_COOLANT_TEMP":
 		return sample.CoolantTempC, "C", nil
+	case "0106", "DEMO_SHORT_FUEL_TRIM_BANK1":
+		return round1(2 * math.Sin(scenarioSeconds/6)), "%", nil
+	case "0107", "DEMO_LONG_FUEL_TRIM_BANK1":
+		return 1.5, "%", nil
+	case "010B", "DEMO_INTAKE_MANIFOLD_PRESSURE":
+		return round1(30 + sample.EngineLoadPercent*0.75), "kPa", nil
 	case "010C", "DEMO_RPM":
 		return sample.RPM, "rpm", nil
 	case "010D", "DEMO_SPEED":
 		return sample.SpeedKPH, "km/h", nil
+	case "010E", "DEMO_TIMING_ADVANCE":
+		return round1(8 + (sample.RPM/5200)*18 - (sample.EngineLoadPercent/100)*8), "deg", nil
+	case "010F", "DEMO_INTAKE_AIR_TEMP":
+		return round1(28 + (sample.CoolantTempC-70)*0.35), "C", nil
+	case "0110", "DEMO_MASS_AIR_FLOW":
+		return round1((sample.RPM / 1000) * (10 + sample.EngineLoadPercent/4)), "g/s", nil
 	case "0111", "DEMO_THROTTLE":
 		return sample.ThrottlePercent, "%", nil
+	case "011F", "DEMO_RUN_TIME_SINCE_ENGINE_START":
+		return math.Round(scenarioSeconds), "s", nil
 	case "0142", "DEMO_BATTERY":
 		return sample.BatteryV, "V", nil
 	case "015C", "DEMO_OIL_TEMP":

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log"
 	"sync"
 	"time"
@@ -20,11 +21,15 @@ import (
 
 func main() {
 	configPath := flag.String("config", "config.example.yaml", "path to YAML config")
+	providerOverride := flag.String("sensor-provider", "", "sensor provider override: obd, mock, or race-demo")
 	flag.Parse()
 
 	cfg, err := config.Load(*configPath)
 	if err != nil {
 		log.Fatal(err)
+	}
+	if *providerOverride != "" {
+		cfg.OBD.Provider = config.NormalizeOBDProvider(*providerOverride, cfg.OBD.MockMode)
 	}
 	activeSensors := config.ActiveSensors(cfg)
 	stateStore := sensors.NewStateStore(config.SensorStateDefinitions(activeSensors))
@@ -107,7 +112,7 @@ func main() {
 						Name:      runtimeSensor.Key,
 						Value:     value,
 						Unit:      unit,
-						Source:    sourceName(cfg.OBD.MockMode),
+						Source:    sourceName(cfg.OBD.Provider),
 					}
 
 					if runtimeSensor.Log {
@@ -130,15 +135,18 @@ func main() {
 }
 
 func newReader(cfg config.Config) (sensors.Reader, error) {
-	if cfg.OBD.MockMode {
+	switch cfg.OBD.Provider {
+	case config.OBDProviderMock:
 		return sensors.NewMockReader(), nil
+	case config.OBDProviderRaceDemo:
+		return sensors.NewRaceDemoReader(), nil
+	case config.OBDProviderOBD:
+		return sensors.NewELMOBDReader(cfg.OBD.Address, cfg.OBD.Debug)
+	default:
+		return nil, fmt.Errorf("unsupported sensor provider %q", cfg.OBD.Provider)
 	}
-	return sensors.NewELMOBDReader(cfg.OBD.Address, cfg.OBD.Debug)
 }
 
-func sourceName(mock bool) string {
-	if mock {
-		return "mock"
-	}
-	return "obd"
+func sourceName(provider string) string {
+	return provider
 }
