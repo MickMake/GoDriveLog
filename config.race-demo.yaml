@@ -35,19 +35,22 @@ dashboard:
       type: frame_set
       pattern: throttle/frame_{index:03}.svg
       frame_count: 11
-    - id: yellow_digits
+    - id: red_digits
       type: charset
       glyphs:
-        "0": digits/yellow/0.svg
-        "1": digits/yellow/1.svg
-        "2": digits/yellow/2.svg
-        "3": digits/yellow/3.svg
-        "4": digits/yellow/4.svg
-        "5": digits/yellow/5.svg
-        "6": digits/yellow/6.svg
-        "7": digits/yellow/7.svg
-        "8": digits/yellow/8.svg
-        "9": digits/yellow/9.svg
+        "blank": digits/red/7SegBlank.svg
+        "0": digits/red/7Seg0.svg
+        "1": digits/red/7Seg1.svg
+        "2": digits/red/7Seg2.svg
+        "3": digits/red/7Seg3.svg
+        "4": digits/red/7Seg4.svg
+        "5": digits/red/7Seg5.svg
+        "6": digits/red/7Seg6.svg
+        "7": digits/red/7Seg7.svg
+        "8": digits/red/7Seg8.svg
+        "9": digits/red/7Seg9.svg
+        "-": digits/red/7SegDash.svg
+        "dp": digits/red/7SegDP.svg
   decoders:
     - id: rpm_text
       type: format_number
@@ -56,7 +59,7 @@ dashboard:
     - id: rpm_digits
       type: digits
       input: rpm_text
-      asset: yellow_digits
+      asset: red_digits
     - id: speed_text
       type: format_number
       sensor: speed
@@ -64,7 +67,7 @@ dashboard:
     - id: speed_digits
       type: digits
       input: speed_text
-      asset: yellow_digits
+      asset: red_digits
     - id: throttle_frame
       type: frame_index
       sensor: throttle_position
@@ -82,7 +85,7 @@ dashboard:
     - id: gear_digits
       type: digits
       input: gear_text
-      asset: yellow_digits
+      asset: red_digits
     - id: oil_temp_text
       type: format_number
       sensor: oil_temp
@@ -90,7 +93,7 @@ dashboard:
     - id: oil_temp_digits
       type: digits
       input: oil_temp_text
-      asset: yellow_digits
+      asset: red_digits
     - id: oil_pressure_text
       type: format_number
       sensor: oil_pressure
@@ -98,7 +101,7 @@ dashboard:
     - id: oil_pressure_digits
       type: digits
       input: oil_pressure_text
-      asset: yellow_digits
+      asset: red_digits
     - id: coolant_temp_text
       type: format_number
       sensor: coolant_temp
@@ -106,7 +109,7 @@ dashboard:
     - id: coolant_temp_digits
       type: digits
       input: coolant_temp_text
-      asset: yellow_digits
+      asset: red_digits
     - id: warning_level_text
       type: format_number
       sensor: warning_level
@@ -114,7 +117,7 @@ dashboard:
     - id: warning_level_digits
       type: digits
       input: warning_level_text
-      asset: yellow_digits
+      asset: red_digits
     - id: engine_failed_text
       type: format_number
       sensor: engine_failed
@@ -122,7 +125,7 @@ dashboard:
     - id: engine_failed_digits
       type: digits
       input: engine_failed_text
-      asset: yellow_digits
+      asset: red_digits
     - id: requires_reset_text
       type: format_number
       sensor: requires_reset
@@ -130,7 +133,7 @@ dashboard:
     - id: requires_reset_digits
       type: digits
       input: requires_reset_text
-      asset: yellow_digits
+      asset: red_digits
   blocks:
     - id: background_panel
       type: static_panel
@@ -142,7 +145,7 @@ dashboard:
         height: 480
     - id: rpm_display
       type: seven_segment_number
-      asset: yellow_digits
+      asset: red_digits
       decoder: rpm_digits
       geometry:
         x: 70
@@ -160,7 +163,7 @@ dashboard:
         height: 48
     - id: speed_display
       type: seven_segment_number
-      asset: yellow_digits
+      asset: red_digits
       decoder: speed_digits
       geometry:
         x: 720
@@ -169,7 +172,7 @@ dashboard:
         height: 160
     - id: gear_display
       type: seven_segment_number
-      asset: yellow_digits
+      asset: red_digits
       decoder: gear_digits
       geometry:
         x: 1145
@@ -187,7 +190,7 @@ dashboard:
         height: 48
     - id: oil_temp_display
       type: seven_segment_number
-      asset: yellow_digits
+      asset: red_digits
       decoder: oil_temp_digits
       geometry:
         x: 1360
@@ -196,7 +199,7 @@ dashboard:
         height: 92
     - id: coolant_temp_display
       type: seven_segment_number
-      asset: yellow_digits
+      asset: red_digits
       decoder: coolant_temp_digits
       geometry:
         x: 1605
@@ -205,7 +208,7 @@ dashboard:
         height: 92
     - id: oil_pressure_display
       type: seven_segment_number
-      asset: yellow_digits
+      asset: red_digits
       decoder: oil_pressure_digits
       geometry:
         x: 1360
@@ -214,7 +217,7 @@ dashboard:
         height: 92
     - id: warning_level_display
       type: seven_segment_number
-      asset: yellow_digits
+      asset: red_digits
       decoder: warning_level_digits
       geometry:
         x: 1665
@@ -223,7 +226,7 @@ dashboard:
         height: 92
     - id: engine_failed_display
       type: seven_segment_number
-      asset: yellow_digits
+      asset: red_digits
       decoder: engine_failed_digits
       geometry:
         x: 1415
@@ -232,7 +235,7 @@ dashboard:
         height: 64
     - id: requires_reset_display
       type: seven_segment_number
-      asset: yellow_digits
+      asset: red_digits
       decoder: requires_reset_digits
       geometry:
         x: 1665
