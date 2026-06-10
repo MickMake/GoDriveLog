@@ -21,21 +21,27 @@ const (
 )
 
 var (
-	colourBackground         = color.NRGBA{R: 3, G: 5, B: 9, A: 255}
-	colourPanel              = color.NRGBA{R: 10, G: 15, B: 23, A: 255}
-	colourPanelHot           = color.NRGBA{R: 42, G: 6, B: 6, A: 255}
-	colourPanelWarn          = color.NRGBA{R: 42, G: 31, B: 6, A: 255}
-	colourTextDim            = color.NRGBA{R: 116, G: 135, B: 156, A: 255}
-	colourTextNormal         = color.NRGBA{R: 222, G: 238, B: 255, A: 255}
-	colourGreen              = color.NRGBA{R: 60, G: 235, B: 125, A: 255}
-	colourAmber              = color.NRGBA{R: 255, G: 202, B: 55, A: 255}
-	colourRed                = color.NRGBA{R: 255, G: 68, B: 68, A: 255}
-	colourThrottle           = color.NRGBA{R: 62, G: 230, B: 110, A: 255}
-	colourThrottleWarn       = color.NRGBA{R: 255, G: 190, B: 45, A: 255}
-	colourTrack              = color.NRGBA{R: 30, G: 37, B: 50, A: 255}
-	colourOverlay            = color.NRGBA{R: 140, G: 0, B: 0, A: 96}
-	colourAlertBackground    = color.NRGBA{R: 8, G: 11, B: 17, A: 255}
+	colourBackground      = color.NRGBA{R: 3, G: 5, B: 9, A: 255}
+	colourPanel           = color.NRGBA{R: 10, G: 15, B: 23, A: 255}
+	colourPanelHot        = color.NRGBA{R: 42, G: 6, B: 6, A: 255}
+	colourPanelWarn       = color.NRGBA{R: 42, G: 31, B: 6, A: 255}
+	colourTextDim         = color.NRGBA{R: 116, G: 135, B: 156, A: 255}
+	colourTextNormal      = color.NRGBA{R: 222, G: 238, B: 255, A: 255}
+	colourGreen           = color.NRGBA{R: 60, G: 235, B: 125, A: 255}
+	colourAmber           = color.NRGBA{R: 255, G: 202, B: 55, A: 255}
+	colourRed             = color.NRGBA{R: 255, G: 68, B: 68, A: 255}
+	colourThrottle        = color.NRGBA{R: 62, G: 230, B: 110, A: 255}
+	colourThrottleWarn    = color.NRGBA{R: 255, G: 190, B: 45, A: 255}
+	colourTrack           = color.NRGBA{R: 30, G: 37, B: 50, A: 255}
+	colourOverlay         = color.NRGBA{R: 140, G: 0, B: 0, A: 96}
+	colourAlertBackground = color.NRGBA{R: 8, G: 11, B: 17, A: 255}
 )
+
+type InstrumentDashboardOptions struct {
+	DebugStrip  bool
+	DebugSource string
+	DebugPIDs   map[string]string
+}
 
 type InstrumentDashboard struct {
 	root  *fyne.Container
@@ -43,6 +49,11 @@ type InstrumentDashboard struct {
 
 	states       map[string]sensors.SensorState
 	statusIssues []string
+
+	debugStrip  bool
+	debugSource string
+	debugPIDs   map[string]string
+	debugSeq    uint64
 
 	rpmPanel         *canvas.Rectangle
 	speedPanel       *canvas.Rectangle
@@ -67,9 +78,14 @@ type InstrumentDashboard struct {
 	requiresResetText *canvas.Text
 	alertText         *canvas.Text
 	statusText        *canvas.Text
+	debugText         *canvas.Text
 }
 
 func NewInstrumentDashboard1920x480(store *sensors.StateStore) (*InstrumentDashboard, error) {
+	return NewInstrumentDashboard1920x480WithOptions(store, InstrumentDashboardOptions{})
+}
+
+func NewInstrumentDashboard1920x480WithOptions(store *sensors.StateStore, options InstrumentDashboardOptions) (*InstrumentDashboard, error) {
 	if store == nil {
 		return nil, fmt.Errorf("state store must not be nil")
 	}
@@ -78,6 +94,9 @@ func NewInstrumentDashboard1920x480(store *sensors.StateStore) (*InstrumentDashb
 		store:        store,
 		states:       make(map[string]sensors.SensorState, 16),
 		statusIssues: make([]string, 0, 12),
+		debugStrip:   options.DebugStrip,
+		debugSource:  options.DebugSource,
+		debugPIDs:    options.DebugPIDs,
 	}
 	background := rect(0, 0, instrumentWidth, instrumentHeight, colourBackground)
 
@@ -118,6 +137,10 @@ func NewInstrumentDashboard1920x480(store *sensors.StateStore) (*InstrumentDashb
 	dashboard.statusText = labelText("Race demo status messages are derived from sensor values; source text is not a sensor yet.", 52, 408, 20)
 	dashboard.alertBackground = rect(28, 392, 1864, 64, colourAlertBackground)
 	dashboard.alertText = valueText("SYSTEM NORMAL", 52, 424, 26, colourTextNormal)
+	dashboard.debugText = valueText("GDLDBG|disabled", 28, 462, 10, colourGreen)
+	if !dashboard.debugStrip {
+		dashboard.debugText.Hide()
+	}
 
 	dashboard.failureOverlay = rect(0, 0, instrumentWidth, instrumentHeight, colourOverlay)
 	dashboard.failureOverlay.Hide()
@@ -158,6 +181,7 @@ func NewInstrumentDashboard1920x480(store *sensors.StateStore) (*InstrumentDashb
 		dashboard.alertBackground,
 		dashboard.statusText,
 		dashboard.alertText,
+		dashboard.debugText,
 	)
 	root.Resize(fyne.NewSize(instrumentWidth, instrumentHeight))
 	dashboard.root = root
@@ -191,7 +215,8 @@ func (d *InstrumentDashboard) Start(ctx context.Context, interval time.Duration)
 }
 
 func (d *InstrumentDashboard) Refresh() {
-	states := d.stateMap(d.store.SnapshotWithStale(time.Now()))
+	now := time.Now()
+	states := d.stateMap(d.store.SnapshotWithStale(now))
 
 	rpm := sensorValue(states, "rpm")
 	speed := sensorValue(states, "speed")
@@ -224,6 +249,9 @@ func (d *InstrumentDashboard) Refresh() {
 	applyInstrumentColors(d, rpm, speed, throttle, engineLoad, oilTemp, oilPressure, coolant, battery, warning, engineFailed, requiresReset)
 	setText(d.statusText, statusLine(d.sensorStatusText(states)))
 	setText(d.alertText, alertLine(rpm, speed, throttle, oilTemp, oilPressure, warning, engineFailed, requiresReset))
+	if d.debugStrip {
+		setText(d.debugText, d.debugLine(states, now))
+	}
 }
 
 func (d *InstrumentDashboard) stateMap(states []sensors.SensorState) map[string]sensors.SensorState {
@@ -278,6 +306,74 @@ func (d *InstrumentDashboard) appendSensorIssue(states map[string]sensors.Sensor
 		}
 		return
 	}
+}
+
+func (d *InstrumentDashboard) debugLine(states map[string]sensors.SensorState, now time.Time) string {
+	d.debugSeq++
+	return strings.Join([]string{
+		"GDLDBG",
+		fmt.Sprintf("seq=%d", d.debugSeq),
+		"src=" + debugClean(d.debugSource),
+		d.debugSensor(states, now, "rpm", "rpm"),
+		d.debugSensor(states, now, "spd", "speed"),
+		d.debugSensor(states, now, "thr", "throttle_position", "throttle"),
+		d.debugSensor(states, now, "load", "engine_load"),
+		d.debugSensor(states, now, "cool", "coolant_temp", "coolant_temperature"),
+		d.debugSensor(states, now, "oil", "oil_temperature", "oil_temp"),
+		d.debugSensor(states, now, "prs", "oil_pressure"),
+		d.debugSensor(states, now, "gear", "gear"),
+		d.debugSensor(states, now, "bat", "battery_voltage", "battery"),
+		d.debugSensor(states, now, "warn", "warning_level"),
+		d.debugSensor(states, now, "fail", "engine_failed"),
+		d.debugSensor(states, now, "rst", "requires_reset"),
+	}, "|")
+}
+
+func (d *InstrumentDashboard) debugSensor(states map[string]sensors.SensorState, now time.Time, label string, ids ...string) string {
+	for _, id := range ids {
+		state, ok := states[id]
+		if !ok {
+			continue
+		}
+		return fmt.Sprintf("%s=%s:%s:%s:%s", label, debugValue(label, state.Value), state.Status, debugClean(d.debugPIDs[id]), debugAge(state, now))
+	}
+	pid := "na"
+	if len(ids) > 0 {
+		pid = debugClean(d.debugPIDs[ids[0]])
+	}
+	return fmt.Sprintf("%s=na:missing:%s:na", label, pid)
+}
+
+func debugValue(label string, value float64) string {
+	switch label {
+	case "rpm", "spd", "thr", "load", "gear", "warn", "fail", "rst":
+		return fmt.Sprintf("%.0f", value)
+	case "bat":
+		return fmt.Sprintf("%.1f", value)
+	default:
+		return fmt.Sprintf("%.1f", value)
+	}
+}
+
+func debugAge(state sensors.SensorState, now time.Time) string {
+	if state.UpdatedAt.IsZero() {
+		return "na"
+	}
+	age := now.Sub(state.UpdatedAt)
+	if age < 0 {
+		age = 0
+	}
+	return fmt.Sprintf("%d", age.Milliseconds())
+}
+
+func debugClean(value string) string {
+	if value == "" {
+		return "na"
+	}
+	value = strings.ReplaceAll(value, "|", "_")
+	value = strings.ReplaceAll(value, ":", "_")
+	value = strings.ReplaceAll(value, " ", "_")
+	return value
 }
 
 func statusLine(sensorStatus string) string {
