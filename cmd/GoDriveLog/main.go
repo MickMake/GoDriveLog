@@ -125,6 +125,39 @@ func main() {
 }
 
 func pngDigitConfigFromDashboard(cfg config.Config) ui.PNGDigitConfig {
+	assets := make(map[string]config.DashboardAssetConfig, len(cfg.Dashboard.Assets))
+	for _, asset := range cfg.Dashboard.Assets {
+		assets[asset.ID] = asset
+	}
+
+	for _, block := range cfg.Dashboard.Blocks {
+		if block.Type != config.DashboardBlockSevenSegmentNumber || block.Asset == "" {
+			continue
+		}
+		asset, ok := assets[block.Asset]
+		if !ok || asset.Type != config.DashboardAssetPNGDigitSet {
+			continue
+		}
+		return ui.PNGDigitConfig{
+			AssetRoot: cfg.Dashboard.AssetRoot,
+			Glyphs:    asset.Glyphs,
+		}
+	}
+
+	for _, asset := range cfg.Dashboard.Assets {
+		if asset.Type != config.DashboardAssetPNGDigitSet {
+			continue
+		}
+		return ui.PNGDigitConfig{
+			AssetRoot: cfg.Dashboard.AssetRoot,
+			Glyphs:    asset.Glyphs,
+		}
+	}
+
+	return ui.PNGDigitConfig{}
+}
+
+func oldpngDigitConfigFromDashboard(cfg config.Config) ui.PNGDigitConfig {
 	for _, asset := range cfg.Dashboard.Assets {
 		if asset.Type != config.DashboardAssetPNGDigitSet {
 			continue
