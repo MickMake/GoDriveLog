@@ -15,6 +15,7 @@ type RuntimeSensor struct {
 	Unit    string
 	Refresh int
 	Log     bool
+	Display bool
 	Min     float64
 	Max     float64
 }
@@ -32,7 +33,7 @@ func ActiveSensors(cfg Config) []RuntimeSensor {
 		if sensor.Type != "obd" {
 			continue
 		}
-		if !sensor.Log {
+		if !sensor.Log && !sensor.Display {
 			continue
 		}
 
@@ -42,6 +43,7 @@ func ActiveSensors(cfg Config) []RuntimeSensor {
 			Unit:    sensor.Unit,
 			Refresh: sensor.Refresh,
 			Log:     sensor.Log,
+			Display: sensor.Display,
 			Min:     sensor.Min,
 			Max:     sensor.Max,
 		})
@@ -53,6 +55,9 @@ func ActiveSensors(cfg Config) []RuntimeSensor {
 func SensorStateDefinitions(runtimeSensors []RuntimeSensor) []sensors.SensorDefinition {
 	definitions := make([]sensors.SensorDefinition, 0, len(runtimeSensors))
 	for _, runtimeSensor := range runtimeSensors {
+		if !runtimeSensor.Display {
+			continue
+		}
 		definitions = append(definitions, sensors.SensorDefinition{
 			ID:         runtimeSensor.Key,
 			Unit:       runtimeSensor.Unit,
