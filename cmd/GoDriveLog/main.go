@@ -72,7 +72,9 @@ func main() {
 					now := time.Now()
 					value, unit, err := reader.Read(ctx, runtimeSensor.RawPID)
 					if err != nil {
-						stateStore.SetError(runtimeSensor.Key, err, now)
+						if runtimeSensor.Display {
+							stateStore.SetError(runtimeSensor.Key, err, now)
+						}
 						log.Printf("read %s: %v", runtimeSensor.RawPID, err)
 						continue
 					}
@@ -80,7 +82,9 @@ func main() {
 					if runtimeSensor.Unit != "" {
 						unit = runtimeSensor.Unit
 					}
-					stateStore.SetValue(runtimeSensor.Key, value, unit, now)
+					if runtimeSensor.Display {
+						stateStore.SetValue(runtimeSensor.Key, value, unit, now)
+					}
 
 					reading := sensors.Reading{
 						Time:      now,
@@ -125,15 +129,15 @@ func appendMissingRaceDemoDisplaySensors(activeSensors []config.RuntimeSensor) [
 	}
 
 	for _, runtimeSensor := range []config.RuntimeSensor{
-		{Key: "engine_load", RawPID: "DEMO_ENGINE_LOAD", Unit: "%", Refresh: 250, Log: true, Min: 0, Max: 100},
-		{Key: "coolant_temp", RawPID: "DEMO_COOLANT_TEMP", Unit: "C", Refresh: 250, Log: true, Min: -40, Max: 140},
-		{Key: "battery_voltage", RawPID: "DEMO_BATTERY", Unit: "V", Refresh: 500, Log: true, Min: 0, Max: 16},
-		{Key: "oil_temperature", RawPID: "DEMO_OIL_TEMP", Unit: "C", Refresh: 250, Log: true, Min: 0, Max: 160},
-		{Key: "oil_pressure", RawPID: "DEMO_OIL_PRESSURE", Unit: "kPa", Refresh: 250, Log: true, Min: 0, Max: 500},
-		{Key: "gear", RawPID: "DEMO_GEAR", Unit: "gear", Refresh: 250, Log: true, Min: 0, Max: 6},
-		{Key: "warning_level", RawPID: "DEMO_WARNING_LEVEL", Unit: "level", Refresh: 250, Log: true, Min: 0, Max: 2},
-		{Key: "engine_failed", RawPID: "DEMO_ENGINE_FAILED", Unit: "bool", Refresh: 250, Log: true, Min: 0, Max: 1},
-		{Key: "requires_reset", RawPID: "DEMO_REQUIRES_RESET", Unit: "bool", Refresh: 250, Log: true, Min: 0, Max: 1},
+		{Key: "engine_load", RawPID: "DEMO_ENGINE_LOAD", Unit: "%", Refresh: 250, Log: true, Display: true, Min: 0, Max: 100},
+		{Key: "coolant_temp", RawPID: "DEMO_COOLANT_TEMP", Unit: "C", Refresh: 250, Log: true, Display: true, Min: -40, Max: 140},
+		{Key: "battery_voltage", RawPID: "DEMO_BATTERY", Unit: "V", Refresh: 500, Log: true, Display: true, Min: 0, Max: 16},
+		{Key: "oil_temperature", RawPID: "DEMO_OIL_TEMP", Unit: "C", Refresh: 250, Log: true, Display: true, Min: 0, Max: 160},
+		{Key: "oil_pressure", RawPID: "DEMO_OIL_PRESSURE", Unit: "kPa", Refresh: 250, Log: true, Display: true, Min: 0, Max: 500},
+		{Key: "gear", RawPID: "DEMO_GEAR", Unit: "gear", Refresh: 250, Log: true, Display: true, Min: 0, Max: 6},
+		{Key: "warning_level", RawPID: "DEMO_WARNING_LEVEL", Unit: "level", Refresh: 250, Log: true, Display: true, Min: 0, Max: 2},
+		{Key: "engine_failed", RawPID: "DEMO_ENGINE_FAILED", Unit: "bool", Refresh: 250, Log: true, Display: true, Min: 0, Max: 1},
+		{Key: "requires_reset", RawPID: "DEMO_REQUIRES_RESET", Unit: "bool", Refresh: 250, Log: true, Display: true, Min: 0, Max: 1},
 	} {
 		if seen[runtimeSensor.Key] {
 			continue
