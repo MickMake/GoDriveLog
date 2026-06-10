@@ -1,0 +1,409 @@
+obd:
+  provider: race-demo
+  mock_mode: false
+  address: serial:///dev/ttyUSB0
+  debug: false
+
+log:
+  rotate: daily
+  directory: ./log
+
+vehicle:
+  name: "VW Caddy - Race Demo"
+
+dashboard:
+  refresh_ms: 250
+  render_min_ms: 0
+  canvas:
+    width: 1920
+    height: 480
+  asset_root: assets/dashboard/bttf
+  assets:
+    - id: race_background
+      type: image
+      path: race_demo/background.svg
+    - id: oil_warning_overlay
+      type: image
+      path: race_demo/oil_warning.svg
+    - id: oil_critical_overlay
+      type: image
+      path: race_demo/oil_critical.svg
+    - id: engine_failed_overlay
+      type: image
+      path: race_demo/engine_failed.svg
+    - id: throttle_frames
+      type: frame_set
+      pattern: throttle/frame_{index:03}.svg
+      frame_count: 11
+    - id: yellow_digits
+      type: charset
+      glyphs:
+        "0": digits/yellow/0.svg
+        "1": digits/yellow/1.svg
+        "2": digits/yellow/2.svg
+        "3": digits/yellow/3.svg
+        "4": digits/yellow/4.svg
+        "5": digits/yellow/5.svg
+        "6": digits/yellow/6.svg
+        "7": digits/yellow/7.svg
+        "8": digits/yellow/8.svg
+        "9": digits/yellow/9.svg
+  decoders:
+    - id: rpm_text
+      type: format_number
+      sensor: rpm
+      format: "0000"
+    - id: rpm_digits
+      type: digits
+      input: rpm_text
+      asset: yellow_digits
+    - id: speed_text
+      type: format_number
+      sensor: speed
+      format: "000"
+    - id: speed_digits
+      type: digits
+      input: speed_text
+      asset: yellow_digits
+    - id: throttle_frame
+      type: frame_index
+      sensor: throttle_position
+      asset: throttle_frames
+      frame_count: 11
+    - id: engine_load_frame
+      type: frame_index
+      sensor: engine_load
+      asset: throttle_frames
+      frame_count: 11
+    - id: gear_text
+      type: format_number
+      sensor: gear
+      format: "0"
+    - id: gear_digits
+      type: digits
+      input: gear_text
+      asset: yellow_digits
+    - id: oil_temp_text
+      type: format_number
+      sensor: oil_temp
+      format: "000"
+    - id: oil_temp_digits
+      type: digits
+      input: oil_temp_text
+      asset: yellow_digits
+    - id: oil_pressure_text
+      type: format_number
+      sensor: oil_pressure
+      format: "000"
+    - id: oil_pressure_digits
+      type: digits
+      input: oil_pressure_text
+      asset: yellow_digits
+    - id: coolant_temp_text
+      type: format_number
+      sensor: coolant_temp
+      format: "000"
+    - id: coolant_temp_digits
+      type: digits
+      input: coolant_temp_text
+      asset: yellow_digits
+    - id: warning_level_text
+      type: format_number
+      sensor: warning_level
+      format: "0"
+    - id: warning_level_digits
+      type: digits
+      input: warning_level_text
+      asset: yellow_digits
+    - id: engine_failed_text
+      type: format_number
+      sensor: engine_failed
+      format: "0"
+    - id: engine_failed_digits
+      type: digits
+      input: engine_failed_text
+      asset: yellow_digits
+    - id: requires_reset_text
+      type: format_number
+      sensor: requires_reset
+      format: "0"
+    - id: requires_reset_digits
+      type: digits
+      input: requires_reset_text
+      asset: yellow_digits
+  blocks:
+    - id: background_panel
+      type: static_panel
+      asset: race_background
+      geometry:
+        x: 0
+        y: 0
+        width: 1920
+        height: 480
+    - id: rpm_display
+      type: seven_segment_number
+      asset: yellow_digits
+      decoder: rpm_digits
+      geometry:
+        x: 70
+        y: 122
+        width: 520
+        height: 160
+    - id: throttle_bar
+      type: percent_frame_bar
+      asset: throttle_frames
+      decoder: throttle_frame
+      geometry:
+        x: 90
+        y: 358
+        width: 480
+        height: 48
+    - id: speed_display
+      type: seven_segment_number
+      asset: yellow_digits
+      decoder: speed_digits
+      geometry:
+        x: 720
+        y: 122
+        width: 360
+        height: 160
+    - id: gear_display
+      type: seven_segment_number
+      asset: yellow_digits
+      decoder: gear_digits
+      geometry:
+        x: 1145
+        y: 122
+        width: 110
+        height: 160
+    - id: engine_load_bar
+      type: percent_frame_bar
+      asset: throttle_frames
+      decoder: engine_load_frame
+      geometry:
+        x: 740
+        y: 358
+        width: 480
+        height: 48
+    - id: oil_temp_display
+      type: seven_segment_number
+      asset: yellow_digits
+      decoder: oil_temp_digits
+      geometry:
+        x: 1360
+        y: 118
+        width: 190
+        height: 92
+    - id: coolant_temp_display
+      type: seven_segment_number
+      asset: yellow_digits
+      decoder: coolant_temp_digits
+      geometry:
+        x: 1605
+        y: 118
+        width: 190
+        height: 92
+    - id: oil_pressure_display
+      type: seven_segment_number
+      asset: yellow_digits
+      decoder: oil_pressure_digits
+      geometry:
+        x: 1360
+        y: 252
+        width: 190
+        height: 92
+    - id: warning_level_display
+      type: seven_segment_number
+      asset: yellow_digits
+      decoder: warning_level_digits
+      geometry:
+        x: 1665
+        y: 252
+        width: 64
+        height: 92
+    - id: engine_failed_display
+      type: seven_segment_number
+      asset: yellow_digits
+      decoder: engine_failed_digits
+      geometry:
+        x: 1415
+        y: 382
+        width: 64
+        height: 64
+    - id: requires_reset_display
+      type: seven_segment_number
+      asset: yellow_digits
+      decoder: requires_reset_digits
+      geometry:
+        x: 1665
+        y: 382
+        width: 64
+        height: 64
+    - id: oil_warning_overlay_block
+      type: warning_overlay
+      asset: oil_warning_overlay
+      condition:
+        sensor: warning_level
+        min: 1
+        max: 1
+      geometry:
+        x: 0
+        y: 0
+        width: 1920
+        height: 480
+    - id: oil_critical_overlay_block
+      type: warning_overlay
+      asset: oil_critical_overlay
+      condition:
+        sensor: warning_level
+        min: 2
+      geometry:
+        x: 0
+        y: 0
+        width: 1920
+        height: 480
+    - id: engine_failed_overlay_block
+      type: warning_overlay
+      asset: engine_failed_overlay
+      condition:
+        sensor: engine_failed
+        min: 1
+      geometry:
+        x: 0
+        y: 0
+        width: 1920
+        height: 480
+  layers:
+    - id: base
+      z: 0
+      blocks:
+        - background_panel
+    - id: primary
+      z: 10
+      blocks:
+        - rpm_display
+        - throttle_bar
+        - speed_display
+        - gear_display
+        - engine_load_bar
+        - oil_temp_display
+        - coolant_temp_display
+        - oil_pressure_display
+        - warning_level_display
+        - engine_failed_display
+        - requires_reset_display
+    - id: alerts
+      z: 20
+      blocks:
+        - oil_warning_overlay_block
+        - oil_critical_overlay_block
+    - id: failure
+      z: 30
+      blocks:
+        - engine_failed_overlay_block
+
+sensors:
+  rpm:
+    type: obd
+    pid: "010C"
+    unit: rpm
+    refresh: 100
+    min: 0
+    max: 7000
+    log: true
+  speed:
+    type: obd
+    pid: "010D"
+    unit: km/h
+    refresh: 100
+    min: 0
+    max: 180
+    log: true
+  throttle_position:
+    type: obd
+    pid: "0111"
+    unit: "%"
+    refresh: 100
+    min: 0
+    max: 100
+    log: true
+  engine_load:
+    type: obd
+    pid: "0104"
+    unit: "%"
+    refresh: 250
+    min: 0
+    max: 100
+    log: true
+  coolant_temp:
+    type: obd
+    pid: "0105"
+    unit: C
+    refresh: 500
+    min: -40
+    max: 140
+    log: true
+  oil_temp:
+    type: obd
+    pid: "DEMO_OIL_TEMP"
+    unit: C
+    refresh: 250
+    min: 0
+    max: 150
+    log: true
+  oil_pressure:
+    type: obd
+    pid: "DEMO_OIL_PRESSURE"
+    unit: kPa
+    refresh: 250
+    min: 0
+    max: 500
+    log: true
+  gear:
+    type: obd
+    pid: "DEMO_GEAR"
+    unit: gear
+    refresh: 100
+    min: 0
+    max: 6
+    log: true
+  engine_on:
+    type: obd
+    pid: "DEMO_ENGINE_ON"
+    unit: bool
+    refresh: 250
+    min: 0
+    max: 1
+    log: true
+  engine_failed:
+    type: obd
+    pid: "DEMO_ENGINE_FAILED"
+    unit: bool
+    refresh: 250
+    min: 0
+    max: 1
+    log: true
+  warning_level:
+    type: obd
+    pid: "DEMO_WARNING_LEVEL"
+    unit: level
+    refresh: 250
+    min: 0
+    max: 2
+    log: true
+  requires_reset:
+    type: obd
+    pid: "DEMO_REQUIRES_RESET"
+    unit: bool
+    refresh: 250
+    min: 0
+    max: 1
+    log: true
+  battery:
+    type: obd
+    pid: "0142"
+    unit: V
+    refresh: 1000
+    min: 0
+    max: 16
+    log: true
