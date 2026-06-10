@@ -262,4 +262,4 @@ sensors:
     refresh: 5000
     min: 0
     max: 86400
-    log: true
+    log: false
