@@ -16,7 +16,7 @@ import (
 	"github.com/MickMake/GoDriveLog/internal/ui"
 )
 
-const instrumentRefreshMS = 100
+const instrumentRefreshMS = 50
 
 func main() {
 	configPath := flag.String("config", "config.example.yaml", "path to YAML config")
@@ -125,6 +125,9 @@ func appendMissingRaceDemoDisplaySensors(activeSensors []config.RuntimeSensor) [
 	}
 
 	for _, runtimeSensor := range []config.RuntimeSensor{
+		{Key: "engine_load", RawPID: "DEMO_ENGINE_LOAD", Unit: "%", Refresh: 250, Log: true, Min: 0, Max: 100},
+		{Key: "coolant_temp", RawPID: "DEMO_COOLANT_TEMP", Unit: "C", Refresh: 250, Log: true, Min: -40, Max: 140},
+		{Key: "battery_voltage", RawPID: "DEMO_BATTERY", Unit: "V", Refresh: 500, Log: true, Min: 0, Max: 16},
 		{Key: "oil_temperature", RawPID: "DEMO_OIL_TEMP", Unit: "C", Refresh: 250, Log: true, Min: 0, Max: 160},
 		{Key: "oil_pressure", RawPID: "DEMO_OIL_PRESSURE", Unit: "kPa", Refresh: 250, Log: true, Min: 0, Max: 500},
 		{Key: "gear", RawPID: "DEMO_GEAR", Unit: "gear", Refresh: 250, Log: true, Min: 0, Max: 6},
