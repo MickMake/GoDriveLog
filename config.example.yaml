@@ -12,8 +12,8 @@ vehicle:
   name: "VW Caddy"
 
 dashboard:
-  refresh_ms: 1000
-  render_min_ms: 5000
+  refresh_ms: 250
+  render_min_ms: 0
   canvas:
     width: 800
     height: 480
