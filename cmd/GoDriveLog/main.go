@@ -145,6 +145,9 @@ func appendMissingRaceDemoDisplaySensors(activeSensors []config.RuntimeSensor) [
 	}
 
 	for _, runtimeSensor := range []config.RuntimeSensor{
+		{Key: "rpm", RawPID: "010C", Unit: "rpm", Refresh: 250, Log: true, Display: true, Min: 0, Max: 7000},
+		{Key: "speed", RawPID: "010D", Unit: "km/h", Refresh: 250, Log: true, Display: true, Min: 0, Max: 160},
+		{Key: "throttle_position", RawPID: "0111", Unit: "%", Refresh: 250, Log: true, Display: true, Min: 0, Max: 100},
 		{Key: "engine_load", RawPID: "DEMO_ENGINE_LOAD", Unit: "%", Refresh: 250, Log: true, Display: true, Min: 0, Max: 100},
 		{Key: "coolant_temp", RawPID: "DEMO_COOLANT_TEMP", Unit: "C", Refresh: 250, Log: true, Display: true, Min: -40, Max: 140},
 		{Key: "battery_voltage", RawPID: "DEMO_BATTERY", Unit: "V", Refresh: 500, Log: true, Display: true, Min: 0, Max: 16},
