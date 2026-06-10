@@ -1,5 +1,14 @@
 # CHANGES
 
+## 2.0.3 - 2026-06-10
+
+- Tuned the fast 1920x480 instrument dashboard refresh path without reintroducing the old config-scene renderer.
+- Reused the dashboard sensor-state map and sensor-status issue slice across refresh ticks to reduce recurring allocations.
+- Added a visibility guard for the failure overlay so unchanged show/hide state does not trigger unnecessary Fyne work.
+- Promoted the alert background colour to a shared constant so normal-state colour comparisons reuse the same value.
+- Kept native text rendering and existing refresh cadence; no sprite/raster asset conversion was justified by the available evidence.
+- Live OBD behaviour and RaceDemoScenario behaviour remain unchanged.
+
 ## 2.0.2 - 2026-06-10
 
 - Removed the legacy config-scene dashboard runtime bridge from `internal/ui/dashboard.go`.
