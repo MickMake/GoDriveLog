@@ -81,9 +81,7 @@ func main() {
 					now := time.Now()
 					value, unit, err := reader.Read(ctx, runtimeSensor.RawPID)
 					if err != nil {
-						if runtimeSensor.Display {
-							stateStore.SetError(runtimeSensor.Key, err, now)
-						}
+						stateStore.SetError(runtimeSensor.Key, err, now)
 						log.Printf("read %s: %v", runtimeSensor.RawPID, err)
 						if *debugStrip {
 							printDebugSensorRead(runtimeSensor, 0, runtimeSensor.Unit, "error", now)
@@ -94,9 +92,7 @@ func main() {
 					if runtimeSensor.Unit != "" {
 						unit = runtimeSensor.Unit
 					}
-					if runtimeSensor.Display {
-						stateStore.SetValue(runtimeSensor.Key, value, unit, now)
-					}
+					stateStore.SetValue(runtimeSensor.Key, value, unit, now)
 					if *debugStrip {
 						printDebugSensorRead(runtimeSensor, value, unit, "ok", now)
 					}
@@ -131,9 +127,6 @@ func main() {
 func runtimeSensorPIDMap(activeSensors []config.RuntimeSensor) map[string]string {
 	mapped := make(map[string]string, len(activeSensors))
 	for _, runtimeSensor := range activeSensors {
-		if !runtimeSensor.Display {
-			continue
-		}
 		mapped[runtimeSensor.Key] = runtimeSensor.RawPID
 	}
 	return mapped
