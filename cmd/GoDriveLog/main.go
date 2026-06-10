@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -32,6 +33,9 @@ func main() {
 		cfg.OBD.Provider = config.NormalizeOBDProvider(*providerOverride, cfg.OBD.MockMode)
 	}
 	activeSensors := activeSensorsForDisplay(cfg)
+	if *debugStrip {
+		printDebugActiveSensors(activeSensors)
+	}
 	stateStore := sensors.NewStateStore(config.SensorStateDefinitions(activeSensors))
 
 	logger, err := jsonlogger.NewJSONL(cfg.Log.Directory)
@@ -81,6 +85,9 @@ func main() {
 							stateStore.SetError(runtimeSensor.Key, err, now)
 						}
 						log.Printf("read %s: %v", runtimeSensor.RawPID, err)
+						if *debugStrip {
+							printDebugSensorRead(runtimeSensor, 0, runtimeSensor.Unit, "error", now)
+						}
 						continue
 					}
 
@@ -89,6 +96,9 @@ func main() {
 					}
 					if runtimeSensor.Display {
 						stateStore.SetValue(runtimeSensor.Key, value, unit, now)
+					}
+					if *debugStrip {
+						printDebugSensorRead(runtimeSensor, value, unit, "ok", now)
 					}
 
 					reading := sensors.Reading{
@@ -127,6 +137,16 @@ func runtimeSensorPIDMap(activeSensors []config.RuntimeSensor) map[string]string
 		mapped[runtimeSensor.Key] = runtimeSensor.RawPID
 	}
 	return mapped
+}
+
+func printDebugActiveSensors(activeSensors []config.RuntimeSensor) {
+	for _, runtimeSensor := range activeSensors {
+		fmt.Fprintf(os.Stderr, "GDLDBG_ACTIVE|key=%s|pid=%s|display=%t|log=%t|refresh_ms=%d\n", runtimeSensor.Key, runtimeSensor.RawPID, runtimeSensor.Display, runtimeSensor.Log, runtimeSensor.Refresh)
+	}
+}
+
+func printDebugSensorRead(runtimeSensor config.RuntimeSensor, value float64, unit string, status string, updatedAt time.Time) {
+	fmt.Fprintf(os.Stderr, "GDLDBG_READ|key=%s|pid=%s|value=%.2f|unit=%s|status=%s|unix_ms=%d\n", runtimeSensor.Key, runtimeSensor.RawPID, value, unit, status, updatedAt.UnixMilli())
 }
 
 func activeSensorsForDisplay(cfg config.Config) []config.RuntimeSensor {
