@@ -5,13 +5,10 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"sync"
 	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
-	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/widget"
 
 	"github.com/MickMake/GoDriveLog/internal/config"
 	jsonlogger "github.com/MickMake/GoDriveLog/internal/logger"
@@ -59,29 +56,7 @@ func main() {
 		log.Fatal(err)
 	}
 	dash.Start(ctx, instrumentRefreshMS*time.Millisecond)
-
-	lastLogPath := logger.ActivePath()
-	status := widget.NewLabel("log: " + lastLogPath)
-	var statusMu sync.Mutex
-
-	updateLogStatus := func() {
-		path := logger.ActivePath()
-
-		statusMu.Lock()
-		if path == lastLogPath {
-			statusMu.Unlock()
-			return
-		}
-		lastLogPath = path
-		statusMu.Unlock()
-
-		fyne.Do(func() {
-			status.SetText("log: " + path)
-		})
-	}
-
-	content := container.NewBorder(nil, status, nil, nil, dash.CanvasObject())
-	window.SetContent(content)
+	window.SetContent(dash.CanvasObject())
 
 	for _, runtimeSensor := range activeSensors {
 		runtimeSensor := runtimeSensor
@@ -120,8 +95,6 @@ func main() {
 					if runtimeSensor.Log {
 						if err := logger.Write(reading); err != nil {
 							log.Printf("write log: %v", err)
-						} else {
-							updateLogStatus()
 						}
 					}
 				}
