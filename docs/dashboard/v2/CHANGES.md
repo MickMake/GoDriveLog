@@ -6,6 +6,8 @@
 - Reused the dashboard sensor-state map and sensor-status issue slice across refresh ticks to reduce recurring allocations.
 - Added a visibility guard for the failure overlay so unchanged show/hide state does not trigger unnecessary Fyne work.
 - Promoted the alert background colour to a shared constant so normal-state colour comparisons reuse the same value.
+- Added optional `--debug-strip` support for a compact machine-readable `GDLDBG|...` dashboard diagnostic line.
+- The debug strip includes stable key order, value, sensor status, configured PID, and age in milliseconds for dashboard-critical sensors.
 - Kept native text rendering and existing refresh cadence; no sprite/raster asset conversion was justified by the available evidence.
 - Live OBD behaviour and RaceDemoScenario behaviour remain unchanged.
 
