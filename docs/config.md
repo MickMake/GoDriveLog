@@ -55,6 +55,7 @@ sensors:
     min: 0
     max: 7000
     log: true
+    display: true
 ```
 
 ## Root fields
@@ -167,6 +168,7 @@ sensors:
     min: 0
     max: 7000
     log: true
+    display: true
 ```
 
 | Field | Type | Required | Meaning |
@@ -174,10 +176,20 @@ sensors:
 | `type` | string | yes | `obd` for live/mock OBD polling or `virtual` for non-polled derived values. |
 | `pid` | string | for `obd` | OBD PID or demo PID key. |
 | `unit` | string | yes | Display/logging unit string. |
-| `refresh` | int | yes | Polling interval in milliseconds. |
+| `refresh` | int | yes | Polling interval in milliseconds for active OBD sensors. |
 | `min` | number | yes | Expected minimum value. |
 | `max` | number | yes | Expected maximum value. |
-| `log` | bool | no | Whether to write readings to JSONL logs. |
+| `log` | bool | no | Write readings to JSONL logs. |
+| `display` | bool | no | Write readings to `StateStore` so the fast dashboard can display them. |
+
+`log` and `display` are intentionally independent:
+
+| `log` | `display` | Runtime behaviour |
+|---:|---:|---|
+| `false` | `false` | Sensor is not polled. |
+| `true` | `false` | Sensor is polled and logged, but not written to dashboard state. |
+| `false` | `true` | Sensor is polled and shown on the dashboard, but not logged. |
+| `true` | `true` | Sensor is polled, logged, and shown on the dashboard. |
 
 ## Race demo launch
 
@@ -185,4 +197,4 @@ sensors:
 go run ./cmd/GoDriveLog --config config.example.yaml --sensor-provider race-demo
 ```
 
-The race demo appends extra display-only demo sensors in `race-demo` provider mode. Live OBD mode uses the configured sensors and is unchanged by the fast dashboard cleanup.
+The race demo appends extra display sensors in `race-demo` provider mode. Live OBD mode uses the configured active sensors and is unchanged by the fast dashboard cleanup.
