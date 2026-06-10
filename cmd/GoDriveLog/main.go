@@ -56,11 +56,11 @@ func main() {
 	window := application.NewWindow("GoDriveLog")
 	window.Resize(fyne.NewSize(1920, 480))
 
-	dash, err := ui.NewInstrumentDashboard1920x480WithOptions(stateStore, ui.InstrumentDashboardOptions{
+	dash, err := ui.NewInstrumentDashboard1920x480WithPNGDigitConfig(stateStore, ui.InstrumentDashboardOptions{
 		DebugStrip: *debugStrip,
 		DebugSource: sourceName(cfg.OBD.Provider),
 		DebugPIDs: runtimeSensorPIDMap(activeSensors),
-	})
+	}, pngDigitConfigFromDashboard(cfg))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -122,6 +122,19 @@ func main() {
 		window.Close()
 	})
 	window.ShowAndRun()
+}
+
+func pngDigitConfigFromDashboard(cfg config.Config) ui.PNGDigitConfig {
+	for _, asset := range cfg.Dashboard.Assets {
+		if asset.Type != config.DashboardAssetPNGDigitSet {
+			continue
+		}
+		return ui.PNGDigitConfig{
+			AssetRoot: cfg.Dashboard.AssetRoot,
+			Glyphs:    asset.Glyphs,
+		}
+	}
+	return ui.PNGDigitConfig{}
 }
 
 func runtimeSensorPIDMap(activeSensors []config.RuntimeSensor) map[string]string {
