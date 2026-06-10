@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"image/color"
 	"math"
+	"strings"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -163,6 +164,7 @@ func (d *InstrumentDashboard) Refresh() {
 
 	applyWarningColor(d.warningText, warning)
 	applyFailureState(d, engineFailed, requiresReset)
+	setText(d.statusText, statusLine(engineFailed, requiresReset, sensorStatusText(states)))
 }
 
 func stateMap(states []sensors.SensorState) map[string]sensors.SensorState {
@@ -175,11 +177,54 @@ func stateMap(states []sensors.SensorState) map[string]sensors.SensorState {
 
 func sensorValue(states map[string]sensors.SensorState, ids ...string) float64 {
 	for _, id := range ids {
-		if state, ok := states[id]; ok && state.Status == sensors.StatusOK {
+		if state, ok := states[id]; ok {
 			return state.Value
 		}
 	}
 	return 0
+}
+
+func sensorStatusText(states map[string]sensors.SensorState) string {
+	issues := []string{}
+	appendSensorIssue(&issues, states, "rpm", "rpm")
+	appendSensorIssue(&issues, states, "speed", "speed")
+	appendSensorIssue(&issues, states, "throttle", "throttle_position", "throttle")
+	appendSensorIssue(&issues, states, "oil_temp", "oil_temperature", "oil_temp")
+	appendSensorIssue(&issues, states, "oil_pressure", "oil_pressure")
+	appendSensorIssue(&issues, states, "gear", "gear")
+	appendSensorIssue(&issues, states, "warning", "warning_level")
+	appendSensorIssue(&issues, states, "engine_failed", "engine_failed")
+	appendSensorIssue(&issues, states, "requires_reset", "requires_reset")
+
+	if len(issues) == 0 {
+		return ""
+	}
+	return "SENSOR STATUS: " + strings.Join(issues, ", ")
+}
+
+func appendSensorIssue(issues *[]string, states map[string]sensors.SensorState, label string, ids ...string) {
+	for _, id := range ids {
+		state, ok := states[id]
+		if !ok {
+			continue
+		}
+		switch state.Status {
+		case sensors.StatusStale, sensors.StatusError:
+			*issues = append(*issues, label+" "+state.Status)
+		}
+		return
+	}
+}
+
+func statusLine(engineFailed, requiresReset bool, sensorStatus string) string {
+	status := "fast instrument renderer: StateStore direct updates"
+	if engineFailed || requiresReset {
+		status = "CRITICAL FAILURE LATCHED - RESET REQUIRED"
+	}
+	if sensorStatus != "" {
+		return status + " | " + sensorStatus
+	}
+	return status
 }
 
 func labelText(text string, x, y, size float32) *canvas.Text {
@@ -249,12 +294,10 @@ func applyFailureState(d *InstrumentDashboard, engineFailed, requiresReset bool)
 		d.failureOverlay.Show()
 		d.engineFailedText.Color = color.NRGBA{R: 255, G: 80, B: 80, A: 255}
 		d.requiresResetText.Color = color.NRGBA{R: 255, G: 80, B: 80, A: 255}
-		setText(d.statusText, "CRITICAL FAILURE LATCHED - RESET REQUIRED")
 	} else {
 		d.failureOverlay.Hide()
 		d.engineFailedText.Color = color.NRGBA{R: 160, G: 180, B: 200, A: 255}
 		d.requiresResetText.Color = color.NRGBA{R: 160, G: 180, B: 200, A: 255}
-		setText(d.statusText, "fast instrument renderer: StateStore direct updates")
 	}
 	d.engineFailedText.Refresh()
 	d.requiresResetText.Refresh()
