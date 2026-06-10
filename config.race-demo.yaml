@@ -38,19 +38,19 @@ dashboard:
     - id: red_digits
       type: charset
       glyphs:
-        "blank": digits/red/7SegBlank.svg
-        "0": digits/red/7Seg0.svg
-        "1": digits/red/7Seg1.svg
-        "2": digits/red/7Seg2.svg
-        "3": digits/red/7Seg3.svg
-        "4": digits/red/7Seg4.svg
-        "5": digits/red/7Seg5.svg
-        "6": digits/red/7Seg6.svg
-        "7": digits/red/7Seg7.svg
-        "8": digits/red/7Seg8.svg
-        "9": digits/red/7Seg9.svg
-        "-": digits/red/7SegDash.svg
-        "dp": digits/red/7SegDP.svg
+        "blank": digits/red/7SegBlank.png
+        "0": digits/red/7Seg0.png
+        "1": digits/red/7Seg1.png
+        "2": digits/red/7Seg2.png
+        "3": digits/red/7Seg3.png
+        "4": digits/red/7Seg4.png
+        "5": digits/red/7Seg5.png
+        "6": digits/red/7Seg6.png
+        "7": digits/red/7Seg7.png
+        "8": digits/red/7Seg8.png
+        "9": digits/red/7Seg9.png
+        "-": digits/red/7SegDash.png
+        "dp": digits/red/7SegDP.png
   decoders:
     - id: rpm_text
       type: format_number
