@@ -55,9 +55,6 @@ func ActiveSensors(cfg Config) []RuntimeSensor {
 func SensorStateDefinitions(runtimeSensors []RuntimeSensor) []sensors.SensorDefinition {
 	definitions := make([]sensors.SensorDefinition, 0, len(runtimeSensors))
 	for _, runtimeSensor := range runtimeSensors {
-		if !runtimeSensor.Display {
-			continue
-		}
 		definitions = append(definitions, sensors.SensorDefinition{
 			ID:         runtimeSensor.Key,
 			Unit:       runtimeSensor.Unit,
