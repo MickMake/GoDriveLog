@@ -54,6 +54,7 @@ type SensorConfig struct {
 	Min     float64 `yaml:"min"`
 	Max     float64 `yaml:"max"`
 	Log     bool    `yaml:"log"`
+	Display bool    `yaml:"display"`
 }
 
 func Load(path string) (Config, error) {
