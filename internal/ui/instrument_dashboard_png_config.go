@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/container"
 
 	"github.com/MickMake/GoDriveLog/internal/sensors"
 )
@@ -125,15 +126,11 @@ func newConfiguredPNGSevenSegmentDisplay(value string, digits int, x, y, width, 
 		resources: resources,
 		digitSize: fyne.NewSize(width/float32(maxInt(digits, 1)), height),
 	}
-	display.root = containerWithoutLayout()
+	display.root = container.NewWithoutLayout()
 	display.root.Move(fyne.NewPos(x, y))
 	display.root.Resize(fyne.NewSize(width, height))
 	display.SetValue(value, digits)
 	return display
-}
-
-func containerWithoutLayout() *fyne.Container {
-	return fyne.NewContainerWithoutLayout()
 }
 
 func loadConfiguredPNGDigitResources(config PNGDigitConfig) *pngDigitResources {
