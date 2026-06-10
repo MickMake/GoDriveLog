@@ -213,7 +213,7 @@ func (d *InstrumentDashboard) Refresh() {
 
 	setBar(d.throttleFill, 420, 32, throttle)
 	setBar(d.engineLoadFill, 350, 18, engineLoad)
-	applyInstrumentColors(d, rpm, throttle, engineLoad, oilTemp, oilPressure, coolant, warning, engineFailed, requiresReset)
+	applyInstrumentColors(d, rpm, speed, throttle, engineLoad, oilTemp, oilPressure, coolant, battery, warning, engineFailed, requiresReset)
 	setText(d.statusText, statusLine(sensorStatusText(states)))
 	setText(d.alertText, alertLine(rpm, speed, throttle, oilTemp, oilPressure, warning, engineFailed, requiresReset))
 }
@@ -335,19 +335,38 @@ func setText(text *canvas.Text, value string) {
 }
 
 func setTextColor(text *canvas.Text, textColor color.Color) {
+	if sameColor(text.Color, textColor) {
+		return
+	}
 	text.Color = textColor
 	text.Refresh()
 }
 
 func setRectColor(rectangle *canvas.Rectangle, fill color.Color) {
+	if sameColor(rectangle.FillColor, fill) {
+		return
+	}
 	rectangle.FillColor = fill
 	rectangle.Refresh()
 }
 
 func setBar(fill *canvas.Rectangle, maxWidth float32, height float32, value float64) {
 	clamped := float32(math.Max(0, math.Min(100, value)))
-	fill.Resize(fyne.NewSize(maxWidth*(clamped/100), height))
+	nextSize := fyne.NewSize(maxWidth*(clamped/100), height)
+	if fill.Size() == nextSize {
+		return
+	}
+	fill.Resize(nextSize)
 	fill.Refresh()
+}
+
+func sameColor(a, b color.Color) bool {
+	if a == nil || b == nil {
+		return a == b
+	}
+	ar, ag, ab, aa := a.RGBA()
+	br, bg, bb, ba := b.RGBA()
+	return ar == br && ag == bg && ab == bb && aa == ba
 }
 
 func gearText(value float64) string {
@@ -376,7 +395,7 @@ func boolText(value bool) string {
 	return "NO"
 }
 
-func applyInstrumentColors(d *InstrumentDashboard, rpm, throttle, engineLoad, oilTemp, oilPressure, coolant, warning float64, engineFailed, requiresReset bool) {
+func applyInstrumentColors(d *InstrumentDashboard, rpm, speed, throttle, engineLoad, oilTemp, oilPressure, coolant, battery, warning float64, engineFailed, requiresReset bool) {
 	severity := int(math.Round(warning))
 	if engineFailed || requiresReset {
 		severity = 3
