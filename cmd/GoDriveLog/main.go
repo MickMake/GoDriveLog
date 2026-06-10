@@ -19,6 +19,8 @@ import (
 	"github.com/MickMake/GoDriveLog/internal/ui"
 )
 
+const instrumentRefreshMS = 100
+
 func main() {
 	configPath := flag.String("config", "config.example.yaml", "path to YAML config")
 	providerOverride := flag.String("sensor-provider", "", "sensor provider override: obd, mock, or race-demo")
@@ -31,7 +33,7 @@ func main() {
 	if *providerOverride != "" {
 		cfg.OBD.Provider = config.NormalizeOBDProvider(*providerOverride, cfg.OBD.MockMode)
 	}
-	activeSensors := config.ActiveSensors(cfg)
+	activeSensors := activeSensorsForDisplay(cfg)
 	stateStore := sensors.NewStateStore(config.SensorStateDefinitions(activeSensors))
 
 	logger, err := jsonlogger.NewJSONL(cfg.Log.Directory)
@@ -50,13 +52,13 @@ func main() {
 
 	application := app.New()
 	window := application.NewWindow("GoDriveLog")
-	window.Resize(fyne.NewSize(float32(cfg.Dashboard.Canvas.Width), float32(cfg.Dashboard.Canvas.Height)))
+	window.Resize(fyne.NewSize(1920, 480))
 
-	dash, err := ui.NewDashboardWithConfigPath(cfg.Dashboard, *configPath, stateStore)
+	dash, err := ui.NewInstrumentDashboard1920x480(stateStore)
 	if err != nil {
 		log.Fatal(err)
 	}
-	dash.Start(ctx, time.Duration(cfg.Dashboard.RefreshMS)*time.Millisecond)
+	dash.Start(ctx, instrumentRefreshMS*time.Millisecond)
 
 	lastLogPath := logger.ActivePath()
 	status := widget.NewLabel("log: " + lastLogPath)
@@ -132,6 +134,39 @@ func main() {
 		window.Close()
 	})
 	window.ShowAndRun()
+}
+
+func activeSensorsForDisplay(cfg config.Config) []config.RuntimeSensor {
+	activeSensors := config.ActiveSensors(cfg)
+	if cfg.OBD.Provider != config.OBDProviderRaceDemo {
+		return activeSensors
+	}
+
+	return appendMissingRaceDemoDisplaySensors(activeSensors)
+}
+
+func appendMissingRaceDemoDisplaySensors(activeSensors []config.RuntimeSensor) []config.RuntimeSensor {
+	seen := make(map[string]bool, len(activeSensors))
+	for _, runtimeSensor := range activeSensors {
+		seen[runtimeSensor.Key] = true
+	}
+
+	for _, runtimeSensor := range []config.RuntimeSensor{
+		{Key: "oil_temperature", RawPID: "DEMO_OIL_TEMP", Unit: "C", Refresh: 250, Log: true, Min: 0, Max: 160},
+		{Key: "oil_pressure", RawPID: "DEMO_OIL_PRESSURE", Unit: "kPa", Refresh: 250, Log: true, Min: 0, Max: 500},
+		{Key: "gear", RawPID: "DEMO_GEAR", Unit: "gear", Refresh: 250, Log: true, Min: 0, Max: 6},
+		{Key: "warning_level", RawPID: "DEMO_WARNING_LEVEL", Unit: "level", Refresh: 250, Log: true, Min: 0, Max: 2},
+		{Key: "engine_failed", RawPID: "DEMO_ENGINE_FAILED", Unit: "bool", Refresh: 250, Log: true, Min: 0, Max: 1},
+		{Key: "requires_reset", RawPID: "DEMO_REQUIRES_RESET", Unit: "bool", Refresh: 250, Log: true, Min: 0, Max: 1},
+	} {
+		if seen[runtimeSensor.Key] {
+			continue
+		}
+		activeSensors = append(activeSensors, runtimeSensor)
+		seen[runtimeSensor.Key] = true
+	}
+
+	return activeSensors
 }
 
 func newReader(cfg config.Config) (sensors.Reader, error) {
