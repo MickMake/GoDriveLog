@@ -21,6 +21,7 @@ const instrumentRefreshMS = 50
 func main() {
 	configPath := flag.String("config", "config.example.yaml", "path to YAML config")
 	providerOverride := flag.String("sensor-provider", "", "sensor provider override: obd, mock, or race-demo")
+	debugStrip := flag.Bool("debug-strip", false, "show machine-readable dashboard debug strip")
 	flag.Parse()
 
 	cfg, err := config.Load(*configPath)
@@ -51,7 +52,11 @@ func main() {
 	window := application.NewWindow("GoDriveLog")
 	window.Resize(fyne.NewSize(1920, 480))
 
-	dash, err := ui.NewInstrumentDashboard1920x480(stateStore)
+	dash, err := ui.NewInstrumentDashboard1920x480WithOptions(stateStore, ui.InstrumentDashboardOptions{
+		DebugStrip: *debugStrip,
+		DebugSource: sourceName(cfg.OBD.Provider),
+		DebugPIDs: runtimeSensorPIDMap(activeSensors),
+	})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -111,6 +116,17 @@ func main() {
 		window.Close()
 	})
 	window.ShowAndRun()
+}
+
+func runtimeSensorPIDMap(activeSensors []config.RuntimeSensor) map[string]string {
+	mapped := make(map[string]string, len(activeSensors))
+	for _, runtimeSensor := range activeSensors {
+		if !runtimeSensor.Display {
+			continue
+		}
+		mapped[runtimeSensor.Key] = runtimeSensor.RawPID
+	}
+	return mapped
 }
 
 func activeSensorsForDisplay(cfg config.Config) []config.RuntimeSensor {

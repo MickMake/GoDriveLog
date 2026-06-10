@@ -21,24 +21,39 @@ const (
 )
 
 var (
-	colourBackground   = color.NRGBA{R: 3, G: 5, B: 9, A: 255}
-	colourPanel        = color.NRGBA{R: 10, G: 15, B: 23, A: 255}
-	colourPanelHot     = color.NRGBA{R: 42, G: 6, B: 6, A: 255}
-	colourPanelWarn    = color.NRGBA{R: 42, G: 31, B: 6, A: 255}
-	colourTextDim      = color.NRGBA{R: 116, G: 135, B: 156, A: 255}
-	colourTextNormal   = color.NRGBA{R: 222, G: 238, B: 255, A: 255}
-	colourGreen        = color.NRGBA{R: 60, G: 235, B: 125, A: 255}
-	colourAmber        = color.NRGBA{R: 255, G: 202, B: 55, A: 255}
-	colourRed          = color.NRGBA{R: 255, G: 68, B: 68, A: 255}
-	colourThrottle     = color.NRGBA{R: 62, G: 230, B: 110, A: 255}
-	colourThrottleWarn = color.NRGBA{R: 255, G: 190, B: 45, A: 255}
-	colourTrack        = color.NRGBA{R: 30, G: 37, B: 50, A: 255}
-	colourOverlay      = color.NRGBA{R: 140, G: 0, B: 0, A: 96}
+	colourBackground      = color.NRGBA{R: 3, G: 5, B: 9, A: 255}
+	colourPanel           = color.NRGBA{R: 10, G: 15, B: 23, A: 255}
+	colourPanelHot        = color.NRGBA{R: 42, G: 6, B: 6, A: 255}
+	colourPanelWarn       = color.NRGBA{R: 42, G: 31, B: 6, A: 255}
+	colourTextDim         = color.NRGBA{R: 116, G: 135, B: 156, A: 255}
+	colourTextNormal      = color.NRGBA{R: 222, G: 238, B: 255, A: 255}
+	colourGreen           = color.NRGBA{R: 60, G: 235, B: 125, A: 255}
+	colourAmber           = color.NRGBA{R: 255, G: 202, B: 55, A: 255}
+	colourRed             = color.NRGBA{R: 255, G: 68, B: 68, A: 255}
+	colourThrottle        = color.NRGBA{R: 62, G: 230, B: 110, A: 255}
+	colourThrottleWarn    = color.NRGBA{R: 255, G: 190, B: 45, A: 255}
+	colourTrack           = color.NRGBA{R: 30, G: 37, B: 50, A: 255}
+	colourOverlay         = color.NRGBA{R: 140, G: 0, B: 0, A: 96}
+	colourAlertBackground = color.NRGBA{R: 8, G: 11, B: 17, A: 255}
 )
+
+type InstrumentDashboardOptions struct {
+	DebugStrip  bool
+	DebugSource string
+	DebugPIDs   map[string]string
+}
 
 type InstrumentDashboard struct {
 	root  *fyne.Container
 	store *sensors.StateStore
+
+	states       map[string]sensors.SensorState
+	statusIssues []string
+
+	debugStrip  bool
+	debugSource string
+	debugPIDs   map[string]string
+	debugSeq    uint64
 
 	rpmPanel         *canvas.Rectangle
 	speedPanel       *canvas.Rectangle
@@ -63,20 +78,32 @@ type InstrumentDashboard struct {
 	requiresResetText *canvas.Text
 	alertText         *canvas.Text
 	statusText        *canvas.Text
+	debugText         *canvas.Text
 }
 
 func NewInstrumentDashboard1920x480(store *sensors.StateStore) (*InstrumentDashboard, error) {
+	return NewInstrumentDashboard1920x480WithOptions(store, InstrumentDashboardOptions{})
+}
+
+func NewInstrumentDashboard1920x480WithOptions(store *sensors.StateStore, options InstrumentDashboardOptions) (*InstrumentDashboard, error) {
 	if store == nil {
 		return nil, fmt.Errorf("state store must not be nil")
 	}
 
-	dashboard := &InstrumentDashboard{store: store}
+	dashboard := &InstrumentDashboard{
+		store:        store,
+		states:       make(map[string]sensors.SensorState, 16),
+		statusIssues: make([]string, 0, 12),
+		debugStrip:   options.DebugStrip,
+		debugSource:  options.DebugSource,
+		debugPIDs:    options.DebugPIDs,
+	}
 	background := rect(0, 0, instrumentWidth, instrumentHeight, colourBackground)
 
 	dashboard.rpmPanel = rect(28, 24, 620, 350, colourPanel)
 	dashboard.speedPanel = rect(670, 24, 520, 350, colourPanel)
 	dashboard.rightPanel = rect(1212, 24, 680, 350, colourPanel)
-	dashboard.bottomPanel = rect(28, 392, 1864, 64, color.NRGBA{R: 8, G: 11, B: 17, A: 255})
+	dashboard.bottomPanel = rect(28, 392, 1864, 64, colourAlertBackground)
 
 	rpmLabel := labelText("RPM", 58, 42, 34)
 	dashboard.rpmText = valueText("0000", 58, 78, 142, colourAmber)
@@ -108,8 +135,12 @@ func NewInstrumentDashboard1920x480(store *sensors.StateStore) (*InstrumentDashb
 	dashboard.requiresResetText = labelText("RESET REQUIRED: NO", 1575, 324, 24)
 
 	dashboard.statusText = labelText("Race demo status messages are derived from sensor values; source text is not a sensor yet.", 52, 408, 20)
-	dashboard.alertBackground = rect(28, 392, 1864, 64, color.NRGBA{R: 8, G: 11, B: 17, A: 255})
+	dashboard.alertBackground = rect(28, 392, 1864, 64, colourAlertBackground)
 	dashboard.alertText = valueText("SYSTEM NORMAL", 52, 424, 26, colourTextNormal)
+	dashboard.debugText = valueText("GDLDBG|disabled", 28, 462, 10, colourGreen)
+	if !dashboard.debugStrip {
+		dashboard.debugText.Hide()
+	}
 
 	dashboard.failureOverlay = rect(0, 0, instrumentWidth, instrumentHeight, colourOverlay)
 	dashboard.failureOverlay.Hide()
@@ -150,6 +181,7 @@ func NewInstrumentDashboard1920x480(store *sensors.StateStore) (*InstrumentDashb
 		dashboard.alertBackground,
 		dashboard.statusText,
 		dashboard.alertText,
+		dashboard.debugText,
 	)
 	root.Resize(fyne.NewSize(instrumentWidth, instrumentHeight))
 	dashboard.root = root
@@ -183,7 +215,8 @@ func (d *InstrumentDashboard) Start(ctx context.Context, interval time.Duration)
 }
 
 func (d *InstrumentDashboard) Refresh() {
-	states := stateMap(d.store.SnapshotWithStale(time.Now()))
+	now := time.Now()
+	states := d.stateMap(d.store.SnapshotWithStale(now))
 
 	rpm := sensorValue(states, "rpm")
 	speed := sensorValue(states, "speed")
@@ -214,16 +247,21 @@ func (d *InstrumentDashboard) Refresh() {
 	setBar(d.throttleFill, 420, 32, throttle)
 	setBar(d.engineLoadFill, 350, 18, engineLoad)
 	applyInstrumentColors(d, rpm, speed, throttle, engineLoad, oilTemp, oilPressure, coolant, battery, warning, engineFailed, requiresReset)
-	setText(d.statusText, statusLine(sensorStatusText(states)))
+	setText(d.statusText, statusLine(d.sensorStatusText(states)))
 	setText(d.alertText, alertLine(rpm, speed, throttle, oilTemp, oilPressure, warning, engineFailed, requiresReset))
+	if d.debugStrip {
+		setText(d.debugText, d.debugLine(states, now))
+	}
 }
 
-func stateMap(states []sensors.SensorState) map[string]sensors.SensorState {
-	mapped := make(map[string]sensors.SensorState, len(states))
-	for _, state := range states {
-		mapped[state.ID] = state
+func (d *InstrumentDashboard) stateMap(states []sensors.SensorState) map[string]sensors.SensorState {
+	for key := range d.states {
+		delete(d.states, key)
 	}
-	return mapped
+	for _, state := range states {
+		d.states[state.ID] = state
+	}
+	return d.states
 }
 
 func sensorValue(states map[string]sensors.SensorState, ids ...string) float64 {
@@ -235,28 +273,28 @@ func sensorValue(states map[string]sensors.SensorState, ids ...string) float64 {
 	return 0
 }
 
-func sensorStatusText(states map[string]sensors.SensorState) string {
-	issues := []string{}
-	appendSensorIssue(&issues, states, "rpm", "rpm")
-	appendSensorIssue(&issues, states, "speed", "speed")
-	appendSensorIssue(&issues, states, "throttle", "throttle_position", "throttle")
-	appendSensorIssue(&issues, states, "load", "engine_load")
-	appendSensorIssue(&issues, states, "oil_temp", "oil_temperature", "oil_temp")
-	appendSensorIssue(&issues, states, "oil_pressure", "oil_pressure")
-	appendSensorIssue(&issues, states, "coolant", "coolant_temp", "coolant_temperature")
-	appendSensorIssue(&issues, states, "battery", "battery_voltage", "battery")
-	appendSensorIssue(&issues, states, "gear", "gear")
-	appendSensorIssue(&issues, states, "warning", "warning_level")
-	appendSensorIssue(&issues, states, "engine_failed", "engine_failed")
-	appendSensorIssue(&issues, states, "requires_reset", "requires_reset")
+func (d *InstrumentDashboard) sensorStatusText(states map[string]sensors.SensorState) string {
+	d.statusIssues = d.statusIssues[:0]
+	d.appendSensorIssue(states, "rpm", "rpm")
+	d.appendSensorIssue(states, "speed", "speed")
+	d.appendSensorIssue(states, "throttle", "throttle_position", "throttle")
+	d.appendSensorIssue(states, "load", "engine_load")
+	d.appendSensorIssue(states, "oil_temp", "oil_temperature", "oil_temp")
+	d.appendSensorIssue(states, "oil_pressure", "oil_pressure")
+	d.appendSensorIssue(states, "coolant", "coolant_temp", "coolant_temperature")
+	d.appendSensorIssue(states, "battery", "battery_voltage", "battery")
+	d.appendSensorIssue(states, "gear", "gear")
+	d.appendSensorIssue(states, "warning", "warning_level")
+	d.appendSensorIssue(states, "engine_failed", "engine_failed")
+	d.appendSensorIssue(states, "requires_reset", "requires_reset")
 
-	if len(issues) == 0 {
+	if len(d.statusIssues) == 0 {
 		return ""
 	}
-	return "SENSOR STATUS: " + strings.Join(issues, ", ")
+	return "SENSOR STATUS: " + strings.Join(d.statusIssues, ", ")
 }
 
-func appendSensorIssue(issues *[]string, states map[string]sensors.SensorState, label string, ids ...string) {
+func (d *InstrumentDashboard) appendSensorIssue(states map[string]sensors.SensorState, label string, ids ...string) {
 	for _, id := range ids {
 		state, ok := states[id]
 		if !ok {
@@ -264,10 +302,78 @@ func appendSensorIssue(issues *[]string, states map[string]sensors.SensorState, 
 		}
 		switch state.Status {
 		case sensors.StatusStale, sensors.StatusError:
-			*issues = append(*issues, label+" "+state.Status)
+			d.statusIssues = append(d.statusIssues, label+" "+state.Status)
 		}
 		return
 	}
+}
+
+func (d *InstrumentDashboard) debugLine(states map[string]sensors.SensorState, now time.Time) string {
+	d.debugSeq++
+	return strings.Join([]string{
+		"GDLDBG",
+		fmt.Sprintf("seq=%d", d.debugSeq),
+		"src=" + debugClean(d.debugSource),
+		d.debugSensor(states, now, "rpm", "rpm"),
+		d.debugSensor(states, now, "spd", "speed"),
+		d.debugSensor(states, now, "thr", "throttle_position", "throttle"),
+		d.debugSensor(states, now, "load", "engine_load"),
+		d.debugSensor(states, now, "cool", "coolant_temp", "coolant_temperature"),
+		d.debugSensor(states, now, "oil", "oil_temperature", "oil_temp"),
+		d.debugSensor(states, now, "prs", "oil_pressure"),
+		d.debugSensor(states, now, "gear", "gear"),
+		d.debugSensor(states, now, "bat", "battery_voltage", "battery"),
+		d.debugSensor(states, now, "warn", "warning_level"),
+		d.debugSensor(states, now, "fail", "engine_failed"),
+		d.debugSensor(states, now, "rst", "requires_reset"),
+	}, "|")
+}
+
+func (d *InstrumentDashboard) debugSensor(states map[string]sensors.SensorState, now time.Time, label string, ids ...string) string {
+	for _, id := range ids {
+		state, ok := states[id]
+		if !ok {
+			continue
+		}
+		return fmt.Sprintf("%s=%s:%s:%s:%s", label, debugValue(label, state.Value), state.Status, debugClean(d.debugPIDs[id]), debugAge(state, now))
+	}
+	pid := "na"
+	if len(ids) > 0 {
+		pid = debugClean(d.debugPIDs[ids[0]])
+	}
+	return fmt.Sprintf("%s=na:missing:%s:na", label, pid)
+}
+
+func debugValue(label string, value float64) string {
+	switch label {
+	case "rpm", "spd", "thr", "load", "gear", "warn", "fail", "rst":
+		return fmt.Sprintf("%.0f", value)
+	case "bat":
+		return fmt.Sprintf("%.1f", value)
+	default:
+		return fmt.Sprintf("%.1f", value)
+	}
+}
+
+func debugAge(state sensors.SensorState, now time.Time) string {
+	if state.UpdatedAt.IsZero() {
+		return "na"
+	}
+	age := now.Sub(state.UpdatedAt)
+	if age < 0 {
+		age = 0
+	}
+	return fmt.Sprintf("%d", age.Milliseconds())
+}
+
+func debugClean(value string) string {
+	if value == "" {
+		return "na"
+	}
+	value = strings.ReplaceAll(value, "|", "_")
+	value = strings.ReplaceAll(value, ":", "_")
+	value = strings.ReplaceAll(value, " ", "_")
+	return value
 }
 
 func statusLine(sensorStatus string) string {
@@ -360,6 +466,17 @@ func setBar(fill *canvas.Rectangle, maxWidth float32, height float32, value floa
 	fill.Refresh()
 }
 
+func setVisible(object fyne.CanvasObject, visible bool) {
+	if object.Visible() == visible {
+		return
+	}
+	if visible {
+		object.Show()
+		return
+	}
+	object.Hide()
+}
+
 func sameColor(a, b color.Color) bool {
 	if a == nil || b == nil {
 		return a == b
@@ -407,25 +524,25 @@ func applyInstrumentColors(d *InstrumentDashboard, rpm, speed, throttle, engineL
 		setRectColor(d.speedPanel, colourPanelHot)
 		setRectColor(d.rightPanel, colourPanelHot)
 		setRectColor(d.alertBackground, colourRed)
-		d.failureOverlay.Show()
+		setVisible(d.failureOverlay, true)
 	case 2:
 		setRectColor(d.rpmPanel, colourPanel)
 		setRectColor(d.speedPanel, colourPanel)
 		setRectColor(d.rightPanel, colourPanelHot)
 		setRectColor(d.alertBackground, colourPanelHot)
-		d.failureOverlay.Hide()
+		setVisible(d.failureOverlay, false)
 	case 1:
 		setRectColor(d.rpmPanel, colourPanel)
 		setRectColor(d.speedPanel, colourPanel)
 		setRectColor(d.rightPanel, colourPanelWarn)
 		setRectColor(d.alertBackground, colourPanelWarn)
-		d.failureOverlay.Hide()
+		setVisible(d.failureOverlay, false)
 	default:
 		setRectColor(d.rpmPanel, colourPanel)
 		setRectColor(d.speedPanel, colourPanel)
 		setRectColor(d.rightPanel, colourPanel)
-		setRectColor(d.alertBackground, color.NRGBA{R: 8, G: 11, B: 17, A: 255})
-		d.failureOverlay.Hide()
+		setRectColor(d.alertBackground, colourAlertBackground)
+		setVisible(d.failureOverlay, false)
 	}
 
 	setTextColor(d.rpmText, rpmColor(rpm, engineFailed))
