@@ -3,9 +3,10 @@ package config
 import "fmt"
 
 const (
-	DashboardAssetImage    = "image"
-	DashboardAssetFrameSet = "frame_set"
-	DashboardAssetCharset  = "charset"
+	DashboardAssetImage       = "image"
+	DashboardAssetFrameSet    = "frame_set"
+	DashboardAssetCharset     = "charset"
+	DashboardAssetPNGDigitSet = "png_digit_set"
 
 	DashboardDecoderNormalize    = "normalize"
 	DashboardDecoderThreshold    = "threshold"
@@ -29,6 +30,8 @@ const (
 	DashboardBlockStaleOverlay        = "stale_overlay"
 	DashboardBlockStaticPanel         = "static_panel"
 )
+
+var requiredPNGDigitGlyphs = []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "dash", "blank", "dp"}
 
 type DashboardConfig struct {
 	RefreshMS   int                      `yaml:"refresh_ms"`
@@ -174,11 +177,27 @@ func validateAssets(assets []DashboardAssetConfig) (map[string]bool, error) {
 			if len(asset.Glyphs) == 0 {
 				return nil, fmt.Errorf("%s.glyphs must not be empty for charset assets", path)
 			}
+		case DashboardAssetPNGDigitSet:
+			if err := validatePNGDigitSetAsset(path, asset); err != nil {
+				return nil, err
+			}
 		default:
-			return nil, fmt.Errorf("%s.type must be image, frame_set, or charset", path)
+			return nil, fmt.Errorf("%s.type must be image, frame_set, charset, or png_digit_set", path)
 		}
 	}
 	return ids, nil
+}
+
+func validatePNGDigitSetAsset(path string, asset DashboardAssetConfig) error {
+	if len(asset.Glyphs) == 0 {
+		return fmt.Errorf("%s.glyphs must not be empty for png_digit_set assets", path)
+	}
+	for _, glyph := range requiredPNGDigitGlyphs {
+		if asset.Glyphs[glyph] == "" {
+			return fmt.Errorf("%s.glyphs must define %q for png_digit_set assets", path, glyph)
+		}
+	}
+	return nil
 }
 
 func validateDecoders(decoders []DashboardDecoderConfig, sensors map[string]SensorConfig, assets map[string]bool) (map[string]bool, error) {
@@ -305,7 +324,7 @@ func validateCondition(path string, condition DashboardConditionConfig, sensors 
 	}
 	if condition.Sensor != "" {
 		if _, ok := sensors[condition.Sensor]; !ok {
-			return fmt.Errorf("%s.condition.sensor %q must reference a configured sensor", path, condition.Sensor)
+			return fmt.Errorf("%s.condition.sensor %q must reference a configured sensor", path)
 		}
 	}
 	if condition.Decoder != "" && !decoders[condition.Decoder] {
