@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="480" viewBox="0 0 1920 480">
+  <rect width="1920" height="480" fill="#05070a"/>
+  <rect x="12" y="12" width="1896" height="456" rx="18" fill="#0b1118" stroke="#263746" stroke-width="3"/>
+  <text x="36" y="45" font-family="monospace" font-size="28" fill="#6fe7ff">GODRIVELOG RACE DEMO TEST HARNESS</text>
+  <text x="1390" y="45" font-family="monospace" font-size="22" fill="#9fb7c8">PROVIDER: race-demo</text>
+
+  <rect x="40" y="70" width="600" height="385" rx="14" fill="#101820" stroke="#30485a" stroke-width="2"/>
+  <rect x="680" y="70" width="610" height="385" rx="14" fill="#101820" stroke="#30485a" stroke-width="2"/>
+  <rect x="1330" y="70" width="550" height="385" rx="14" fill="#101820" stroke="#30485a" stroke-width="2"/>
+
+  <text x="70" y="100" font-family="monospace" font-size="28" fill="#ffd65a">RPM</text>
+  <text x="70" y="333" font-family="monospace" font-size="22" fill="#9fb7c8">THROTTLE %</text>
+  <rect x="66" y="345" width="528" height="74" rx="10" fill="#05070a" stroke="#2d4252" stroke-width="2"/>
+
+  <text x="720" y="100" font-family="monospace" font-size="28" fill="#ffd65a">SPEED KM/H</text>
+  <text x="1160" y="100" font-family="monospace" font-size="28" fill="#ffd65a">GEAR</text>
+  <text x="720" y="333" font-family="monospace" font-size="22" fill="#9fb7c8">ENGINE LOAD %</text>
+  <rect x="716" y="345" width="528" height="74" rx="10" fill="#05070a" stroke="#2d4252" stroke-width="2"/>
+
+  <text x="1360" y="100" font-family="monospace" font-size="22" fill="#ffd65a">OIL TEMP C</text>
+  <text x="1605" y="100" font-family="monospace" font-size="22" fill="#ffd65a">COOLANT C</text>
+  <text x="1360" y="235" font-family="monospace" font-size="22" fill="#ffd65a">OIL PRESS kPa</text>
+  <text x="1605" y="235" font-family="monospace" font-size="22" fill="#ffd65a">WARN 0/1/2</text>
+  <text x="1360" y="365" font-family="monospace" font-size="22" fill="#ffd65a">ENGINE FAILED</text>
+  <text x="1605" y="365" font-family="monospace" font-size="22" fill="#ffd65a">RESET REQ</text>
+
+  <text x="70" y="445" font-family="monospace" font-size="20" fill="#7f95a3">Watch: idle -> revs -> burnout -> 150 cruise -> oil critical -> downshift -> thrown rod</text>
+</svg>
