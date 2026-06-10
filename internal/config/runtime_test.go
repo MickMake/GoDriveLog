@@ -80,7 +80,7 @@ func TestActiveSensorsSeparatesLogAndDisplay(t *testing.T) {
 	}
 }
 
-func TestSensorStateDefinitionsOnlyIncludesDisplayedSensors(t *testing.T) {
+func TestSensorStateDefinitionsIncludesAllActiveSensors(t *testing.T) {
 	runtimeSensors := []RuntimeSensor{
 		{Key: "log_no_display", Unit: "rpm", Refresh: 250, Log: true, Display: false, Min: 0, Max: 7000},
 		{Key: "no_log_display", Unit: "km/h", Refresh: 500, Log: false, Display: true, Min: 0, Max: 160},
@@ -88,17 +88,16 @@ func TestSensorStateDefinitionsOnlyIncludesDisplayedSensors(t *testing.T) {
 	}
 
 	definitions := SensorStateDefinitions(runtimeSensors)
-	if len(definitions) != 2 {
-		t.Fatalf("len(definitions) = %d, want 2: %#v", len(definitions), definitions)
+	if len(definitions) != len(runtimeSensors) {
+		t.Fatalf("len(definitions) = %d, want %d: %#v", len(definitions), len(runtimeSensors), definitions)
 	}
 	seen := map[string]bool{}
 	for _, definition := range definitions {
 		seen[definition.ID] = true
 	}
-	if seen["log_no_display"] {
-		t.Fatal("log-only sensor was included in display state definitions")
-	}
-	if !seen["no_log_display"] || !seen["log_display"] {
-		t.Fatalf("display sensors missing from definitions: %#v", seen)
+	for _, runtimeSensor := range runtimeSensors {
+		if !seen[runtimeSensor.Key] {
+			t.Fatalf("active sensor %q missing from state definitions: %#v", runtimeSensor.Key, seen)
+		}
 	}
 }
