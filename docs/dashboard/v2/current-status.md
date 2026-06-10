@@ -1,41 +1,40 @@
 # Dashboard v2 Current Status
 
 ## Active stage
-v2.9.x - Reusable block library
+
+v2.0.2 - Legacy config-scene renderer cleanup
+
+## Current runtime display
+
+GoDriveLog now starts the fast fixed 1920x480 instrument dashboard from `cmd/GoDriveLog/main.go`.
+
+Runtime path:
+
+```text
+sensor polling -> sensors.StateStore -> internal/ui/instrument_dashboard.go -> direct Fyne canvas object updates
+```
+
+The old config-driven scene renderer is no longer a normal user-facing runtime path.
 
 ## Completed
-- v2.0.x - New config schema
-- v2.1.x - Dashboard config validation
-- v2.2.x - Sensor state boundary
-- v2.3.x - Decoder engine
-- v2.4.x - Asset registry
-- v2.5.x - Scene primitives
-- v2.6.x - Fyne scene renderer
-- v2.7.x - First real dashboard
-- v2.8.x - Remove old widgets
+
+- v2.0.0 - Fast instrument renderer skeleton merged.
+- v2.0.1 - Visual polish for the 1920x480 instrument dashboard merged.
 
 ## Current branch
-- feature/v2-9-reusable-block-library
+
+- feature/v2-dashboard-renderer-cleanup
 
 ## Decisions
-- No legacy dashboard compatibility.
-- Sensors are separate from dashboard visuals.
-- Dashboard asset registry loads and caches local assets only.
-- Fyne rendering consumes resolved scene elements and does not perform decoder logic directly.
-- Dashboard UI refreshes from `StateStore` snapshots and re-evaluates scene state for rendering.
-- First real dashboard uses configured assets, decoders, scene blocks, and YAML-backed scene conditions.
-- Decoder outputs preserve source sensor status/error metadata so configured status indicators can render.
-- Sensor stale status is owned by `StateStore` and derived per sensor from configured refresh intervals.
-- Dashboard scenes consume already-classified sensor status; dashboard rendering must not apply global stale timing.
-- The throttle example uses an 11-frame fixture set for 10% visual steps.
-- The old standalone widget package tree has been removed from the v2 application path.
-- Reusable dashboard block names resolve through existing scene primitives rather than adding a second renderer path.
 
-## Next prompt
-Use v2.9.x prompt from prompts.md until merged. After merge, plan the next dashboard v2 increment from the parent planning chat.
+- Fast instrument dashboard is the primary display direction.
+- Old config-scene dashboard fallback is via Git history/ref, not production runtime code.
+- Legacy baseline ref exists as `legacy-config-scene-dashboard`.
+- Live OBD behaviour remains protected.
+- RaceDemoScenario behaviour remains protected.
+- Sensors produce state. The fast instrument dashboard consumes state directly.
 
 ## Known risks
-- Example dashboard assets are intentionally small SVG placeholders, not final artwork.
-- Sprite text currently distributes glyphs evenly across the configured text geometry.
-- Full visual verification remains manual in mock mode.
-- Reusable block types are semantic aliases over existing primitives; richer styling remains future work.
+
+- Full visual verification remains manual because the connector cannot launch the Fyne window.
+- Some config structs for dashboard YAML may remain temporarily if config loading/tests still require the schema shape, but they are not a normal runtime display path.
