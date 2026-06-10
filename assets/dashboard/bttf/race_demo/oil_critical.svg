@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="480" viewBox="0 0 1920 480">
+  <rect width="1920" height="480" fill="#5a0000" opacity="0.16"/>
+  <rect x="16" y="16" width="1888" height="448" rx="24" fill="none" stroke="#ff3030" stroke-width="16" opacity="0.96"/>
+  <rect x="565" y="16" width="790" height="66" rx="12" fill="#420000" stroke="#ff3030" stroke-width="5" opacity="0.98"/>
+  <text x="960" y="62" text-anchor="middle" font-family="monospace" font-size="38" font-weight="800" fill="#ffbbbb">OIL TEMP CRITICAL - STILL MOVING</text>
+</svg>
