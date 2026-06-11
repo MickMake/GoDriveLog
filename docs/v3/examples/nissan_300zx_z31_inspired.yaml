@@ -60,81 +60,81 @@ sensors:
 assets:
   digit_sets:
     amber_digits:
-      background: "assets/z31/amber_digits/digit_back.png"
+      background: "assets/dashboard/z31/amber_digits/digit_back.png"
       characters:
-        "0": "assets/z31/amber_digits/amber0.png"
-        "1": "assets/z31/amber_digits/amber1.png"
-        "2": "assets/z31/amber_digits/amber2.png"
-        "3": "assets/z31/amber_digits/amber3.png"
-        "4": "assets/z31/amber_digits/amber4.png"
-        "5": "assets/z31/amber_digits/amber5.png"
-        "6": "assets/z31/amber_digits/amber6.png"
-        "7": "assets/z31/amber_digits/amber7.png"
-        "8": "assets/z31/amber_digits/amber8.png"
-        "9": "assets/z31/amber_digits/amber9.png"
-        "-": "assets/z31/amber_digits/amber_minus.png"
-      decimal_point: "assets/z31/amber_digits/amberDP.png"
-      foreground: "assets/z31/amber_digits/digit_glass.png"
+        "0": "assets/dashboard/z31/amber_digits/amber0.png"
+        "1": "assets/dashboard/z31/amber_digits/amber1.png"
+        "2": "assets/dashboard/z31/amber_digits/amber2.png"
+        "3": "assets/dashboard/z31/amber_digits/amber3.png"
+        "4": "assets/dashboard/z31/amber_digits/amber4.png"
+        "5": "assets/dashboard/z31/amber_digits/amber5.png"
+        "6": "assets/dashboard/z31/amber_digits/amber6.png"
+        "7": "assets/dashboard/z31/amber_digits/amber7.png"
+        "8": "assets/dashboard/z31/amber_digits/amber8.png"
+        "9": "assets/dashboard/z31/amber_digits/amber9.png"
+        "-": "assets/dashboard/z31/amber_digits/amber_minus.png"
+      decimal_point: "assets/dashboard/z31/amber_digits/amberDP.png"
+      foreground: "assets/dashboard/z31/amber_digits/digit_glass.png"
       spacing: 5
 
     green_digits:
-      background: "assets/z31/green_digits/digit_back.png"
+      background: "assets/dashboard/z31/green_digits/digit_back.png"
       characters:
-        "0": "assets/z31/green_digits/green0.png"
-        "1": "assets/z31/green_digits/green1.png"
-        "2": "assets/z31/green_digits/green2.png"
-        "3": "assets/z31/green_digits/green3.png"
-        "4": "assets/z31/green_digits/green4.png"
-        "5": "assets/z31/green_digits/green5.png"
-        "6": "assets/z31/green_digits/green6.png"
-        "7": "assets/z31/green_digits/green7.png"
-        "8": "assets/z31/green_digits/green8.png"
-        "9": "assets/z31/green_digits/green9.png"
-        "-": "assets/z31/green_digits/green_minus.png"
-      decimal_point: "assets/z31/green_digits/greenDP.png"
-      foreground: "assets/z31/green_digits/digit_glass.png"
+        "0": "assets/dashboard/z31/green_digits/green0.png"
+        "1": "assets/dashboard/z31/green_digits/green1.png"
+        "2": "assets/dashboard/z31/green_digits/green2.png"
+        "3": "assets/dashboard/z31/green_digits/green3.png"
+        "4": "assets/dashboard/z31/green_digits/green4.png"
+        "5": "assets/dashboard/z31/green_digits/green5.png"
+        "6": "assets/dashboard/z31/green_digits/green6.png"
+        "7": "assets/dashboard/z31/green_digits/green7.png"
+        "8": "assets/dashboard/z31/green_digits/green8.png"
+        "9": "assets/dashboard/z31/green_digits/green9.png"
+        "-": "assets/dashboard/z31/green_digits/green_minus.png"
+      decimal_point: "assets/dashboard/z31/green_digits/greenDP.png"
+      foreground: "assets/dashboard/z31/green_digits/digit_glass.png"
       spacing: 4
 
   bar_sets:
     rainbow_speed_bar:
-      background: "assets/z31/speed_bar/bar_back.png"
+      background: "assets/dashboard/z31/speed_bar/bar_back.png"
       cells:
-        off: "assets/z31/speed_bar/cell_off.png"
-        on_low: "assets/z31/speed_bar/cell_green.png"
-        on_mid: "assets/z31/speed_bar/cell_yellow.png"
-        on_high: "assets/z31/speed_bar/cell_red.png"
-      foreground: "assets/z31/speed_bar/bar_glass.png"
+        off: "assets/dashboard/z31/speed_bar/cell_off.png"
+        on_low: "assets/dashboard/z31/speed_bar/cell_green.png"
+        on_mid: "assets/dashboard/z31/speed_bar/cell_yellow.png"
+        on_high: "assets/dashboard/z31/speed_bar/cell_red.png"
+      foreground: "assets/dashboard/z31/speed_bar/bar_glass.png"
       spacing: 2
 
     green_status_bar:
-      background: "assets/z31/status_bar/bar_back.png"
+      background: "assets/dashboard/z31/status_bar/bar_back.png"
       cells:
-        off: "assets/z31/status_bar/cell_off.png"
-        on: "assets/z31/status_bar/cell_green.png"
-      foreground: "assets/z31/status_bar/bar_glass.png"
+        off: "assets/dashboard/z31/status_bar/cell_off.png"
+        on: "assets/dashboard/z31/status_bar/cell_green.png"
+      foreground: "assets/dashboard/z31/status_bar/bar_glass.png"
       spacing: 2
 
   frame_sets:
     turbo_rpm_boost_sweep:
-      background: "assets/z31/rpm_boost/rpm_boost_back.png"
+      background: "assets/dashboard/z31/rpm_boost/rpm_boost_back.png"
       frames:
-        path: "assets/z31/rpm_boost/frame_%03d.png"
+        path: "assets/dashboard/z31/rpm_boost/frame_%03d.png"
         first: 0
         last: 100
-      foreground: "assets/z31/rpm_boost/rpm_boost_glass.png"
+      foreground: "assets/dashboard/z31/rpm_boost/rpm_boost_glass.png"
 
   indicator_sets:
     engine_warning:
-      background: "assets/z31/warnings/engine_back.png"
+      background: "assets/dashboard/z31/warnings/engine_back.png"
       states:
-        off: "assets/z31/warnings/engine_off.png"
-        on: "assets/z31/warnings/engine_on.png"
-        unknown: "assets/z31/warnings/engine_unknown.png"
-      foreground: "assets/z31/warnings/engine_glass.png"
+        off: "assets/dashboard/z31/warnings/engine_off.png"
+        on: "assets/dashboard/z31/warnings/engine_on.png"
+        unknown: "assets/dashboard/z31/warnings/engine_unknown.png"
+      foreground: "assets/dashboard/z31/warnings/engine_glass.png"
 
   image_sets:
     main_panel:
-      image: "assets/z31/panel/main_panel_backplate.png"
+      image: "assets/dashboard/z31/panel/main_panel_backplate.png"
 
 logs:
   jsonl:
