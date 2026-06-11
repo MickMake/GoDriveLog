@@ -20,7 +20,7 @@ dashboards = physical display dashboards and widgets
 
 The runtime should load one `Config`, select a vehicle, connect to the selected vehicle's OBD-like endpoint, start the shared sensor polling runtime, and then feed logs and dashboards from sensor events.
 
-There is intentionally no `default_vehicle`, no `active_displays`, no top-level `displays`, no logger refresh config, and no `mock` / `real` source switch.
+The v3 root schema is intentionally small. Treat the five documented top-level sections as an allow-list, and reject unknown root fields during development.
 
 ## 2. Top-level config
 
@@ -87,7 +87,7 @@ type OBDConfig struct {
 - `Name` is human-readable display/log text.
 - `OBD.Address` is an OBD-like endpoint, such as `serial:///dev/ttyUSB0` or `tcp://127.0.0.1:35000`.
 - The runtime should not know or care whether the endpoint is real hardware or a simulator.
-- Do not add `source: real` or `source: mock`.
+- Prefer endpoint addresses over endpoint-type branching.
 
 ## 4. Sensor config
 
@@ -123,7 +123,7 @@ type SensorConfig struct {
 - `Type` starts with `obd`; future values can be added only when needed.
 - `PID` is required for `type: obd`.
 - `Poll` is the sensor polling cadence in milliseconds.
-- Sensors own timing. Logs and dashboards do not specify refresh.
+- Sensors own timing. Logs and dashboards do not specify cadence.
 - `Min` and `Max` are optional expected bounds for validation and display scaling.
 - Sensor state events should include value, unit, status, original read timestamp, and a sequence/version.
 
@@ -209,7 +209,7 @@ Notes:
 - `Characters` should include `0` through `9` and `-` where the dashboard may show negative values.
 - A blank/padded slot means background-only when `Background` exists.
 - Decimal points are overlays, not normal character slots.
-- Prefer `characters`, not `digits`, because `-` is not a digit and config fossils are annoying.
+- Prefer `characters`, not `digits`, because formatted display output is not limited to numeric digits.
 
 ### Bar sets
 
@@ -304,8 +304,7 @@ type LogConfig struct {
 - A listed sensor key must exist under `Config.Sensors`.
 - Logs should write first readings, value changes, and status changes.
 - Logs should not spam unchanged duplicate readings.
-- No log refresh field.
-- No per-sensor log polling field.
+- Logs do not define polling/cadence fields.
 
 ## 8. Dashboard config
 
@@ -341,7 +340,7 @@ type SizeConfig struct {
 - The dashboard map key is the stable dashboard ID.
 - Dashboard presence means active.
 - A dashboard owns its physical/logical display target.
-- Multiple physical regions on the same display should be widgets, not separate display configs.
+- Multiple physical regions on the same display should be widgets.
 - Dashboards do not define polling cadence.
 - Dashboards do not read OBD directly.
 
@@ -392,6 +391,7 @@ Notes:
 
 Initial validation should check:
 
+- Root config contains only documented v3 sections.
 - At least one vehicle exists.
 - If multiple vehicles exist, runtime selection is explicit.
 - Sensor IDs referenced by logs exist.
@@ -415,6 +415,6 @@ Do not add these without strong evidence:
 - config inheritance
 - generic event buses
 - enable flags everywhere
-- mock/real branches leaking into core runtime
+- endpoint-type branches leaking into core runtime
 
 Boring boundaries first. Fancy pixels second. YAML goblins never.
