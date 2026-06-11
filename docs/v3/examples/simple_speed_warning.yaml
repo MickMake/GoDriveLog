@@ -1,0 +1,110 @@
+# GoDriveLog v3 dashboard example
+# Purposefully simple first-slice dashboard.
+# Uses one vehicle, three OBD sensors, one panel image, one digit display,
+# one RPM digit display, and one warning indicator.
+
+vehicles:
+  vw_caddy:
+    name: "VW Caddy"
+    obd:
+      address: "serial:///dev/ttyUSB0"
+      timeout: 1000
+
+sensors:
+  speed:
+    type: obd
+    pid: "010D"
+    unit: "km/h"
+    poll: 250
+    min: 0
+    max: 220
+
+  rpm:
+    type: obd
+    pid: "010C"
+    unit: "rpm"
+    poll: 250
+    min: 0
+    max: 7000
+
+  engine_warning:
+    type: obd
+    pid: "STATUS:MIL"
+    unit: "bool"
+    poll: 1000
+
+assets:
+  digit_sets:
+    simple_amber_digits:
+      background: "assets/dashboard/simple/amber_digits/digit_back.png"
+      characters:
+        "0": "assets/dashboard/simple/amber_digits/amber0.png"
+        "1": "assets/dashboard/simple/amber_digits/amber1.png"
+        "2": "assets/dashboard/simple/amber_digits/amber2.png"
+        "3": "assets/dashboard/simple/amber_digits/amber3.png"
+        "4": "assets/dashboard/simple/amber_digits/amber4.png"
+        "5": "assets/dashboard/simple/amber_digits/amber5.png"
+        "6": "assets/dashboard/simple/amber_digits/amber6.png"
+        "7": "assets/dashboard/simple/amber_digits/amber7.png"
+        "8": "assets/dashboard/simple/amber_digits/amber8.png"
+        "9": "assets/dashboard/simple/amber_digits/amber9.png"
+        "-": "assets/dashboard/simple/amber_digits/amber_minus.png"
+      decimal_point: "assets/dashboard/simple/amber_digits/amber_dp.png"
+      foreground: "assets/dashboard/simple/amber_digits/digit_glass.png"
+      spacing: 4
+
+  indicator_sets:
+    engine_warning:
+      background: "assets/dashboard/simple/warnings/engine_back.png"
+      states:
+        off: "assets/dashboard/simple/warnings/engine_off.png"
+        on: "assets/dashboard/simple/warnings/engine_on.png"
+        unknown: "assets/dashboard/simple/warnings/engine_unknown.png"
+      foreground: "assets/dashboard/simple/warnings/engine_glass.png"
+
+  image_sets:
+    simple_panel:
+      image: "assets/dashboard/simple/panel/background.png"
+
+logs:
+  jsonl:
+    path: "logs/godrivelog.jsonl"
+    sensors:
+      - speed
+      - rpm
+      - engine_warning
+
+
+dashboards:
+  simple_primary:
+    display: "HDMI-1"
+    size:
+      width: 800
+      height: 480
+    widgets:
+      - id: panel_backplate
+        type: image
+        asset: simple_panel
+        position: [0, 0]
+
+      - id: speed_digits
+        type: digit_display
+        sensor: speed
+        asset: simple_amber_digits
+        position: [40, 40]
+        digits: 3
+        format: "%03.0f"
+
+      - id: rpm_digits
+        type: digit_display
+        sensor: rpm
+        asset: simple_amber_digits
+        position: [40, 180]
+        digits: 4
+        format: "%04.0f"
+
+      - id: engine_warning
+        type: indicator
+        sensor: engine_warning
+        asset: engine_warning
+        position: [620, 340]
