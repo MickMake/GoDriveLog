@@ -57,16 +57,11 @@ sensors:
     unit: "bool"
     poll: 1000
 
-  high_beam:
-    type: vehicle_status
-    unit: "bool"
-    poll: 500
-
 assets:
   digit_sets:
     amber_digits:
       background: "assets/z31/amber_digits/digit_back.png"
-      digits:
+      characters:
         "0": "assets/z31/amber_digits/amber0.png"
         "1": "assets/z31/amber_digits/amber1.png"
         "2": "assets/z31/amber_digits/amber2.png"
@@ -77,13 +72,14 @@ assets:
         "7": "assets/z31/amber_digits/amber7.png"
         "8": "assets/z31/amber_digits/amber8.png"
         "9": "assets/z31/amber_digits/amber9.png"
+        "-": "assets/z31/amber_digits/amber_minus.png"
       decimal_point: "assets/z31/amber_digits/amberDP.png"
       foreground: "assets/z31/amber_digits/digit_glass.png"
       spacing: 5
 
     green_digits:
       background: "assets/z31/green_digits/digit_back.png"
-      digits:
+      characters:
         "0": "assets/z31/green_digits/green0.png"
         "1": "assets/z31/green_digits/green1.png"
         "2": "assets/z31/green_digits/green2.png"
@@ -94,6 +90,7 @@ assets:
         "7": "assets/z31/green_digits/green7.png"
         "8": "assets/z31/green_digits/green8.png"
         "9": "assets/z31/green_digits/green9.png"
+        "-": "assets/z31/green_digits/green_minus.png"
       decimal_point: "assets/z31/green_digits/greenDP.png"
       foreground: "assets/z31/green_digits/digit_glass.png"
       spacing: 4
@@ -134,14 +131,6 @@ assets:
         on: "assets/z31/warnings/engine_on.png"
         unknown: "assets/z31/warnings/engine_unknown.png"
       foreground: "assets/z31/warnings/engine_glass.png"
-
-    high_beam:
-      background: "assets/z31/warnings/highbeam_back.png"
-      states:
-        off: "assets/z31/warnings/highbeam_off.png"
-        on: "assets/z31/warnings/highbeam_on.png"
-        unknown: "assets/z31/warnings/highbeam_unknown.png"
-      foreground: "assets/z31/warnings/highbeam_glass.png"
 
   image_sets:
     main_panel:
@@ -234,9 +223,3 @@ dashboards:
         sensor: engine_warning
         asset: engine_warning
         position: [1430, 280]
-
-      - id: high_beam
-        type: indicator
-        sensor: high_beam
-        asset: high_beam
-        position: [1530, 280]
