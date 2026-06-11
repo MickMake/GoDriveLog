@@ -35,23 +35,15 @@ logs:
 dashboards:
 ```
 
-Do not reintroduce:
+Guardrails:
 
-```text
-default_vehicle
-active_displays
-displays
-log
-cache
-refresh
-refresh_ms
-render_min_ms
-source: mock
-source: real
-mock_mode
-```
+- Treat those five sections as the complete v3 root schema.
+- Unknown root fields should fail validation during v3 development.
+- Do not add compatibility aliases for undocumented root fields.
+- Do not add timing knobs outside `sensors.<id>.poll` unless the design is reviewed first.
+- Do not add endpoint-type switches when an endpoint address can express the same thing.
 
-If one of those seems necessary, the design needs review before code changes.
+The goal is an allow-list, not a blacklist. The schema should say what is valid, not make imaginary alternatives sound official.
 
 ## 4. Vehicle endpoint guardrails
 
@@ -71,7 +63,7 @@ Rules:
 - Treat real hardware and bench simulators as OBD-like endpoints.
 - Use `serial://...` for serial adapters.
 - Use `tcp://...` for simulator/bench endpoints.
-- Do not branch the core runtime on mock versus real.
+- Do not branch the core runtime on endpoint type unless a real implementation constraint proves it is needed.
 - Do not leak simulator concepts into sensors, logs, or dashboards.
 
 Implementation shape:
@@ -83,7 +75,7 @@ address string -> endpoint connector -> reader/runtime
 Bad shape:
 
 ```text
-if config.Source == "mock" { ... } else { ... }
+switch config.ProviderKind { ... }
 ```
 
 ## 5. Sensor runtime guardrails
@@ -162,7 +154,7 @@ Rules:
 
 - Logs subscribe to sensor events.
 - Logs do not poll.
-- Logs do not own refresh cadence.
+- Logs do not own cadence.
 - Logs should write first reading, value changes, and status changes.
 - Logs should not spam unchanged duplicate readings.
 - Logs should include the sensor read timestamp.
@@ -186,9 +178,8 @@ Rules:
 
 - Dashboard presence means active.
 - A dashboard owns its display target.
-- Do not add top-level display bindings.
 - Dashboards do not poll sensors.
-- Dashboards do not own refresh cadence in config.
+- Dashboards do not own cadence in config.
 - Dashboards consume current sensor state produced by the sensor runtime.
 - Keep dashboard config declarative.
 - Avoid conditions, scripts, formulas, templates, inheritance, and expression languages.
@@ -312,6 +303,7 @@ Validation should fail early and loudly.
 
 Minimum checks:
 
+- Root config contains only documented v3 sections.
 - At least one vehicle exists.
 - Multiple vehicles require explicit runtime selection.
 - Vehicle endpoint address is present.
@@ -363,6 +355,7 @@ Config tests:
 - multiple vehicles without explicit selection
 - bad OBD address
 - poll zero
+- unknown root field
 - log references unknown sensor
 - dashboard widget references unknown sensor
 - dashboard widget references unknown asset
@@ -398,7 +391,7 @@ Say no, or at least not yet, to:
 - source orchestration
 - enable flags everywhere
 - per-log or per-dashboard polling knobs
-- mock/real branches in core runtime
+- endpoint-type branches in core runtime
 
 These may become real requirements later. They are not starting requirements.
 
@@ -413,6 +406,6 @@ A first useful v3 slice is done when:
 - JSONL logs receive selected events
 - one dashboard displays at least image + digit_display + indicator
 - missing/stale/error states are visible instead of silently lying
-- old v2 config keys are rejected in v3 mode
+- undocumented root config fields are rejected in v3 mode
 
 That is enough. Anything beyond that should earn its keep.
