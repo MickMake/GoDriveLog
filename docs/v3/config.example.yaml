@@ -1,347 +1,118 @@
-# GoDriveLog sane default configuration
-
-default_vehicle: vw_caddy
-
-active_displays:
-  - main
+# GoDriveLog v3 minimal configuration example
+#
+# This file is intentionally small. Use docs/v3/config.full.yaml for the
+# fully commented schema tour.
 
 vehicles:
   vw_caddy:
     name: "VW Caddy"
     obd:
-      source: real
-      address: serial:///dev/ttyUSB0
-      debug: false
-
-  race_driver:
-    name: "Race Driver"
-    obd:
-      source: mock
-      address: mock://race-driver
-      debug: false
+      address: "serial:///dev/ttyUSB0"
+      timeout: 1000
 
 sensors:
-  engine_load:
+  speed:
     type: obd
-    pid: "0104"
-    unit: "%"
-    cache: 500
+    pid: "010D"
+    unit: "km/h"
+    poll: 250
     min: 0
-    max: 100
-
-  coolant_temp:
-    type: obd
-    pid: "0105"
-    unit: C
-    cache: 1000
-    min: -40
-    max: 140
-
-  short_fuel_trim_bank1:
-    type: obd
-    pid: "0106"
-    unit: "%"
-    cache: 1000
-    min: -100
-    max: 100
-
-  long_fuel_trim_bank1:
-    type: obd
-    pid: "0107"
-    unit: "%"
-    cache: 1000
-    min: -100
-    max: 100
-
-  intake_manifold_pressure:
-    type: obd
-    pid: "010B"
-    unit: kPa
-    cache: 1000
-    min: 0
-    max: 255
+    max: 220
 
   rpm:
     type: obd
     pid: "010C"
-    unit: rpm
-    cache: 250
+    unit: "rpm"
+    poll: 250
     min: 0
     max: 7000
 
-  speed:
+  coolant_temperature:
     type: obd
-    pid: "010D"
-    unit: km/h
-    cache: 500
-    min: 0
-    max: 160
-
-  intake_air_temp:
-    type: obd
-    pid: "010F"
-    unit: C
-    cache: 2000
+    pid: "0105"
+    unit: "C"
+    poll: 5000
     min: -40
     max: 140
 
-  throttle_position:
+  engine_warning:
     type: obd
-    pid: "0111"
-    unit: "%"
-    cache: 500
-    min: 0
-    max: 100
+    pid: "STATUS:MIL"
+    unit: "bool"
+    poll: 1000
 
-log:
-  rotate: daily
-  directory: ./log
-  sensors:
-    engine_load:
-      refresh: 1000
-    coolant_temp:
-      refresh: 5000
-    short_fuel_trim_bank1:
-      refresh: 5000
-    rpm:
-      refresh: 250
-    speed:
-      refresh: 500
-    throttle_position:
-      refresh: 500
+assets:
+  digit_sets:
+    simple_amber_digits:
+      background: "assets/dashboard/simple/digits/digit_back.png"
+      characters:
+        "0": "assets/dashboard/simple/digits/amber0.png"
+        "1": "assets/dashboard/simple/digits/amber1.png"
+        "2": "assets/dashboard/simple/digits/amber2.png"
+        "3": "assets/dashboard/simple/digits/amber3.png"
+        "4": "assets/dashboard/simple/digits/amber4.png"
+        "5": "assets/dashboard/simple/digits/amber5.png"
+        "6": "assets/dashboard/simple/digits/amber6.png"
+        "7": "assets/dashboard/simple/digits/amber7.png"
+        "8": "assets/dashboard/simple/digits/amber8.png"
+        "9": "assets/dashboard/simple/digits/amber9.png"
+        "-": "assets/dashboard/simple/digits/amber_minus.png"
+      decimal_point: "assets/dashboard/simple/digits/amber_dp.png"
+      foreground: "assets/dashboard/simple/digits/digit_glass.png"
+      spacing: 4
 
-displays:
-  main:
-    dashboard: bttf_primary
-    output: default
-    fullscreen: true
+  indicator_sets:
+    engine_warning:
+      background: "assets/dashboard/simple/warnings/engine_back.png"
+      states:
+        off: "assets/dashboard/simple/warnings/engine_off.png"
+        on: "assets/dashboard/simple/warnings/engine_on.png"
+        unknown: "assets/dashboard/simple/warnings/engine_unknown.png"
+      foreground: "assets/dashboard/simple/warnings/engine_glass.png"
 
-  aux:
-    dashboard: bttf_aux
-    output: HDMI-2
-    fullscreen: true
+  image_sets:
+    simple_panel:
+      image: "assets/dashboard/simple/panel/background.png"
+
+logs:
+  jsonl:
+    path: "logs/godrivelog.jsonl"
+    sensors:
+      - speed
+      - rpm
+      - coolant_temperature
+      - engine_warning
 
 dashboards:
-  bttf_primary:
-    refresh_ms: 1000
-    render_min_ms: 5000
-    canvas:
-      width: 800
+  simple_primary:
+    display: "HDMI-1"
+    size:
+      width: 1920
       height: 480
-    asset_root: assets/dashboard/bttf
-
-    assets:
-      - id: background
+    widgets:
+      - id: panel_backplate
         type: image
-        path: background.svg
-      - id: redline_glow
-        type: image
-        path: redline_glow.svg
-      - id: status_ok
-        type: image
-        path: status/ok.svg
-      - id: status_stale
-        type: image
-        path: status/stale.svg
-      - id: status_error
-        type: image
-        path: status/error.svg
-      - id: throttle_frames
-        type: frame_set
-        pattern: throttle/frame_{index:03}.svg
-        frame_count: 11
-      - id: yellow_digits
-        type: charset
-        glyphs:
-          "0": digits/yellow/0.svg
-          "1": digits/yellow/1.svg
-          "2": digits/yellow/2.svg
-          "3": digits/yellow/3.svg
-          "4": digits/yellow/4.svg
-          "5": digits/yellow/5.svg
-          "6": digits/yellow/6.svg
-          "7": digits/yellow/7.svg
-          "8": digits/yellow/8.svg
-          "9": digits/yellow/9.svg
+        asset: simple_panel
+        position: [0, 0]
 
-    decoders:
-      - id: rpm_text
-        type: format_number
-        sensor: rpm
-        format: "0000"
-      - id: rpm_digits
-        type: digits
-        input: rpm_text
-        asset: yellow_digits
-      - id: throttle_frame
-        type: frame_index
-        sensor: throttle_position
-        asset: throttle_frames
-        frame_count: 11
-      - id: rpm_warning
-        type: threshold
-        sensor: rpm
-        thresholds:
-          - at: 0
-            value: normal
-          - at: 2100
-            value: warning
-
-    blocks:
-      - id: background_panel
-        type: static_panel
-        asset: background
-        geometry:
-          x: 0
-          y: 0
-          width: 800
-          height: 480
-      - id: rpm_display
-        type: seven_segment_number
-        asset: yellow_digits
-        decoder: rpm_digits
-        geometry:
-          x: 92
-          y: 58
-          width: 300
-          height: 100
-      - id: throttle_bar
-        type: percent_frame_bar
-        asset: throttle_frames
-        decoder: throttle_frame
-        geometry:
-          x: 92
-          y: 220
-          width: 360
-          height: 48
-      - id: status_ok_indicator
-        type: state_lamp
-        asset: status_ok
-        condition:
-          sensor: rpm
-          status: ok
-        geometry:
-          x: 610
-          y: 58
-          width: 120
-          height: 42
-      - id: status_stale_indicator
-        type: stale_overlay
-        asset: status_stale
-        condition:
-          sensor: rpm
-          status: stale
-        geometry:
-          x: 610
-          y: 58
-          width: 120
-          height: 42
-      - id: status_error_indicator
-        type: warning_overlay
-        asset: status_error
-        condition:
-          sensor: rpm
-          status: error
-        geometry:
-          x: 610
-          y: 58
-          width: 120
-          height: 42
-      - id: redline_overlay
-        type: warning_overlay
-        asset: redline_glow
-        condition:
-          decoder: rpm_warning
-          equals: warning
-        geometry:
-          x: 0
-          y: 0
-          width: 800
-          height: 480
-      - id: main_cluster
-        type: group
-        blocks:
-          - rpm_display
-          - throttle_bar
-          - status_ok_indicator
-          - status_stale_indicator
-          - status_error_indicator
-
-    layers:
-      - id: base
-        z: 0
-        blocks:
-          - background_panel
-      - id: dashboard
-        z: 10
-        blocks:
-          - main_cluster
-      - id: alerts
-        z: 20
-        blocks:
-          - redline_overlay
-
-  bttf_aux:
-    refresh_ms: 1000
-    render_min_ms: 1000
-    canvas:
-      width: 800
-      height: 480
-    asset_root: assets/dashboard/bttf
-
-    assets:
-      - id: background
-        type: image
-        path: background.svg
-      - id: yellow_digits
-        type: charset
-        glyphs:
-          "0": digits/yellow/0.svg
-          "1": digits/yellow/1.svg
-          "2": digits/yellow/2.svg
-          "3": digits/yellow/3.svg
-          "4": digits/yellow/4.svg
-          "5": digits/yellow/5.svg
-          "6": digits/yellow/6.svg
-          "7": digits/yellow/7.svg
-          "8": digits/yellow/8.svg
-          "9": digits/yellow/9.svg
-
-    decoders:
-      - id: speed_text
-        type: format_number
+      - id: speed
+        type: digit_display
         sensor: speed
-        format: "000"
-      - id: speed_digits
-        type: digits
-        input: speed_text
-        asset: yellow_digits
+        asset: simple_amber_digits
+        position: [40, 40]
+        digits: 3
+        format: "%03.0f"
 
-    blocks:
-      - id: background_panel
-        type: static_panel
-        asset: background
-        geometry:
-          x: 0
-          y: 0
-          width: 800
-          height: 480
-      - id: speed_display
-        type: seven_segment_number
-        asset: yellow_digits
-        decoder: speed_digits
-        geometry:
-          x: 180
-          y: 120
-          width: 360
-          height: 120
+      - id: rpm
+        type: digit_display
+        sensor: rpm
+        asset: simple_amber_digits
+        position: [40, 180]
+        digits: 4
+        format: "%04.0f"
 
-    layers:
-      - id: base
-        z: 0
-        blocks:
-          - background_panel
-      - id: dashboard
-        z: 10
-        blocks:
-          - speed_display
+      - id: engine_warning
+        type: indicator
+        sensor: engine_warning
+        asset: engine_warning
+        position: [40, 340]
