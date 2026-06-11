@@ -20,9 +20,37 @@ dashboards = physical display dashboards and widgets
 
 The runtime should load one `Config`, select a vehicle, connect to the selected vehicle's OBD-like endpoint, start the shared sensor polling runtime, and then feed logs and dashboards from sensor events.
 
-The v3 root schema is intentionally small. Treat the five documented top-level sections as an allow-list, and reject unknown root fields during development.
+The v3 root schema is intentionally small. Treat the five documented top-level sections as an allow-list, and reject unknown fields during development.
 
-## 2. Top-level config
+Strict v3 config loading must reject unknown fields at every documented level, not only at the root. This includes nested vehicle, OBD, sensor, asset, log, dashboard, widget, frame, and zone fields.
+
+## 2. Naming rules
+
+IDs should be boring and stable.
+
+Recommended ID pattern:
+
+```text
+^[a-z][a-z0-9_]*$
+```
+
+Apply this to:
+
+- vehicle IDs
+- sensor IDs
+- asset IDs inside each asset family
+- log IDs
+- dashboard IDs
+- widget IDs
+
+Rules:
+
+- IDs are case-sensitive, but v3 should use lowercase snake_case.
+- Widget IDs must be unique within a dashboard.
+- Asset IDs only need to be unique within their asset family.
+- Do not rely on display names as IDs.
+
+## 3. Top-level config
 
 ### YAML source
 
@@ -53,8 +81,10 @@ type Config struct {
 - Sensors are global and shared by logs, dashboards, and future consumers.
 - Dashboard presence means the dashboard is active.
 - Logs and dashboards subscribe to sensor events; they do not poll sensors independently.
+- Unknown root fields fail validation.
+- Unknown nested fields fail validation.
 
-## 3. Vehicle config
+## 4. Vehicle config
 
 ### YAML source
 
@@ -89,7 +119,19 @@ type OBDConfig struct {
 - The runtime should not know or care whether the endpoint is real hardware or a simulator.
 - Prefer endpoint addresses over endpoint-type branching.
 
-## 4. Sensor config
+### Endpoint validation
+
+Initial validation should require:
+
+- `address` is present.
+- `serial://` endpoints include a non-empty path.
+- `tcp://` endpoints include host and port.
+- `timeout > 0`.
+- Recommended initial sanity range: `100 <= timeout <= 30000` milliseconds.
+
+The timeout range is a guardrail, not a tuning API. Change it only if real adapters prove the range wrong.
+
+## 5. Sensor config
 
 ### YAML source
 
@@ -120,14 +162,15 @@ type SensorConfig struct {
 ### Notes
 
 - The sensor map key, for example `rpm`, is the stable sensor ID used by logs and dashboard widgets.
-- `Type` starts with `obd`; future values can be added only when needed.
+- `Type` starts with `obd`; future values can be added only when needed and documented first.
 - `PID` is required for `type: obd`.
 - `Poll` is the sensor polling cadence in milliseconds.
 - Sensors own timing. Logs and dashboards do not specify cadence.
 - `Min` and `Max` are optional expected bounds for validation and display scaling.
+- If both `Min` and `Max` are present, require `Min < Max`.
 - Sensor state events should include value, unit, status, original read timestamp, and a sequence/version.
 
-## 5. Sensor event semantics
+## 6. Sensor event semantics
 
 Suggested runtime event shape:
 
@@ -159,7 +202,45 @@ Runtime should emit events on first reading, value change, status change, recove
 
 Do not encode errors as numeric values such as `0`.
 
-## 6. Assets config
+### Value expectations
+
+Initial v3 value expectations:
+
+- Numeric OBD readings should use a numeric type after decoding, normally `float64` unless an integer type is useful internally.
+- Boolean/status OBD readings should use `bool`.
+- Unsupported, stale, or error states should be represented by `Status`, not by fake values.
+- `Unit` should remain the configured unit label for usable values.
+
+## 7. Stale timing
+
+Initial runtime stale rule:
+
+```text
+stale_after = max(sensor.poll * 3, 1000ms)
+```
+
+A sensor becomes `stale` when no successful read has occurred within that window.
+
+Rules:
+
+- Stale is derived by the runtime.
+- Stale timing is not a log setting.
+- Stale timing is not a dashboard setting.
+- Do not add YAML fields for stale timing unless a later reviewed design proves they are needed.
+- Stale transitions must emit sensor events.
+- Recovery from stale to ok must emit sensor events.
+
+## 8. Assets config
+
+Asset paths in v3 config are repository-root relative unless a later document explicitly says otherwise.
+
+Example:
+
+```yaml
+assets/dashboard/bttf/amber_digits/amber0.png
+```
+
+Do not teach multiple path dialects in active v3 examples.
 
 ### YAML source
 
@@ -211,6 +292,16 @@ Notes:
 - Decimal points are overlays, not normal character slots.
 - Prefer `characters`, not `digits`, because formatted display output is not limited to numeric digits.
 
+### Digit display semantics
+
+For widgets that use a digit set:
+
+- `digits` is the number of character slots, excluding decimal point overlays.
+- Formatted decimal separators do not consume a character slot.
+- If the configured `format` can emit a decimal separator, the digit set must provide `decimal_point`.
+- Formatted output must fit the configured slot count after decimal separators are removed.
+- Every non-decimal formatted character must have a `characters` entry, unless it is a blank/padded slot rendered as background-only.
+
 ### Bar sets
 
 ```go
@@ -222,13 +313,19 @@ type BarSetConfig struct {
 }
 ```
 
+Bar set rules:
+
+- `off` is required for unfilled cells.
+- If a bar widget omits `zones`, `on` is required for filled cells.
+- Zone cell names must exist in the bar set's `cells` map.
+
 ### Frame sets
 
 ```go
 type FrameSetConfig struct {
-    Background string            `yaml:"background,omitempty"`
-    Frames     FrameRangeConfig  `yaml:"frames"`
-    Foreground string            `yaml:"foreground,omitempty"`
+    Background string           `yaml:"background,omitempty"`
+    Frames     FrameRangeConfig `yaml:"frames"`
+    Foreground string           `yaml:"foreground,omitempty"`
 }
 
 type FrameRangeConfig struct {
@@ -239,6 +336,8 @@ type FrameRangeConfig struct {
 ```
 
 Use frame sets for complex curves, sweeps, and retro gauge tricks. Do not add a dashboard drawing language until reality turns up with a receipt.
+
+Frame range validation requires `first <= last`.
 
 ### Indicator sets
 
@@ -276,7 +375,7 @@ type ImageSetConfig struct {
 }
 ```
 
-## 7. Logs config
+## 9. Logs config
 
 ### YAML source
 
@@ -306,7 +405,7 @@ type LogConfig struct {
 - Logs should not spam unchanged duplicate readings.
 - Logs do not define polling/cadence fields.
 
-## 8. Dashboard config
+## 10. Dashboard config
 
 ### YAML source
 
@@ -341,27 +440,28 @@ type SizeConfig struct {
 - Dashboard presence means active.
 - A dashboard owns its physical/logical display target.
 - Multiple physical regions on the same display should be widgets.
+- In the initial v3 implementation, two active dashboards must not target the same display.
 - Dashboards do not define polling cadence.
 - Dashboards do not read OBD directly.
 
-## 9. Widget config
+## 11. Widget config
 
 The widget model is intentionally declarative.
 
 ```go
 type WidgetConfig struct {
-    ID       string        `yaml:"id"`
-    Type     string        `yaml:"type"`
-    Sensor   string        `yaml:"sensor,omitempty"`
-    Asset    string        `yaml:"asset"`
-    Position [2]int        `yaml:"position"`
-    Digits   int           `yaml:"digits,omitempty"`
-    Format   string        `yaml:"format,omitempty"`
-    Cells    int           `yaml:"cells,omitempty"`
-    Min      *float64      `yaml:"min,omitempty"`
-    Max      *float64      `yaml:"max,omitempty"`
-    Reverse  bool          `yaml:"reverse,omitempty"`
-    Zones    []ZoneConfig  `yaml:"zones,omitempty"`
+    ID       string       `yaml:"id"`
+    Type     string       `yaml:"type"`
+    Sensor   string       `yaml:"sensor,omitempty"`
+    Asset    string       `yaml:"asset"`
+    Position [2]int       `yaml:"position"`
+    Digits   int          `yaml:"digits,omitempty"`
+    Format   string       `yaml:"format,omitempty"`
+    Cells    int          `yaml:"cells,omitempty"`
+    Min      *float64     `yaml:"min,omitempty"`
+    Max      *float64     `yaml:"max,omitempty"`
+    Reverse  bool         `yaml:"reverse,omitempty"`
+    Zones    []ZoneConfig `yaml:"zones,omitempty"`
 }
 
 type ZoneConfig struct {
@@ -380,31 +480,76 @@ frame_gauge
 indicator
 ```
 
+Widget type to asset family mapping:
+
+| Widget type | Required asset family |
+|---|---|
+| `image` | `assets.image_sets` |
+| `digit_display` | `assets.digit_sets` |
+| `bar_display` | `assets.bar_sets` |
+| `frame_gauge` | `assets.frame_sets` |
+| `indicator` | `assets.indicator_sets` |
+
 Notes:
 
 - Use `position`, not `rect`, for native-size image-backed widgets.
 - Asset packs own native visual geometry.
 - Renderers should validate that related images in an asset pack have compatible dimensions.
 - Keep expressions, scripts, inheritance, and clever conditions out of v3 until genuinely needed.
+- If both widget `Min` and `Max` are present, require `Min < Max`.
 
-## 10. Validation rules
+## 12. Bar widget semantics
+
+Bar widgets map one sensor value onto repeated cells.
+
+Rules:
+
+- `cells` is the number of visible cells and must be greater than zero.
+- `min` and `max` define the value mapping range.
+- If both `min` and `max` are present, require `min < max`.
+- Values below widget `min` render zero filled cells.
+- Values above widget `max` render all cells filled.
+- `off` is required for unfilled cells.
+- If `zones` is omitted, `on` is required for filled cells.
+- Bar zones must be sorted ascending by `up_to`.
+- A filled cell uses the first zone where `value <= up_to`.
+- Values above the final zone use the final zone.
+- `reverse` reverses fill direction only, not zone interpretation.
+
+## 13. Validation rules
 
 Initial validation should check:
 
-- Root config contains only documented v3 sections.
+- Unknown fields fail at all documented levels.
+- IDs match `^[a-z][a-z0-9_]*$`.
 - At least one vehicle exists.
 - If multiple vehicles exist, runtime selection is explicit.
+- Vehicle endpoint address is present.
+- `serial://` endpoints include a non-empty path.
+- `tcp://` endpoints include host and port.
+- OBD timeout is greater than zero, preferably within `100..30000` milliseconds.
+- Sensor `poll > 0`.
+- Sensor `min < max` when both are present.
 - Sensor IDs referenced by logs exist.
 - Sensor IDs referenced by widgets exist, except `type: image` widgets with no sensor.
-- Asset references exist in the appropriate asset family.
+- Asset references exist in the correct asset family for the widget type.
+- Asset paths are repository-root relative.
 - Digit sets contain required displayed characters for configured formats where practical.
+- Digit formats that can emit decimal separators have a `decimal_point` asset.
+- Digit formatted output fits configured slot count after decimal separators are removed.
 - Frame ranges have `first <= last`.
-- Bar widgets reference valid cell names.
+- Bar sets contain `off`.
+- Bar widgets without `zones` use a bar set containing `on`.
+- Bar zones are sorted ascending.
+- Bar zones reference valid cell names.
 - Indicator sets contain `off`, `on`, and `unknown`.
 - Dashboard sizes are positive.
+- No two active dashboards target the same display.
 - Widget positions are present.
+- Widget IDs are unique within each dashboard.
+- Widget `min < max` when both are present.
 
-## 11. Non-goals
+## 14. Non-goals
 
 Do not add these without strong evidence:
 
@@ -416,5 +561,9 @@ Do not add these without strong evidence:
 - generic event buses
 - enable flags everywhere
 - endpoint-type branches leaking into core runtime
+- dashboard refresh fields
+- widget refresh fields
+- stale timeout YAML fields
+- asset root config fields
 
 Boring boundaries first. Fancy pixels second. YAML goblins never.
