@@ -1,7 +1,8 @@
 # GoDriveLog v3 dashboard example
 # Purposefully simple first-slice dashboard.
-# Uses one vehicle, three OBD sensors, one panel image, one digit display,
+# Uses one vehicle, three OBD sensors, one panel image, one speed digit display,
 # one RPM digit display, and one warning indicator.
+# Asset paths are repository-root relative.
 
 vehicles:
   vw_caddy:
