@@ -149,6 +149,7 @@ GoDriveLog/
       config.full.yaml
       GoStructsConfig.md
       DirectoryStructure.md
+      ImplementationGuardrails.md
       examples/
         README.md
         nissan_300zx_z31_inspired.yaml
@@ -206,6 +207,7 @@ GoDriveLog/
 
 - Archive docs are allowed to describe old v2 behaviour.
 - Active v3 docs should use the simplified top-level shape: `vehicles`, `sensors`, `assets`, `logs`, `dashboards`.
+- `ImplementationGuardrails.md` is the implementation checklist for keeping the v3 code aligned with these docs.
 - There is no `default_vehicle`, `active_displays`, or top-level `displays` section in the intended v3 config.
 - There is no `source: mock` / `source: real` switch. Use an OBD-like endpoint address instead.
 - Sensor timing is `poll`; logs and dashboards subscribe to events.
