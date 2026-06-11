@@ -38,14 +38,31 @@ dashboards:
 Guardrails:
 
 - Treat those five sections as the complete v3 root schema.
-- Unknown root fields should fail validation during v3 development.
-- Do not add compatibility aliases for undocumented root fields.
+- Unknown fields should fail validation at every documented level during v3 development.
+- Do not add compatibility aliases for undocumented fields.
 - Do not add timing knobs outside `sensors.<id>.poll` unless the design is reviewed first.
 - Do not add endpoint-type switches when an endpoint address can express the same thing.
 
 The goal is an allow-list, not a blacklist. The schema should say what is valid, not make imaginary alternatives sound official.
 
-## 4. Vehicle endpoint guardrails
+## 4. Naming guardrails
+
+IDs should match:
+
+```text
+^[a-z][a-z0-9_]*$
+```
+
+Apply this to vehicle IDs, sensor IDs, asset IDs, log IDs, dashboard IDs, and widget IDs.
+
+Rules:
+
+- Use lowercase snake_case.
+- Widget IDs must be unique within a dashboard.
+- Asset IDs only need to be unique within their own asset family.
+- Do not use human display names as IDs.
+
+## 5. Vehicle endpoint guardrails
 
 Vehicles own endpoint configuration only:
 
@@ -63,6 +80,10 @@ Rules:
 - Treat real hardware and bench simulators as OBD-like endpoints.
 - Use `serial://...` for serial adapters.
 - Use `tcp://...` for simulator/bench endpoints.
+- `serial://` endpoints must include a non-empty path.
+- `tcp://` endpoints must include host and port.
+- `timeout` is milliseconds and must be greater than zero.
+- Initial timeout sanity range is `100..30000` milliseconds.
 - Do not branch the core runtime on endpoint type unless a real implementation constraint proves it is needed.
 - Do not leak simulator concepts into sensors, logs, or dashboards.
 
@@ -78,7 +99,7 @@ Bad shape:
 switch config.ProviderKind { ... }
 ```
 
-## 5. Sensor runtime guardrails
+## 6. Sensor runtime guardrails
 
 Sensors own polling.
 
@@ -97,6 +118,7 @@ Rules:
 
 - `poll` is milliseconds.
 - Reject `poll <= 0`.
+- If `min` and `max` are both present, reject `min >= max`.
 - Keep sensor definitions global.
 - Do not put sensor definitions under vehicles.
 - Do not let logs or dashboards request direct OBD reads.
@@ -115,7 +137,7 @@ stale/error/unsupported transition
 
 A sensor event should preserve the original read timestamp.
 
-## 6. Sensor status guardrails
+## 7. Sensor status and stale guardrails
 
 Use explicit status. Do not smuggle status into values.
 
@@ -128,16 +150,25 @@ error
 missing/unsupported
 ```
 
+Initial stale rule:
+
+```text
+stale_after = max(sensor.poll * 3, 1000ms)
+```
+
 Rules:
 
 - `ok` means the value is usable.
 - `stale` means last value exists but is too old.
 - `error` means a read failed.
 - `missing/unsupported` means the sensor cannot currently be provided.
+- Stale timing is runtime-derived.
+- Do not add YAML stale timing fields unless reviewed later.
 - Dashboards must not silently display stale/error/missing values as live values.
 - Indicators should prefer `unknown` display state when sensor status is not `ok`.
+- Stale transitions and recovery transitions must emit sensor events.
 
-## 7. Log guardrails
+## 8. Log guardrails
 
 Logs are subscribers.
 
@@ -160,7 +191,7 @@ Rules:
 - Logs should include the sensor read timestamp.
 - Log writer timestamp may also be recorded, but it is not a substitute for sensor read timestamp.
 
-## 8. Dashboard guardrails
+## 9. Dashboard guardrails
 
 Dashboards are subscribers and renderers.
 
@@ -178,6 +209,8 @@ Rules:
 
 - Dashboard presence means active.
 - A dashboard owns its display target.
+- In the initial v3 implementation, two active dashboards must not target the same display.
+- Multiple physical regions on one display should be widgets inside one dashboard.
 - Dashboards do not poll sensors.
 - Dashboards do not own cadence in config.
 - Dashboards consume current sensor state produced by the sensor runtime.
@@ -186,9 +219,11 @@ Rules:
 
 If a visual behaviour needs code, put it in a widget implementation, not a YAML mini-language.
 
-## 9. Asset guardrails
+## 10. Asset guardrails
 
 The asset model is descriptive, not procedural.
+
+Asset paths in v3 config are repository-root relative.
 
 Allowed asset families:
 
@@ -218,7 +253,17 @@ Rules:
 - Validate related image dimensions where the renderer requires alignment.
 - Missing required assets should be a clear config/asset error, not a nil panic with jazz hands.
 
-## 10. Digit display guardrails
+Widget type to asset family mapping:
+
+| Widget type | Required asset family |
+|---|---|
+| `image` | `assets.image_sets` |
+| `digit_display` | `assets.digit_sets` |
+| `bar_display` | `assets.bar_sets` |
+| `frame_gauge` | `assets.frame_sets` |
+| `indicator` | `assets.indicator_sets` |
+
+## 11. Digit display guardrails
 
 Digit displays render formatted strings as characters.
 
@@ -236,7 +281,11 @@ Rules:
 - Support `-` as a first-class character.
 - Treat blank/padded slots as background-only when background exists.
 - Decimal point is an overlay.
-- Renderer should report a useful error when a formatted character has no asset.
+- `digits` is the number of character slots, excluding decimal point overlays.
+- Formatted decimal separators do not consume a character slot.
+- If the configured format can emit a decimal separator, `decimal_point` is required.
+- Formatted output must fit the configured slot count after decimal separators are removed.
+- Renderer should report a useful error when a formatted non-decimal character has no asset.
 
 Example error:
 
@@ -244,20 +293,29 @@ Example error:
 digit set bttf_amber_digits cannot render character "E" for widget speed_digits
 ```
 
-## 11. Bar display guardrails
+## 12. Bar display guardrails
 
 Bar widgets map one sensor value onto repeated cells.
 
 Rules:
 
-- `cells` is the number of visible cells.
+- `cells` is the number of visible cells and must be greater than zero.
 - `min` and `max` define the value mapping range.
+- If `min` and `max` are both present, reject `min >= max`.
+- Values below widget `min` render zero filled cells.
+- Values above widget `max` render all cells filled.
+- `off` is required for unfilled cells.
+- If `zones` is omitted, `on` is required for filled cells.
 - `zones`, if present, select cell image names by range.
+- Bar zones must be sorted ascending by `up_to`.
+- A filled cell uses the first zone where `value <= up_to`.
+- Values above the final zone use the final zone.
 - `reverse`, if present, reverses fill direction only.
+- `reverse` does not change zone interpretation.
 - Do not create curved bar geometry in YAML.
 - Use `frame_gauge` for fancy curved/sweeping visuals.
 
-## 12. Frame gauge guardrails
+## 13. Frame gauge guardrails
 
 Frame gauges map one sensor value onto a frame sequence.
 
@@ -265,10 +323,11 @@ Rules:
 
 - Use frame sets for complex visuals.
 - Keep frame selection deterministic.
+- Frame ranges require `first <= last`.
 - Clamp values outside min/max unless a later design explicitly says otherwise.
 - Do not build a vector drawing language into config.
 
-## 13. Indicator guardrails
+## 14. Indicator guardrails
 
 Indicators map boolean/status data onto image states.
 
@@ -297,32 +356,46 @@ Rules:
 - Missing `unknown` asset should be a validation error unless a deliberate fallback is documented.
 - Sensor values should remain boolean, not UI-state strings.
 
-## 14. Validation guardrails
+## 15. Validation guardrails
 
 Validation should fail early and loudly.
 
 Minimum checks:
 
 - Root config contains only documented v3 sections.
+- Unknown fields fail at every documented level.
+- IDs match `^[a-z][a-z0-9_]*$`.
 - At least one vehicle exists.
 - Multiple vehicles require explicit runtime selection.
 - Vehicle endpoint address is present.
+- `serial://` endpoints include a non-empty path.
+- `tcp://` endpoints include host and port.
+- `timeout > 0`, preferably within `100..30000` milliseconds.
 - Sensor IDs are unique by map key.
 - `poll > 0` for every sensor.
+- Sensor `min < max` when both are present.
 - Logs reference existing sensors.
 - Dashboards have positive size.
+- No two active dashboards target the same display.
 - Widgets have IDs, types, assets, and positions.
+- Widget IDs are unique within each dashboard.
 - Non-image widgets reference existing sensors.
-- Widget asset references exist.
+- Widget asset references exist in the correct asset family for the widget type.
+- Widget `min < max` when both are present.
 - Indicator assets contain `off`, `on`, and `unknown`.
 - Frame set ranges have `first <= last`.
 - Bar widget `cells > 0`.
+- Bar sets contain `off`.
+- Bar widgets without zones use a bar set containing `on`.
+- Bar zones are sorted ascending.
 - Bar zones reference valid cell names.
 - Digit displays can render expected configured characters where practical.
+- Decimal-capable digit formats have `decimal_point`.
+- Digit formatted output fits configured slot count after decimal separators are removed.
 
-Unknown fields should fail validation during development. Silent config typos are tiny assassins.
+Silent config typos are tiny assassins.
 
-## 15. Implementation order
+## 16. Implementation order
 
 Recommended order:
 
@@ -343,7 +416,7 @@ Recommended order:
 
 Do not start with the fancy renderer. That is dessert. Eat the vegetables first.
 
-## 16. Testing guardrails
+## 17. Testing guardrails
 
 Prefer small tests that prove boundaries.
 
@@ -351,16 +424,27 @@ Config tests:
 
 - valid minimal config
 - valid full config
+- all standalone v3 examples validate
 - missing vehicles
-- multiple vehicles without explicit selection
+- multiple vehicles without explicit runtime selection
 - bad OBD address
+- timeout zero
 - poll zero
+- sensor min >= max
+- widget min >= max
 - unknown root field
+- nested unknown field
 - log references unknown sensor
 - dashboard widget references unknown sensor
 - dashboard widget references unknown asset
+- duplicate widget IDs fail
+- two dashboards on same display fail
 - digit display missing formatted character
+- decimal format without `decimal_point` fails
 - indicator set missing unknown state
+- bar set missing `off` fails
+- bar widget without zones requires `on`
+- unsorted bar zones fail
 
 Runtime tests:
 
@@ -369,6 +453,7 @@ Runtime tests:
 - value change emits event
 - status change emits event
 - stale transition emits event
+- recovery transition emits event
 - logger preserves read timestamp
 - dashboard receives state without polling endpoint
 
@@ -377,8 +462,9 @@ Asset tests:
 - digit set dimension mismatch reports useful error
 - frame range invalid reports useful error
 - bar zone unknown cell reports useful error
+- repository-root relative asset paths resolve consistently
 
-## 17. Refusal rules for future complexity
+## 18. Refusal rules for future complexity
 
 Say no, or at least not yet, to:
 
@@ -392,20 +478,24 @@ Say no, or at least not yet, to:
 - enable flags everywhere
 - per-log or per-dashboard polling knobs
 - endpoint-type branches in core runtime
+- stale timeout YAML fields
+- asset root config fields
 
 These may become real requirements later. They are not starting requirements.
 
-## 18. Definition of done for first v3 implementation slice
+## 19. Definition of done for first v3 implementation slice
 
 A first useful v3 slice is done when:
 
 - a minimal v3 config loads strictly
+- all active v3 examples validate against the same schema rules
 - a selected vehicle endpoint connects
 - configured sensors poll on their own cadence
 - sensor events update state
+- stale/error/recovery transitions are visible as status changes
 - JSONL logs receive selected events
 - one dashboard displays at least image + digit_display + indicator
 - missing/stale/error states are visible instead of silently lying
-- undocumented root config fields are rejected in v3 mode
+- undocumented config fields are rejected in v3 mode
 
 That is enough. Anything beyond that should earn its keep.
