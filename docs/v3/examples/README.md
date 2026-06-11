@@ -1,4 +1,4 @@
-# GoDriveLog dashboard examples 0.1
+# GoDriveLog dashboard examples
 
 These are draft GoDriveLog v3 dashboard configuration examples for sleeping on, arguing with tomorrow, and hopefully not summoning a YAML demon.
 
