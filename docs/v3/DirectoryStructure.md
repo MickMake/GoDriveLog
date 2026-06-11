@@ -63,6 +63,24 @@ GoDriveLog/
 
   assets/
     dashboard/
+      simple/
+        panel/
+          background.png
+        amber_digits/
+          digit_back.png
+          amber0.png
+          amber1.png
+          ...
+          amber_minus.png
+          amber_dp.png
+          digit_glass.png
+        warnings/
+          engine_back.png
+          engine_off.png
+          engine_on.png
+          engine_unknown.png
+          engine_glass.png
+
       bttf/
         panel/
           background.png
@@ -92,6 +110,22 @@ GoDriveLog/
       z31/
         panel/
           main_panel_backplate.png
+        amber_digits/
+          digit_back.png
+          amber0.png
+          amber1.png
+          ...
+          amber_minus.png
+          amberDP.png
+          digit_glass.png
+        green_digits/
+          digit_back.png
+          green0.png
+          green1.png
+          ...
+          green_minus.png
+          greenDP.png
+          digit_glass.png
         speed_bar/
           bar_back.png
           cell_off.png
@@ -99,12 +133,23 @@ GoDriveLog/
           cell_yellow.png
           cell_red.png
           bar_glass.png
+        status_bar/
+          bar_back.png
+          cell_off.png
+          cell_green.png
+          bar_glass.png
         rpm_boost/
           rpm_boost_back.png
           frame_000.png
           frame_001.png
           ...
           rpm_boost_glass.png
+        warnings/
+          engine_back.png
+          engine_off.png
+          engine_on.png
+          engine_unknown.png
+          engine_glass.png
 
       s2000/
         panel/
@@ -115,7 +160,7 @@ GoDriveLog/
           speed1.png
           ...
           speed_minus.png
-          speed_dp.png
+          speedDP.png
           digit_glass.png
         rpm/
           rpm_back.png
@@ -129,6 +174,12 @@ GoDriveLog/
           cell_on.png
           cell_warning.png
           bar_glass.png
+        warnings/
+          engine_back.png
+          engine_off.png
+          engine_on.png
+          engine_unknown.png
+          engine_glass.png
 
       warnings/
         engine_back.png
@@ -136,11 +187,6 @@ GoDriveLog/
         engine_on.png
         engine_unknown.png
         engine_glass.png
-        highbeam_back.png
-        highbeam_off.png
-        highbeam_on.png
-        highbeam_unknown.png
-        highbeam_glass.png
 
   docs/
     v3/
@@ -154,6 +200,7 @@ GoDriveLog/
       PerformanceGuardrails.md
       examples/
         README.md
+        simple_speed_warning.yaml
         nissan_300zx_z31_inspired.yaml
         honda_s2000_inspired.yaml
 
@@ -176,7 +223,7 @@ GoDriveLog/
         minimal.yaml
         full.yaml
         single-vehicle.yaml
-        multi-vehicle-explicit.yaml
+        multi-vehicle-with-runtime-selection.yaml
       invalid/
         missing-vehicles.yaml
         multiple-vehicles-without-selection.yaml
@@ -184,8 +231,17 @@ GoDriveLog/
         dashboard-sensor-not-found.yaml
         dashboard-asset-not-found.yaml
         bad-obd-address.yaml
+        timeout-zero.yaml
         poll-zero.yaml
-        unknown-field.yaml
+        unknown-root-field.yaml
+        unknown-nested-field.yaml
+        sensor-min-greater-than-max.yaml
+        duplicate-widget-id.yaml
+        duplicate-display-target.yaml
+        decimal-format-missing-decimal-point.yaml
+        bar-set-missing-off.yaml
+        bar-widget-missing-on.yaml
+        unsorted-bar-zones.yaml
 
     dashboard/
       assets/
@@ -209,10 +265,13 @@ GoDriveLog/
 
 - Archive docs are allowed to describe old behaviour.
 - Active v3 docs should use the simplified top-level shape: `vehicles`, `sensors`, `assets`, `logs`, `dashboards`.
+- Active v3 examples should validate against the same schema rules as `config.example.yaml` and `config.full.yaml`.
+- Asset paths in active v3 configs are repository-root relative.
 - `ImplementationGuardrails.md` is the implementation checklist for writing v3 code against the target model.
 - `MigrationGuardrails.md` explains how to move from current code to the v3 target without leaking current assumptions into the v3 core.
 - `PerformanceGuardrails.md` gives the current display speed work a safe lane without warping the v3 schema.
-- Treat the documented v3 root sections as an allow-list; unknown root fields should fail validation during v3 implementation.
+- Treat the documented v3 root sections as an allow-list; unknown fields should fail validation at every documented level during v3 implementation.
 - Use an OBD-like endpoint address for both real hardware and bench/simulator endpoints.
 - Sensor timing is `poll`; logs and dashboards subscribe to events.
+- `multi-vehicle-with-runtime-selection.yaml` describes a valid multi-vehicle config only when the test/runtime supplies explicit vehicle selection; that selection is not encoded in config.
 - Dashboard config is widget-based, not decoder/block/layer/condition based.
