@@ -205,10 +205,10 @@ GoDriveLog/
 
 ## Notes
 
-- Archive docs are allowed to describe old v2 behaviour.
+- Archive docs are allowed to describe old behaviour.
 - Active v3 docs should use the simplified top-level shape: `vehicles`, `sensors`, `assets`, `logs`, `dashboards`.
 - `ImplementationGuardrails.md` is the implementation checklist for keeping the v3 code aligned with these docs.
-- There is no `default_vehicle`, `active_displays`, or top-level `displays` section in the intended v3 config.
-- There is no `source: mock` / `source: real` switch. Use an OBD-like endpoint address instead.
+- Treat the documented v3 root sections as an allow-list; unknown root fields should fail validation during v3 implementation.
+- Use an OBD-like endpoint address for both real hardware and bench/simulator endpoints.
 - Sensor timing is `poll`; logs and dashboards subscribe to events.
 - Dashboard config is widget-based, not decoder/block/layer/condition based.
