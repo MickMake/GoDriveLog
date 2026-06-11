@@ -52,54 +52,54 @@ sensors:
 assets:
   digit_sets:
     s2000_speed_digits:
-      background: "assets/s2000/speed_digits/digit_back.png"
+      background: "assets/dashboard/s2000/speed_digits/digit_back.png"
       characters:
-        "0": "assets/s2000/speed_digits/speed0.png"
-        "1": "assets/s2000/speed_digits/speed1.png"
-        "2": "assets/s2000/speed_digits/speed2.png"
-        "3": "assets/s2000/speed_digits/speed3.png"
-        "4": "assets/s2000/speed_digits/speed4.png"
-        "5": "assets/s2000/speed_digits/speed5.png"
-        "6": "assets/s2000/speed_digits/speed6.png"
-        "7": "assets/s2000/speed_digits/speed7.png"
-        "8": "assets/s2000/speed_digits/speed8.png"
-        "9": "assets/s2000/speed_digits/speed9.png"
-        "-": "assets/s2000/speed_digits/speed_minus.png"
-      decimal_point: "assets/s2000/speed_digits/speedDP.png"
-      foreground: "assets/s2000/speed_digits/digit_glass.png"
+        "0": "assets/dashboard/s2000/speed_digits/speed0.png"
+        "1": "assets/dashboard/s2000/speed_digits/speed1.png"
+        "2": "assets/dashboard/s2000/speed_digits/speed2.png"
+        "3": "assets/dashboard/s2000/speed_digits/speed3.png"
+        "4": "assets/dashboard/s2000/speed_digits/speed4.png"
+        "5": "assets/dashboard/s2000/speed_digits/speed5.png"
+        "6": "assets/dashboard/s2000/speed_digits/speed6.png"
+        "7": "assets/dashboard/s2000/speed_digits/speed7.png"
+        "8": "assets/dashboard/s2000/speed_digits/speed8.png"
+        "9": "assets/dashboard/s2000/speed_digits/speed9.png"
+        "-": "assets/dashboard/s2000/speed_digits/speed_minus.png"
+      decimal_point: "assets/dashboard/s2000/speed_digits/speedDP.png"
+      foreground: "assets/dashboard/s2000/speed_digits/digit_glass.png"
       spacing: 3
 
   bar_sets:
     s2000_side_bar:
-      background: "assets/s2000/side_bar/bar_back.png"
+      background: "assets/dashboard/s2000/side_bar/bar_back.png"
       cells:
-        off: "assets/s2000/side_bar/cell_off.png"
-        on: "assets/s2000/side_bar/cell_on.png"
-        warning: "assets/s2000/side_bar/cell_warning.png"
-      foreground: "assets/s2000/side_bar/bar_glass.png"
+        off: "assets/dashboard/s2000/side_bar/cell_off.png"
+        on: "assets/dashboard/s2000/side_bar/cell_on.png"
+        warning: "assets/dashboard/s2000/side_bar/cell_warning.png"
+      foreground: "assets/dashboard/s2000/side_bar/bar_glass.png"
       spacing: 1
 
   frame_sets:
     s2000_rpm_sweep:
-      background: "assets/s2000/rpm/rpm_back.png"
+      background: "assets/dashboard/s2000/rpm/rpm_back.png"
       frames:
-        path: "assets/s2000/rpm/rpm_%03d.png"
+        path: "assets/dashboard/s2000/rpm/rpm_%03d.png"
         first: 0
         last: 120
-      foreground: "assets/s2000/rpm/rpm_glass.png"
+      foreground: "assets/dashboard/s2000/rpm/rpm_glass.png"
 
   indicator_sets:
     engine_warning:
-      background: "assets/s2000/warnings/engine_back.png"
+      background: "assets/dashboard/s2000/warnings/engine_back.png"
       states:
-        off: "assets/s2000/warnings/engine_off.png"
-        on: "assets/s2000/warnings/engine_on.png"
-        unknown: "assets/s2000/warnings/engine_unknown.png"
-      foreground: "assets/s2000/warnings/engine_glass.png"
+        off: "assets/dashboard/s2000/warnings/engine_off.png"
+        on: "assets/dashboard/s2000/warnings/engine_on.png"
+        unknown: "assets/dashboard/s2000/warnings/engine_unknown.png"
+      foreground: "assets/dashboard/s2000/warnings/engine_glass.png"
 
   image_sets:
     main_panel:
-      image: "assets/s2000/panel/main_panel_backplate.png"
+      image: "assets/dashboard/s2000/panel/main_panel_backplate.png"
 
 logs:
   jsonl:
