@@ -36,7 +36,7 @@ Do not bend the v3 docs around old code unless the old code reveals a real requi
 | Sensors | reader/state/cache-style concepts | sensor polling runtime emits sensor events |
 | Logging | current JSONL writer behaviour | JSONL subscriber receives selected sensor events |
 | Dashboard | current Fyne/dashboard renderer pieces | widget-driven dashboard subscriber |
-| Assets | current asset experiments | asset families: digit, bar, frame, indicator, image |
+| Assets | current asset experiments | repo-root-relative asset paths and asset families: digit, bar, frame, indicator, image |
 | Performance | current display path may be slow | optimise locally without changing the v3 schema |
 
 This table is not a complaint list. It is a migration map.
@@ -85,6 +85,7 @@ Not allowed:
 - turning current renderer concepts into v3 schema concepts by accident
 - adding dashboard polling to solve renderer slowness
 - adding global timing knobs outside the sensor event model without design review
+- hiding stale/error/recovery transitions to improve frame times
 - spreading temporary optimisation branches through the future v3 core
 
 Exit criteria:
@@ -92,6 +93,7 @@ Exit criteria:
 - current display is usable enough for dashboard iteration
 - speed fixes are isolated
 - no new schema concepts were added solely for current-renderer performance
+- stale/error/recovery display behaviour remains visible
 - lessons that apply to v3 are captured in `PerformanceGuardrails.md`
 
 ## 6. Phase 1 — freeze the v3 docs as the target
@@ -102,6 +104,7 @@ Inputs:
 
 - `config.full.yaml`
 - `config.example.yaml`
+- all files under `docs/v3/examples/`
 - `GoStructsConfig.md`
 - `ImplementationGuardrails.md`
 - `PerformanceGuardrails.md`
@@ -109,7 +112,9 @@ Inputs:
 Rules:
 
 - Treat documented v3 root sections as an allow-list.
-- Unknown root fields should fail validation during v3 implementation.
+- Unknown fields should fail at every documented level during v3 implementation.
+- All active v3 examples should validate against the same schema rules.
+- Asset paths are repository-root relative.
 - Avoid schema churn once implementation starts.
 - If implementation finds a real blocker, update docs first, then code.
 
@@ -119,6 +124,7 @@ Exit criteria:
 - implementation order is documented
 - migration guardrails are accepted
 - performance constraints are acknowledged without warping the schema
+- examples are schema-compliant, not just illustrative confetti
 
 ## 7. Phase 2 — v3 config structs and strict loading
 
@@ -128,13 +134,15 @@ Allowed:
 
 - add new v3 config structs beside current structs
 - add strict YAML loading for v3 docs/examples
+- reject unknown fields at all documented levels
 - add validation for documented fields
-- add tests for valid minimal and full configs
+- add tests for valid minimal, full, and standalone example configs
 - add tests for unknown fields and bad references
 
 Not allowed:
 
 - silently accepting undocumented root fields
+- silently accepting undocumented nested fields
 - auto-converting current config files into v3 config behind the user's back
 - expanding the schema just to satisfy old code paths
 
@@ -142,7 +150,8 @@ Exit criteria:
 
 - `docs/v3/config.example.yaml` loads
 - `docs/v3/config.full.yaml` loads
-- unknown fields fail
+- all files under `docs/v3/examples/` load
+- unknown fields fail at root and nested levels
 - references validate
 - current runtime can still build while v3 config work is staged
 
@@ -163,11 +172,14 @@ Not allowed:
 - leaking simulator identity into sensors, logs, dashboards, or asset config
 - making config consumers care whether data came from real hardware or a simulator
 
+If endpoint support is staged, the missing endpoint type must be tracked as a visible issue or migration task, not left as implied future work.
+
 Exit criteria:
 
 - selected vehicle resolves to one endpoint address
+- endpoint address validates according to the v3 rules
 - endpoint connector returns a reader usable by the sensor runtime
-- serial and TCP endpoint shapes are both supported or clearly staged
+- serial and TCP endpoint shapes are both supported or explicitly tracked as staged work
 
 ## 9. Phase 4 — sensor event spine
 
@@ -183,6 +195,7 @@ Allowed:
 - implement sensor status type
 - implement latest-state store
 - implement per-sensor polling based on `sensors.<id>.poll`
+- implement initial stale rule: `max(poll * 3, 1000ms)`
 - emit events for first read, value change, status change, stale/error/recovery transitions
 
 Not allowed:
@@ -191,13 +204,14 @@ Not allowed:
 - dashboards reading directly from endpoint/reader code
 - logger reading directly from endpoint/reader code
 - encoding errors as numeric values
+- hiding stale/error/recovery transitions behind coalescing
 
 Exit criteria:
 
 - sensor polling works without dashboard or logger attached
 - state store updates from events
 - timestamps preserve original read time
-- tests prove first/value/status events
+- tests prove first/value/status/stale/recovery events
 
 ## 10. Phase 5 — JSONL subscriber
 
@@ -229,8 +243,11 @@ Goal: validate and load assets before widget rendering.
 Allowed:
 
 - implement asset family structs and registries
+- resolve asset paths as repository-root relative
 - validate asset references
 - validate required indicator states
+- validate bar set `off` cells
+- validate bar zone cells and ordering
 - validate frame ranges
 - validate related image dimensions where required
 - cache loaded/decoded assets
@@ -240,12 +257,14 @@ Not allowed:
 - asset config rules/scripts
 - per-widget asset decoding in the hot render path
 - nil fallback behaviour that hides missing assets
+- multiple active path dialects
 
 Exit criteria:
 
 - config references resolve to asset definitions
 - missing assets fail clearly
 - decoded assets can be reused by widgets/renderers
+- active examples use the same path convention
 
 ## 12. Phase 7 — smallest dashboard subscriber
 
@@ -276,6 +295,7 @@ Exit criteria:
 - one dashboard displays image + digit_display + indicator
 - stale/error/missing states are visible
 - dashboard receives events/state from runtime, not endpoint code
+- digit display slot/decimal behaviour follows the documented rules
 
 ## 13. Phase 8 — richer dashboard widgets
 
@@ -293,6 +313,7 @@ Rules:
 - `frame_gauge` maps one sensor value to a frame sequence.
 - Fancy curves and sweeps use frame sets, not YAML geometry.
 - Keep widget behaviour in code, not config rules.
+- Bar zone behaviour follows `GoStructsConfig.md`.
 
 Exit criteria:
 
@@ -363,8 +384,11 @@ Every migration slice should add or preserve tests for the boundary it changes.
 Useful test groups:
 
 - v3 config loading and validation
+- nested unknown field rejection
+- ID naming and duplicate widget ID validation
 - endpoint selection and reader creation
 - sensor event emission
+- stale and recovery transition emission
 - log subscriber behaviour
 - asset registry validation
 - widget rendering state transitions
@@ -396,5 +420,7 @@ These migration guardrails are doing their job when contributors can answer:
 - what must not leak into v3 core
 - how performance work fits without warping the schema
 - what order to implement changes in
+- how staged work is tracked
+- why all active examples validate against one schema
 
 If the docs create confusion, fix the docs before fixing the wrong code.
