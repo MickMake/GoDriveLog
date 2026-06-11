@@ -1,38 +1,133 @@
 # GoDriveLog
 
-A deliberately small Go/Fyne sensor dashboard for Raspberry Pi 4.
+GoDriveLog is a deliberately small Go/Fyne in-vehicle telemetry dashboard for Raspberry Pi-style installs.
 
-It starts, reads a YAML config, polls configured sensors at their own refresh intervals, writes JSONL logs, rotates the log daily, and renders a configured dashboard scene in a Fyne window.
-
-## What is included
-
-- Go app using Fyne v2.
-- YAML startup config.
-- Dashboard v2 scene config with local assets, decoders, blocks, layers, and conditions.
-- App-level mock reader so the UI/logging can be tested without OBD hardware.
-- Real OBD reader adapter using `github.com/rzetterberg/elmobd`.
-- JSON Lines logging.
-- Daily log rotation.
-- Sensor status/stale/error state available to dashboard scenes.
-
-## Pi 4 install notes
-
-Fyne uses Go modules and the official quick start uses:
-
-```bash
-go get fyne.io/fyne/v2@latest
-go install fyne.io/tools/cmd/fyne@latest
-```
-
-On Raspberry Pi OS you will also need normal desktop/OpenGL build dependencies for Fyne. If the build complains about missing GL/X11 headers, install the Raspberry Pi OS equivalents for gcc, pkg-config, libgl, x11, xcursor, xrandr, xinerama, xi, and xxf86vm development packages.
-
-For a USB ELM327 adapter, the default address is:
+The project is being reshaped toward a cleaner v3 runtime:
 
 ```text
-serial:///dev/ttyUSB0
+vehicle endpoint
+-> sensor polling runtime
+-> sensor events
+-> logs and dashboards as subscribers
 ```
 
-`elmobd` also supports address schemes such as `tcp://host:port` and `test:///dev/ttyUSB0`.
+The goal is simple: read vehicle telemetry, keep the runtime boring, log useful data, and render a dashboard that can look convincingly like real retro hardware instead of a web page wearing driving gloves.
+
+## Current status
+
+GoDriveLog currently contains working dashboard/runtime pieces from earlier versions, including Fyne rendering, OBD reader plumbing, JSONL logging, and dashboard asset experiments.
+
+The v3 direction is documented under `docs/v3/` and is the target for cleanup and future implementation work. Some older config/runtime documents may still describe legacy v2 concepts while the repo is being migrated.
+
+## v3 direction
+
+The intended v3 config shape is:
+
+```yaml
+vehicles: {}
+sensors: {}
+assets: {}
+logs: {}
+dashboards: {}
+```
+
+The important design rules are:
+
+- Sensors own polling cadence using `poll`.
+- Logs and dashboards subscribe to sensor events.
+- Logs do not poll sensors independently.
+- Dashboards do not fetch OBD values directly.
+- If a config item exists, it is active.
+- No `default_vehicle`.
+- No `active_displays`.
+- No separate top-level `displays` section.
+- No `mock` / `real` source switch in GoDriveLog config.
+- Bench testing should use an OBD-like endpoint, for example `tcp://127.0.0.1:35000`.
+
+Boring boundaries are intentional. Cleverness is allowed only when it pays rent and does not bring a YAML demon as a lodger.
+
+## Runtime model
+
+The intended v3 runtime is:
+
+```text
+load config
+resolve vehicle
+connect to the vehicle OBD-like endpoint
+start sensor runtime
+poll sensors according to sensors.<id>.poll
+emit sensor reading/status events
+logs receive selected sensor events
+dashboards receive sensor events implied by widgets
+render dashboard updates from event state
+```
+
+Sensor readings should carry their original read timestamp. Log writers may add their own write timestamp, but the sensor timestamp is the source of truth.
+
+Sensor status should distinguish real values from trouble states such as:
+
+```text
+ok
+stale
+error
+missing/unsupported
+```
+
+Do not use `0` as an error value. Zero is a perfectly respectable number and should not be framed for crimes committed by the transport layer.
+
+## Dashboard asset direction
+
+The v3 dashboard direction is asset-driven and photoreal-friendly.
+
+Common render pattern:
+
+```text
+asset background
++ value/state-driven dynamic layer
++ optional foreground/glass/bezel overlay
+= rendered widget
+```
+
+The intended asset families are:
+
+```yaml
+assets:
+  digit_sets: {}
+  bar_sets: {}
+  frame_sets: {}
+  indicator_sets: {}
+  image_sets: {}
+```
+
+Typical widget types are expected to be:
+
+```yaml
+- type: digit_display
+- type: bar_display
+- type: frame_gauge
+- type: indicator
+- type: image
+```
+
+For PNG digit displays, formatted output should resolve characters rather than only numeric digits. A digit asset set should be able to provide characters such as:
+
+```text
+0 1 2 3 4 5 6 7 8 9 -
+```
+
+A blank slot should normally mean: draw the digit background only. Decimal points are overlays.
+
+## Documentation
+
+Useful docs live under:
+
+```text
+docs/v3/
+docs/v3/examples/
+docs/archive/
+```
+
+The examples under `docs/v3/examples/` are design examples, not final implementation contracts. They are there to argue with productively before code calcifies around the wrong idea like a fossilised ferret.
 
 ## Build
 
@@ -45,132 +140,85 @@ go build ./cmd/GoDriveLog
 
 The binary will be written to the current directory as `GoDriveLog` unless you pass `-o`.
 
-## Run the dashboard v2 example in mock mode
+## Raspberry Pi notes
+
+Fyne uses Go modules. The usual setup is:
 
 ```bash
-./GoDriveLog -config config.example.yaml
+go get fyne.io/fyne/v2@latest
+go install fyne.io/tools/cmd/fyne@latest
 ```
 
-Or from source:
+On Raspberry Pi OS you may also need desktop/OpenGL build dependencies such as gcc, pkg-config, GL/X11 headers, xcursor, xrandr, xinerama, xi, and xxf86vm development packages.
 
-```bash
-go run ./cmd/GoDriveLog -config config.example.yaml
-```
+## OBD transport
 
-`config.example.yaml` runs in mock mode and loads the local SVG fixture assets under `assets/dashboard/bttf`. The example dashboard shows:
-
-- static background
-- RPM sprite digits
-- throttle sprite-frame bar
-- redline glow overlay from a configured threshold condition
-- status/stale/error badges from sensor state
-
-The mock reader sleeps for about three seconds, then RPM rises. The redline overlay threshold is intentionally low in the example so the visual condition is easy to see without real hardware. Tiny demo goblin, useful boots.
-
-## Test the reader path without hardware
-
-Mock mode is enabled in the example config:
+The intended v3 model is that GoDriveLog connects to an OBD-like endpoint:
 
 ```yaml
-mock_mode: true
-obd_address: serial:///dev/ttyUSB0
-obd_debug: false
+vehicles:
+  vw_caddy:
+    name: "VW Caddy"
+    obd:
+      address: "serial:///dev/ttyUSB0"
+      timeout: 1000
 ```
 
-You can temporarily set those fields in a copy of `config.example.yaml`.
-
-## Run with a real ELM327 adapter
-
-Set `mock_mode` to `false` and point `obd_address` at the adapter:
+For bench/simulator work, use the same connection path with a TCP endpoint:
 
 ```yaml
-mock_mode: false
-obd_address: serial:///dev/ttyUSB0
-obd_debug: false
+vehicles:
+  bench:
+    name: "Bench Simulator"
+    obd:
+      address: "tcp://127.0.0.1:35000"
+      timeout: 1000
 ```
 
-Then run:
+GoDriveLog should not need to know whether the endpoint is real hardware or a simulator. That is the point. The less the runtime knows, the less it can invent.
 
-```bash
-./GoDriveLog -config config.example.yaml
-```
+## Logging
 
-The current real OBD adapter supports these configured PIDs:
-
-| Key | PID | Unit | Meaning |
-|---|---:|---|---|
-| `engine_load` | `0104` | `%` | Calculated engine load |
-| `coolant_temp` | `0105` | `C` | Engine coolant temperature |
-| `short_fuel_trim_bank1` | `0106` | `%` | Short term fuel trim, bank 1 |
-| `long_fuel_trim_bank1` | `0107` | `%` | Long term fuel trim, bank 1 |
-| `intake_manifold_pressure` | `010B` | `kPa` | Intake manifold absolute pressure |
-| `rpm` | `010C` | `rpm` | Engine RPM |
-| `speed` | `010D` | `km/h` | Vehicle speed |
-| `intake_air_temp` | `010F` | `C` | Intake air temperature |
-| `throttle_position` | `0111` | `%` | Throttle position |
-| `fuel_level` | `012F` | `%` | Fuel tank level |
-| `control_module_voltage` | `0142` | `V` | Control module voltage |
-| `engine_oil_temp` | `015C` | `C` | Engine oil temperature |
-
-## Log output format
-
-Log output is JSON Lines, one reading per line:
-
-```json
-{"time":"2026-06-03T10:15:30Z","pid":"010C","name":"RPM","value":1234.5,"unit":"rpm","source":"mock"}
-```
-
-## Config shape
-
-The app separates sensor state production from dashboard scene rendering:
+The intended logging model is subscriber-based:
 
 ```yaml
-sensors:
-  rpm:
-    type: obd
-    pid: "010C"
-    unit: rpm
-    refresh: 250
-    min: 0
-    max: 7000
-    log: true
-
-dashboard:
-  canvas:
-    width: 800
-    height: 480
-  asset_root: assets/dashboard/bttf
-  assets:
-    - id: background
-      type: image
-      path: background.svg
-  decoders:
-    - id: rpm_text
-      type: format_number
-      sensor: rpm
-      format: "0000"
-  blocks:
-    - id: background_panel
-      type: image
-      asset: background
-      geometry:
-        x: 0
-        y: 0
-        width: 800
-        height: 480
-  layers:
-    - id: base
-      z: 0
-      blocks:
-        - background_panel
+logs:
+  jsonl:
+    path: "logs/godrivelog.jsonl"
+    sensors:
+      - speed
+      - rpm
+      - coolant_temperature
 ```
 
-Dashboard block visibility can be driven by configured conditions against sensor status or decoder values.
+Current agreed/simple behaviour:
 
-## Real OBD transport
+```text
+first reading logs
+value changes log
+status changes log
+unchanged duplicate readings do not spam logs
+```
 
-`internal/sensors/elmobd_reader.go` adapts `github.com/rzetterberg/elmobd` to the app's small `Reader` interface. Add new supported PIDs there as needed.
+No log refresh. No per-sensor log refresh. No override knobs unless reality turns up with a receipt.
 
-## Notes
+## Non-goals
 
-This is intentionally simple. No database, no plugin framework, no ceremony, no dashboard architecture astronautics. The app has one job and a small lunchbox.
+Avoid these until proven necessary:
+
+- plugin systems
+- source orchestration
+- live config reload
+- dashboard scripting
+- config inheritance
+- generic event buses
+- enable/disable flags everywhere
+- mock/real branching leaking through the core runtime
+
+The preferred architecture is still:
+
+```text
+clean boundaries, boring implementation
+```
+
+Boring is not an insult. Boring code is code that lets you sleep.
