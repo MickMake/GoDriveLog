@@ -1,0 +1,242 @@
+# GoDriveLog v3 dashboard example
+# Inspired by the Nissan 300ZX Z31 optional digital dashboard.
+# The Hagerty article describes digital speed plus a colourful bar-chart style display,
+# with fuel, temperature and voltage shown by bars or digits, plus RPM and boost.
+
+vehicles:
+  vw_caddy:
+    name: "VW Caddy"
+    obd:
+      address: "serial:///dev/ttyUSB0"
+      timeout: 1000
+
+sensors:
+  speed:
+    type: obd
+    pid: "010D"
+    unit: "km/h"
+    poll: 250
+    min: 0
+    max: 220
+
+  rpm:
+    type: obd
+    pid: "010C"
+    unit: "rpm"
+    poll: 250
+    min: 0
+    max: 7000
+
+  coolant_temperature:
+    type: obd
+    pid: "0105"
+    unit: "C"
+    poll: 5000
+    min: -40
+    max: 140
+
+  battery_voltage:
+    type: obd
+    pid: "ATRV"
+    unit: "V"
+    poll: 5000
+    min: 10
+    max: 15
+
+  fuel_level:
+    type: obd
+    pid: "012F"
+    unit: "%"
+    poll: 5000
+    min: 0
+    max: 100
+
+  engine_warning:
+    type: obd
+    pid: "STATUS:MIL"
+    unit: "bool"
+    poll: 1000
+
+  high_beam:
+    type: vehicle_status
+    unit: "bool"
+    poll: 500
+
+assets:
+  digit_sets:
+    amber_digits:
+      background: "assets/z31/amber_digits/digit_back.png"
+      digits:
+        "0": "assets/z31/amber_digits/amber0.png"
+        "1": "assets/z31/amber_digits/amber1.png"
+        "2": "assets/z31/amber_digits/amber2.png"
+        "3": "assets/z31/amber_digits/amber3.png"
+        "4": "assets/z31/amber_digits/amber4.png"
+        "5": "assets/z31/amber_digits/amber5.png"
+        "6": "assets/z31/amber_digits/amber6.png"
+        "7": "assets/z31/amber_digits/amber7.png"
+        "8": "assets/z31/amber_digits/amber8.png"
+        "9": "assets/z31/amber_digits/amber9.png"
+      decimal_point: "assets/z31/amber_digits/amberDP.png"
+      foreground: "assets/z31/amber_digits/digit_glass.png"
+      spacing: 5
+
+    green_digits:
+      background: "assets/z31/green_digits/digit_back.png"
+      digits:
+        "0": "assets/z31/green_digits/green0.png"
+        "1": "assets/z31/green_digits/green1.png"
+        "2": "assets/z31/green_digits/green2.png"
+        "3": "assets/z31/green_digits/green3.png"
+        "4": "assets/z31/green_digits/green4.png"
+        "5": "assets/z31/green_digits/green5.png"
+        "6": "assets/z31/green_digits/green6.png"
+        "7": "assets/z31/green_digits/green7.png"
+        "8": "assets/z31/green_digits/green8.png"
+        "9": "assets/z31/green_digits/green9.png"
+      decimal_point: "assets/z31/green_digits/greenDP.png"
+      foreground: "assets/z31/green_digits/digit_glass.png"
+      spacing: 4
+
+  bar_sets:
+    rainbow_speed_bar:
+      background: "assets/z31/speed_bar/bar_back.png"
+      cells:
+        off: "assets/z31/speed_bar/cell_off.png"
+        on_low: "assets/z31/speed_bar/cell_green.png"
+        on_mid: "assets/z31/speed_bar/cell_yellow.png"
+        on_high: "assets/z31/speed_bar/cell_red.png"
+      foreground: "assets/z31/speed_bar/bar_glass.png"
+      spacing: 2
+
+    green_status_bar:
+      background: "assets/z31/status_bar/bar_back.png"
+      cells:
+        off: "assets/z31/status_bar/cell_off.png"
+        on: "assets/z31/status_bar/cell_green.png"
+      foreground: "assets/z31/status_bar/bar_glass.png"
+      spacing: 2
+
+  frame_sets:
+    turbo_rpm_boost_sweep:
+      background: "assets/z31/rpm_boost/rpm_boost_back.png"
+      frames:
+        path: "assets/z31/rpm_boost/frame_%03d.png"
+        first: 0
+        last: 100
+      foreground: "assets/z31/rpm_boost/rpm_boost_glass.png"
+
+  indicator_sets:
+    engine_warning:
+      background: "assets/z31/warnings/engine_back.png"
+      states:
+        off: "assets/z31/warnings/engine_off.png"
+        on: "assets/z31/warnings/engine_on.png"
+        unknown: "assets/z31/warnings/engine_unknown.png"
+      foreground: "assets/z31/warnings/engine_glass.png"
+
+    high_beam:
+      background: "assets/z31/warnings/highbeam_back.png"
+      states:
+        off: "assets/z31/warnings/highbeam_off.png"
+        on: "assets/z31/warnings/highbeam_on.png"
+        unknown: "assets/z31/warnings/highbeam_unknown.png"
+      foreground: "assets/z31/warnings/highbeam_glass.png"
+
+  image_sets:
+    main_panel:
+      image: "assets/z31/panel/main_panel_backplate.png"
+
+logs:
+  jsonl:
+    path: "logs/godrivelog.jsonl"
+    sensors:
+      - speed
+      - rpm
+      - coolant_temperature
+      - battery_voltage
+      - fuel_level
+      - engine_warning
+
+
+dashboards:
+  z31_primary:
+    display: "HDMI-1"
+    size:
+      width: 1920
+      height: 480
+    widgets:
+      - id: panel_backplate
+        type: image
+        asset: main_panel
+        position: [0, 0]
+
+      - id: speed_digits
+        type: digit_display
+        sensor: speed
+        asset: amber_digits
+        position: [92, 42]
+        digits: 3
+        format: "%03.0f"
+
+      - id: speed_bar
+        type: bar_display
+        sensor: speed
+        asset: rainbow_speed_bar
+        position: [92, 210]
+        cells: 44
+        min: 0
+        max: 220
+        zones:
+          - up_to: 80
+            cell: on_low
+          - up_to: 140
+            cell: on_mid
+          - up_to: 220
+            cell: on_high
+
+      - id: rpm_boost_sweep
+        type: frame_gauge
+        sensor: rpm
+        asset: turbo_rpm_boost_sweep
+        position: [660, 38]
+        min: 0
+        max: 7000
+
+      - id: coolant_bar
+        type: bar_display
+        sensor: coolant_temperature
+        asset: green_status_bar
+        position: [1130, 70]
+        cells: 18
+        min: 40
+        max: 120
+
+      - id: fuel_bar
+        type: bar_display
+        sensor: fuel_level
+        asset: green_status_bar
+        position: [1130, 150]
+        cells: 18
+        min: 0
+        max: 100
+
+      - id: voltage_digits
+        type: digit_display
+        sensor: battery_voltage
+        asset: green_digits
+        position: [1430, 70]
+        digits: 4
+        format: "%04.1f"
+
+      - id: engine_warning
+        type: indicator
+        sensor: engine_warning
+        asset: engine_warning
+        position: [1430, 280]
+
+      - id: high_beam
+        type: indicator
+        sensor: high_beam
+        asset: high_beam
+        position: [1530, 280]
