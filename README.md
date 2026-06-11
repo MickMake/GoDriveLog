@@ -17,7 +17,7 @@ The goal is simple: read vehicle telemetry, keep the runtime boring, log useful 
 
 GoDriveLog currently contains working dashboard/runtime pieces from earlier versions, including Fyne rendering, OBD reader plumbing, JSONL logging, and dashboard asset experiments.
 
-The v3 direction is documented under `docs/v3/` and is the target for cleanup and future implementation work. Some older config/runtime documents may still describe legacy v2 concepts while the repo is being migrated.
+The v3 direction is documented under `docs/v3/` and is the target for cleanup and future implementation work. Some older config/runtime documents may still describe legacy concepts while the repo is being migrated.
 
 ## v3 direction
 
@@ -37,12 +37,11 @@ The important design rules are:
 - Logs and dashboards subscribe to sensor events.
 - Logs do not poll sensors independently.
 - Dashboards do not fetch OBD values directly.
-- If a config item exists, it is active.
-- No `default_vehicle`.
-- No `active_displays`.
-- No separate top-level `displays` section.
-- No `mock` / `real` source switch in GoDriveLog config.
+- If a documented config item exists, it is active.
+- Each dashboard owns its physical/logical display target.
+- GoDriveLog connects to an OBD-like endpoint address.
 - Bench testing should use an OBD-like endpoint, for example `tcp://127.0.0.1:35000`.
+- Unknown config fields should fail validation during v3 implementation.
 
 Boring boundaries are intentional. Cleverness is allowed only when it pays rent and does not bring a YAML demon as a lodger.
 
@@ -213,7 +212,7 @@ Avoid these until proven necessary:
 - config inheritance
 - generic event buses
 - enable/disable flags everywhere
-- mock/real branching leaking through the core runtime
+- endpoint-type branching leaking through the core runtime
 
 The preferred architecture is still:
 
