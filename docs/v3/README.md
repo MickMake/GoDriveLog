@@ -27,6 +27,9 @@ The codebase may still contain current-runtime or earlier-dashboard pieces while
 7. `DirectoryStructure.md`  
    Intended repo/package layout for v3.
 
+8. `examples/`  
+   Standalone dashboard examples that should validate against the same v3 schema rules as `config.example.yaml` and `config.full.yaml`.
+
 ## Target runtime model
 
 ```text
@@ -46,7 +49,21 @@ logs:
 dashboards:
 ```
 
-Treat those documented root sections as an allow-list. Unknown root fields should fail validation during v3 implementation.
+Treat those documented root sections as an allow-list.
+
+Strict v3 config loading should reject unknown fields at every documented level, not only at the root.
+
+## Example stance
+
+Every file under `docs/v3/examples/` should validate against the same v3 schema rules as `config.example.yaml` and `config.full.yaml`.
+
+Active v3 examples use repository-root-relative asset paths, for example:
+
+```text
+assets/dashboard/simple/panel/background.png
+```
+
+Do not teach multiple active asset path dialects.
 
 ## Migration stance
 
@@ -73,6 +90,8 @@ Useful rule:
 Optimise rendering locally.
 Keep the v3 model clean.
 ```
+
+Performance work must not hide stale, error, or recovery transitions.
 
 ## Archive docs
 
