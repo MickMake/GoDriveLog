@@ -1,0 +1,594 @@
+# GoDriveLog full configuration example
+#
+# Purpose:
+#   This file documents the complete intended configuration shape.
+#   It is deliberately verbose and heavily commented.
+#
+# Top-level sections:
+#   default_vehicle  - vehicle profile used on startup unless overridden
+#   active_displays  - display outputs started on startup
+#   vehicles         - vehicle profiles and their data source
+#   sensors          - global catalogue of available sensor definitions
+#   log              - file logging behaviour and logging cadence
+#   displays         - physical/logical display output bindings
+#   dashboards       - reusable visual dashboard scene definitions
+#
+# Runtime rule:
+#   All consumers share one sensor runtime/cache.
+#   Logger and displays must never read directly from OBD/mock independently.
+
+
+# default_vehicle selects the vehicle profile used at startup.
+#
+# This is a default, not a permanent runtime lock.
+# A later CLI option may override it, for example:
+#   ./GoDriveLog -vehicle race_driver
+#
+# Must match a key under vehicles.
+default_vehicle: vw_caddy
+
+
+# active_displays defines which display outputs start by default.
+#
+# Each item must match a key under displays.
+# Multiple displays can run at the same time.
+# Every active display consumes the same shared sensor state/cache.
+active_displays:
+  - main
+  - aux
+
+
+# vehicles defines available vehicle profiles.
+#
+# A vehicle profile owns:
+#   name - human-readable vehicle name
+#   obd  - data source for this vehicle profile
+#
+# A vehicle profile does not own sensor definitions.
+# Sensor definitions live globally under sensors.
+vehicles:
+  # Real vehicle profile using a physical OBD adapter.
+  vw_caddy:
+    # name is shown in UI/log metadata where useful.
+    name: "VW Caddy"
+
+    # obd defines where readings for this vehicle come from.
+    obd:
+      # source selects the data provider.
+      # Valid values:
+      #   real - use the real OBD adapter
+      #   mock - use a mock/race/demo data provider
+      source: real
+
+      # address is the OBD adapter address.
+      # For real serial ELM327-style adapters, use serial:// paths.
+      # Example:
+      #   serial:///dev/ttyUSB0
+      #   serial:///dev/rfcomm0
+      address: serial:///dev/ttyUSB0
+
+      # debug enables low-level OBD/provider debug output.
+      # Keep false for normal driving.
+      debug: false
+
+  # Mock vehicle profile for demos, testing, and development.
+  race_driver:
+    name: "Race Driver"
+    obd:
+      source: mock
+
+      # Mock providers may ignore address, but keep it explicit so the
+      # provider identity is visible in config.
+      address: mock://race-driver
+      debug: false
+
+
+# sensors is the global catalogue of available sensor definitions.
+#
+# This section answers:
+#   What sensor keys exist?
+#   How does each sensor map to the data provider?
+#   What unit/range/cache policy does each sensor use?
+#
+# This section does not decide whether a sensor is logged or displayed.
+# Logging is configured under log.sensors.
+# Display use is configured inside dashboard decoders/conditions.
+#
+# Sensor fields:
+#   type  - sensor source type. Currently obd.
+#   pid   - OBD PID/request code used by the provider.
+#   unit  - display/logging unit label.
+#   cache - minimum milliseconds between physical provider requests.
+#   min   - expected minimum value for range/normalisation/display use.
+#   max   - expected maximum value for range/normalisation/display use.
+#
+# cache rule:
+#   If any consumer requests this sensor and the last successful read is
+#   newer than cache milliseconds, return cached state.
+#   If the cached value is older than cache milliseconds, physically request
+#   a fresh value from the selected vehicle's provider.
+#
+# Example:
+#   cache: 500
+#   A request at T+000ms reads from OBD/mock.
+#   A request at T+200ms returns cache.
+#   A request at T+501ms reads from OBD/mock again.
+sensors:
+  engine_load:
+    type: obd
+    pid: "0104"
+    unit: "%"
+    cache: 500
+    min: 0
+    max: 100
+
+  coolant_temp:
+    type: obd
+    pid: "0105"
+    unit: C
+    cache: 1000
+    min: -40
+    max: 140
+
+  short_fuel_trim_bank1:
+    type: obd
+    pid: "0106"
+    unit: "%"
+    cache: 1000
+    min: -100
+    max: 100
+
+  long_fuel_trim_bank1:
+    type: obd
+    pid: "0107"
+    unit: "%"
+    cache: 1000
+    min: -100
+    max: 100
+
+  intake_manifold_pressure:
+    type: obd
+    pid: "010B"
+    unit: kPa
+    cache: 1000
+    min: 0
+    max: 255
+
+  rpm:
+    type: obd
+    pid: "010C"
+    unit: rpm
+    cache: 250
+    min: 0
+    max: 7000
+
+  speed:
+    type: obd
+    pid: "010D"
+    unit: km/h
+    cache: 500
+    min: 0
+    max: 160
+
+  timing_advance:
+    type: obd
+    pid: "010E"
+    unit: deg
+    cache: 1000
+    min: -64
+    max: 64
+
+  intake_air_temp:
+    type: obd
+    pid: "010F"
+    unit: C
+    cache: 2000
+    min: -40
+    max: 140
+
+  mass_air_flow:
+    type: obd
+    pid: "0110"
+    unit: g/s
+    cache: 1000
+    min: 0
+    max: 655
+
+  throttle_position:
+    type: obd
+    pid: "0111"
+    unit: "%"
+    cache: 500
+    min: 0
+    max: 100
+
+  run_time_since_engine_start:
+    type: obd
+    pid: "011F"
+    unit: s
+    cache: 2000
+    min: 0
+    max: 86400
+
+
+# log controls file logging.
+#
+# This section answers:
+#   Where do logs go?
+#   How are they rotated?
+#   Which sensors are written to disk?
+#   How often does logging request each sensor?
+#
+# log.sensors keys must exist under sensors.
+#
+# refresh rule:
+#   refresh is the logging fetch cadence in milliseconds.
+#   It controls how often the logger asks the shared sensor runtime for a
+#   reading. The runtime may still return cache if the sensor cache has not
+#   expired.
+#
+# Example:
+#   log.sensors.rpm.refresh: 250
+#   sensors.rpm.cache: 250
+#   The logger asks every 250ms. A display asking between those logger ticks
+#   can still receive cached state without causing an extra OBD request.
+log:
+  # rotate controls log file rotation.
+  # Valid value for now:
+  #   daily
+  rotate: daily
+
+  # directory is where JSONL log files are written.
+  directory: ./log
+
+  # sensors selects which sensors are written to the log.
+  # Sensors not listed here may still be used by dashboards.
+  sensors:
+    engine_load:
+      refresh: 1000
+
+    coolant_temp:
+      refresh: 5000
+
+    short_fuel_trim_bank1:
+      refresh: 5000
+
+    rpm:
+      refresh: 250
+
+    speed:
+      refresh: 500
+
+    throttle_position:
+      refresh: 500
+
+
+# displays binds dashboard definitions to physical/logical outputs.
+#
+# This section answers:
+#   Which dashboard appears on which output?
+#   Should the display run fullscreen?
+#   Where should a window appear if not fullscreen?
+#
+# A display does not define the visual scene itself.
+# It points at a dashboard under dashboards.
+#
+# output is intentionally a string. On Linux this may later map to names like:
+#   default
+#   HDMI-1
+#   HDMI-2
+#   DSI-1
+# The exact backend can decide how to interpret it.
+displays:
+  main:
+    # dashboard must match a key under dashboards.
+    dashboard: bttf_primary
+
+    # output selects the physical/logical display target.
+    # "default" means use the toolkit/window manager default output.
+    output: default
+
+    # fullscreen requests fullscreen display mode.
+    fullscreen: true
+
+    # Optional window placement for non-fullscreen use.
+    # Ignored when fullscreen is true unless a backend chooses otherwise.
+    window:
+      x: 0
+      y: 0
+      width: 800
+      height: 480
+
+  aux:
+    dashboard: bttf_aux
+    output: HDMI-2
+    fullscreen: true
+    window:
+      x: 800
+      y: 0
+      width: 800
+      height: 480
+
+
+# dashboards contains reusable visual scene definitions.
+#
+# This section is the plural form of the previous singular dashboard block.
+# Each dashboard owns:
+#   refresh_ms    - dashboard evaluation cadence
+#   render_min_ms - minimum render interval/throttle
+#   canvas        - logical scene size
+#   asset_root    - base path for dashboard assets
+#   assets        - images, frame sets, glyph sets
+#   decoders      - sensor-state to display-value transformations
+#   blocks        - visual elements and groups
+#   layers        - z-ordered block placement
+#
+# A dashboard references sensor keys from sensors.
+# It does not log data.
+# It does not read OBD directly.
+# It consumes shared sensor state.
+dashboards:
+  bttf_primary:
+    # refresh_ms controls how often this dashboard evaluates sensor state,
+    # decoders, conditions, and scene blocks.
+    refresh_ms: 1000
+
+    # render_min_ms throttles actual rendering/rebuild work.
+    # Keep this at 0 or low for responsive live dashboards.
+    # A higher value can reduce CPU/GPU churn on slow devices.
+    render_min_ms: 5000
+
+    # canvas is the logical dashboard design size.
+    # Renderers may scale it to the physical display.
+    canvas:
+      width: 800
+      height: 480
+
+    # asset_root is the base directory for assets used by this dashboard.
+    asset_root: assets/dashboard/bttf
+
+    # assets declares reusable visual resources.
+    assets:
+      - id: background
+        type: image
+        path: background.svg
+
+      - id: redline_glow
+        type: image
+        path: redline_glow.svg
+
+      - id: status_ok
+        type: image
+        path: status/ok.svg
+
+      - id: status_stale
+        type: image
+        path: status/stale.svg
+
+      - id: status_error
+        type: image
+        path: status/error.svg
+
+      - id: throttle_frames
+        type: frame_set
+        pattern: throttle/frame_{index:03}.svg
+        frame_count: 11
+
+      - id: yellow_digits
+        type: charset
+        glyphs:
+          "0": digits/yellow/0.svg
+          "1": digits/yellow/1.svg
+          "2": digits/yellow/2.svg
+          "3": digits/yellow/3.svg
+          "4": digits/yellow/4.svg
+          "5": digits/yellow/5.svg
+          "6": digits/yellow/6.svg
+          "7": digits/yellow/7.svg
+          "8": digits/yellow/8.svg
+          "9": digits/yellow/9.svg
+
+    # decoders transform sensor state into display-ready values.
+    decoders:
+      - id: rpm_text
+        type: format_number
+        sensor: rpm
+        format: "0000"
+
+      - id: rpm_digits
+        type: digits
+        input: rpm_text
+        asset: yellow_digits
+
+      - id: throttle_frame
+        type: frame_index
+        sensor: throttle_position
+        asset: throttle_frames
+        frame_count: 11
+
+      - id: rpm_warning
+        type: threshold
+        sensor: rpm
+        thresholds:
+          - at: 0
+            value: normal
+          - at: 2100
+            value: warning
+
+    # blocks define visual elements and groups.
+    blocks:
+      - id: background_panel
+        type: static_panel
+        asset: background
+        geometry:
+          x: 0
+          y: 0
+          width: 800
+          height: 480
+
+      - id: rpm_display
+        type: seven_segment_number
+        asset: yellow_digits
+        decoder: rpm_digits
+        geometry:
+          x: 92
+          y: 58
+          width: 300
+          height: 100
+
+      - id: throttle_bar
+        type: percent_frame_bar
+        asset: throttle_frames
+        decoder: throttle_frame
+        geometry:
+          x: 92
+          y: 220
+          width: 360
+          height: 48
+
+      - id: status_ok_indicator
+        type: state_lamp
+        asset: status_ok
+        condition:
+          sensor: rpm
+          status: ok
+        geometry:
+          x: 610
+          y: 58
+          width: 120
+          height: 42
+
+      - id: status_stale_indicator
+        type: stale_overlay
+        asset: status_stale
+        condition:
+          sensor: rpm
+          status: stale
+        geometry:
+          x: 610
+          y: 58
+          width: 120
+          height: 42
+
+      - id: status_error_indicator
+        type: warning_overlay
+        asset: status_error
+        condition:
+          sensor: rpm
+          status: error
+        geometry:
+          x: 610
+          y: 58
+          width: 120
+          height: 42
+
+      - id: redline_overlay
+        type: warning_overlay
+        asset: redline_glow
+        condition:
+          decoder: rpm_warning
+          equals: warning
+        geometry:
+          x: 0
+          y: 0
+          width: 800
+          height: 480
+
+      - id: main_cluster
+        type: group
+        blocks:
+          - rpm_display
+          - throttle_bar
+          - status_ok_indicator
+          - status_stale_indicator
+          - status_error_indicator
+
+    # layers define render order.
+    # Lower z is rendered first. Higher z appears above lower layers.
+    layers:
+      - id: base
+        z: 0
+        blocks:
+          - background_panel
+
+      - id: dashboard
+        z: 10
+        blocks:
+          - main_cluster
+
+      - id: alerts
+        z: 20
+        blocks:
+          - redline_overlay
+
+  # Second dashboard example for a second display.
+  # This can reuse the same asset root and sensor catalogue while showing
+  # a different layout or smaller subset of information.
+  bttf_aux:
+    refresh_ms: 1000
+    render_min_ms: 1000
+    canvas:
+      width: 800
+      height: 480
+    asset_root: assets/dashboard/bttf
+
+    assets:
+      - id: background
+        type: image
+        path: background.svg
+
+      - id: yellow_digits
+        type: charset
+        glyphs:
+          "0": digits/yellow/0.svg
+          "1": digits/yellow/1.svg
+          "2": digits/yellow/2.svg
+          "3": digits/yellow/3.svg
+          "4": digits/yellow/4.svg
+          "5": digits/yellow/5.svg
+          "6": digits/yellow/6.svg
+          "7": digits/yellow/7.svg
+          "8": digits/yellow/8.svg
+          "9": digits/yellow/9.svg
+
+    decoders:
+      - id: speed_text
+        type: format_number
+        sensor: speed
+        format: "000"
+
+      - id: speed_digits
+        type: digits
+        input: speed_text
+        asset: yellow_digits
+
+    blocks:
+      - id: background_panel
+        type: static_panel
+        asset: background
+        geometry:
+          x: 0
+          y: 0
+          width: 800
+          height: 480
+
+      - id: speed_display
+        type: seven_segment_number
+        asset: yellow_digits
+        decoder: speed_digits
+        geometry:
+          x: 180
+          y: 120
+          width: 360
+          height: 120
+
+    layers:
+      - id: base
+        z: 0
+        blocks:
+          - background_panel
+
+      - id: dashboard
+        z: 10
+        blocks:
+          - speed_display
