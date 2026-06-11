@@ -123,13 +123,6 @@ sensors:
     unit: "bool"
     poll: 1000
 
-  high_beam:
-    # Placeholder for a future vehicle-status input. Keep this separate from
-    # OBD PID sensors if the value does not come from standard OBD polling.
-    type: vehicle_status
-    unit: "bool"
-    poll: 500
-
 assets:
   # digit_sets are image-backed character displays.
   # Render order for each character slot:
@@ -274,30 +267,6 @@ assets:
         on: "assets/dashboard/warnings/engine_on.png"
         unknown: "assets/dashboard/warnings/engine_unknown.png"
       foreground: "assets/dashboard/warnings/engine_glass.png"
-
-    high_beam:
-      background: "assets/dashboard/warnings/highbeam_back.png"
-      states:
-        off: "assets/dashboard/warnings/highbeam_off.png"
-        on: "assets/dashboard/warnings/highbeam_on.png"
-        unknown: "assets/dashboard/warnings/highbeam_unknown.png"
-      foreground: "assets/dashboard/warnings/highbeam_glass.png"
-
-    oil_pressure_warning:
-      background: "assets/dashboard/warnings/oil_back.png"
-      states:
-        off: "assets/dashboard/warnings/oil_off.png"
-        on: "assets/dashboard/warnings/oil_on.png"
-        unknown: "assets/dashboard/warnings/oil_unknown.png"
-      foreground: "assets/dashboard/warnings/oil_glass.png"
-
-    battery_warning:
-      background: "assets/dashboard/warnings/battery_back.png"
-      states:
-        off: "assets/dashboard/warnings/battery_off.png"
-        on: "assets/dashboard/warnings/battery_on.png"
-        unknown: "assets/dashboard/warnings/battery_unknown.png"
-      foreground: "assets/dashboard/warnings/battery_glass.png"
 
   # image_sets are static images or image sandwiches.
   image_sets:
@@ -455,12 +424,6 @@ dashboards:
         asset: engine_warning
         position: [1430, 280]
 
-      - id: high_beam
-        type: indicator
-        sensor: high_beam
-        asset: high_beam
-        position: [1530, 280]
-
   # Honda S2000-inspired example from the retro dashboard discussion.
   # Dominated by a sweeping rev counter, with speed digits and side gauges.
   s2000_primary:
@@ -519,9 +482,3 @@ dashboards:
         sensor: engine_warning
         asset: engine_warning
         position: [1480, 340]
-
-      - id: high_beam
-        type: indicator
-        sensor: high_beam
-        asset: high_beam
-        position: [1560, 340]
