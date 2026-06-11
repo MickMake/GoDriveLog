@@ -27,8 +27,8 @@ Sensors own polling. Logs and dashboards subscribe to sensor events.
 
 ## Files
 
-- `config/nissan_300zx_z31_inspired.yaml`
-- `config/honda_s2000_inspired.yaml`
+- `nissan_300zx_z31_inspired.yaml`
+- `honda_s2000_inspired.yaml`
 
 ## Notes
 
