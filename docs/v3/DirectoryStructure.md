@@ -150,6 +150,8 @@ GoDriveLog/
       GoStructsConfig.md
       DirectoryStructure.md
       ImplementationGuardrails.md
+      MigrationGuardrails.md
+      PerformanceGuardrails.md
       examples/
         README.md
         nissan_300zx_z31_inspired.yaml
@@ -207,7 +209,9 @@ GoDriveLog/
 
 - Archive docs are allowed to describe old behaviour.
 - Active v3 docs should use the simplified top-level shape: `vehicles`, `sensors`, `assets`, `logs`, `dashboards`.
-- `ImplementationGuardrails.md` is the implementation checklist for keeping the v3 code aligned with these docs.
+- `ImplementationGuardrails.md` is the implementation checklist for writing v3 code against the target model.
+- `MigrationGuardrails.md` explains how to move from current code to the v3 target without leaking current assumptions into the v3 core.
+- `PerformanceGuardrails.md` gives the current display speed work a safe lane without warping the v3 schema.
 - Treat the documented v3 root sections as an allow-list; unknown root fields should fail validation during v3 implementation.
 - Use an OBD-like endpoint address for both real hardware and bench/simulator endpoints.
 - Sensor timing is `poll`; logs and dashboards subscribe to events.
