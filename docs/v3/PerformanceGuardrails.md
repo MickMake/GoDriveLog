@@ -92,6 +92,7 @@ Image-backed dashboards need asset discipline.
 
 Rules:
 
+- asset paths are repository-root relative
 - load assets once where practical
 - decode assets once where practical
 - validate asset packs at startup
@@ -114,10 +115,12 @@ Rules:
 - avoid reformatting values if neither value nor status changed
 - indicator widgets should update on status changes even if boolean value did not change
 - digit widgets should compare formatted output, not raw float noise, when deciding if visual output changed
+- formatted decimal separators do not consume digit character slots
+- decimal-capable digit formats require a `decimal_point` asset
 
 For example, if speed changes from `42.1` to `42.2` and the widget format is `%03.0f`, the rendered string remains `042`; the widget does not need to redraw.
 
-## 8. Event rate guardrails
+## 8. Event rate and coalescing guardrails
 
 The sensor runtime may emit frequent events. The dashboard does not need to waste work on invisible changes.
 
@@ -128,8 +131,14 @@ Rules:
 - dashboard widgets decide whether an event changes rendered output
 - renderer should avoid doing work for unchanged visual state
 - do not solve event volume by making dashboards poll sensors
+- state/change coalescing must not hide status transitions
+- state/change coalescing must not hide stale transitions
+- state/change coalescing must not hide error transitions
+- state/change coalescing must not hide recovery transitions
 
 If event volume becomes a problem, add state/change coalescing at the event/dashboard boundary, not OBD reads inside the renderer.
+
+Performance fixes that hide error states are not fixes. They are lies with better frame times.
 
 ## 9. Renderer guardrails
 
@@ -159,6 +168,8 @@ Do not add config fields for:
 - cache toggles
 - debug redraw switches
 - backend-specific tuning
+- stale timeout tuning
+- asset root tuning
 
 A future config field may be justified, but the bar is high. First prove the need with measurement and explain why it belongs in user config instead of renderer internals.
 
@@ -191,6 +202,7 @@ Performance expectations for that slice:
 - missing assets fail before live display
 - digit formatted output drives redraw decisions
 - indicators update on value or status changes
+- stale/error/recovery transitions remain visible
 - unchanged visual state does not redraw
 - dashboard does not poll sensors
 
@@ -201,7 +213,10 @@ Do not start with frame gauges, curved bars, glass overlays, and glorious retro 
 Add performance-sensitive tests or checks where practical:
 
 - digit display does not redraw if formatted output is unchanged
+- digit display does redraw when status changes
 - indicator redraws when status changes
+- stale transitions are not hidden by coalescing
+- recovery transitions are not hidden by coalescing
 - asset registry does not reload the same file repeatedly
 - missing asset fails during validation/load
 - dashboard receives sensor state without calling reader/endpoint code
@@ -239,7 +254,7 @@ A performance fix is done when:
 - the bottleneck is identified or the fix is obviously local
 - the change is isolated to the current runtime or renderer boundary
 - the v3 schema remains unchanged unless explicitly reviewed
-- stale/error/unknown display behaviour still works
+- stale/error/unknown/recovery display behaviour still works
 - the improvement can be explained in one or two sentences
 - any temporary workaround has a removal condition
 
