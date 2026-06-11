@@ -14,18 +14,24 @@
 # Core runtime model:
 #   vehicle endpoint -> sensor polling runtime -> sensor events -> logs/dashboards
 #
-# Important absences:
-#   No default_vehicle. If exactly one vehicle exists, use it. If multiple exist,
-#   require an explicit CLI/runtime choice such as --vehicle <id>.
+# Schema rule:
+#   Treat the documented top-level sections as an allow-list.
+#   Unknown root fields should fail validation during v3 implementation.
 #
-#   No active_displays. Dashboard presence means active.
+# Runtime selection:
+#   If exactly one vehicle exists, the runtime may use it automatically.
+#   If multiple vehicles exist, require an explicit CLI/runtime choice such as
+#   --vehicle <id>.
 #
-#   No top-level displays section. Each dashboard owns its physical display target.
+# Dashboard activation:
+#   Dashboard presence means active. Each dashboard owns its display target.
 #
-#   No source: mock/real switch. GoDriveLog connects to an OBD-like endpoint.
-#   Real hardware and simulator endpoints use the same connection path.
+# Endpoint model:
+#   GoDriveLog connects to an OBD-like endpoint address. Real hardware and
+#   simulator endpoints use the same connection path.
 #
-#   No log refresh. Logs subscribe to sensor events. Sensors own polling.
+# Log model:
+#   Logs subscribe to sensor events. Sensors own polling.
 
 vehicles:
   # Vehicle ID. This is the stable key used by CLI/runtime selection.
@@ -63,7 +69,7 @@ sensors:
     # unit is the value label used by logs and dashboards.
     unit: "km/h"
     # poll is the requested polling cadence in milliseconds.
-    # Only sensors own timing. Logs and dashboards do not specify refresh.
+    # Only sensors own timing.
     poll: 250
     # min/max are expected bounds for validation and display scaling.
     min: 0
