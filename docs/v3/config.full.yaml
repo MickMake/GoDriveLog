@@ -1,594 +1,521 @@
-# GoDriveLog full configuration example
+# GoDriveLog v3 full configuration example
 #
 # Purpose:
-#   This file documents the complete intended configuration shape.
-#   It is deliberately verbose and heavily commented.
+#   This is the complete, heavily-commented v3 configuration reference.
+#   It is intentionally verbose. Use config.example.yaml for a smaller starter.
 #
 # Top-level sections:
-#   default_vehicle  - vehicle profile used on startup unless overridden
-#   active_displays  - display outputs started on startup
-#   vehicles         - vehicle profiles and their data source
-#   sensors          - global catalogue of available sensor definitions
-#   log              - file logging behaviour and logging cadence
-#   displays         - physical/logical display output bindings
-#   dashboards       - reusable visual dashboard scene definitions
+#   vehicles   - available vehicle/endpoint profiles
+#   sensors    - global sensor catalogue and polling rules
+#   assets     - reusable visual asset packs
+#   logs       - event-log subscribers
+#   dashboards - physical display dashboards and widgets
 #
-# Runtime rule:
-#   All consumers share one sensor runtime/cache.
-#   Logger and displays must never read directly from OBD/mock independently.
-
-
-# default_vehicle selects the vehicle profile used at startup.
+# Core runtime model:
+#   vehicle endpoint -> sensor polling runtime -> sensor events -> logs/dashboards
 #
-# This is a default, not a permanent runtime lock.
-# A later CLI option may override it, for example:
-#   ./GoDriveLog -vehicle race_driver
+# Important absences:
+#   No default_vehicle. If exactly one vehicle exists, use it. If multiple exist,
+#   require an explicit CLI/runtime choice such as --vehicle <id>.
 #
-# Must match a key under vehicles.
-default_vehicle: vw_caddy
-
-
-# active_displays defines which display outputs start by default.
+#   No active_displays. Dashboard presence means active.
 #
-# Each item must match a key under displays.
-# Multiple displays can run at the same time.
-# Every active display consumes the same shared sensor state/cache.
-active_displays:
-  - main
-  - aux
-
-
-# vehicles defines available vehicle profiles.
+#   No top-level displays section. Each dashboard owns its physical display target.
 #
-# A vehicle profile owns:
-#   name - human-readable vehicle name
-#   obd  - data source for this vehicle profile
+#   No source: mock/real switch. GoDriveLog connects to an OBD-like endpoint.
+#   Real hardware and simulator endpoints use the same connection path.
 #
-# A vehicle profile does not own sensor definitions.
-# Sensor definitions live globally under sensors.
+#   No log refresh. Logs subscribe to sensor events. Sensors own polling.
+
 vehicles:
-  # Real vehicle profile using a physical OBD adapter.
+  # Vehicle ID. This is the stable key used by CLI/runtime selection.
   vw_caddy:
-    # name is shown in UI/log metadata where useful.
+    # Human-readable name for UI/log metadata.
     name: "VW Caddy"
 
-    # obd defines where readings for this vehicle come from.
+    # OBD-like endpoint used by this vehicle profile.
     obd:
-      # source selects the data provider.
-      # Valid values:
-      #   real - use the real OBD adapter
-      #   mock - use a mock/race/demo data provider
-      source: real
+      # address is the transport endpoint.
+      # Examples:
+      #   serial:///dev/ttyUSB0      real USB ELM327-style adapter
+      #   serial:///dev/rfcomm0      Bluetooth serial adapter
+      #   tcp://127.0.0.1:35000     bench/simulator endpoint
+      address: "serial:///dev/ttyUSB0"
 
-      # address is the OBD adapter address.
-      # For real serial ELM327-style adapters, use serial:// paths.
-      # Example:
-      #   serial:///dev/ttyUSB0
-      #   serial:///dev/rfcomm0
-      address: serial:///dev/ttyUSB0
+      # timeout is the transport/read timeout in milliseconds.
+      timeout: 1000
 
-      # debug enables low-level OBD/provider debug output.
-      # Keep false for normal driving.
-      debug: false
-
-  # Mock vehicle profile for demos, testing, and development.
-  race_driver:
-    name: "Race Driver"
+  # Bench profile. This is not a different source type. It is just another
+  # endpoint that speaks enough OBD/ELM327-ish protocol for development.
+  bench:
+    name: "Bench simulator"
     obd:
-      source: mock
+      address: "tcp://127.0.0.1:35000"
+      timeout: 1000
 
-      # Mock providers may ignore address, but keep it explicit so the
-      # provider identity is visible in config.
-      address: mock://race-driver
-      debug: false
-
-
-# sensors is the global catalogue of available sensor definitions.
-#
-# This section answers:
-#   What sensor keys exist?
-#   How does each sensor map to the data provider?
-#   What unit/range/cache policy does each sensor use?
-#
-# This section does not decide whether a sensor is logged or displayed.
-# Logging is configured under log.sensors.
-# Display use is configured inside dashboard decoders/conditions.
-#
-# Sensor fields:
-#   type  - sensor source type. Currently obd.
-#   pid   - OBD PID/request code used by the provider.
-#   unit  - display/logging unit label.
-#   cache - minimum milliseconds between physical provider requests.
-#   min   - expected minimum value for range/normalisation/display use.
-#   max   - expected maximum value for range/normalisation/display use.
-#
-# cache rule:
-#   If any consumer requests this sensor and the last successful read is
-#   newer than cache milliseconds, return cached state.
-#   If the cached value is older than cache milliseconds, physically request
-#   a fresh value from the selected vehicle's provider.
-#
-# Example:
-#   cache: 500
-#   A request at T+000ms reads from OBD/mock.
-#   A request at T+200ms returns cache.
-#   A request at T+501ms reads from OBD/mock again.
 sensors:
-  engine_load:
+  # Sensor ID. This is the stable key used by logs and dashboard widgets.
+  speed:
+    # type identifies how the sensor is read. v3 starts boring: obd.
     type: obd
-    pid: "0104"
-    unit: "%"
-    cache: 500
+    # pid is the OBD request/PID or well-known adapter command.
+    pid: "010D"
+    # unit is the value label used by logs and dashboards.
+    unit: "km/h"
+    # poll is the requested polling cadence in milliseconds.
+    # Only sensors own timing. Logs and dashboards do not specify refresh.
+    poll: 250
+    # min/max are expected bounds for validation and display scaling.
     min: 0
-    max: 100
-
-  coolant_temp:
-    type: obd
-    pid: "0105"
-    unit: C
-    cache: 1000
-    min: -40
-    max: 140
-
-  short_fuel_trim_bank1:
-    type: obd
-    pid: "0106"
-    unit: "%"
-    cache: 1000
-    min: -100
-    max: 100
-
-  long_fuel_trim_bank1:
-    type: obd
-    pid: "0107"
-    unit: "%"
-    cache: 1000
-    min: -100
-    max: 100
-
-  intake_manifold_pressure:
-    type: obd
-    pid: "010B"
-    unit: kPa
-    cache: 1000
-    min: 0
-    max: 255
+    max: 220
 
   rpm:
     type: obd
     pid: "010C"
-    unit: rpm
-    cache: 250
+    unit: "rpm"
+    poll: 250
     min: 0
     max: 7000
 
-  speed:
+  coolant_temperature:
     type: obd
-    pid: "010D"
-    unit: km/h
-    cache: 500
-    min: 0
-    max: 160
-
-  timing_advance:
-    type: obd
-    pid: "010E"
-    unit: deg
-    cache: 1000
-    min: -64
-    max: 64
-
-  intake_air_temp:
-    type: obd
-    pid: "010F"
-    unit: C
-    cache: 2000
+    pid: "0105"
+    unit: "C"
+    poll: 5000
     min: -40
     max: 140
-
-  mass_air_flow:
-    type: obd
-    pid: "0110"
-    unit: g/s
-    cache: 1000
-    min: 0
-    max: 655
 
   throttle_position:
     type: obd
     pid: "0111"
     unit: "%"
-    cache: 500
+    poll: 500
     min: 0
     max: 100
 
-  run_time_since_engine_start:
+  fuel_level:
     type: obd
-    pid: "011F"
-    unit: s
-    cache: 2000
+    pid: "012F"
+    unit: "%"
+    poll: 5000
     min: 0
-    max: 86400
+    max: 100
 
+  battery_voltage:
+    type: obd
+    pid: "ATRV"
+    unit: "V"
+    poll: 5000
+    min: 10
+    max: 15
 
-# log controls file logging.
-#
-# This section answers:
-#   Where do logs go?
-#   How are they rotated?
-#   Which sensors are written to disk?
-#   How often does logging request each sensor?
-#
-# log.sensors keys must exist under sensors.
-#
-# refresh rule:
-#   refresh is the logging fetch cadence in milliseconds.
-#   It controls how often the logger asks the shared sensor runtime for a
-#   reading. The runtime may still return cache if the sensor cache has not
-#   expired.
-#
-# Example:
-#   log.sensors.rpm.refresh: 250
-#   sensors.rpm.cache: 250
-#   The logger asks every 250ms. A display asking between those logger ticks
-#   can still receive cached state without causing an extra OBD request.
-log:
-  # rotate controls log file rotation.
-  # Valid value for now:
-  #   daily
-  rotate: daily
+  engine_warning:
+    # Boolean status sensor. Renderer maps true/false plus sensor status to
+    # indicator states. Do not encode UI colours into sensor values.
+    type: obd
+    pid: "STATUS:MIL"
+    unit: "bool"
+    poll: 1000
 
-  # directory is where JSONL log files are written.
-  directory: ./log
+  high_beam:
+    # Placeholder for a future vehicle-status input. Keep this separate from
+    # OBD PID sensors if the value does not come from standard OBD polling.
+    type: vehicle_status
+    unit: "bool"
+    poll: 500
 
-  # sensors selects which sensors are written to the log.
-  # Sensors not listed here may still be used by dashboards.
-  sensors:
-    engine_load:
-      refresh: 1000
+assets:
+  # digit_sets are image-backed character displays.
+  # Render order for each character slot:
+  #   1. draw background if present
+  #   2. draw resolved character overlay if present
+  #   3. draw decimal_point overlay if the formatted value contains a decimal
+  #   4. draw foreground if present
+  #
+  # A blank/padded slot means background-only. No blank image is needed when a
+  # background exists.
+  digit_sets:
+    bttf_amber_digits:
+      # Per-character slot background. Usually an unlit digit cavity.
+      background: "assets/dashboard/bttf/amber_digits/digit_back.png"
+      # characters maps formatted text characters to image overlays.
+      # The minus sign is first-class, because negative values happen.
+      characters:
+        "0": "assets/dashboard/bttf/amber_digits/amber0.png"
+        "1": "assets/dashboard/bttf/amber_digits/amber1.png"
+        "2": "assets/dashboard/bttf/amber_digits/amber2.png"
+        "3": "assets/dashboard/bttf/amber_digits/amber3.png"
+        "4": "assets/dashboard/bttf/amber_digits/amber4.png"
+        "5": "assets/dashboard/bttf/amber_digits/amber5.png"
+        "6": "assets/dashboard/bttf/amber_digits/amber6.png"
+        "7": "assets/dashboard/bttf/amber_digits/amber7.png"
+        "8": "assets/dashboard/bttf/amber_digits/amber8.png"
+        "9": "assets/dashboard/bttf/amber_digits/amber9.png"
+        "-": "assets/dashboard/bttf/amber_digits/amber_minus.png"
+      # decimal_point is an overlay, not a normal character slot.
+      decimal_point: "assets/dashboard/bttf/amber_digits/amber_dp.png"
+      # foreground is optional glass/bezel/reflection overlay per slot.
+      foreground: "assets/dashboard/bttf/amber_digits/digit_glass.png"
+      # spacing is pixels between character slots at native asset size.
+      spacing: 4
 
-    coolant_temp:
-      refresh: 5000
+    bttf_green_digits:
+      background: "assets/dashboard/bttf/green_digits/digit_back.png"
+      characters:
+        "0": "assets/dashboard/bttf/green_digits/green0.png"
+        "1": "assets/dashboard/bttf/green_digits/green1.png"
+        "2": "assets/dashboard/bttf/green_digits/green2.png"
+        "3": "assets/dashboard/bttf/green_digits/green3.png"
+        "4": "assets/dashboard/bttf/green_digits/green4.png"
+        "5": "assets/dashboard/bttf/green_digits/green5.png"
+        "6": "assets/dashboard/bttf/green_digits/green6.png"
+        "7": "assets/dashboard/bttf/green_digits/green7.png"
+        "8": "assets/dashboard/bttf/green_digits/green8.png"
+        "9": "assets/dashboard/bttf/green_digits/green9.png"
+        "-": "assets/dashboard/bttf/green_digits/green_minus.png"
+      decimal_point: "assets/dashboard/bttf/green_digits/green_dp.png"
+      foreground: "assets/dashboard/bttf/green_digits/digit_glass.png"
+      spacing: 4
 
-    short_fuel_trim_bank1:
-      refresh: 5000
+    s2000_speed_digits:
+      background: "assets/dashboard/s2000/speed_digits/digit_back.png"
+      characters:
+        "0": "assets/dashboard/s2000/speed_digits/speed0.png"
+        "1": "assets/dashboard/s2000/speed_digits/speed1.png"
+        "2": "assets/dashboard/s2000/speed_digits/speed2.png"
+        "3": "assets/dashboard/s2000/speed_digits/speed3.png"
+        "4": "assets/dashboard/s2000/speed_digits/speed4.png"
+        "5": "assets/dashboard/s2000/speed_digits/speed5.png"
+        "6": "assets/dashboard/s2000/speed_digits/speed6.png"
+        "7": "assets/dashboard/s2000/speed_digits/speed7.png"
+        "8": "assets/dashboard/s2000/speed_digits/speed8.png"
+        "9": "assets/dashboard/s2000/speed_digits/speed9.png"
+        "-": "assets/dashboard/s2000/speed_digits/speed_minus.png"
+      decimal_point: "assets/dashboard/s2000/speed_digits/speed_dp.png"
+      foreground: "assets/dashboard/s2000/speed_digits/digit_glass.png"
+      spacing: 3
 
-    rpm:
-      refresh: 250
+  # bar_sets are repeated cell displays.
+  # Render order:
+  #   background -> off/on/warning cells -> foreground
+  bar_sets:
+    bttf_green_bar:
+      background: "assets/dashboard/bttf/bars/green_bar_back.png"
+      cells:
+        off: "assets/dashboard/bttf/bars/green_cell_off.png"
+        on: "assets/dashboard/bttf/bars/green_cell_on.png"
+        warning: "assets/dashboard/bttf/bars/green_cell_warning.png"
+      foreground: "assets/dashboard/bttf/bars/green_bar_glass.png"
+      spacing: 2
 
-    speed:
-      refresh: 500
+    z31_rainbow_speed_bar:
+      background: "assets/dashboard/z31/speed_bar/bar_back.png"
+      cells:
+        off: "assets/dashboard/z31/speed_bar/cell_off.png"
+        on_low: "assets/dashboard/z31/speed_bar/cell_green.png"
+        on_mid: "assets/dashboard/z31/speed_bar/cell_yellow.png"
+        on_high: "assets/dashboard/z31/speed_bar/cell_red.png"
+      foreground: "assets/dashboard/z31/speed_bar/bar_glass.png"
+      spacing: 2
 
-    throttle_position:
-      refresh: 500
+    s2000_side_bar:
+      background: "assets/dashboard/s2000/side_bar/bar_back.png"
+      cells:
+        off: "assets/dashboard/s2000/side_bar/cell_off.png"
+        on: "assets/dashboard/s2000/side_bar/cell_on.png"
+        warning: "assets/dashboard/s2000/side_bar/cell_warning.png"
+      foreground: "assets/dashboard/s2000/side_bar/bar_glass.png"
+      spacing: 1
 
+  # frame_sets are pre-rendered frames for gauges or complex state displays.
+  # Use this for curved/sweeping/fancy visuals instead of inventing a YAML
+  # drawing language.
+  frame_sets:
+    bttf_throttle_frames:
+      background: "assets/dashboard/bttf/throttle/throttle_back.png"
+      frames:
+        path: "assets/dashboard/bttf/throttle/frame_%03d.png"
+        first: 0
+        last: 100
+      foreground: "assets/dashboard/bttf/throttle/throttle_glass.png"
 
-# displays binds dashboard definitions to physical/logical outputs.
-#
-# This section answers:
-#   Which dashboard appears on which output?
-#   Should the display run fullscreen?
-#   Where should a window appear if not fullscreen?
-#
-# A display does not define the visual scene itself.
-# It points at a dashboard under dashboards.
-#
-# output is intentionally a string. On Linux this may later map to names like:
-#   default
-#   HDMI-1
-#   HDMI-2
-#   DSI-1
-# The exact backend can decide how to interpret it.
-displays:
-  main:
-    # dashboard must match a key under dashboards.
-    dashboard: bttf_primary
+    z31_rpm_boost_sweep:
+      background: "assets/dashboard/z31/rpm_boost/rpm_boost_back.png"
+      frames:
+        path: "assets/dashboard/z31/rpm_boost/frame_%03d.png"
+        first: 0
+        last: 100
+      foreground: "assets/dashboard/z31/rpm_boost/rpm_boost_glass.png"
 
-    # output selects the physical/logical display target.
-    # "default" means use the toolkit/window manager default output.
-    output: default
+    s2000_rpm_sweep:
+      background: "assets/dashboard/s2000/rpm/rpm_back.png"
+      frames:
+        path: "assets/dashboard/s2000/rpm/rpm_%03d.png"
+        first: 0
+        last: 120
+      foreground: "assets/dashboard/s2000/rpm/rpm_glass.png"
 
-    # fullscreen requests fullscreen display mode.
-    fullscreen: true
+  # indicator_sets are on/off/unknown image states for boolean/status lights.
+  # Runtime rule:
+  #   sensor status != ok -> unknown
+  #   sensor status == ok and value == true -> on
+  #   sensor status == ok and value == false -> off
+  indicator_sets:
+    engine_warning:
+      background: "assets/dashboard/warnings/engine_back.png"
+      states:
+        off: "assets/dashboard/warnings/engine_off.png"
+        on: "assets/dashboard/warnings/engine_on.png"
+        unknown: "assets/dashboard/warnings/engine_unknown.png"
+      foreground: "assets/dashboard/warnings/engine_glass.png"
 
-    # Optional window placement for non-fullscreen use.
-    # Ignored when fullscreen is true unless a backend chooses otherwise.
-    window:
-      x: 0
-      y: 0
-      width: 800
-      height: 480
+    high_beam:
+      background: "assets/dashboard/warnings/highbeam_back.png"
+      states:
+        off: "assets/dashboard/warnings/highbeam_off.png"
+        on: "assets/dashboard/warnings/highbeam_on.png"
+        unknown: "assets/dashboard/warnings/highbeam_unknown.png"
+      foreground: "assets/dashboard/warnings/highbeam_glass.png"
 
-  aux:
-    dashboard: bttf_aux
-    output: HDMI-2
-    fullscreen: true
-    window:
-      x: 800
-      y: 0
-      width: 800
-      height: 480
+    oil_pressure_warning:
+      background: "assets/dashboard/warnings/oil_back.png"
+      states:
+        off: "assets/dashboard/warnings/oil_off.png"
+        on: "assets/dashboard/warnings/oil_on.png"
+        unknown: "assets/dashboard/warnings/oil_unknown.png"
+      foreground: "assets/dashboard/warnings/oil_glass.png"
 
+    battery_warning:
+      background: "assets/dashboard/warnings/battery_back.png"
+      states:
+        off: "assets/dashboard/warnings/battery_off.png"
+        on: "assets/dashboard/warnings/battery_on.png"
+        unknown: "assets/dashboard/warnings/battery_unknown.png"
+      foreground: "assets/dashboard/warnings/battery_glass.png"
 
-# dashboards contains reusable visual scene definitions.
-#
-# This section is the plural form of the previous singular dashboard block.
-# Each dashboard owns:
-#   refresh_ms    - dashboard evaluation cadence
-#   render_min_ms - minimum render interval/throttle
-#   canvas        - logical scene size
-#   asset_root    - base path for dashboard assets
-#   assets        - images, frame sets, glyph sets
-#   decoders      - sensor-state to display-value transformations
-#   blocks        - visual elements and groups
-#   layers        - z-ordered block placement
-#
-# A dashboard references sensor keys from sensors.
-# It does not log data.
-# It does not read OBD directly.
-# It consumes shared sensor state.
+  # image_sets are static images or image sandwiches.
+  image_sets:
+    bttf_panel:
+      image: "assets/dashboard/bttf/panel/background.png"
+
+    z31_panel:
+      image: "assets/dashboard/z31/panel/main_panel_backplate.png"
+
+    s2000_panel:
+      image: "assets/dashboard/s2000/panel/main_panel_backplate.png"
+
+logs:
+  # jsonl is an event-log subscriber.
+  jsonl:
+    # path is the output JSON Lines file.
+    path: "logs/godrivelog.jsonl"
+    # sensors selects which sensor events should be logged.
+    # First readings, value changes, and status changes should be written.
+    # Unchanged duplicate values should not spam the log.
+    sensors:
+      - speed
+      - rpm
+      - coolant_temperature
+      - throttle_position
+      - fuel_level
+      - battery_voltage
+      - engine_warning
+
 dashboards:
+  # Existing/simple BTTF-style example.
   bttf_primary:
-    # refresh_ms controls how often this dashboard evaluates sensor state,
-    # decoders, conditions, and scene blocks.
-    refresh_ms: 1000
-
-    # render_min_ms throttles actual rendering/rebuild work.
-    # Keep this at 0 or low for responsive live dashboards.
-    # A higher value can reduce CPU/GPU churn on slow devices.
-    render_min_ms: 5000
-
-    # canvas is the logical dashboard design size.
-    # Renderers may scale it to the physical display.
-    canvas:
-      width: 800
+    # display is the physical/logical display target for this dashboard.
+    display: "HDMI-1"
+    # size is the dashboard design/render target size in pixels.
+    size:
+      width: 1920
       height: 480
-
-    # asset_root is the base directory for assets used by this dashboard.
-    asset_root: assets/dashboard/bttf
-
-    # assets declares reusable visual resources.
-    assets:
-      - id: background
+    widgets:
+      - id: panel_backplate
+        # image draws a static image asset.
         type: image
-        path: background.svg
-
-      - id: redline_glow
-        type: image
-        path: redline_glow.svg
-
-      - id: status_ok
-        type: image
-        path: status/ok.svg
-
-      - id: status_stale
-        type: image
-        path: status/stale.svg
-
-      - id: status_error
-        type: image
-        path: status/error.svg
-
-      - id: throttle_frames
-        type: frame_set
-        pattern: throttle/frame_{index:03}.svg
-        frame_count: 11
-
-      - id: yellow_digits
-        type: charset
-        glyphs:
-          "0": digits/yellow/0.svg
-          "1": digits/yellow/1.svg
-          "2": digits/yellow/2.svg
-          "3": digits/yellow/3.svg
-          "4": digits/yellow/4.svg
-          "5": digits/yellow/5.svg
-          "6": digits/yellow/6.svg
-          "7": digits/yellow/7.svg
-          "8": digits/yellow/8.svg
-          "9": digits/yellow/9.svg
-
-    # decoders transform sensor state into display-ready values.
-    decoders:
-      - id: rpm_text
-        type: format_number
-        sensor: rpm
-        format: "0000"
-
-      - id: rpm_digits
-        type: digits
-        input: rpm_text
-        asset: yellow_digits
-
-      - id: throttle_frame
-        type: frame_index
-        sensor: throttle_position
-        asset: throttle_frames
-        frame_count: 11
-
-      - id: rpm_warning
-        type: threshold
-        sensor: rpm
-        thresholds:
-          - at: 0
-            value: normal
-          - at: 2100
-            value: warning
-
-    # blocks define visual elements and groups.
-    blocks:
-      - id: background_panel
-        type: static_panel
-        asset: background
-        geometry:
-          x: 0
-          y: 0
-          width: 800
-          height: 480
-
-      - id: rpm_display
-        type: seven_segment_number
-        asset: yellow_digits
-        decoder: rpm_digits
-        geometry:
-          x: 92
-          y: 58
-          width: 300
-          height: 100
-
-      - id: throttle_bar
-        type: percent_frame_bar
-        asset: throttle_frames
-        decoder: throttle_frame
-        geometry:
-          x: 92
-          y: 220
-          width: 360
-          height: 48
-
-      - id: status_ok_indicator
-        type: state_lamp
-        asset: status_ok
-        condition:
-          sensor: rpm
-          status: ok
-        geometry:
-          x: 610
-          y: 58
-          width: 120
-          height: 42
-
-      - id: status_stale_indicator
-        type: stale_overlay
-        asset: status_stale
-        condition:
-          sensor: rpm
-          status: stale
-        geometry:
-          x: 610
-          y: 58
-          width: 120
-          height: 42
-
-      - id: status_error_indicator
-        type: warning_overlay
-        asset: status_error
-        condition:
-          sensor: rpm
-          status: error
-        geometry:
-          x: 610
-          y: 58
-          width: 120
-          height: 42
-
-      - id: redline_overlay
-        type: warning_overlay
-        asset: redline_glow
-        condition:
-          decoder: rpm_warning
-          equals: warning
-        geometry:
-          x: 0
-          y: 0
-          width: 800
-          height: 480
-
-      - id: main_cluster
-        type: group
-        blocks:
-          - rpm_display
-          - throttle_bar
-          - status_ok_indicator
-          - status_stale_indicator
-          - status_error_indicator
-
-    # layers define render order.
-    # Lower z is rendered first. Higher z appears above lower layers.
-    layers:
-      - id: base
-        z: 0
-        blocks:
-          - background_panel
-
-      - id: dashboard
-        z: 10
-        blocks:
-          - main_cluster
-
-      - id: alerts
-        z: 20
-        blocks:
-          - redline_overlay
-
-  # Second dashboard example for a second display.
-  # This can reuse the same asset root and sensor catalogue while showing
-  # a different layout or smaller subset of information.
-  bttf_aux:
-    refresh_ms: 1000
-    render_min_ms: 1000
-    canvas:
-      width: 800
-      height: 480
-    asset_root: assets/dashboard/bttf
-
-    assets:
-      - id: background
-        type: image
-        path: background.svg
-
-      - id: yellow_digits
-        type: charset
-        glyphs:
-          "0": digits/yellow/0.svg
-          "1": digits/yellow/1.svg
-          "2": digits/yellow/2.svg
-          "3": digits/yellow/3.svg
-          "4": digits/yellow/4.svg
-          "5": digits/yellow/5.svg
-          "6": digits/yellow/6.svg
-          "7": digits/yellow/7.svg
-          "8": digits/yellow/8.svg
-          "9": digits/yellow/9.svg
-
-    decoders:
-      - id: speed_text
-        type: format_number
-        sensor: speed
-        format: "000"
+        asset: bttf_panel
+        position: [0, 0]
 
       - id: speed_digits
-        type: digits
-        input: speed_text
-        asset: yellow_digits
+        # digit_display renders formatted sensor values using a digit_set.
+        type: digit_display
+        sensor: speed
+        asset: bttf_amber_digits
+        position: [40, 40]
+        digits: 3
+        format: "%03.0f"
 
-    blocks:
-      - id: background_panel
-        type: static_panel
-        asset: background
-        geometry:
-          x: 0
-          y: 0
-          width: 800
-          height: 480
+      - id: rpm_digits
+        type: digit_display
+        sensor: rpm
+        asset: bttf_amber_digits
+        position: [40, 180]
+        digits: 4
+        format: "%04.0f"
 
-      - id: speed_display
-        type: seven_segment_number
-        asset: yellow_digits
-        decoder: speed_digits
-        geometry:
-          x: 180
-          y: 120
-          width: 360
-          height: 120
+      - id: throttle_bar
+        # frame_gauge maps a sensor value range onto a frame_set.
+        type: frame_gauge
+        sensor: throttle_position
+        asset: bttf_throttle_frames
+        position: [40, 320]
+        min: 0
+        max: 100
 
-    layers:
-      - id: base
-        z: 0
-        blocks:
-          - background_panel
+      - id: engine_warning
+        # indicator maps boolean/status sensor values onto off/on/unknown images.
+        type: indicator
+        sensor: engine_warning
+        asset: engine_warning
+        position: [1520, 340]
 
-      - id: dashboard
-        z: 10
-        blocks:
-          - speed_display
+  # Nissan 300ZX Z31-inspired example from the retro dashboard discussion.
+  # Inspired by digital speed plus colourful bar displays and RPM/boost styling.
+  z31_primary:
+    display: "HDMI-1"
+    size:
+      width: 1920
+      height: 480
+    widgets:
+      - id: panel_backplate
+        type: image
+        asset: z31_panel
+        position: [0, 0]
+
+      - id: speed_digits
+        type: digit_display
+        sensor: speed
+        asset: bttf_amber_digits
+        position: [92, 42]
+        digits: 3
+        format: "%03.0f"
+
+      - id: speed_bar
+        # bar_display maps value range to filled cells. zones optionally choose
+        # different cell images for different ranges.
+        type: bar_display
+        sensor: speed
+        asset: z31_rainbow_speed_bar
+        position: [92, 210]
+        cells: 44
+        min: 0
+        max: 220
+        zones:
+          - up_to: 80
+            cell: on_low
+          - up_to: 140
+            cell: on_mid
+          - up_to: 220
+            cell: on_high
+
+      - id: rpm_boost_sweep
+        type: frame_gauge
+        sensor: rpm
+        asset: z31_rpm_boost_sweep
+        position: [660, 38]
+        min: 0
+        max: 7000
+
+      - id: coolant_bar
+        type: bar_display
+        sensor: coolant_temperature
+        asset: bttf_green_bar
+        position: [1130, 70]
+        cells: 18
+        min: 40
+        max: 120
+
+      - id: fuel_bar
+        type: bar_display
+        sensor: fuel_level
+        asset: bttf_green_bar
+        position: [1130, 150]
+        cells: 18
+        min: 0
+        max: 100
+
+      - id: voltage_digits
+        type: digit_display
+        sensor: battery_voltage
+        asset: bttf_green_digits
+        position: [1430, 70]
+        digits: 4
+        format: "%04.1f"
+
+      - id: engine_warning
+        type: indicator
+        sensor: engine_warning
+        asset: engine_warning
+        position: [1430, 280]
+
+      - id: high_beam
+        type: indicator
+        sensor: high_beam
+        asset: high_beam
+        position: [1530, 280]
+
+  # Honda S2000-inspired example from the retro dashboard discussion.
+  # Dominated by a sweeping rev counter, with speed digits and side gauges.
+  s2000_primary:
+    display: "HDMI-1"
+    size:
+      width: 1920
+      height: 480
+    widgets:
+      - id: panel_backplate
+        type: image
+        asset: s2000_panel
+        position: [0, 0]
+
+      - id: rpm_sweep
+        type: frame_gauge
+        sensor: rpm
+        asset: s2000_rpm_sweep
+        position: [84, 26]
+        min: 0
+        max: 9000
+
+      - id: speed_digits
+        type: digit_display
+        sensor: speed
+        asset: s2000_speed_digits
+        position: [770, 185]
+        digits: 3
+        format: "%03.0f"
+
+      - id: coolant_temperature_bar
+        type: bar_display
+        sensor: coolant_temperature
+        asset: s2000_side_bar
+        position: [1370, 80]
+        cells: 16
+        min: 40
+        max: 120
+        zones:
+          - up_to: 105
+            cell: on
+          - up_to: 120
+            cell: warning
+
+      - id: fuel_bar
+        type: bar_display
+        sensor: fuel_level
+        asset: s2000_side_bar
+        position: [1370, 205]
+        cells: 16
+        min: 0
+        max: 100
+        reverse: true
+
+      - id: engine_warning
+        type: indicator
+        sensor: engine_warning
+        asset: engine_warning
+        position: [1480, 340]
+
+      - id: high_beam
+        type: indicator
+        sensor: high_beam
+        asset: high_beam
+        position: [1560, 340]
