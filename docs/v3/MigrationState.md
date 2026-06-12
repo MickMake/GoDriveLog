@@ -23,9 +23,9 @@ Do not infer migration position from memory when this file exists. Read this fil
 ## 2. Current migration position
 
 Current version: `v3.0.1`  
-Current phase: frozen v3 docs and schema target under implementation  
+Current phase: frozen v3 docs and schema target under review  
 Current branch prefix: `v3.0.1`  
-Current PR: pending  
+Current PR: `#39`  
 Current PR branch: `v3.0.1-freeze-v3-docs-schema`
 
 Current state:
@@ -34,7 +34,7 @@ Current state:
 v3.0.0 process scaffolding has been merged.
 Chat prompt workflow has been merged.
 v3.0.0 working-code inventory and seam plan has been merged.
-v3.0.1 frozen docs/schema target is being prepared for verification.
+v3.0.1 frozen docs/schema target is open for verification.
 Runtime implementation work has not started yet.
 ```
 
@@ -49,9 +49,9 @@ Runtime implementation work has not started yet.
 ## 4. Next target
 
 Next version: `v3.0.1`  
-Next action: verify the v3.0.1 frozen v3 docs and schema target PR.
+Next action: verify PR `#39` against the v3.0.1 frozen v3 docs and schema target prompt.
 
-If the v3.0.1 PR passes verification and is merged, the next action should be:
+If PR `#39` passes verification and is merged, the next action should be:
 
 ```text
 Create the v3.0.2 strict v3 config load and validation implementation slice using the v3.0.2 implementation prompt in docs/v3/ChatPrompts.md and the frozen schema target in docs/v3/SchemaTarget.md.
@@ -64,7 +64,7 @@ That slice should add runtime-independent strict v3 config loading and validatio
 | Version | Purpose | Status |
 |---|---|---|
 | v3.0.0 | working-code inventory and seam plan | complete |
-| v3.0.1 | frozen v3 docs and schema target | implementation branch active |
+| v3.0.1 | frozen v3 docs and schema target | PR #39 under review |
 | v3.0.2 | strict v3 config load/validation | pending |
 | v3.0.3 | RuntimePlan resolution | pending |
 | v3.0.4 | endpoint abstraction with serial/TCP simulator support | pending |
