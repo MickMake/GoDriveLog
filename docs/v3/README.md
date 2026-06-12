@@ -33,11 +33,16 @@ The codebase may still contain current-runtime or earlier-dashboard pieces while
 ## Target runtime model
 
 ```text
-vehicle endpoint
+selected vehicle
+-> OBD endpoint
 -> sensor polling runtime
 -> sensor events
--> logs and dashboards as subscribers
+-> selected logs and dashboards as subscribers
 ```
+
+The selected vehicle is the runtime profile. It chooses the OBD endpoint, log definitions, and dashboard definitions to run.
+
+Sensors and assets remain global catalogues. Logs and dashboard widgets reference them by ID.
 
 ## Target config shape
 
@@ -64,6 +69,12 @@ assets/dashboard/simple/panel/background.png
 ```
 
 Do not teach multiple active asset path dialects.
+
+## Display stance
+
+Multiple dashboard definitions may target the same physical display when they are alternatives.
+
+Display collision validation applies to the dashboards selected by the selected vehicle. Within one selected vehicle's dashboard set, no two dashboards may target the same physical display.
 
 ## Migration stance
 
