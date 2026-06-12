@@ -22,13 +22,18 @@ Keep the v3 model clean.
 The v3 target remains:
 
 ```text
-vehicle endpoint
+selected vehicle
+-> OBD endpoint
 -> sensor polling runtime
 -> sensor events
--> logs and dashboards as subscribers
+-> selected logs and dashboards as subscribers
 ```
 
-Renderer performance should improve how dashboards consume state and draw pixels. It should not make dashboards poll sensors, own sensor timing, or require schema tricks.
+The selected vehicle owns the runtime profile. It chooses the endpoint, log definitions, and dashboard definitions to run.
+
+Renderer performance applies only to selected dashboards. Dashboard definitions not selected by the selected vehicle are inert for that runtime session.
+
+Renderer performance should improve how selected dashboards consume state and draw pixels. It should not make dashboards poll sensors, own sensor timing, or require schema tricks.
 
 ## 3. Current display performance lane
 
@@ -80,7 +85,7 @@ Useful measurements:
 - number of allocations per update path
 - number of UI invalidations per sensor event
 - event rate from sensor runtime
-- actual dashboard update rate
+- actual selected-dashboard update rate
 - time spent formatting values
 - time spent loading/scaling assets
 
@@ -101,7 +106,7 @@ Rules:
 - reuse prepared images/resources where the UI toolkit allows it
 - validate dimensions before rendering starts
 
-Digit, bar, frame, indicator, and image assets should be registered and ready before the dashboard goes live.
+Digit, bar, frame, indicator, and image assets should be registered and ready before the selected dashboard goes live.
 
 ## 7. Widget update guardrails
 
@@ -128,7 +133,8 @@ Rules:
 
 - sensors own polling rate
 - event state updates should be cheap
-- dashboard widgets decide whether an event changes rendered output
+- selected dashboard widgets decide whether an event changes rendered output
+- dashboard definitions not selected by the selected vehicle do no renderer work
 - renderer should avoid doing work for unchanged visual state
 - do not solve event volume by making dashboards poll sensors
 - state/change coalescing must not hide status transitions
@@ -136,7 +142,7 @@ Rules:
 - state/change coalescing must not hide error transitions
 - state/change coalescing must not hide recovery transitions
 
-If event volume becomes a problem, add state/change coalescing at the event/dashboard boundary, not OBD reads inside the renderer.
+If event volume becomes a problem, add state/change coalescing at the event/selected-dashboard boundary, not OBD reads inside the renderer.
 
 Performance fixes that hide error states are not fixes. They are lies with better frame times.
 
@@ -183,7 +189,7 @@ Before deeper v3 dashboard work, current display stabilisation should check:
 - are unchanged formatted values redrawn?
 - are layout calculations repeated unnecessarily?
 - are UI updates happening too often?
-- are sensor updates faster than visible dashboard updates need to be?
+- are sensor updates faster than visible selected-dashboard updates need to be?
 - are stale/error/status changes still visible after optimisation?
 
 If a fix makes errors or stale states invisible, it is not a fix.
@@ -204,7 +210,7 @@ Performance expectations for that slice:
 - indicators update on value or status changes
 - stale/error/recovery transitions remain visible
 - unchanged visual state does not redraw
-- dashboard does not poll sensors
+- selected dashboard does not poll sensors
 
 Do not start with frame gauges, curved bars, glass overlays, and glorious retro excess. Those are dessert. Delicious dessert, but still dessert.
 
@@ -219,7 +225,7 @@ Add performance-sensitive tests or checks where practical:
 - recovery transitions are not hidden by coalescing
 - asset registry does not reload the same file repeatedly
 - missing asset fails during validation/load
-- dashboard receives sensor state without calling reader/endpoint code
+- selected dashboard receives sensor state without calling reader/endpoint code
 
 Full performance benchmarks can come later. Boundary tests should come early.
 
