@@ -11,14 +11,16 @@ This document describes the Go structs that should back the intended v3 YAML con
 The struct layout mirrors the v3 ownership boundaries:
 
 ```text
-vehicles   = available vehicle endpoint profiles
+vehicles   = runtime profiles: OBD endpoint plus selected logs and dashboards
 sensors    = global sensor catalogue and polling rules
-assets     = reusable dashboard asset packs
-logs       = event-log subscribers
-dashboards = physical display dashboards and widgets
+assets     = global reusable dashboard asset packs
+logs       = global event-log subscriber definitions
+dashboards = global physical display dashboard definitions
 ```
 
-The runtime should load one `Config`, select a vehicle, connect to the selected vehicle's OBD-like endpoint, start the shared sensor polling runtime, and then feed logs and dashboards from sensor events.
+The runtime should load one `Config`, select one vehicle, connect to that vehicle's OBD-like endpoint, start the shared sensor polling runtime, and then run only the logs and dashboards selected by the vehicle.
+
+Sensors and assets are global catalogues. Vehicles do not directly list sensors or assets. Logs reference global sensors. Dashboard widgets reference global sensors and global assets.
 
 The v3 root schema is intentionally small. Treat the five documented top-level sections as an allow-list, and reject unknown fields during development.
 
@@ -77,9 +79,10 @@ type Config struct {
 ### Notes
 
 - If exactly one vehicle exists, the runtime may use it by default.
-- If multiple vehicles exist, require an explicit runtime choice such as `--vehicle <id>`.
+- If multiple vehicles exist, require an explicit runtime vehicle choice such as `--vehicle <id>`.
+- The selected vehicle defines the OBD endpoint, log definitions, and dashboard definitions to run.
 - Sensors are global and shared by logs, dashboards, and future consumers.
-- Dashboard presence means the dashboard is active.
+- Assets are global and shared by dashboards.
 - Logs and dashboards subscribe to sensor events; they do not poll sensors independently.
 - Unknown root fields fail validation.
 - Unknown nested fields fail validation.
@@ -95,14 +98,20 @@ vehicles:
     obd:
       address: "serial:///dev/ttyUSB0"
       timeout: 1000
+    logs:
+      - jsonl
+    dashboards:
+      - simple_primary
 ```
 
 ### Go struct
 
 ```go
 type VehicleConfig struct {
-    Name string    `yaml:"name"`
-    OBD  OBDConfig `yaml:"obd"`
+    Name       string    `yaml:"name"`
+    OBD        OBDConfig `yaml:"obd"`
+    Logs       []string  `yaml:"logs,omitempty"`
+    Dashboards []string  `yaml:"dashboards,omitempty"`
 }
 
 type OBDConfig struct {
@@ -116,8 +125,26 @@ type OBDConfig struct {
 - The vehicle map key, for example `vw_caddy`, is the stable vehicle ID.
 - `Name` is human-readable display/log text.
 - `OBD.Address` is an OBD-like endpoint, such as `serial:///dev/ttyUSB0` or `tcp://127.0.0.1:35000`.
+- `Logs` selects global log definitions to run for this vehicle.
+- `Dashboards` selects global dashboard definitions to render for this vehicle.
 - The runtime should not know or care whether the endpoint is real hardware or a simulator.
 - Prefer endpoint addresses over endpoint-type branching.
+- Vehicles do not directly list sensors.
+- Vehicles do not directly list assets.
+
+### Vehicle log/dashboard selection
+
+Rules:
+
+- If a vehicle lists `logs`, every listed log ID must exist under top-level `logs`.
+- If a vehicle lists `dashboards`, every listed dashboard ID must exist under top-level `dashboards`.
+- If a vehicle omits `logs` and exactly one log is defined, the runtime may use that single log automatically.
+- If a vehicle omits `dashboards` and exactly one dashboard is defined, the runtime may use that single dashboard automatically.
+- If multiple logs are defined, each vehicle should list the logs it runs.
+- If multiple dashboards are defined, each vehicle should list the dashboards it renders.
+- Display collision validation applies to the dashboards selected by the selected vehicle.
+- Within one selected vehicle's dashboard set, no two dashboards may target the same physical display.
+- Multiple dashboard definitions may target the same display when they are alternatives selected by different vehicle profiles.
 
 ### Endpoint validation
 
@@ -169,6 +196,7 @@ type SensorConfig struct {
 - `Min` and `Max` are optional expected bounds for validation and display scaling.
 - If both `Min` and `Max` are present, require `Min < Max`.
 - Sensor state events should include value, unit, status, original read timestamp, and a sequence/version.
+- Sensors are global definitions, not vehicle-owned definitions.
 
 ## 6. Sensor event semantics
 
@@ -241,6 +269,8 @@ assets/dashboard/bttf/amber_digits/amber0.png
 ```
 
 Do not teach multiple path dialects in active v3 examples.
+
+Assets are global definitions. Vehicles do not directly list assets; dashboards and widgets reference them.
 
 ### YAML source
 
@@ -399,7 +429,8 @@ type LogConfig struct {
 
 ### Notes
 
-- Logs are subscribers to sensor events.
+- Logs are global subscriber definitions.
+- Vehicles select which log definitions run.
 - A listed sensor key must exist under `Config.Sensors`.
 - Logs should write first readings, value changes, and status changes.
 - Logs should not spam unchanged duplicate readings.
@@ -436,11 +467,13 @@ type SizeConfig struct {
 
 ### Notes
 
+- Dashboards are global display definitions.
+- Vehicles select which dashboard definitions render.
 - The dashboard map key is the stable dashboard ID.
-- Dashboard presence means active.
 - A dashboard owns its physical/logical display target.
 - Multiple physical regions on the same display should be widgets.
-- In the initial v3 implementation, two active dashboards must not target the same display.
+- Multiple dashboard definitions may share a display if they are alternatives selected by different vehicles.
+- Within one selected vehicle's dashboard set, no two dashboards may target the same display.
 - Dashboards do not define polling cadence.
 - Dashboards do not read OBD directly.
 
@@ -523,11 +556,16 @@ Initial validation should check:
 - Unknown fields fail at all documented levels.
 - IDs match `^[a-z][a-z0-9_]*$`.
 - At least one vehicle exists.
-- If multiple vehicles exist, runtime selection is explicit.
+- If multiple vehicles exist, runtime vehicle selection is explicit.
 - Vehicle endpoint address is present.
 - `serial://` endpoints include a non-empty path.
 - `tcp://` endpoints include host and port.
 - OBD timeout is greater than zero, preferably within `100..30000` milliseconds.
+- Vehicle `logs` references exist under top-level `logs`.
+- Vehicle `dashboards` references exist under top-level `dashboards`.
+- If multiple logs are defined, each vehicle lists the logs it runs.
+- If multiple dashboards are defined, each vehicle lists the dashboards it renders.
+- For each selected vehicle, no two selected dashboards target the same display.
 - Sensor `poll > 0`.
 - Sensor `min < max` when both are present.
 - Sensor IDs referenced by logs exist.
@@ -544,7 +582,6 @@ Initial validation should check:
 - Bar zones reference valid cell names.
 - Indicator sets contain `off`, `on`, and `unknown`.
 - Dashboard sizes are positive.
-- No two active dashboards target the same display.
 - Widget positions are present.
 - Widget IDs are unique within each dashboard.
 - Widget `min < max` when both are present.
