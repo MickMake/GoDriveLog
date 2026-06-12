@@ -3,6 +3,7 @@ package v3config
 import (
 	"fmt"
 	"net/url"
+	"path"
 	"path/filepath"
 	"regexp"
 	"sort"
@@ -249,13 +250,29 @@ func (v *validator) validateOptionalAssetPath(path, assetPath string) {
 	v.validateAssetPath(path, assetPath)
 }
 
-func (v *validator) validateAssetPath(path, assetPath string) {
-	if strings.Contains(assetPath, "://") {
-		v.add("%s must be repository-root relative, not remote or URL-like", path)
+func (v *validator) validateAssetPath(pathName, assetPath string) {
+	trimmed := strings.TrimSpace(assetPath)
+	slashPath := filepath.ToSlash(trimmed)
+	cleaned := path.Clean(slashPath)
+
+	if strings.Contains(trimmed, "://") {
+		v.add("%s must be repository-root relative, not remote or URL-like", pathName)
 	}
-	if filepath.IsAbs(assetPath) || strings.HasPrefix(assetPath, "../") || strings.Contains(assetPath, "/../") {
-		v.add("%s must be repository-root relative", path)
+	if filepath.IsAbs(trimmed) || path.IsAbs(slashPath) {
+		v.add("%s must be repository-root relative", pathName)
 	}
+	if cleaned == "." || cleaned == ".." || strings.HasPrefix(cleaned, "../") || hasUpwardEscapeSegment(slashPath) {
+		v.add("%s must be repository-root relative", pathName)
+	}
+}
+
+func hasUpwardEscapeSegment(slashPath string) bool {
+	for _, segment := range strings.Split(slashPath, "/") {
+		if segment == ".." {
+			return true
+		}
+	}
+	return false
 }
 
 func (v *validator) validateLog(path string, log LogConfig, sensors map[string]SensorConfig) {
@@ -384,8 +401,45 @@ func isKnownWidgetType(widgetType string) bool {
 }
 
 func formatUsesDecimalPoint(format string) bool {
-	decimal := regexp.MustCompile(`%[^%]*\.([1-9][0-9]*)[fF]`)
-	return decimal.MatchString(format)
+	for i := 0; i < len(format); i++ {
+		if format[i] != '%' {
+			continue
+		}
+		i++
+		if i >= len(format) {
+			return false
+		}
+		if format[i] == '%' {
+			continue
+		}
+
+		for i < len(format) && strings.ContainsRune("#+- 0", rune(format[i])) {
+			i++
+		}
+		for i < len(format) && isASCIIDigit(format[i]) {
+			i++
+		}
+
+		precisionSet := false
+		precision := 0
+		if i < len(format) && format[i] == '.' {
+			precisionSet = true
+			i++
+			for i < len(format) && isASCIIDigit(format[i]) {
+				precision = precision*10 + int(format[i]-'0')
+				i++
+			}
+		}
+
+		if i < len(format) && (format[i] == 'f' || format[i] == 'F') {
+			return !precisionSet || precision > 0
+		}
+	}
+	return false
+}
+
+func isASCIIDigit(ch byte) bool {
+	return ch >= '0' && ch <= '9'
 }
 
 func keysOf[T any](items map[string]T) []string {
