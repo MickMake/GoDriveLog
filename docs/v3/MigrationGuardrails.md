@@ -14,14 +14,19 @@ The current code may contain useful runtime pieces, renderer experiments, config
 
 ## 2. Core migration rule
 
-The target remains:
+The target is:
 
 ```text
-vehicle endpoint
+selected vehicle
+-> OBD endpoint
 -> sensor polling runtime
 -> sensor events
--> logs and dashboards as subscribers
+-> selected logs and dashboards as subscribers
 ```
+
+The selected vehicle is the runtime profile. It chooses the OBD endpoint, log definitions, and dashboard definitions to run.
+
+Sensors and assets remain global catalogues. Vehicles do not directly list sensors or assets.
 
 Migration work should move code toward that model in small slices.
 
@@ -32,11 +37,11 @@ Do not bend the v3 docs around old code unless the old code reveals a real requi
 | Area | Current code may contain | v3 target |
 |---|---|---|
 | Config | earlier config structs/loaders | strict v3 root schema: `vehicles`, `sensors`, `assets`, `logs`, `dashboards` |
-| Vehicle/OBD | existing reader/adapter plumbing | selected vehicle connects to an OBD-like endpoint address |
-| Sensors | reader/state/cache-style concepts | sensor polling runtime emits sensor events |
-| Logging | current JSONL writer behaviour | JSONL subscriber receives selected sensor events |
-| Dashboard | current Fyne/dashboard renderer pieces | widget-driven dashboard subscriber |
-| Assets | current asset experiments | repo-root-relative asset paths and asset families: digit, bar, frame, indicator, image |
+| Vehicle/OBD | existing reader/adapter plumbing | selected vehicle connects to an OBD-like endpoint and selects logs/dashboards |
+| Sensors | reader/state/cache-style concepts | global sensor catalogue plus polling runtime emits sensor events |
+| Logging | current JSONL writer behaviour | global log definitions selected by vehicle; log subscribers receive selected sensor events |
+| Dashboard | current Fyne/dashboard renderer pieces | global dashboard definitions selected by vehicle; widget-driven dashboard subscribers |
+| Assets | current asset experiments | global repo-root-relative asset catalogue with digit, bar, frame, indicator, and image families |
 | Performance | current display path may be slow | optimise locally without changing the v3 schema |
 
 This table is not a complaint list. It is a migration map.
@@ -61,6 +66,7 @@ Not allowed:
 - letting old renderer concepts define the v3 dashboard model
 - letting the logger become the hidden scheduler
 - making dashboards poll sensors because the current renderer wants values directly
+- making vehicles directly own sensor or asset definitions
 
 ## 5. Phase 0 — current display performance stabilisation
 
@@ -113,6 +119,8 @@ Rules:
 
 - Treat documented v3 root sections as an allow-list.
 - Unknown fields should fail at every documented level during v3 implementation.
+- Vehicles select logs and dashboards by ID.
+- Sensors and assets are global catalogues.
 - All active v3 examples should validate against the same schema rules.
 - Asset paths are repository-root relative.
 - Avoid schema churn once implementation starts.
@@ -121,6 +129,7 @@ Rules:
 Exit criteria:
 
 - v3 schema shape is clear
+- vehicle runtime-profile ownership is clear
 - implementation order is documented
 - migration guardrails are accepted
 - performance constraints are acknowledged without warping the schema
@@ -151,6 +160,9 @@ Exit criteria:
 - `docs/v3/config.example.yaml` loads
 - `docs/v3/config.full.yaml` loads
 - all files under `docs/v3/examples/` load
+- vehicles resolve their selected log IDs
+- vehicles resolve their selected dashboard IDs
+- sensors and assets remain global catalogues
 - unknown fields fail at root and nested levels
 - references validate
 - current runtime can still build while v3 config work is staged
@@ -215,11 +227,12 @@ Exit criteria:
 
 ## 10. Phase 5 — JSONL subscriber
 
-Goal: attach logging to the event spine.
+Goal: attach selected logging to the event spine.
 
 Allowed:
 
 - implement JSONL log subscriber
+- select log definitions from `vehicles.<id>.logs`
 - select logged sensors from `logs.<id>.sensors`
 - write first readings, value changes, and status changes
 - include read timestamp and status
@@ -229,16 +242,18 @@ Not allowed:
 - logger polling sensors
 - logger owning sensor cadence
 - logger causing extra endpoint reads
+- vehicle-owned sensor lists
 
 Exit criteria:
 
+- selected vehicle controls which logs run
 - JSONL output is driven only by sensor events
 - unchanged duplicate values do not spam logs
 - status changes are logged clearly
 
 ## 11. Phase 6 — asset registry
 
-Goal: validate and load assets before widget rendering.
+Goal: validate and load global assets before widget rendering.
 
 Allowed:
 
@@ -258,6 +273,7 @@ Not allowed:
 - per-widget asset decoding in the hot render path
 - nil fallback behaviour that hides missing assets
 - multiple active path dialects
+- vehicle-owned asset lists
 
 Exit criteria:
 
@@ -268,7 +284,7 @@ Exit criteria:
 
 ## 12. Phase 7 — smallest dashboard subscriber
 
-Goal: prove a dashboard can render from sensor state without polling sensors.
+Goal: prove a selected dashboard can render from sensor state without polling sensors.
 
 Start with:
 
@@ -278,6 +294,7 @@ Start with:
 
 Allowed:
 
+- select dashboard definitions from `vehicles.<id>.dashboards`
 - render a static panel image
 - render formatted numeric values from latest sensor state
 - render indicator states using sensor value and status
@@ -289,9 +306,11 @@ Not allowed:
 - direct endpoint reads from widgets
 - conditions/scripts/formulas in dashboard YAML
 - dashboard-level polling cadence
+- vehicle-owned asset lists
 
 Exit criteria:
 
+- selected vehicle controls which dashboards render
 - one dashboard displays image + digit_display + indicator
 - stale/error/missing states are visible
 - dashboard receives events/state from runtime, not endpoint code
@@ -341,6 +360,7 @@ Not allowed:
 Exit criteria:
 
 - v3 config is the active config path
+- selected vehicle owns endpoint/log/dashboard runtime profile
 - sensor runtime owns polling
 - logs and dashboards are subscribers
 - old runtime pieces are either removed, archived, or clearly isolated
@@ -387,6 +407,8 @@ Useful test groups:
 - nested unknown field rejection
 - ID naming and duplicate widget ID validation
 - endpoint selection and reader creation
+- vehicle log/dashboard reference validation
+- selected vehicle dashboard display collision validation
 - sensor event emission
 - stale and recovery transition emission
 - log subscriber behaviour
@@ -421,6 +443,8 @@ These migration guardrails are doing their job when contributors can answer:
 - how performance work fits without warping the schema
 - what order to implement changes in
 - how staged work is tracked
+- why vehicles select logs and dashboards
+- why sensors and assets remain global catalogues
 - why all active examples validate against one schema
 
 If the docs create confusion, fix the docs before fixing the wrong code.
