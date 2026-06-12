@@ -12,11 +12,11 @@ Every implementor and verifier chat should read this file before doing work. Do 
 
 ## 2. Current migration position
 
-Current version: `v3.0.4`  
-Current phase: endpoint abstraction with serial/TCP simulator support under review  
-Current branch prefix: `v3.0.4`  
+Current version: `v3.0.5`  
+Current phase: sensor event spine and latest-state store under review  
+Current branch prefix: `v3.0.5`  
 Current PR: `pending`  
-Current PR branch: `v3.0.4-endpoint-abstraction`
+Current PR branch: `v3.0.5-sensor-event-spine`
 
 Current state:
 
@@ -27,8 +27,9 @@ v3.0.0 working-code inventory and seam plan has been merged.
 v3.0.1 frozen v3 docs/schema target has been merged.
 v3.0.2 strict config load and validation has been merged.
 v3.0.3 RuntimePlan resolution has been merged.
-v3.0.4 endpoint abstraction is open for verification.
-Sensor polling runtime has not started yet.
+v3.0.4 endpoint abstraction has been merged.
+v3.0.5 sensor event spine and latest-state store is open for verification.
+Selected JSONL logging has not started yet.
 ```
 
 ## 3. Completed versions
@@ -41,16 +42,17 @@ Sensor polling runtime has not started yet.
 | v3.0.1 | complete | #39 | Added frozen v3 docs and schema target before strict config loading. |
 | v3.0.2 | complete | #40 | Added strict v3 config load and validation. |
 | v3.0.3 | complete | #41 | Added RuntimePlan resolution. |
+| v3.0.4 | complete | #42 | Added endpoint abstraction with serial/TCP simulator support. |
 
 ## 4. Next target
 
-Next version: `v3.0.4`  
-Next action: verify the v3.0.4 endpoint abstraction PR against the v3.0.4 implementation prompt in `docs/v3/ChatPrompts.md`.
+Next version: `v3.0.5`  
+Next action: verify the v3.0.5 sensor event spine and latest-state store PR against the v3.0.5 implementation prompt in `docs/v3/ChatPrompts.md`.
 
-If the v3.0.4 PR passes verification and is merged, the next action should be:
+If the v3.0.5 PR passes verification and is merged, the next action should be:
 
 ```text
-Create the v3.0.5 sensor event spine and latest-state store implementation slice using the v3.0.5 implementation prompt in docs/v3/ChatPrompts.md.
+Create the v3.0.6 selected JSONL logging implementation slice using the v3.0.6 implementation prompt in docs/v3/ChatPrompts.md.
 ```
 
 ## 5. Version queue
@@ -59,10 +61,10 @@ Create the v3.0.5 sensor event spine and latest-state store implementation slice
 |---|---|---|
 | v3.0.0 | working-code inventory and seam plan | complete |
 | v3.0.1 | frozen v3 docs and schema target | complete |
-| v3.0.2 | strict v3 config load/validation | complete |
+| v3.0.2 | strict config load/validation | complete |
 | v3.0.3 | RuntimePlan resolution | complete |
-| v3.0.4 | endpoint abstraction with serial/TCP simulator support | PR under review |
-| v3.0.5 | sensor event spine and latest-state store | pending |
+| v3.0.4 | endpoint abstraction with serial/TCP simulator support | complete |
+| v3.0.5 | sensor event spine and latest-state store | PR under review |
 | v3.0.6 | selected JSONL logging | pending |
 | v3.0.7 | minimal asset registry: image, digit, indicator | pending |
 | v3.0.8 | smallest selected dashboard: image + digit_display + indicator | pending |
@@ -103,22 +105,24 @@ v3.0.1-freeze-v3-docs-schema
 v3.0.2-config-loader-validation
 v3.0.3-runtime-plan
 v3.0.4-endpoint-abstraction
+v3.0.5-sensor-event-spine
 ```
 
 ## 10. Notes for current PR
 
-The current PR is a v3.0.4 endpoint abstraction slice.
+The current PR is a v3.0.5 sensor event spine and latest-state store slice.
 
 Expected verification focus:
 
-- `internal/vehicle` contains the v3 endpoint/reader boundary.
-- A selected `RuntimePlan` endpoint can create one reader through the boundary.
-- `serial://` endpoint shape is supported by wrapping existing ELMOBD reader code.
-- `tcp://host:port` endpoint shape is supported for bench/simulator work.
-- Endpoint parsing follows the v3 address rules.
-- The boundary returns a reader usable by the later sensor runtime.
-- Simulator identity does not leak into sensors, logs, dashboards, or assets.
-- The core runtime does not gain endpoint-provider branching.
-- It does not implement sensor polling.
-- It does not implement dashboard rendering.
+- `internal/sensors` contains the v3 sensor event type and sensor status values.
+- A central polling runtime reads selected global sensors through one endpoint reader path.
+- Polling cadence comes from `sensors.<id>.poll`.
+- Initial stale timing follows `max(poll * 3, 1000ms)`.
+- Latest state is maintained per sensor.
+- Events are emitted for first read, value change, error transition, recovery transition, and stale transition.
+- Stale/error/recovery transitions are not hidden by event coalescing.
+- Multiple subscribers do not cause duplicate endpoint polling.
+- Logs and dashboards do not read directly from endpoint code.
 - It does not implement selected JSONL logging.
+- It does not implement dashboard rendering.
+- It does not change the v3 YAML schema.

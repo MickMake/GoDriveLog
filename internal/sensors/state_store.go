@@ -60,6 +60,21 @@ func (s *StateStore) SetError(id string, readErr error, updatedAt time.Time) Sen
 	return state
 }
 
+func (s *StateStore) MarkStale(id string, now time.Time) (SensorState, bool) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	state, ok := s.states[id]
+	if !ok {
+		return SensorState{}, false
+	}
+	staleState := withStaleStatus(state, now)
+	if staleState.Status == state.Status {
+		return state, false
+	}
+	s.states[id] = staleState
+	return staleState, true
+}
+
 func (s *StateStore) Get(id string) (SensorState, bool) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
