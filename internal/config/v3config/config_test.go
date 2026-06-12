@@ -97,6 +97,49 @@ func TestRejectInvalidIDs(t *testing.T) {
 	assertErrorContains(t, err, "must match")
 }
 
+func TestRejectAssetPathUpwardEscapes(t *testing.T) {
+	for _, badPath := range []string{
+		"..",
+		"assets/dashboard/..",
+		"assets/dashboard/../x",
+	} {
+		t.Run(badPath, func(t *testing.T) {
+			bad := strings.Replace(validMinimalYAML(), "assets/dashboard/simple/panel/background.png", badPath, 1)
+			_, err := LoadBytes([]byte(bad))
+			if err == nil {
+				t.Fatalf("expected asset path %q to fail", badPath)
+			}
+			assertErrorContains(t, err, "repository-root relative")
+		})
+	}
+}
+
+func TestRejectDecimalFormatsWithoutDecimalPoint(t *testing.T) {
+	for _, format := range []string{"%f", "%03f"} {
+		t.Run(format, func(t *testing.T) {
+			bad := removeDigitDecimalPoint(validMinimalYAML())
+			bad = strings.Replace(bad, `format: "%03.0f"`, `format: "`+format+`"`, 1)
+			_, err := LoadBytes([]byte(bad))
+			if err == nil {
+				t.Fatalf("expected format %q without decimal_point to fail", format)
+			}
+			assertErrorContains(t, err, "decimal_point")
+		})
+	}
+}
+
+func TestAllowZeroPrecisionFormatsWithoutDecimalPoint(t *testing.T) {
+	for _, format := range []string{"%.0f", "%03.0f"} {
+		t.Run(format, func(t *testing.T) {
+			cfgText := removeDigitDecimalPoint(validMinimalYAML())
+			cfgText = strings.Replace(cfgText, `format: "%03.0f"`, `format: "`+format+`"`, 1)
+			if _, err := LoadBytes([]byte(cfgText)); err != nil {
+				t.Fatalf("expected format %q without decimal_point to pass: %v", format, err)
+			}
+		})
+	}
+}
+
 func loadTestConfig(t *testing.T, repoPath string) Config {
 	t.Helper()
 	path := filepath.Join("..", "..", "..", filepath.FromSlash(repoPath))
@@ -112,6 +155,10 @@ func assertErrorContains(t *testing.T, err error, want string) {
 	if !strings.Contains(err.Error(), want) {
 		t.Fatalf("expected error to contain %q, got %q", want, err.Error())
 	}
+}
+
+func removeDigitDecimalPoint(cfgText string) string {
+	return strings.Replace(cfgText, "      decimal_point: assets/dashboard/simple/digits/dp.png\n", "", 1)
 }
 
 func validMinimalYAML() string {
