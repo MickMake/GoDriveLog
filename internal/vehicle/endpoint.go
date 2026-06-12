@@ -135,7 +135,13 @@ func (r *TCPReader) Read(ctx context.Context, pid string) (float64, string, erro
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
+	if err := ctx.Err(); err != nil {
+		return 0, "", err
+	}
 	if err := r.applyDeadline(ctx); err != nil {
+		return 0, "", err
+	}
+	if err := ctx.Err(); err != nil {
 		return 0, "", err
 	}
 
