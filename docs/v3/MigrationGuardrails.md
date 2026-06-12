@@ -6,11 +6,20 @@ References: `README.md`, `config.full.yaml`, `GoStructsConfig.md`, `Implementati
 
 ## 1. Purpose
 
-This document explains how to move from the code that exists now to the v3 target without turning the repo into a compatibility swamp.
+This document explains how to move from the code that exists now to the v3 target without turning the repo into a compatibility swamp or throwing away working knowledge for the sake of a clean-looking rewrite.
 
 It is not the final v3 implementation design. It is the bridge between current working code and the intended v3 shape.
 
-The current code may contain useful runtime pieces, renderer experiments, config loaders, asset handling, and OBD plumbing. Those pieces are not automatically wrong. They are also not automatically v3 just because they already exist.
+The current code may contain useful runtime pieces, renderer experiments, config loaders, asset handling, logging behaviour, and OBD plumbing. Those pieces are not automatically wrong. They are also not automatically v3 just because they already exist.
+
+The migration posture is:
+
+```text
+Refactor through seams.
+Replace only after proving the replacement.
+```
+
+Do not preserve old architecture by default. Do preserve working behaviour and proven code where they fit behind v3 seams.
 
 ## 2. Core migration rule
 
@@ -28,11 +37,67 @@ The selected vehicle is the runtime profile. It chooses the OBD endpoint, log de
 
 Sensors and assets remain global catalogues. Vehicles do not directly list sensors or assets.
 
-Migration work should move code toward that model in small slices.
+Migration work should move code toward that model in small, versioned slices.
 
 Do not bend the v3 docs around old code unless the old code reveals a real requirement. Convenience is not a requirement. A passing old test is not a requirement. A renderer goblin with a tiny clipboard is definitely not a requirement.
 
-## 3. Current state versus target state
+## 3. Migration release line
+
+The v3.0.x line is the foundation and migration line.
+
+Each v3.0.x version should leave the repository in a coherent, buildable, reviewable state. No v3.0.x slice should require the whole grand plan to be complete before it has value.
+
+```text
+v3.0.0  working-code inventory and seam plan
+v3.0.1  frozen v3 docs and schema target
+v3.0.2  strict v3 config load/validation
+v3.0.3  RuntimePlan resolution
+v3.0.4  endpoint abstraction with serial/TCP simulator support
+v3.0.5  sensor event spine and latest-state store
+v3.0.6  selected JSONL logging
+v3.0.7  minimal asset registry: image, digit, indicator
+v3.0.8  smallest selected dashboard: image + digit_display + indicator
+v3.0.9  richer asset registry: bar and frame assets
+v3.0.10 richer dashboard widgets: bar_display and frame_gauge
+v3.0.11 retire or archive replaced current paths
+```
+
+Version rule:
+
+```text
+v3.0.x = building the v3 foundation
+v3.1.0 = first useful v3 runtime
+```
+
+The expected v3.1.0 threshold is the first useful v3 runtime:
+
+```text
+selected vehicle
+-> endpoint
+-> sensors
+-> JSONL
+-> one dashboard with image + digit_display + indicator
+```
+
+## 4. Branch naming rule
+
+Branches for v3 migration work should start with the target version number.
+
+Examples:
+
+```text
+v3.0.0-docs-migration-seams
+v3.0.2-config-loader-validation
+v3.0.3-runtime-plan
+v3.0.4-endpoint-abstraction
+v3.0.8-smallest-dashboard
+```
+
+If a branch prepares or clarifies the versioned migration process itself, treat it as `v3.0.0` work.
+
+If the target version is unclear, decide the target version before creating the branch. Versionless branches invite goblins with clipboards.
+
+## 5. Current state versus target state
 
 | Area | Current code may contain | v3 target |
 |---|---|---|
@@ -46,7 +111,40 @@ Do not bend the v3 docs around old code unless the old code reveals a real requi
 
 This table is not a complaint list. It is a migration map.
 
-## 4. Migration adapters
+## 6. Working-code inventory and seams
+
+Before replacing current pieces, identify what exists and what should happen to it.
+
+Every current subsystem should receive one decision:
+
+| Existing thing | Default migration decision |
+|---|---|
+| Current config shape | replace or archive if it conflicts with v3 |
+| OBD/ELM327 adapter code | reuse behind the new endpoint/reader seam where practical |
+| JSONL writer behaviour | refactor or reuse as an event subscriber |
+| Sensor polling/cache logic | refactor or replace depending on coupling |
+| Dashboard renderer experiments | reuse ideas/code behind the new widget/renderer seam where practical |
+| Asset loading code | refactor or reuse if it fits the repo-root asset registry |
+| Old dashboard config model | archive or replace |
+| Tests | keep if they prove behaviour still wanted; rewrite if they protect obsolete shape |
+
+Rules:
+
+- Do not start with deletion.
+- Do not start with a complete rewrite.
+- Map current code to v3 roles first.
+- Keep working behaviour only when it still belongs in v3.
+- Wrap useful code at boundaries before moving it into the v3 path.
+- Do not promote old architecture just because old code already exists.
+
+Useful summary:
+
+```text
+Salvage behaviour and proven implementation knowledge.
+Do not preserve the old machine.
+```
+
+## 7. Migration adapters
 
 Migration adapters are allowed at boundaries.
 
@@ -58,6 +156,7 @@ Allowed boundary adapters:
 - a temporary adapter that feeds existing sensor values into the new sensor event store
 - a dashboard compatibility layer used only while replacing current renderer pieces
 - a small bridge from existing asset loading into the v3 asset registry
+- a wrapper around current JSONL behaviour if it can consume v3 sensor events cleanly
 
 Not allowed:
 
@@ -67,42 +166,37 @@ Not allowed:
 - letting the logger become the hidden scheduler
 - making dashboards poll sensors because the current renderer wants values directly
 - making vehicles directly own sensor or asset definitions
+- keeping compatibility paths with no owner or removal condition
 
-## 5. Phase 0 — current display performance stabilisation
+## 8. v3.0.0 — working-code inventory and seam plan
 
-The current display path is known to need speed work before or during migration.
-
-This is allowed, but it is tactical current-runtime work unless it directly supports the v3 target.
+Goal: identify which current pieces should be reused, refactored, wrapped, replaced, or archived before v3 implementation work begins.
 
 Allowed:
 
-- profile current rendering hot spots
-- cache decoded images/assets
-- avoid re-decoding assets during render
-- avoid rebuilding a full scene when one sensor value changes
-- reduce unnecessary UI invalidation/redraw churn
-- batch UI updates where the toolkit benefits from it
-- keep temporary performance fixes local to the current renderer/runtime boundary
-- capture useful performance lessons for the v3 renderer
+- inspect current config, runtime, OBD, logging, dashboard, renderer, and asset code
+- map existing code to v3 roles
+- identify behaviour that should survive into v3
+- identify code that can be wrapped behind a v3 seam
+- identify old shapes that should be archived rather than carried forward
+- choose the first implementation seam
 
 Not allowed:
 
-- changing the v3 config shape to match current renderer limitations
-- turning current renderer concepts into v3 schema concepts by accident
-- adding dashboard polling to solve renderer slowness
-- adding global timing knobs outside the sensor event model without design review
-- hiding stale/error/recovery transitions to improve frame times
-- spreading temporary optimisation branches through the future v3 core
+- promoting old config shape into v3 by accident
+- rewriting major runtime pieces before seams are clear
+- deleting working code before its useful behaviour has been reviewed
+- treating current runtime architecture as the v3 target
 
 Exit criteria:
 
-- current display is usable enough for dashboard iteration
-- speed fixes are isolated
-- no new schema concepts were added solely for current-renderer performance
-- stale/error/recovery display behaviour remains visible
-- lessons that apply to v3 are captured in `PerformanceGuardrails.md`
+- current config, runtime, OBD, logging, dashboard, renderer, and asset code are mapped to v3 roles
+- each subsystem has a reuse/refactor/replace/archive decision
+- useful working behaviour is identified
+- old architecture is not automatically promoted into v3
+- first implementation seam is chosen
 
-## 6. Phase 1 — freeze the v3 docs as the target
+## 9. v3.0.1 — frozen v3 docs and schema target
 
 Goal: make docs the stable target before major code movement.
 
@@ -130,12 +224,13 @@ Exit criteria:
 
 - v3 schema shape is clear
 - vehicle runtime-profile ownership is clear
+- migration release line is documented
 - implementation order is documented
 - migration guardrails are accepted
 - performance constraints are acknowledged without warping the schema
 - examples are schema-compliant, not just illustrative confetti
 
-## 7. Phase 2 — v3 config structs and strict loading
+## 10. v3.0.2 — strict v3 config load and validation
 
 Goal: load v3 config files strictly without needing the rest of the v3 runtime.
 
@@ -165,9 +260,44 @@ Exit criteria:
 - sensors and assets remain global catalogues
 - unknown fields fail at root and nested levels
 - references validate
-- current runtime can still build while v3 config work is staged
+- repository still builds while v3 config work is staged
 
-## 8. Phase 3 — vehicle endpoint abstraction
+## 11. v3.0.3 — RuntimePlan resolution
+
+Goal: turn a loaded config plus selected vehicle ID into an explicit runtime plan.
+
+Suggested boundary:
+
+```text
+Resolve(config, selectedVehicleID) -> RuntimePlan
+```
+
+The exact Go shape may change during implementation. The important point is that selected-vehicle resolution becomes explicit before runtime wiring spreads through the code.
+
+Allowed:
+
+- resolve the selected vehicle
+- resolve the endpoint config
+- resolve selected log definitions
+- resolve selected dashboard definitions
+- validate selected dashboard display collisions
+- resolve referenced sensors and assets where practical
+
+Not allowed:
+
+- making runtime packages repeatedly walk raw config maps
+- letting dashboards or logs choose their own vehicle
+- letting unselected dashboard definitions behave as active runtime participants
+
+Exit criteria:
+
+- multiple vehicles require explicit runtime vehicle selection
+- selected vehicle resolves to exactly one runtime profile
+- selected logs and dashboards are explicit
+- display collision validation applies only to selected dashboards
+- runtime packages can receive a resolved plan instead of raw config sprawl
+
+## 12. v3.0.4 — endpoint abstraction with serial/TCP simulator support
 
 Goal: connect to real hardware or a bench simulator through endpoint addresses.
 
@@ -184,8 +314,6 @@ Not allowed:
 - leaking simulator identity into sensors, logs, dashboards, or asset config
 - making config consumers care whether data came from real hardware or a simulator
 
-If endpoint support is staged, the missing endpoint type must be tracked as a visible issue or migration task, not left as implied future work.
-
 Exit criteria:
 
 - selected vehicle resolves to one endpoint address
@@ -193,7 +321,7 @@ Exit criteria:
 - endpoint connector returns a reader usable by the sensor runtime
 - serial and TCP endpoint shapes are both supported or explicitly tracked as staged work
 
-## 9. Phase 4 — sensor event spine
+## 13. v3.0.5 — sensor event spine and latest-state store
 
 Goal: build the central runtime path.
 
@@ -225,7 +353,7 @@ Exit criteria:
 - timestamps preserve original read time
 - tests prove first/value/status/stale/recovery events
 
-## 10. Phase 5 — JSONL subscriber
+## 14. v3.0.6 — selected JSONL logging
 
 Goal: attach selected logging to the event spine.
 
@@ -236,6 +364,7 @@ Allowed:
 - select logged sensors from `logs.<id>.sensors`
 - write first readings, value changes, and status changes
 - include read timestamp and status
+- reuse current JSONL behaviour where it fits the event-subscriber model
 
 Not allowed:
 
@@ -251,21 +380,25 @@ Exit criteria:
 - unchanged duplicate values do not spam logs
 - status changes are logged clearly
 
-## 11. Phase 6 — asset registry
+## 15. v3.0.7 — minimal asset registry
 
-Goal: validate and load global assets before widget rendering.
+Goal: validate and load the asset families required by the first useful dashboard.
+
+Start with:
+
+- `image`
+- `digit` / character image sets
+- `indicator`
 
 Allowed:
 
-- implement asset family structs and registries
+- implement minimal asset family structs and registries
 - resolve asset paths as repository-root relative
-- validate asset references
+- validate asset references used by the smallest dashboard
 - validate required indicator states
-- validate bar set `off` cells
-- validate bar zone cells and ordering
-- validate frame ranges
-- validate related image dimensions where required
+- validate digit display characters where practical
 - cache loaded/decoded assets
+- reuse current asset loading code where it fits the registry model
 
 Not allowed:
 
@@ -274,15 +407,16 @@ Not allowed:
 - nil fallback behaviour that hides missing assets
 - multiple active path dialects
 - vehicle-owned asset lists
+- implementing bar/frame asset support before the smallest dashboard needs it
 
 Exit criteria:
 
-- config references resolve to asset definitions
+- image, digit, and indicator asset references resolve
 - missing assets fail clearly
 - decoded assets can be reused by widgets/renderers
-- active examples use the same path convention
+- active minimal examples use the same path convention
 
-## 12. Phase 7 — smallest dashboard subscriber
+## 16. v3.0.8 — smallest selected dashboard
 
 Goal: prove a selected dashboard can render from sensor state without polling sensors.
 
@@ -299,6 +433,7 @@ Allowed:
 - render formatted numeric values from latest sensor state
 - render indicator states using sensor value and status
 - update only changed widgets where practical
+- reuse current renderer experiments where they fit the widget/renderer seam
 
 Not allowed:
 
@@ -316,7 +451,37 @@ Exit criteria:
 - dashboard receives events/state from runtime, not endpoint code
 - digit display slot/decimal behaviour follows the documented rules
 
-## 13. Phase 8 — richer dashboard widgets
+## 17. v3.0.9 — richer asset registry
+
+Goal: add asset families needed by the richer dashboard widgets after the smallest dashboard path works.
+
+Add:
+
+- `bar`
+- `frame`
+
+Allowed:
+
+- validate bar set `off` cells
+- validate bar zone cells and ordering
+- validate frame ranges
+- validate related image dimensions where required
+- cache decoded bar/frame assets
+
+Not allowed:
+
+- YAML formulas
+- widget scripts
+- hidden geometry languages
+- pre-optimising every visual trick before the basic event path works
+
+Exit criteria:
+
+- bar and frame assets validate
+- missing/invalid bar and frame assets fail clearly
+- richer examples can resolve their referenced assets
+
+## 18. v3.0.10 — richer dashboard widgets
 
 Goal: add the remaining v3 widget types after the event path works.
 
@@ -340,7 +505,7 @@ Exit criteria:
 - renderer remains event/state-driven
 - no hidden polling is introduced
 
-## 14. Phase 9 — retire replaced current paths
+## 19. v3.0.11 — retire or archive replaced current paths
 
 Goal: remove or archive current paths after v3 paths replace them.
 
@@ -365,21 +530,23 @@ Exit criteria:
 - logs and dashboards are subscribers
 - old runtime pieces are either removed, archived, or clearly isolated
 
-## 15. Migration decision rules
+## 20. Migration decision rules
 
 When touching existing code, ask:
 
-1. Is this current-runtime stabilisation or v3 migration?
-2. Does this move code toward the documented v3 shape?
-3. Is this a boundary adapter or a leak into the core model?
-4. Does this preserve dashboard/log subscriber boundaries?
-5. Does this add schema surface area?
-6. Is the performance fix local, measurable, and removable?
-7. Would this change make future implementation simpler or just make today easier?
+1. Which v3.0.x target version does this belong to?
+2. Does the branch name start with that target version?
+3. Is this working-code inventory, current-runtime stabilisation, or v3 migration?
+4. Does this move code toward the documented v3 shape?
+5. Is this a boundary adapter or a leak into the core model?
+6. Does this preserve dashboard/log subscriber boundaries?
+7. Does this add schema surface area?
+8. Is the performance fix local, measurable, and removable?
+9. Would this change make future implementation simpler or just make today easier?
 
 If the answer is fuzzy, write a note or open an issue before changing the shape.
 
-## 16. Compatibility policy
+## 21. Compatibility policy
 
 Compatibility is temporary unless explicitly promoted.
 
@@ -397,7 +564,7 @@ Disallowed compatibility:
 - new schema fields whose only purpose is current-code convenience
 - compatibility paths with no removal condition
 
-## 17. Testing during migration
+## 22. Testing during migration
 
 Every migration slice should add or preserve tests for the boundary it changes.
 
@@ -409,6 +576,7 @@ Useful test groups:
 - endpoint selection and reader creation
 - vehicle log/dashboard reference validation
 - selected vehicle dashboard display collision validation
+- RuntimePlan resolution
 - sensor event emission
 - stale and recovery transition emission
 - log subscriber behaviour
@@ -418,9 +586,9 @@ Useful test groups:
 
 Avoid giant end-to-end-only testing. Small boundary tests catch goblins before they learn teamwork.
 
-## 18. Performance during migration
+## 23. Performance during migration
 
-Performance matters, especially for the current display path.
+Performance matters, especially for the display path.
 
 The performance rule is:
 
@@ -432,11 +600,13 @@ If a performance lesson applies to v3, document it in `PerformanceGuardrails.md`
 
 If a performance fix is temporary, keep it local and make the removal condition obvious.
 
-## 19. Definition of done for migration docs
+## 24. Definition of done for migration docs
 
 These migration guardrails are doing their job when contributors can answer:
 
 - what the target shape is
+- what versioned migration slice they are working on
+- what branch naming convention applies
 - what the current code may still contain
 - what can be wrapped temporarily
 - what must not leak into v3 core
