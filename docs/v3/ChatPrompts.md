@@ -14,7 +14,7 @@ The goal is a simple process:
 Implementation chat creates one PR.
 Verification chat checks that PR.
 Mick merges only after PASS.
-The next implementation chat uses the next prompt and updates the state.
+The next implementation chat uses the next prompt and updates the MigrationState.md file.
 ```
 
 ## 3. Universal rules for all chats
