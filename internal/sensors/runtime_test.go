@@ -11,10 +11,10 @@ import (
 )
 
 type scriptedReader struct {
-	mu       sync.Mutex
-	values   []float64
-	units    []string
-	errors   []error
+	mu        sync.Mutex
+	values    []float64
+	units     []string
+	errors    []error
 	readCount int
 }
 
@@ -153,6 +153,64 @@ func TestPollingRuntimeEmitsErrorAndRecoveryTransitions(t *testing.T) {
 	}
 	if recoveryEvent.Kind != EventKindRecovery || recoveryEvent.PreviousStatus != StatusError || recoveryEvent.State.Status != StatusOK {
 		t.Fatalf("recovery event = %#v, want recovery from error to ok", recoveryEvent)
+	}
+}
+
+func TestPollingRuntimeUnbufferedSubscriberReceivesFirstRead(t *testing.T) {
+	runtime := newRuntimeForEventTests(t)
+	events := runtime.Subscribe(0)
+	readAt := time.Date(2026, 6, 13, 8, 0, 0, 0, time.UTC)
+	done := make(chan struct{})
+
+	go func() {
+		defer close(done)
+		runtime.applyValue("rpm", 1000, "rpm", readAt)
+	}()
+
+	event := receiveEvent(t, events)
+	<-done
+
+	if event.Kind != EventKindFirstRead || event.SensorID != "rpm" {
+		t.Fatalf("event = %#v, want unbuffered first_read rpm", event)
+	}
+}
+
+func TestPollingRuntimeFullBufferedSubscriberBackpressuresUntilDrained(t *testing.T) {
+	runtime := newRuntimeForEventTests(t)
+	events := runtime.Subscribe(1)
+	readAt := time.Date(2026, 6, 13, 8, 0, 0, 0, time.UTC)
+
+	runtime.applyValue("rpm", 1000, "rpm", readAt)
+	blocked := make(chan struct{})
+	done := make(chan struct{})
+
+	go func() {
+		close(blocked)
+		runtime.applyError("rpm", errors.New("adapter timeout"), readAt.Add(time.Second))
+		close(done)
+	}()
+
+	<-blocked
+	select {
+	case <-done:
+		t.Fatal("expected full subscriber buffer to apply backpressure before drain")
+	case <-time.After(25 * time.Millisecond):
+	}
+
+	first := receiveEvent(t, events)
+	if first.Kind != EventKindFirstRead {
+		t.Fatalf("first event = %#v, want first_read", first)
+	}
+
+	select {
+	case <-done:
+	case <-time.After(time.Second):
+		t.Fatal("timed out waiting for blocked transition emit to complete after drain")
+	}
+
+	transition := receiveEvent(t, events)
+	if transition.Kind != EventKindError || transition.State.Status != StatusError {
+		t.Fatalf("transition event = %#v, want error transition", transition)
 	}
 }
 
