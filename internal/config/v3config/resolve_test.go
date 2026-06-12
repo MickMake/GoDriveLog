@@ -59,8 +59,7 @@ func TestResolveAllowsUnselectedDashboardsToShareDisplay(t *testing.T) {
 }
 
 func TestResolveRejectsSelectedDashboardDisplayCollision(t *testing.T) {
-	cfg := loadResolveConfig(t, runtimePlanDisplayCollisionYAML())
-	_, err := Resolve(cfg, "vw_caddy")
+	_, err := LoadBytes([]byte(runtimePlanDisplayCollisionYAML()))
 	if err == nil {
 		t.Fatalf("expected selected dashboard display collision to fail")
 	}
