@@ -15,22 +15,25 @@ The codebase may still contain current-runtime or earlier-dashboard pieces while
 3. `GoStructsConfig.md`  
    Intended Go struct shape for the v3 config model.
 
-4. `ImplementationGuardrails.md`  
+4. `SchemaTarget.md`  
+   Frozen v3.0.1 schema target for strict v3 config loading and validation.
+
+5. `ImplementationGuardrails.md`  
    Rules for writing v3 code against the documented model.
 
-5. `MigrationGuardrails.md`  
+6. `MigrationGuardrails.md`  
    How to move from current code to the v3 target safely.
 
-6. `PerformanceGuardrails.md`  
+7. `PerformanceGuardrails.md`  
    How to fix current display speed and design v3 renderer performance without warping the schema.
 
-7. `DirectoryStructure.md`  
+8. `DirectoryStructure.md`  
    Intended repo/package layout for v3.
 
-8. `WorkingCodeInventory.md`  
+9. `WorkingCodeInventory.md`  
    v3.0.0 working-code inventory and seam plan mapping current code to v3 roles before implementation.
 
-9. `examples/`  
+10. `examples/`  
    Standalone dashboard examples that should validate against the same v3 schema rules as `config.example.yaml` and `config.full.yaml`.
 
 ## Target runtime model
@@ -60,6 +63,8 @@ dashboards:
 Treat those documented root sections as an allow-list.
 
 Strict v3 config loading should reject unknown fields at every documented level, not only at the root.
+
+`SchemaTarget.md` is the frozen v3.0.1 hand-off target for `v3.0.2` strict config loading and validation.
 
 ## Example stance
 
