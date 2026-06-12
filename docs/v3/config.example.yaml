@@ -9,6 +9,10 @@ vehicles:
     obd:
       address: "serial:///dev/ttyUSB0"
       timeout: 1000
+    logs:
+      - jsonl
+    dashboards:
+      - simple_primary
 
 sensors:
   speed:
