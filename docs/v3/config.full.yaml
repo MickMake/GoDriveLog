@@ -5,30 +5,32 @@
 #   It is intentionally verbose. Use config.example.yaml for a smaller starter.
 #
 # Top-level sections:
-#   vehicles   - available vehicle/endpoint profiles
+#   vehicles   - available runtime profiles: endpoint plus log/dashboard selection
 #   sensors    - global sensor catalogue and polling rules
-#   assets     - reusable visual asset packs
-#   logs       - event-log subscribers
-#   dashboards - physical display dashboards and widgets
+#   assets     - global reusable dashboard asset packs
+#   logs       - global event-log subscriber definitions
+#   dashboards - global physical display dashboard definitions
 #
 # Core runtime model:
-#   vehicle endpoint -> sensor polling runtime -> sensor events -> logs/dashboards
+#   selected vehicle -> OBD endpoint -> sensor polling runtime -> sensor events -> selected logs/dashboards
 #
 # Schema rule:
 #   Treat the documented top-level sections as an allow-list.
-#   Unknown root fields should fail validation during v3 implementation.
+#   Unknown fields should fail validation at every documented level during v3 implementation.
 #
 # Runtime selection:
 #   If exactly one vehicle exists, the runtime may use it automatically.
 #   If multiple vehicles exist, require an explicit CLI/runtime choice such as
 #   --vehicle <id>.
 #
-# Dashboard activation:
-#   Dashboard presence means active. Each dashboard owns its display target.
+# Vehicle profile model:
+#   The selected vehicle chooses the OBD endpoint, logs, and dashboards to run.
+#   Sensors and assets remain global catalogues; vehicles do not directly list sensors or assets.
 #
-# Endpoint model:
-#   GoDriveLog connects to an OBD-like endpoint address. Real hardware and
-#   simulator endpoints use the same connection path.
+# Display collision model:
+#   Multiple dashboard definitions may target the same display when they are alternatives.
+#   For one selected vehicle, the resolved dashboard set must not contain two dashboards
+#   targeting the same physical display.
 #
 # Log model:
 #   Logs subscribe to sensor events. Sensors own polling.
@@ -51,13 +53,35 @@ vehicles:
       # timeout is the transport/read timeout in milliseconds.
       timeout: 1000
 
+    # logs selects global log definitions to run for this vehicle.
+    logs:
+      - jsonl
+
+    # dashboards selects global dashboard definitions to render for this vehicle.
+    dashboards:
+      - bttf_primary
+
   # Bench profile. This is not a different source type. It is just another
   # endpoint that speaks enough OBD/ELM327-ish protocol for development.
-  bench:
-    name: "Bench simulator"
+  bench_z31:
+    name: "Bench simulator - Z31 dashboard"
     obd:
       address: "tcp://127.0.0.1:35000"
       timeout: 1000
+    logs:
+      - jsonl
+    dashboards:
+      - z31_primary
+
+  bench_s2000:
+    name: "Bench simulator - S2000 dashboard"
+    obd:
+      address: "tcp://127.0.0.1:35000"
+      timeout: 1000
+    logs:
+      - jsonl
+    dashboards:
+      - s2000_primary
 
 sensors:
   # Sensor ID. This is the stable key used by logs and dashboard widgets.
@@ -280,11 +304,11 @@ assets:
       image: "assets/dashboard/s2000/panel/main_panel_backplate.png"
 
 logs:
-  # jsonl is an event-log subscriber.
+  # jsonl is an event-log subscriber definition. Vehicles choose which log definitions run.
   jsonl:
     # path is the output JSON Lines file.
     path: "logs/godrivelog.jsonl"
-    # sensors selects which sensor events should be logged.
+    # sensors selects which global sensor events should be logged.
     # First readings, value changes, and status changes should be written.
     # Unchanged duplicate values should not spam the log.
     sensors:
@@ -297,7 +321,8 @@ logs:
       - engine_warning
 
 dashboards:
-  # Existing/simple BTTF-style example.
+  # Existing/simple BTTF-style dashboard definition.
+  # Vehicles choose which dashboard definitions run.
   bttf_primary:
     # display is the physical/logical display target for this dashboard.
     display: "HDMI-1"
@@ -345,8 +370,8 @@ dashboards:
         asset: engine_warning
         position: [1520, 340]
 
-  # Nissan 300ZX Z31-inspired example from the retro dashboard discussion.
-  # Inspired by digital speed plus colourful bar displays and RPM/boost styling.
+  # Nissan 300ZX Z31-inspired dashboard definition from the retro dashboard discussion.
+  # It also targets HDMI-1, which is valid because it is selected by a different vehicle profile.
   z31_primary:
     display: "HDMI-1"
     size:
@@ -424,8 +449,8 @@ dashboards:
         asset: engine_warning
         position: [1430, 280]
 
-  # Honda S2000-inspired example from the retro dashboard discussion.
-  # Dominated by a sweeping rev counter, with speed digits and side gauges.
+  # Honda S2000-inspired dashboard definition from the retro dashboard discussion.
+  # It also targets HDMI-1, which is valid because it is selected by a different vehicle profile.
   s2000_primary:
     display: "HDMI-1"
     size:
