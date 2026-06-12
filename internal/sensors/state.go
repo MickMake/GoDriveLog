@@ -3,10 +3,11 @@ package sensors
 import "time"
 
 const (
-	StatusUnknown = "unknown"
-	StatusOK      = "ok"
-	StatusError   = "error"
-	StatusStale   = "stale"
+	StatusUnknown            = "unknown"
+	StatusOK                 = "ok"
+	StatusError              = "error"
+	StatusStale              = "stale"
+	StatusMissingUnsupported = "missing/unsupported"
 )
 
 type SensorState struct {
