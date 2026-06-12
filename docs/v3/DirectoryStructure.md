@@ -11,11 +11,11 @@ GoDriveLog/
   internal/
     config/
       config.go          # Root Config: vehicles, sensors, assets, logs, dashboards
-      vehicle.go         # VehicleConfig and OBD endpoint config
-      sensors.go         # SensorConfig and polling validation
-      assets.go          # Asset family config structs
-      logs.go            # Log subscriber config
-      dashboard.go       # Dashboard and widget config structs
+      vehicle.go         # VehicleConfig, OBD endpoint config, selected log/dashboard IDs
+      sensors.go         # Global SensorConfig catalogue and polling validation
+      assets.go          # Global asset family config structs
+      logs.go            # Global log subscriber config
+      dashboard.go       # Global dashboard and widget config structs
       load.go            # YAML loading
       validate.go        # Config validation
       resolve.go         # Runtime reference resolution
@@ -214,7 +214,6 @@ GoDriveLog/
           current-status.md
           decisions.md
           human-process.md
-          prompts.md
           repo-structure-guardrails.md
 
   testdata/
@@ -227,6 +226,9 @@ GoDriveLog/
       invalid/
         missing-vehicles.yaml
         multiple-vehicles-without-selection.yaml
+        vehicle-log-not-found.yaml
+        vehicle-dashboard-not-found.yaml
+        selected-dashboard-display-collision.yaml
         log-sensor-not-found.yaml
         dashboard-sensor-not-found.yaml
         dashboard-asset-not-found.yaml
@@ -237,7 +239,6 @@ GoDriveLog/
         unknown-nested-field.yaml
         sensor-min-greater-than-max.yaml
         duplicate-widget-id.yaml
-        duplicate-display-target.yaml
         decimal-format-missing-decimal-point.yaml
         bar-set-missing-off.yaml
         bar-widget-missing-on.yaml
@@ -265,6 +266,8 @@ GoDriveLog/
 
 - Archive docs are allowed to describe old behaviour.
 - Active v3 docs should use the simplified top-level shape: `vehicles`, `sensors`, `assets`, `logs`, `dashboards`.
+- Vehicles are runtime profiles: they select the OBD endpoint, log definitions, and dashboard definitions.
+- Sensors and assets are global catalogues; vehicles do not directly list sensors or assets.
 - Active v3 examples should validate against the same schema rules as `config.example.yaml` and `config.full.yaml`.
 - Asset paths in active v3 configs are repository-root relative.
 - `ImplementationGuardrails.md` is the implementation checklist for writing v3 code against the target model.
@@ -272,6 +275,7 @@ GoDriveLog/
 - `PerformanceGuardrails.md` gives the current display speed work a safe lane without warping the v3 schema.
 - Treat the documented v3 root sections as an allow-list; unknown fields should fail validation at every documented level during v3 implementation.
 - Use an OBD-like endpoint address for both real hardware and bench/simulator endpoints.
-- Sensor timing is `poll`; logs and dashboards subscribe to events.
+- Sensor timing is `poll`; selected logs and dashboards subscribe to events.
 - `multi-vehicle-with-runtime-selection.yaml` describes a valid multi-vehicle config only when the test/runtime supplies explicit vehicle selection; that selection is not encoded in config.
+- Display collision validation applies to the dashboards selected by the selected vehicle, not every dashboard definition in the file.
 - Dashboard config is widget-based, not decoder/block/layer/condition based.
