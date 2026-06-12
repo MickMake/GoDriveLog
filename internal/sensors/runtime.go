@@ -139,6 +139,10 @@ func (r *PollingRuntime) StateStore() *StateStore {
 	return r.store
 }
 
+// Subscribe registers a subscriber for every sensor event emitted by this runtime.
+// Delivery is reliable and blocking: the runtime will not silently drop events,
+// and a slow subscriber may apply backpressure to sensor polling. Subscribers must
+// continuously drain the returned channel until the runtime closes it.
 func (r *PollingRuntime) Subscribe(buffer int) <-chan SensorEvent {
 	if buffer < 0 {
 		buffer = 0
@@ -293,12 +297,11 @@ func (r *PollingRuntime) applyError(sensorID string, readErr error, readAt time.
 
 func (r *PollingRuntime) emit(event SensorEvent) {
 	r.mu.RLock()
-	defer r.mu.RUnlock()
-	for _, subscriber := range r.subscribers {
-		select {
-		case subscriber <- event:
-		default:
-		}
+	subscribers := append([]chan SensorEvent(nil), r.subscribers...)
+	r.mu.RUnlock()
+
+	for _, subscriber := range subscribers {
+		subscriber <- event
 	}
 }
 
