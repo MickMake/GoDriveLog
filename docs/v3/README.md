@@ -27,7 +27,10 @@ The codebase may still contain current-runtime or earlier-dashboard pieces while
 7. `DirectoryStructure.md`  
    Intended repo/package layout for v3.
 
-8. `examples/`  
+8. `WorkingCodeInventory.md`  
+   v3.0.0 working-code inventory and seam plan mapping current code to v3 roles before implementation.
+
+9. `examples/`  
    Standalone dashboard examples that should validate against the same v3 schema rules as `config.example.yaml` and `config.full.yaml`.
 
 ## Target runtime model

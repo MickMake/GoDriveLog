@@ -23,17 +23,18 @@ Do not infer migration position from memory when this file exists. Read this fil
 ## 2. Current migration position
 
 Current version: `v3.0.0`  
-Current phase: chat prompt setup for phone-friendly implementation/verification workflow  
+Current phase: working-code inventory and seam plan under review  
 Current branch prefix: `v3.0.0`  
-Current PR: pending  
-Current PR branch: `v3.0.0-chat-prompts`
+Current PR: `#38`  
+Current PR branch: `v3.0.0-working-code-inventory`
 
 Current state:
 
 ```text
 v3.0.0 process scaffolding has been merged.
-Chat prompts are being added before implementation work starts.
-Implementation work has not started yet.
+Chat prompt workflow has been merged.
+The working-code inventory and seam-plan PR is open for verification.
+Runtime implementation work has not started yet.
 ```
 
 ## 3. Completed versions
@@ -41,25 +42,26 @@ Implementation work has not started yet.
 | Version | Status | PR | Notes |
 |---|---|---|---|
 | v3.0.0 | partial | #36 | Defined versioned migration process, seam plan, branch naming rules, and this state tracker. |
+| v3.0.0 | partial | #37 | Added reusable implementation/verification chat prompts for the v3 migration workflow. |
 
 ## 4. Next target
 
 Next version: `v3.0.0`  
-Next action: verify and merge the chat prompts PR.
+Next action: verify PR `#38` against the v3.0.0 working-code inventory and seam-plan prompt.
 
-After the chat prompts PR is merged, the next action should be:
+If PR `#38` passes verification and is merged, the next action should be:
 
 ```text
-Create the v3.0.0 working-code inventory and seam-plan implementation slice using the v3.0.0 implementation prompt in docs/v3/ChatPrompts.md.
+Create the v3.0.1 frozen v3 docs and schema target implementation slice using the v3.0.1 implementation prompt in docs/v3/ChatPrompts.md.
 ```
 
-That slice should map current config, runtime, OBD, logging, dashboard, renderer, and asset code to v3 roles, then record reuse/refactor/wrap/replace/archive decisions.
+That slice should review and tighten the v3 docs so they are a stable implementation target before strict config loading begins.
 
 ## 5. Version queue
 
 | Version | Purpose | Status |
 |---|---|---|
-| v3.0.0 | working-code inventory and seam plan | prompts being added |
+| v3.0.0 | working-code inventory and seam plan | PR #38 under review |
 | v3.0.1 | frozen v3 docs and schema target | pending |
 | v3.0.2 | strict v3 config load/validation | pending |
 | v3.0.3 | RuntimePlan resolution | pending |
@@ -182,15 +184,17 @@ If the target version is unclear, decide the target version before creating the 
 
 ## 10. Notes for current PR
 
-The current chat prompts PR is process setup, not implementation.
+The current PR is the first real v3.0.0 implementation slice, but it is intentionally docs-only.
 
-It should be verified as `v3.0.0` scaffolding.
+It should be verified as `v3.0.0` working-code inventory and seam planning.
 
 Expected verification focus:
 
-- `docs/v3/ChatPrompts.md` exists.
-- It contains stage-specific implementation prompts.
-- It contains one generic verifier prompt.
-- It supports short phone-friendly commands.
-- `MigrationState.md` tells future chats to use `ChatPrompts.md`.
-- Implementation work has not started prematurely.
+- `docs/v3/WorkingCodeInventory.md` exists.
+- It maps current config, runtime, OBD, logging, dashboard, renderer, asset, and test code to v3 roles.
+- Each area has a reuse/refactor/wrap/replace/archive decision.
+- It identifies seams and behaviour worth preserving.
+- It does not implement runtime code.
+- It does not change the v3 config schema.
+- It does not start v3.0.1 work.
+- It does not delete current code.
