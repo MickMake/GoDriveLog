@@ -23,15 +23,16 @@ Do not infer migration position from memory when this file exists. Read this fil
 ## 2. Current migration position
 
 Current version: `v3.0.0`  
-Current phase: working-code inventory and seam plan  
+Current phase: chat prompt setup for phone-friendly implementation/verification workflow  
 Current branch prefix: `v3.0.0`  
-Current PR: `#36`  
-Current PR branch: `v3.0.0-docs-migration-seams`
+Current PR: pending  
+Current PR branch: `v3.0.0-chat-prompts`
 
 Current state:
 
 ```text
-v3.0.0 process scaffolding is in review.
+v3.0.0 process scaffolding has been merged.
+Chat prompts are being added before implementation work starts.
 Implementation work has not started yet.
 ```
 
@@ -39,26 +40,26 @@ Implementation work has not started yet.
 
 | Version | Status | PR | Notes |
 |---|---|---|---|
-| v3.0.0 | in review | #36 | Defines versioned migration process, seam plan, branch naming rules, and this state tracker. |
+| v3.0.0 | partial | #36 | Defined versioned migration process, seam plan, branch naming rules, and this state tracker. |
 
 ## 4. Next target
 
 Next version: `v3.0.0`  
-Next action: verify and merge PR `#36`.
+Next action: verify and merge the chat prompts PR.
 
-After PR `#36` is merged, the next action should be:
+After the chat prompts PR is merged, the next action should be:
 
 ```text
-Create the v3.0.0 working-code inventory and seam-plan implementation slice.
+Create the v3.0.0 working-code inventory and seam-plan implementation slice using the v3.0.0 implementation prompt in docs/v3/ChatPrompts.md.
 ```
 
-That slice should map current config, runtime, OBD, logging, dashboard, renderer, and asset code to v3 roles, then record reuse/refactor/replace/archive decisions.
+That slice should map current config, runtime, OBD, logging, dashboard, renderer, and asset code to v3 roles, then record reuse/refactor/wrap/replace/archive decisions.
 
 ## 5. Version queue
 
 | Version | Purpose | Status |
 |---|---|---|
-| v3.0.0 | working-code inventory and seam plan | in review |
+| v3.0.0 | working-code inventory and seam plan | prompts being added |
 | v3.0.1 | frozen v3 docs and schema target | pending |
 | v3.0.2 | strict v3 config load/validation | pending |
 | v3.0.3 | RuntimePlan resolution | pending |
@@ -98,14 +99,16 @@ Verification advances state.
 Implementor chats must:
 
 1. Read this file first.
-2. Read `docs/v3/MigrationGuardrails.md`.
-3. Confirm the current target version.
-4. Use a branch name starting with the target version.
-5. Work only on the current or next target version.
-6. Avoid later-version work unless explicitly required and documented.
-7. Update this file in the PR only if the migration state changes or a new PR enters review.
-8. Open a PR to `main`.
-9. Do not merge the PR.
+2. Read `docs/v3/ChatPrompts.md`.
+3. Read `docs/v3/MigrationGuardrails.md`.
+4. Use the matching implementation prompt from `docs/v3/ChatPrompts.md`.
+5. Confirm the current target version.
+6. Use a branch name starting with the target version.
+7. Work only on the current or next target version.
+8. Avoid later-version work unless explicitly required and documented.
+9. Update this file in the PR only if the migration state changes or a new PR enters review.
+10. Open a PR to `main`.
+11. Do not merge the PR.
 
 Before coding, implementor chats should report:
 
@@ -130,12 +133,13 @@ After coding, implementor chats should report:
 Verifier chats must:
 
 1. Read this file first.
-2. Fetch the PR under review.
-3. Confirm the PR branch starts with the target version.
-4. Confirm the PR scope matches the target version.
-5. Confirm the PR does not perform later-version work without justification.
-6. Confirm this file was updated correctly, if the PR changes migration state.
-7. Return a clear verdict.
+2. Read `docs/v3/ChatPrompts.md`.
+3. Fetch the PR under review.
+4. Confirm the PR branch starts with the target version.
+5. Confirm the PR scope matches the relevant implementation prompt.
+6. Confirm the PR does not perform later-version work without justification.
+7. Confirm this file was updated correctly, if the PR changes migration state.
+8. Return a clear verdict.
 
 Verifier verdicts:
 
@@ -166,6 +170,7 @@ Examples:
 
 ```text
 v3.0.0-docs-migration-seams
+v3.0.0-chat-prompts
 v3.0.0-working-code-inventory
 v3.0.2-config-loader-validation
 v3.0.3-runtime-plan
@@ -177,14 +182,15 @@ If the target version is unclear, decide the target version before creating the 
 
 ## 10. Notes for current PR
 
-PR `#36` is process setup, not implementation.
+The current chat prompts PR is process setup, not implementation.
 
 It should be verified as `v3.0.0` scaffolding.
 
 Expected verification focus:
 
-- `MigrationGuardrails.md` defines the v3.0.x release line.
-- Branch naming starts with the target version.
-- Seam-based migration posture is documented.
-- `MigrationState.md` tells future chats where the migration is up to.
+- `docs/v3/ChatPrompts.md` exists.
+- It contains stage-specific implementation prompts.
+- It contains one generic verifier prompt.
+- It supports short phone-friendly commands.
+- `MigrationState.md` tells future chats to use `ChatPrompts.md`.
 - Implementation work has not started prematurely.
