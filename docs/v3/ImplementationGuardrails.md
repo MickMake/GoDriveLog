@@ -15,11 +15,16 @@ When implementation and docs disagree, stop and resolve the disagreement before 
 Implement this pipeline first:
 
 ```text
-vehicle endpoint
+selected vehicle
+-> OBD endpoint
 -> sensor polling runtime
 -> sensor events
--> logs and dashboards as subscribers
+-> selected logs and dashboards as subscribers
 ```
+
+The selected vehicle owns the runtime profile. It chooses the endpoint, log definitions, and dashboard definitions to run.
+
+Sensors and assets remain global catalogues. Vehicles do not directly list sensors or assets.
 
 Do not build sideways features until that path works end-to-end.
 
@@ -39,6 +44,9 @@ Guardrails:
 
 - Treat those five sections as the complete v3 root schema.
 - Unknown fields should fail validation at every documented level during v3 development.
+- Vehicles select log and dashboard definitions by ID.
+- Sensors are global definitions referenced by logs and widgets.
+- Assets are global definitions referenced by widgets.
 - Do not add compatibility aliases for undocumented fields.
 - Do not add timing knobs outside `sensors.<id>.poll` unless the design is reviewed first.
 - Do not add endpoint-type switches when an endpoint address can express the same thing.
@@ -62,9 +70,9 @@ Rules:
 - Asset IDs only need to be unique within their own asset family.
 - Do not use human display names as IDs.
 
-## 5. Vehicle endpoint guardrails
+## 5. Vehicle runtime-profile guardrails
 
-Vehicles own endpoint configuration only:
+Vehicles define runtime profiles.
 
 ```yaml
 vehicles:
@@ -73,6 +81,10 @@ vehicles:
     obd:
       address: "serial:///dev/ttyUSB0"
       timeout: 1000
+    logs:
+      - jsonl
+    dashboards:
+      - simple_primary
 ```
 
 Rules:
@@ -84,13 +96,17 @@ Rules:
 - `tcp://` endpoints must include host and port.
 - `timeout` is milliseconds and must be greater than zero.
 - Initial timeout sanity range is `100..30000` milliseconds.
+- `logs` lists top-level log definitions to run for the vehicle.
+- `dashboards` lists top-level dashboard definitions to render for the vehicle.
+- Vehicles do not directly list sensors.
+- Vehicles do not directly list assets.
 - Do not branch the core runtime on endpoint type unless a real implementation constraint proves it is needed.
-- Do not leak simulator concepts into sensors, logs, or dashboards.
+- Do not leak simulator concepts into sensors, logs, dashboards, or assets.
 
 Implementation shape:
 
 ```text
-address string -> endpoint connector -> reader/runtime
+selected vehicle -> endpoint connector -> sensor runtime -> selected log/dashboard subscribers
 ```
 
 Bad shape:
@@ -99,7 +115,23 @@ Bad shape:
 switch config.ProviderKind { ... }
 ```
 
-## 6. Sensor runtime guardrails
+## 6. Vehicle log/dashboard selection guardrails
+
+Logs and dashboards are global definitions. Vehicles choose which ones run.
+
+Rules:
+
+- If a vehicle lists logs, every listed log ID must exist under top-level `logs`.
+- If a vehicle lists dashboards, every listed dashboard ID must exist under top-level `dashboards`.
+- If a vehicle omits logs and exactly one log is defined, the runtime may use that single log automatically.
+- If a vehicle omits dashboards and exactly one dashboard is defined, the runtime may use that single dashboard automatically.
+- If multiple logs are defined, each vehicle should list the logs it runs.
+- If multiple dashboards are defined, each vehicle should list the dashboards it renders.
+- Multiple dashboard definitions may target the same physical display when they are alternatives.
+- Display collision validation applies to the dashboards selected by the selected vehicle.
+- Within one selected vehicle's dashboard set, no two dashboards may target the same physical display.
+
+## 7. Sensor runtime guardrails
 
 Sensors own polling.
 
@@ -137,7 +169,7 @@ stale/error/unsupported transition
 
 A sensor event should preserve the original read timestamp.
 
-## 7. Sensor status and stale guardrails
+## 8. Sensor status and stale guardrails
 
 Use explicit status. Do not smuggle status into values.
 
@@ -168,9 +200,9 @@ Rules:
 - Indicators should prefer `unknown` display state when sensor status is not `ok`.
 - Stale transitions and recovery transitions must emit sensor events.
 
-## 8. Log guardrails
+## 9. Log guardrails
 
-Logs are subscribers.
+Logs are global subscriber definitions selected by vehicles.
 
 ```yaml
 logs:
@@ -186,14 +218,15 @@ Rules:
 - Logs subscribe to sensor events.
 - Logs do not poll.
 - Logs do not own cadence.
+- Logs reference global sensor IDs.
 - Logs should write first reading, value changes, and status changes.
 - Logs should not spam unchanged duplicate readings.
 - Logs should include the sensor read timestamp.
 - Log writer timestamp may also be recorded, but it is not a substitute for sensor read timestamp.
 
-## 9. Dashboard guardrails
+## 10. Dashboard guardrails
 
-Dashboards are subscribers and renderers.
+Dashboards are global display definitions selected by vehicles.
 
 ```yaml
 dashboards:
@@ -207,19 +240,20 @@ dashboards:
 
 Rules:
 
-- Dashboard presence means active.
 - A dashboard owns its display target.
-- In the initial v3 implementation, two active dashboards must not target the same display.
 - Multiple physical regions on one display should be widgets inside one dashboard.
+- Multiple dashboard definitions may use the same display when they are alternatives.
+- A selected vehicle must not run two dashboards that target the same display.
 - Dashboards do not poll sensors.
 - Dashboards do not own cadence in config.
 - Dashboards consume current sensor state produced by the sensor runtime.
+- Dashboard widgets reference global sensors and global assets.
 - Keep dashboard config declarative.
 - Avoid conditions, scripts, formulas, templates, inheritance, and expression languages.
 
 If a visual behaviour needs code, put it in a widget implementation, not a YAML mini-language.
 
-## 10. Asset guardrails
+## 11. Asset guardrails
 
 The asset model is descriptive, not procedural.
 
@@ -246,6 +280,8 @@ foreground, if present
 
 Rules:
 
+- Assets are global definitions.
+- Vehicles do not directly list assets.
 - Assets describe images.
 - Widgets decide how to map sensor state to rendered content.
 - Do not put rules, conditions, formulas, or scripts inside assets.
@@ -263,7 +299,7 @@ Widget type to asset family mapping:
 | `frame_gauge` | `assets.frame_sets` |
 | `indicator` | `assets.indicator_sets` |
 
-## 11. Digit display guardrails
+## 12. Digit display guardrails
 
 Digit displays render formatted strings as characters.
 
@@ -287,13 +323,7 @@ Rules:
 - Formatted output must fit the configured slot count after decimal separators are removed.
 - Renderer should report a useful error when a formatted non-decimal character has no asset.
 
-Example error:
-
-```text
-digit set bttf_amber_digits cannot render character "E" for widget speed_digits
-```
-
-## 12. Bar display guardrails
+## 13. Bar display guardrails
 
 Bar widgets map one sensor value onto repeated cells.
 
@@ -315,7 +345,7 @@ Rules:
 - Do not create curved bar geometry in YAML.
 - Use `frame_gauge` for fancy curved/sweeping visuals.
 
-## 13. Frame gauge guardrails
+## 14. Frame gauge guardrails
 
 Frame gauges map one sensor value onto a frame sequence.
 
@@ -327,7 +357,7 @@ Rules:
 - Clamp values outside min/max unless a later design explicitly says otherwise.
 - Do not build a vector drawing language into config.
 
-## 14. Indicator guardrails
+## 15. Indicator guardrails
 
 Indicators map boolean/status data onto image states.
 
@@ -356,7 +386,7 @@ Rules:
 - Missing `unknown` asset should be a validation error unless a deliberate fallback is documented.
 - Sensor values should remain boolean, not UI-state strings.
 
-## 15. Validation guardrails
+## 16. Validation guardrails
 
 Validation should fail early and loudly.
 
@@ -366,17 +396,21 @@ Minimum checks:
 - Unknown fields fail at every documented level.
 - IDs match `^[a-z][a-z0-9_]*$`.
 - At least one vehicle exists.
-- Multiple vehicles require explicit runtime selection.
+- Multiple vehicles require explicit runtime vehicle selection.
 - Vehicle endpoint address is present.
 - `serial://` endpoints include a non-empty path.
 - `tcp://` endpoints include host and port.
 - `timeout > 0`, preferably within `100..30000` milliseconds.
+- Vehicle `logs` references exist under top-level `logs`.
+- Vehicle `dashboards` references exist under top-level `dashboards`.
+- If multiple logs are defined, each vehicle lists the logs it runs.
+- If multiple dashboards are defined, each vehicle lists the dashboards it renders.
+- For each selected vehicle, no two selected dashboards target the same display.
 - Sensor IDs are unique by map key.
 - `poll > 0` for every sensor.
 - Sensor `min < max` when both are present.
 - Logs reference existing sensors.
 - Dashboards have positive size.
-- No two active dashboards target the same display.
 - Widgets have IDs, types, assets, and positions.
 - Widget IDs are unique within each dashboard.
 - Non-image widgets reference existing sensors.
@@ -386,7 +420,7 @@ Minimum checks:
 - Frame set ranges have `first <= last`.
 - Bar widget `cells > 0`.
 - Bar sets contain `off`.
-- Bar widgets without zones use a bar set containing `on`.
+- Bar widgets without zones require `on`.
 - Bar zones are sorted ascending.
 - Bar zones reference valid cell names.
 - Digit displays can render expected configured characters where practical.
@@ -395,7 +429,7 @@ Minimum checks:
 
 Silent config typos are tiny assassins.
 
-## 16. Implementation order
+## 17. Implementation order
 
 Recommended order:
 
@@ -416,7 +450,7 @@ Recommended order:
 
 Do not start with the fancy renderer. That is dessert. Eat the vegetables first.
 
-## 17. Testing guardrails
+## 18. Testing guardrails
 
 Prefer small tests that prove boundaries.
 
@@ -427,6 +461,9 @@ Config tests:
 - all standalone v3 examples validate
 - missing vehicles
 - multiple vehicles without explicit runtime selection
+- vehicle references unknown log
+- vehicle references unknown dashboard
+- selected vehicle has dashboard display collision
 - bad OBD address
 - timeout zero
 - poll zero
@@ -438,7 +475,6 @@ Config tests:
 - dashboard widget references unknown sensor
 - dashboard widget references unknown asset
 - duplicate widget IDs fail
-- two dashboards on same display fail
 - digit display missing formatted character
 - decimal format without `decimal_point` fails
 - indicator set missing unknown state
@@ -456,6 +492,8 @@ Runtime tests:
 - recovery transition emits event
 - logger preserves read timestamp
 - dashboard receives state without polling endpoint
+- selected vehicle controls which logs run
+- selected vehicle controls which dashboards render
 
 Asset tests:
 
@@ -464,7 +502,7 @@ Asset tests:
 - bar zone unknown cell reports useful error
 - repository-root relative asset paths resolve consistently
 
-## 18. Refusal rules for future complexity
+## 19. Refusal rules for future complexity
 
 Say no, or at least not yet, to:
 
@@ -483,18 +521,19 @@ Say no, or at least not yet, to:
 
 These may become real requirements later. They are not starting requirements.
 
-## 19. Definition of done for first v3 implementation slice
+## 20. Definition of done for first v3 implementation slice
 
 A first useful v3 slice is done when:
 
 - a minimal v3 config loads strictly
 - all active v3 examples validate against the same schema rules
-- a selected vehicle endpoint connects
+- selected vehicle selects endpoint, logs, and dashboards
+- selected vehicle endpoint connects
 - configured sensors poll on their own cadence
 - sensor events update state
 - stale/error/recovery transitions are visible as status changes
 - JSONL logs receive selected events
-- one dashboard displays at least image + digit_display + indicator
+- one selected dashboard displays at least image + digit_display + indicator
 - missing/stale/error states are visible instead of silently lying
 - undocumented config fields are rejected in v3 mode
 
