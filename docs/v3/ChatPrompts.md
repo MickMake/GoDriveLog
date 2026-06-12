@@ -634,24 +634,6 @@ Include:
 Do not merge the PR unless Mick explicitly asks.
 ```
 
-## 17. Minimal phone commands
-
-Implementation chat:
-
-```text
-Hey mate. You are the implementation chat for GoDriveLog v3. Use the v3.0.0 implementation prompt from docs/v3/ChatPrompts.md.
-```
-
-Verification chat:
-
-```text
-Hey mate. You are the verification chat for GoDriveLog v3. Use the verifier prompt from docs/v3/ChatPrompts.md for PR <number>.
-```
-
-Next implementation chat:
-
-```text
-Hey mate. You are the implementation chat for GoDriveLog v3. Use the next implementation prompt from docs/v3/ChatPrompts.md and docs/v3/MigrationState.md.
-```
+## 17. other notes
 
 If a chat cannot determine which prompt to use, it must stop and ask for the target version. It must not freestyle.
