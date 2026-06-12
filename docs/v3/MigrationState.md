@@ -15,7 +15,7 @@ Every implementor and verifier chat should read this file before doing work. Do 
 Current version: `v3.0.3`  
 Current phase: RuntimePlan resolution under review  
 Current branch prefix: `v3.0.3`  
-Current PR: pending  
+Current PR: `#41`  
 Current PR branch: `v3.0.3-runtime-plan`
 
 Current state:
@@ -26,7 +26,7 @@ Chat prompt workflow has been merged.
 v3.0.0 working-code inventory and seam plan has been merged.
 v3.0.1 frozen docs/schema target has been merged.
 v3.0.2 strict config load and validation has been merged.
-v3.0.3 RuntimePlan resolution is being prepared for review.
+v3.0.3 RuntimePlan resolution is open for verification.
 Runtime implementation beyond config resolution has not started yet.
 ```
 
@@ -43,9 +43,9 @@ Runtime implementation beyond config resolution has not started yet.
 ## 4. Next target
 
 Next version: `v3.0.3`  
-Next action: verify the v3.0.3 RuntimePlan resolution PR against the implementation prompt in `docs/v3/ChatPrompts.md`.
+Next action: verify PR `#41` against the v3.0.3 RuntimePlan resolution prompt in `docs/v3/ChatPrompts.md`.
 
-If the v3.0.3 PR passes verification and is merged, the next action should be:
+If PR `#41` passes verification and is merged, the next action should be:
 
 ```text
 Create the v3.0.4 endpoint abstraction implementation slice using the v3.0.4 implementation prompt in docs/v3/ChatPrompts.md.
@@ -58,7 +58,7 @@ Create the v3.0.4 endpoint abstraction implementation slice using the v3.0.4 imp
 | v3.0.0 | working-code inventory and seam plan | complete |
 | v3.0.1 | frozen v3 docs and schema target | complete |
 | v3.0.2 | strict v3 config load/validation | complete |
-| v3.0.3 | RuntimePlan resolution | branch `v3.0.3-runtime-plan` in progress |
+| v3.0.3 | RuntimePlan resolution | PR #41 under review |
 | v3.0.4 | endpoint abstraction with serial/TCP simulator support | pending |
 | v3.0.5 | sensor event spine and latest-state store | pending |
 | v3.0.6 | selected JSONL logging | pending |
