@@ -2,7 +2,7 @@
 
 Status: active  
 Last updated: 2026-06-13  
-State owner: migration verifier
+State owner: migration implementor
 
 ## 1. Purpose
 
@@ -12,11 +12,11 @@ Every implementor and verifier chat should read this file before doing work. Do 
 
 ## 2. Current migration position
 
-Current version: `v3.0.3`  
-Current phase: RuntimePlan resolution under review  
-Current branch prefix: `v3.0.3`  
-Current PR: `#41`  
-Current PR branch: `v3.0.3-runtime-plan`
+Current version: `v3.0.4`  
+Current phase: endpoint abstraction with serial/TCP simulator support under review  
+Current branch prefix: `v3.0.4`  
+Current PR: `pending`  
+Current PR branch: `v3.0.4-endpoint-abstraction`
 
 Current state:
 
@@ -24,10 +24,11 @@ Current state:
 v3.0.0 process scaffolding has been merged.
 Chat prompt workflow has been merged.
 v3.0.0 working-code inventory and seam plan has been merged.
-v3.0.1 frozen docs/schema target has been merged.
+v3.0.1 frozen v3 docs/schema target has been merged.
 v3.0.2 strict config load and validation has been merged.
-v3.0.3 RuntimePlan resolution is open for verification.
-Runtime implementation beyond config resolution has not started yet.
+v3.0.3 RuntimePlan resolution has been merged.
+v3.0.4 endpoint abstraction is open for verification.
+Sensor polling runtime has not started yet.
 ```
 
 ## 3. Completed versions
@@ -39,16 +40,17 @@ Runtime implementation beyond config resolution has not started yet.
 | v3.0.0 | complete | #38 | Added working-code inventory and seam plan before runtime implementation. |
 | v3.0.1 | complete | #39 | Added frozen v3 docs and schema target before strict config loading. |
 | v3.0.2 | complete | #40 | Added strict v3 config load and validation. |
+| v3.0.3 | complete | #41 | Added RuntimePlan resolution. |
 
 ## 4. Next target
 
-Next version: `v3.0.3`  
-Next action: verify PR `#41` against the v3.0.3 RuntimePlan resolution prompt in `docs/v3/ChatPrompts.md`.
+Next version: `v3.0.4`  
+Next action: verify the v3.0.4 endpoint abstraction PR against the v3.0.4 implementation prompt in `docs/v3/ChatPrompts.md`.
 
-If PR `#41` passes verification and is merged, the next action should be:
+If the v3.0.4 PR passes verification and is merged, the next action should be:
 
 ```text
-Create the v3.0.4 endpoint abstraction implementation slice using the v3.0.4 implementation prompt in docs/v3/ChatPrompts.md.
+Create the v3.0.5 sensor event spine and latest-state store implementation slice using the v3.0.5 implementation prompt in docs/v3/ChatPrompts.md.
 ```
 
 ## 5. Version queue
@@ -58,8 +60,8 @@ Create the v3.0.4 endpoint abstraction implementation slice using the v3.0.4 imp
 | v3.0.0 | working-code inventory and seam plan | complete |
 | v3.0.1 | frozen v3 docs and schema target | complete |
 | v3.0.2 | strict v3 config load/validation | complete |
-| v3.0.3 | RuntimePlan resolution | PR #41 under review |
-| v3.0.4 | endpoint abstraction with serial/TCP simulator support | pending |
+| v3.0.3 | RuntimePlan resolution | complete |
+| v3.0.4 | endpoint abstraction with serial/TCP simulator support | PR under review |
 | v3.0.5 | sensor event spine and latest-state store | pending |
 | v3.0.6 | selected JSONL logging | pending |
 | v3.0.7 | minimal asset registry: image, digit, indicator | pending |
@@ -105,22 +107,18 @@ v3.0.4-endpoint-abstraction
 
 ## 10. Notes for current PR
 
-The current PR is a v3.0.3 RuntimePlan resolution slice.
+The current PR is a v3.0.4 endpoint abstraction slice.
 
 Expected verification focus:
 
-- `internal/config/v3config.Resolve` exists beside the strict config loader.
-- It resolves one selected vehicle into an explicit runtime plan.
-- It resolves endpoint config from the selected vehicle.
-- It resolves only selected log definitions.
-- It resolves only selected dashboard definitions.
-- Multiple vehicles require explicit selection.
-- A single vehicle can resolve by default.
-- A single log/dashboard can be used by default when omitted by the vehicle.
-- Display collision validation applies to selected dashboards.
-- Unselected dashboards are inert and may share displays as alternatives.
-- Runtime consumers can use the resolved plan instead of walking raw config maps.
-- It does not implement endpoint connectors.
+- `internal/vehicle` contains the v3 endpoint/reader boundary.
+- A selected `RuntimePlan` endpoint can create one reader through the boundary.
+- `serial://` endpoint shape is supported by wrapping existing ELMOBD reader code.
+- `tcp://host:port` endpoint shape is supported for bench/simulator work.
+- Endpoint parsing follows the v3 address rules.
+- The boundary returns a reader usable by the later sensor runtime.
+- Simulator identity does not leak into sensors, logs, dashboards, or assets.
+- The core runtime does not gain endpoint-provider branching.
 - It does not implement sensor polling.
 - It does not implement dashboard rendering.
-- It does not let logs or dashboards choose their own vehicle.
+- It does not implement selected JSONL logging.
