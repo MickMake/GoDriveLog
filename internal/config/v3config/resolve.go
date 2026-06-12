@@ -3,12 +3,14 @@ package v3config
 import "fmt"
 
 // RuntimePlan is the resolved v3 boundary handed to later runtime packages.
-// It keeps selected vehicle ownership explicit so callers do not need to walk
-// raw config maps to decide what should run.
+// It keeps selected vehicle ownership explicit and exposes the validated global
+// catalogues so callers do not need to walk raw Config maps.
 type RuntimePlan struct {
 	VehicleID  string
 	Vehicle    VehicleConfig
 	Endpoint   OBDConfig
+	Sensors    map[string]SensorConfig
+	Assets     AssetConfig
 	Logs       []ResolvedLog
 	Dashboards []ResolvedDashboard
 }
@@ -52,6 +54,8 @@ func Resolve(cfg Config, selectedVehicleID string) (RuntimePlan, error) {
 		VehicleID:  vehicleID,
 		Vehicle:    vehicle,
 		Endpoint:   vehicle.OBD,
+		Sensors:    cfg.Sensors,
+		Assets:     cfg.Assets,
 		Logs:       logs,
 		Dashboards: dashboards,
 	}, nil
