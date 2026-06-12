@@ -8,32 +8,14 @@ References: `MigrationState.md`, `MigrationGuardrails.md`, `ImplementationGuardr
 
 This file contains the reusable prompts for the GoDriveLog v3 migration workflow.
 
-The goal is simple phone-friendly operation:
+The goal is a simple process:
 
 ```text
 Implementation chat creates one PR.
 Verification chat checks that PR.
 Mick merges only after PASS.
-The next implementation chat uses the next prompt.
+The next implementation chat uses the next prompt and updates the state.
 ```
-
-Do not make Mick reconstruct the process from memory.
-
-## 2. How Mick should use this file
-
-For an implementation chat, paste a short instruction like:
-
-```text
-Hey mate. You are the implementation chat for GoDriveLog v3. Use the v3.0.0 implementation prompt from docs/v3/ChatPrompts.md.
-```
-
-For a verification chat, paste:
-
-```text
-Hey mate. You are the verification chat for GoDriveLog v3. Use the verifier prompt from docs/v3/ChatPrompts.md for PR <number>.
-```
-
-That is enough. The chat must read the repo files listed in the prompt and work from repo state, not from chat memory.
 
 ## 3. Universal rules for all chats
 
