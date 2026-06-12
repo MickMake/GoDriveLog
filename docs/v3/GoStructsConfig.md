@@ -140,8 +140,8 @@ Rules:
 - If a vehicle lists `dashboards`, every listed dashboard ID must exist under top-level `dashboards`.
 - If a vehicle omits `logs` and exactly one log is defined, the runtime may use that single log automatically.
 - If a vehicle omits `dashboards` and exactly one dashboard is defined, the runtime may use that single dashboard automatically.
-- If multiple logs are defined, each vehicle should list the logs it runs.
-- If multiple dashboards are defined, each vehicle should list the dashboards it renders.
+- If multiple logs are defined, each vehicle must list the logs it runs.
+- If multiple dashboards are defined, each vehicle must list the dashboards it renders.
 - Display collision validation applies to the dashboards selected by the selected vehicle.
 - Within one selected vehicle's dashboard set, no two dashboards may target the same physical display.
 - Multiple dashboard definitions may target the same display when they are alternatives selected by different vehicle profiles.
@@ -563,8 +563,8 @@ Initial validation should check:
 - OBD timeout is greater than zero, preferably within `100..30000` milliseconds.
 - Vehicle `logs` references exist under top-level `logs`.
 - Vehicle `dashboards` references exist under top-level `dashboards`.
-- If multiple logs are defined, each vehicle lists the logs it runs.
-- If multiple dashboards are defined, each vehicle lists the dashboards it renders.
+- If multiple logs are defined, each vehicle must list the logs it runs.
+- If multiple dashboards are defined, each vehicle must list the dashboards it renders.
 - For each selected vehicle, no two selected dashboards target the same display.
 - Sensor `poll > 0`.
 - Sensor `min < max` when both are present.
