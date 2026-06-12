@@ -12,11 +12,11 @@ Every implementor and verifier chat should read this file before doing work. Do 
 
 ## 2. Current migration position
 
-Current version: `v3.0.2`  
-Current phase: strict v3 config load and validation under review  
-Current branch prefix: `v3.0.2`  
-Current PR: `#40`  
-Current PR branch: `v3.0.2-config-loader-validation`
+Current version: `v3.0.3`  
+Current phase: RuntimePlan resolution under review  
+Current branch prefix: `v3.0.3`  
+Current PR: `#41`  
+Current PR branch: `v3.0.3-runtime-plan`
 
 Current state:
 
@@ -25,8 +25,9 @@ v3.0.0 process scaffolding has been merged.
 Chat prompt workflow has been merged.
 v3.0.0 working-code inventory and seam plan has been merged.
 v3.0.1 frozen docs/schema target has been merged.
-v3.0.2 strict config load and validation is open for verification.
-Runtime implementation work beyond config validation has not started yet.
+v3.0.2 strict config load and validation has been merged.
+v3.0.3 RuntimePlan resolution is open for verification.
+Runtime implementation beyond config resolution has not started yet.
 ```
 
 ## 3. Completed versions
@@ -37,16 +38,17 @@ Runtime implementation work beyond config validation has not started yet.
 | v3.0.0 | complete | #37 | Added reusable implementation/verification chat prompts for the v3 migration workflow. |
 | v3.0.0 | complete | #38 | Added working-code inventory and seam plan before runtime implementation. |
 | v3.0.1 | complete | #39 | Added frozen v3 docs and schema target before strict config loading. |
+| v3.0.2 | complete | #40 | Added strict v3 config load and validation. |
 
 ## 4. Next target
 
-Next version: `v3.0.2`  
-Next action: verify PR `#40` against the v3.0.2 strict v3 config load and validation prompt.
+Next version: `v3.0.3`  
+Next action: verify PR `#41` against the v3.0.3 RuntimePlan resolution prompt in `docs/v3/ChatPrompts.md`.
 
-If PR `#40` passes verification and is merged, the next action should be:
+If PR `#41` passes verification and is merged, the next action should be:
 
 ```text
-Create the v3.0.3 RuntimePlan resolution implementation slice using the v3.0.3 implementation prompt in docs/v3/ChatPrompts.md.
+Create the v3.0.4 endpoint abstraction implementation slice using the v3.0.4 implementation prompt in docs/v3/ChatPrompts.md.
 ```
 
 ## 5. Version queue
@@ -55,8 +57,8 @@ Create the v3.0.3 RuntimePlan resolution implementation slice using the v3.0.3 i
 |---|---|---|
 | v3.0.0 | working-code inventory and seam plan | complete |
 | v3.0.1 | frozen v3 docs and schema target | complete |
-| v3.0.2 | strict v3 config load/validation | PR #40 under review |
-| v3.0.3 | RuntimePlan resolution | pending |
+| v3.0.2 | strict v3 config load/validation | complete |
+| v3.0.3 | RuntimePlan resolution | PR #41 under review |
 | v3.0.4 | endpoint abstraction with serial/TCP simulator support | pending |
 | v3.0.5 | sensor event spine and latest-state store | pending |
 | v3.0.6 | selected JSONL logging | pending |
@@ -103,19 +105,22 @@ v3.0.4-endpoint-abstraction
 
 ## 10. Notes for current PR
 
-The current PR is a v3.0.2 strict config load and validation slice.
+The current PR is a v3.0.3 RuntimePlan resolution slice.
 
 Expected verification focus:
 
-- `internal/config/v3config` exists beside the current config path.
-- It implements strict v3 YAML loading without changing the old/current config loader.
-- It rejects unknown root and nested fields.
-- It validates docs/v3/config.example.yaml.
-- It validates docs/v3/config.full.yaml.
-- It validates active docs/v3/examples/*.yaml files.
-- It validates vehicle, log, dashboard, widget, and asset references.
-- It keeps sensors and assets as global catalogues.
-- It does not wire the full runtime.
-- It does not add compatibility aliases.
-- It does not auto-convert old/current config shapes.
-- It does not start v3.0.3 RuntimePlan implementation.
+- `internal/config/v3config.Resolve` exists beside the strict config loader.
+- It resolves one selected vehicle into an explicit runtime plan.
+- It resolves endpoint config from the selected vehicle.
+- It resolves only selected log definitions.
+- It resolves only selected dashboard definitions.
+- Multiple vehicles require explicit selection.
+- A single vehicle can resolve by default.
+- A single log/dashboard can be used by default when omitted by the vehicle.
+- Display collision validation applies to selected dashboards.
+- Unselected dashboards are inert and may share displays as alternatives.
+- Runtime consumers can use the resolved plan instead of walking raw config maps.
+- It does not implement endpoint connectors.
+- It does not implement sensor polling.
+- It does not implement dashboard rendering.
+- It does not let logs or dashboards choose their own vehicle.
