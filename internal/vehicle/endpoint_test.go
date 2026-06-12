@@ -3,6 +3,7 @@ package vehicle
 import (
 	"bufio"
 	"context"
+	"errors"
 	"net"
 	"testing"
 	"time"
@@ -145,6 +146,31 @@ func TestConnectEndpointTCPReader(t *testing.T) {
 	}
 
 	<-serverDone
+}
+
+func TestTCPReaderReadReturnsCancelledContextBeforeBlockingIO(t *testing.T) {
+	client, server := net.Pipe()
+	defer client.Close()
+	defer server.Close()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	reader := NewTCPReader(client, 0)
+	done := make(chan error, 1)
+	go func() {
+		_, _, err := reader.Read(ctx, "010D")
+		done <- err
+	}()
+
+	select {
+	case err := <-done:
+		if !errors.Is(err, context.Canceled) {
+			t.Fatalf("expected context.Canceled, got %v", err)
+		}
+	case <-time.After(100 * time.Millisecond):
+		t.Fatalf("expected cancelled context to return before blocking I/O")
+	}
 }
 
 func TestParseTCPReadingAllowsValueOnlyResponse(t *testing.T) {
