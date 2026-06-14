@@ -1,7 +1,7 @@
 # GoDriveLog v3 migration state
 
 Status: active
-Last updated: 2026-06-14
+Last updated: 2026-06-15
 State owner: migration implementor
 
 ## Purpose
@@ -10,11 +10,11 @@ This file is the repo-owned state tracker for the v3 migration.
 
 ## Current migration position
 
-Current version: `v3.0.11`
-Current phase: retirement audit under review
-Current branch prefix: `v3.0.11`
-Current PR: `#49`
-Current PR branch: `v3.0.11-retirement-audit`
+Current version: `v3.0.12`
+Current phase: inverse implementation audit
+Current branch prefix: `v3.0.12`
+Current PR: `#50`
+Current PR branch: `v3.0.12-inverse-implementation-audit`
 
 ## Current state
 
@@ -31,8 +31,9 @@ Current PR branch: `v3.0.11-retirement-audit`
 - v3.0.8 smallest selected dashboard has been merged.
 - v3.0.9 richer asset registry has been merged.
 - v3.0.10 richer dashboard widgets have been merged.
-- v3.0.11 retirement audit is open for verification.
-- No code has been removed, moved, or archived by the v3.0.11 audit slice.
+- v3.0.11 retirement audit has been merged.
+- v3.0.12 inverse implementation audit documentation has been added for review.
+- No runtime, test, schema, archive, move, or deletion changes are part of v3.0.12.
 
 ## Completed versions
 
@@ -51,13 +52,14 @@ Current PR branch: `v3.0.11-retirement-audit`
 | v3.0.8 | complete | #46 | Added smallest selected dashboard scene runtime. |
 | v3.0.9 | complete | #47 | Added richer asset registry support for bar and frame assets. |
 | v3.0.10 | complete | #48 | Added richer dashboard widget rendering for `bar_display` and `frame_gauge`. |
+| v3.0.11 | complete | #49 | Added docs-only retirement audit for old/current paths that may be removed or archived later. |
 
 ## Next target
 
-Next version: `v3.0.11`
-Next action: verify the v3.0.11 retirement audit PR and review `docs/v3/RetirementAudit.md`.
+Next version: `v3.0.12`
+Next action: review `docs/v3/InverseImplementationAudit.md`.
 
-After v3.0.11 is merged, manually review the retirement audit before creating any removal or archive slices.
+After v3.0.12 is merged, use `RetirementAudit.md` and `InverseImplementationAudit.md` together before creating removal, archive, or runtime implementation slices.
 
 ## Version queue
 
@@ -74,7 +76,8 @@ After v3.0.11 is merged, manually review the retirement audit before creating an
 | v3.0.8 | smallest selected dashboard: image plus digit_display plus indicator | complete |
 | v3.0.9 | richer asset registry: bar and frame assets | complete |
 | v3.0.10 | richer dashboard widgets: bar_display and frame_gauge | complete |
-| v3.0.11 | retirement audit: review what can be removed or archived later | PR under review |
+| v3.0.11 | retirement audit: review what can be removed or archived later | complete |
+| v3.0.12 | inverse implementation audit: review old/current behaviours not yet fully rebuilt as v3 | in review |
 
 ## Branch naming reminder
 
@@ -94,25 +97,27 @@ Examples:
 - v3.0.9-richer-asset-registry
 - v3.0.10-richer-dashboard-widgets
 - v3.0.11-retirement-audit
+- v3.0.12-inverse-implementation-audit
 
-## Notes for current PR
+## Notes for current slice
 
-The current PR is a v3.0.11 docs-only retirement audit slice.
+The current slice is docs-only.
 
 Expected verification focus:
 
-- `docs/v3/RetirementAudit.md` exists.
-- The audit identifies old/current paths that may be removed or archived later.
-- The audit includes recommendations, confidence, removal conditions, and risks.
-- The audit explicitly keeps shared v3 seam/foundation paths.
-- The slice does not remove code.
-- The slice does not move code.
-- The slice does not archive files.
-- The slice does not change runtime behaviour.
-- The slice does not change tests.
-- The slice does not change v3 schema.
+- `docs/v3/InverseImplementationAudit.md` exists.
+- The audit identifies old/current behaviours not yet fully rebuilt as v3.
+- The audit separates confirmed v3 foundations from remaining integration, display, and behaviour gaps.
+- The audit includes recommendations, priorities, and retirement warnings.
+- The slice does not change code, tests, runtime behaviour, archives, or schema.
 
 Carried follow-up from v3.0.8:
 
 - `ApplyEvent()` currently rebuilds selected dashboard scenes via `Snapshot()` before detecting unchanged rendered output by scene signature. This remains acceptable for the richer widget slice, but future dashboard performance work should avoid rebuilding unaffected widgets or dashboards on every sensor event.
 - Do not solve this by adding dashboard polling, YAML formulas, widget-owned sensor reads, or endpoint access from dashboard code.
+
+Carried follow-up from v3.0.12:
+
+- The next safe implementation target appears to be a runnable v3 command path.
+- A v3 display adapter should exist before retiring the old UI dashboard or old Fyne renderer.
+- Daily JSONL rotation should be explicitly accepted, redesigned, or rejected before retiring the old daily JSONL writer.
