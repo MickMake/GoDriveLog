@@ -94,17 +94,7 @@ func TestApplyEventSkipsUnchangedFormattedDigitOutput(t *testing.T) {
 }
 
 func TestDigitDecimalPointDoesNotConsumeSlot(t *testing.T) {
-	dashboard := Dashboard{
-		ID:     "primary",
-		Assets: testAssetRegistry(),
-		Config: v3config.DashboardConfig{
-			Display: "test",
-			Size:    v3config.SizeConfig{Width: 320, Height: 120},
-			Widgets: []v3config.WidgetConfig{
-				{ID: "speed", Type: v3config.WidgetTypeDigitDisplay, Sensor: "speed", Asset: "digits", Position: []int{0, 0}, Digits: 3, Format: "%.1f"},
-			},
-		},
-	}
+	dashboard := Dashboard{ID: "primary", Assets: testAssetRegistry(), Config: v3config.DashboardConfig{Display: "test", Size: v3config.SizeConfig{Width: 320, Height: 120}, Widgets: []v3config.WidgetConfig{{ID: "speed", Type: v3config.WidgetTypeDigitDisplay, Sensor: "speed", Asset: "digits", Position: []int{0, 0}, Digits: 3, Format: "%.1f"}}}}
 
 	scene, err := dashboard.Render(map[string]sensors.SensorState{"speed": okState("speed", 12.3, "km/h")})
 	if err != nil {
@@ -117,6 +107,47 @@ func TestDigitDecimalPointDoesNotConsumeSlot(t *testing.T) {
 	decimal := partsByKind(widget, PartKindDecimalPoint)
 	if len(decimal) != 1 || decimal[0].Slot != 1 {
 		t.Fatalf("expected decimal point overlay on slot 1, got %#v", decimal)
+	}
+}
+
+func TestDigitDefaultFormatDoesNotRequireDecimalPoint(t *testing.T) {
+	registry := testAssetRegistry()
+	set := registry.DigitSets["digits"]
+	set.DecimalPoint = nil
+	registry.DigitSets["digits"] = set
+
+	dashboard := Dashboard{ID: "primary", Assets: registry, Config: v3config.DashboardConfig{Display: "test", Size: v3config.SizeConfig{Width: 320, Height: 120}, Widgets: []v3config.WidgetConfig{{ID: "speed", Type: v3config.WidgetTypeDigitDisplay, Sensor: "speed", Asset: "digits", Position: []int{0, 0}, Digits: 3}}}}
+
+	scene, err := dashboard.Render(map[string]sensors.SensorState{"speed": okState("speed", 12.3, "km/h")})
+	if err != nil {
+		t.Fatalf("Render failed: %v", err)
+	}
+	widget := requireWidget(t, scene, "speed")
+	if widget.Text != "12" {
+		t.Fatalf("expected default whole-number text 12, got %q", widget.Text)
+	}
+	if countParts(widget, PartKindDecimalPoint) != 0 {
+		t.Fatalf("expected omitted format not to require decimal point, got %#v", widget.Parts)
+	}
+}
+
+func TestDigitDecimalPointRendersBeforeForegroundForSlot(t *testing.T) {
+	registry := testAssetRegistry()
+	set := registry.DigitSets["digits"]
+	set.Foreground = &v3assets.ImageAsset{Path: "assets/digits/front.png"}
+	registry.DigitSets["digits"] = set
+
+	dashboard := Dashboard{ID: "primary", Assets: registry, Config: v3config.DashboardConfig{Display: "test", Size: v3config.SizeConfig{Width: 320, Height: 120}, Widgets: []v3config.WidgetConfig{{ID: "speed", Type: v3config.WidgetTypeDigitDisplay, Sensor: "speed", Asset: "digits", Position: []int{0, 0}, Digits: 3, Format: "%.1f"}}}}
+
+	scene, err := dashboard.Render(map[string]sensors.SensorState{"speed": okState("speed", 12.3, "km/h")})
+	if err != nil {
+		t.Fatalf("Render failed: %v", err)
+	}
+	widget := requireWidget(t, scene, "speed")
+	got := partKinds(partsForSlot(widget, 1))
+	want := []string{PartKindBackground, PartKindCharacter, PartKindDecimalPoint, PartKindForeground}
+	if strings.Join(got, ",") != strings.Join(want, ",") {
+		t.Fatalf("expected decimal point below foreground for slot 1, got %v want %v", got, want)
 	}
 }
 
@@ -142,17 +173,7 @@ func TestIndicatorUsesUnknownForNonOKStatus(t *testing.T) {
 func TestDigitReportsMissingNonNumericCharacterAsset(t *testing.T) {
 	registry := testAssetRegistry()
 	delete(registry.DigitSets["digits"].Characters, "-")
-	dashboard := Dashboard{
-		ID:     "primary",
-		Assets: registry,
-		Config: v3config.DashboardConfig{
-			Display: "test",
-			Size:    v3config.SizeConfig{Width: 320, Height: 120},
-			Widgets: []v3config.WidgetConfig{
-				{ID: "speed", Type: v3config.WidgetTypeDigitDisplay, Sensor: "speed", Asset: "digits", Position: []int{0, 0}, Digits: 4, Format: "%04.0f"},
-			},
-		},
-	}
+	dashboard := Dashboard{ID: "primary", Assets: registry, Config: v3config.DashboardConfig{Display: "test", Size: v3config.SizeConfig{Width: 320, Height: 120}, Widgets: []v3config.WidgetConfig{{ID: "speed", Type: v3config.WidgetTypeDigitDisplay, Sensor: "speed", Asset: "digits", Position: []int{0, 0}, Digits: 4, Format: "%04.0f"}}}}
 
 	_, err := dashboard.Render(map[string]sensors.SensorState{"speed": okState("speed", -12, "km/h")})
 	if err == nil {
@@ -182,52 +203,7 @@ func testConfig() v3config.Config {
 		characters[ch] = "assets/digits/" + ch + ".png"
 	}
 	characters["-"] = "assets/digits/minus.png"
-	return v3config.Config{
-		Vehicles: map[string]v3config.VehicleConfig{
-			"vw_caddy": {
-				Name:       "VW Caddy",
-				OBD:        v3config.OBDConfig{Address: "tcp://127.0.0.1:35000", Timeout: 1000},
-				Dashboards: []string{"primary"},
-			},
-		},
-		Sensors: map[string]v3config.SensorConfig{
-			"speed":   {Type: "obd", PID: "010D", Unit: "km/h", Poll: 250},
-			"warning": {Type: "obd", PID: "0142", Unit: "bool", Poll: 500},
-		},
-		Assets: v3config.AssetConfig{
-			ImageSets: map[string]v3config.ImageSetConfig{
-				"panel": {Image: "assets/panel.png"},
-			},
-			DigitSets: map[string]v3config.DigitSetConfig{
-				"digits": {Characters: characters, DecimalPoint: "assets/digits/dp.png", Background: "assets/digits/back.png"},
-			},
-			IndicatorSets: map[string]v3config.IndicatorSetConfig{
-				"warning": {States: map[string]string{
-					v3assets.IndicatorStateOff:     "assets/warning/off.png",
-					v3assets.IndicatorStateOn:      "assets/warning/on.png",
-					v3assets.IndicatorStateUnknown: "assets/warning/unknown.png",
-				}},
-			},
-		},
-		Dashboards: map[string]v3config.DashboardConfig{
-			"primary": {
-				Display: "HDMI-1",
-				Size:    v3config.SizeConfig{Width: 320, Height: 120},
-				Widgets: []v3config.WidgetConfig{
-					{ID: "panel", Type: v3config.WidgetTypeImage, Asset: "panel", Position: []int{0, 0}},
-					{ID: "speed", Type: v3config.WidgetTypeDigitDisplay, Sensor: "speed", Asset: "digits", Position: []int{10, 10}, Digits: 3, Format: "%03.0f"},
-					{ID: "warning", Type: v3config.WidgetTypeIndicator, Sensor: "warning", Asset: "warning", Position: []int{100, 10}},
-				},
-			},
-			"alternate": {
-				Display: "HDMI-2",
-				Size:    v3config.SizeConfig{Width: 320, Height: 120},
-				Widgets: []v3config.WidgetConfig{
-					{ID: "panel", Type: v3config.WidgetTypeImage, Asset: "panel", Position: []int{0, 0}},
-				},
-			},
-		},
-	}
+	return v3config.Config{Vehicles: map[string]v3config.VehicleConfig{"vw_caddy": {Name: "VW Caddy", OBD: v3config.OBDConfig{Address: "tcp://127.0.0.1:35000", Timeout: 1000}, Dashboards: []string{"primary"}}}, Sensors: map[string]v3config.SensorConfig{"speed": {Type: "obd", PID: "010D", Unit: "km/h", Poll: 250}, "warning": {Type: "obd", PID: "0142", Unit: "bool", Poll: 500}}, Assets: v3config.AssetConfig{ImageSets: map[string]v3config.ImageSetConfig{"panel": {Image: "assets/panel.png"}}, DigitSets: map[string]v3config.DigitSetConfig{"digits": {Characters: characters, DecimalPoint: "assets/digits/dp.png", Background: "assets/digits/back.png"}}, IndicatorSets: map[string]v3config.IndicatorSetConfig{"warning": {States: map[string]string{v3assets.IndicatorStateOff: "assets/warning/off.png", v3assets.IndicatorStateOn: "assets/warning/on.png", v3assets.IndicatorStateUnknown: "assets/warning/unknown.png"}}}}, Dashboards: map[string]v3config.DashboardConfig{"primary": {Display: "HDMI-1", Size: v3config.SizeConfig{Width: 320, Height: 120}, Widgets: []v3config.WidgetConfig{{ID: "panel", Type: v3config.WidgetTypeImage, Asset: "panel", Position: []int{0, 0}}, {ID: "speed", Type: v3config.WidgetTypeDigitDisplay, Sensor: "speed", Asset: "digits", Position: []int{10, 10}, Digits: 3, Format: "%03.0f"}, {ID: "warning", Type: v3config.WidgetTypeIndicator, Sensor: "warning", Asset: "warning", Position: []int{100, 10}}}}, "alternate": {Display: "HDMI-2", Size: v3config.SizeConfig{Width: 320, Height: 120}, Widgets: []v3config.WidgetConfig{{ID: "panel", Type: v3config.WidgetTypeImage, Asset: "panel", Position: []int{0, 0}}}}}}
 }
 
 func testAssetRegistry() *v3assets.Registry {
@@ -236,26 +212,7 @@ func testAssetRegistry() *v3assets.Registry {
 		characters[ch] = v3assets.ImageAsset{Path: "assets/digits/" + ch + ".png"}
 	}
 	characters["-"] = v3assets.ImageAsset{Path: "assets/digits/minus.png"}
-	return &v3assets.Registry{
-		Images: map[string]v3assets.ImageSet{
-			"panel": {ID: "panel", Image: &v3assets.ImageAsset{Path: "assets/panel.png"}},
-		},
-		DigitSets: map[string]v3assets.DigitSet{
-			"digits": {
-				ID:           "digits",
-				Background:   &v3assets.ImageAsset{Path: "assets/digits/back.png"},
-				Characters:   characters,
-				DecimalPoint: &v3assets.ImageAsset{Path: "assets/digits/dp.png"},
-			},
-		},
-		IndicatorSets: map[string]v3assets.IndicatorSet{
-			"warning": {ID: "warning", States: map[string]v3assets.ImageAsset{
-				v3assets.IndicatorStateOff:     {Path: "assets/warning/off.png"},
-				v3assets.IndicatorStateOn:      {Path: "assets/warning/on.png"},
-				v3assets.IndicatorStateUnknown: {Path: "assets/warning/unknown.png"},
-			}},
-		},
-	}
+	return &v3assets.Registry{Images: map[string]v3assets.ImageSet{"panel": {ID: "panel", Image: &v3assets.ImageAsset{Path: "assets/panel.png"}}}, DigitSets: map[string]v3assets.DigitSet{"digits": {ID: "digits", Background: &v3assets.ImageAsset{Path: "assets/digits/back.png"}, Characters: characters, DecimalPoint: &v3assets.ImageAsset{Path: "assets/digits/dp.png"}}}, IndicatorSets: map[string]v3assets.IndicatorSet{"warning": {ID: "warning", States: map[string]v3assets.ImageAsset{v3assets.IndicatorStateOff: {Path: "assets/warning/off.png"}, v3assets.IndicatorStateOn: {Path: "assets/warning/on.png"}, v3assets.IndicatorStateUnknown: {Path: "assets/warning/unknown.png"}}}}}
 }
 
 func okState(id string, value float64, unit string) sensors.SensorState {
@@ -289,6 +246,24 @@ func partsByKind(widget Widget, kind string) []Part {
 		}
 	}
 	return parts
+}
+
+func partsForSlot(widget Widget, slot int) []Part {
+	parts := []Part{}
+	for _, part := range widget.Parts {
+		if part.Slot == slot {
+			parts = append(parts, part)
+		}
+	}
+	return parts
+}
+
+func partKinds(parts []Part) []string {
+	kinds := make([]string, 0, len(parts))
+	for _, part := range parts {
+		kinds = append(kinds, part.Kind)
+	}
+	return kinds
 }
 
 func characters(widget Widget) string {
