@@ -273,6 +273,41 @@ func TestLoadReportsInvalidFrameRange(t *testing.T) {
 	assertContains(t, err.Error(), "assets.frame_sets.throttle_frames.frames.first")
 }
 
+func TestLoadRejectsMultiFrameLiteralPath(t *testing.T) {
+	root := t.TempDir()
+	writePNG(t, root, "assets/frame.png")
+
+	_, err := Load(v3config.AssetConfig{
+		FrameSets: map[string]v3config.FrameSetConfig{
+			"throttle_frames": {Frames: v3config.FrameRangeConfig{Path: "assets/frame.png", First: 0, Last: 2}},
+		},
+	}, root)
+	if err == nil {
+		t.Fatalf("expected multi-frame literal path to fail")
+	}
+	assertContains(t, err.Error(), "assets.frame_sets.throttle_frames.frames.path")
+	assertContains(t, err.Error(), "printf placeholder")
+	assertContains(t, err.Error(), "multi-frame range")
+}
+
+func TestLoadAllowsSingleFrameLiteralPath(t *testing.T) {
+	root := t.TempDir()
+	writePNG(t, root, "assets/frame.png")
+
+	registry, err := Load(v3config.AssetConfig{
+		FrameSets: map[string]v3config.FrameSetConfig{
+			"throttle_frames": {Frames: v3config.FrameRangeConfig{Path: "assets/frame.png", First: 0, Last: 0}},
+		},
+	}, root)
+	if err != nil {
+		t.Fatalf("Load failed: %v", err)
+	}
+	frames, ok := registry.FrameSet("throttle_frames")
+	if !ok || len(frames.Frames) != 1 || frames.Frames[0].Image == nil {
+		t.Fatalf("expected single literal frame to load, got %#v", frames)
+	}
+}
+
 func TestLoadReportsFrameDimensionMismatch(t *testing.T) {
 	root := t.TempDir()
 	writePNGSize(t, root, "assets/frame_000.png", 2, 2)
