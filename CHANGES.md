@@ -2,9 +2,12 @@
 
 ## Unreleased
 
+- Added v3 smallest selected-dashboard scene runtime for image, digit display, and indicator widgets.
+- Added selected-dashboard scene tests for RuntimePlan dashboard selection, digit formatting, decimal point overlays, indicator status mapping, and unchanged formatted output handling.
 - Added v3 minimal asset registry for image, digit, and indicator asset families.
 - Added reusable decoded image asset structs so future widgets can avoid hot-path asset loading.
 - Added tests for repository-root asset path resolution, missing asset errors, decoded digit assets, and required indicator states.
+- Updated v3 migration state for the v3.0.8 implementation slice.
 - Updated v3 migration state for the v3.0.7 implementation slice.
 
 ## 0.1 - 2026-06-08
