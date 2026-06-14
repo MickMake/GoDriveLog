@@ -10,11 +10,11 @@ This file is the repo-owned state tracker for the v3 migration.
 
 ## Current migration position
 
-Current version: `v3.0.7`
-Current phase: minimal asset registry under review
-Current branch prefix: `v3.0.7`
+Current version: `v3.0.8`
+Current phase: smallest selected dashboard under review
+Current branch prefix: `v3.0.8`
 Current PR: `pending`
-Current PR branch: `v3.0.7-asset-registry`
+Current PR branch: `v3.0.8-smallest-dashboard`
 
 ## Current state
 
@@ -27,8 +27,9 @@ Current PR branch: `v3.0.7-asset-registry`
 - v3.0.4 endpoint abstraction has been merged.
 - v3.0.5 sensor event spine and latest-state store has been merged.
 - v3.0.6 selected JSONL logging has been merged.
-- v3.0.7 minimal asset registry is open for verification.
-- Smallest selected dashboard has not started yet.
+- v3.0.7 minimal asset registry has been merged.
+- v3.0.8 smallest selected dashboard is open for verification.
+- Richer asset registry has not started yet.
 
 ## Completed versions
 
@@ -43,13 +44,14 @@ Current PR branch: `v3.0.7-asset-registry`
 | v3.0.4 | complete | #42 | Added endpoint abstraction with serial and TCP simulator support. |
 | v3.0.5 | complete | #43 | Added sensor event spine and latest-state store. |
 | v3.0.6 | complete | #44 | Added selected JSONL logging. |
+| v3.0.7 | complete | #45 | Added minimal asset registry. |
 
 ## Next target
 
-Next version: `v3.0.7`
-Next action: verify the v3.0.7 minimal asset registry PR against the v3.0.7 implementation prompt in `docs/v3/ChatPrompts.md`.
+Next version: `v3.0.8`
+Next action: verify the v3.0.8 smallest selected dashboard PR against the v3.0.8 implementation prompt in `docs/v3/ChatPrompts.md`.
 
-After v3.0.7 is merged, create the v3.0.8 smallest selected dashboard implementation slice.
+After v3.0.8 is merged, create the v3.0.9 richer asset registry implementation slice.
 
 ## Version queue
 
@@ -62,8 +64,8 @@ After v3.0.7 is merged, create the v3.0.8 smallest selected dashboard implementa
 | v3.0.4 | endpoint abstraction with serial and TCP simulator support | complete |
 | v3.0.5 | sensor event spine and latest-state store | complete |
 | v3.0.6 | selected JSONL logging | complete |
-| v3.0.7 | minimal asset registry: image, digit, indicator | PR under review |
-| v3.0.8 | smallest selected dashboard: image plus digit_display plus indicator | pending |
+| v3.0.7 | minimal asset registry: image, digit, indicator | complete |
+| v3.0.8 | smallest selected dashboard: image plus digit_display plus indicator | PR under review |
 | v3.0.9 | richer asset registry: bar and frame assets | pending |
 | v3.0.10 | richer dashboard widgets: bar_display and frame_gauge | pending |
 | v3.0.11 | retire or archive replaced current paths | pending |
@@ -82,20 +84,31 @@ Examples:
 - v3.0.5-sensor-event-spine
 - v3.0.6-jsonl-subscriber
 - v3.0.7-asset-registry
+- v3.0.8-smallest-dashboard
 
 ## Notes for current PR
 
-The current PR is a v3.0.7 minimal asset registry slice.
+The current PR is a v3.0.8 smallest selected dashboard slice.
 
 Expected verification focus:
 
-- `internal/assets` contains a v3 asset registry for image, digit, and indicator assets.
-- Asset paths resolve as repository-root relative paths.
-- Missing assets fail clearly.
-- Required indicator states `off`, `on`, and `unknown` are loaded and validated by the registry boundary.
-- Digit character images, decimal point, and optional layer images can be decoded and reused.
-- Decoded images are loaded once into reusable registry structs for later widgets/renderers.
-- The registry does not implement bar or frame assets.
-- The registry does not implement dashboard rendering.
-- The registry does not add vehicle-owned asset lists.
-- The registry does not add YAML rules, scripts, formulas, or conditions.
+- `internal/dashboard/v3dashboard` contains a v3 selected-dashboard scene runtime.
+- Selected dashboards come from `v3config.RuntimePlan.Dashboards`, resolved from `vehicles.<id>.dashboards`.
+- Image, digit display, and indicator widgets render from the v3 asset registry.
+- Dashboard state is driven by `sensors.SensorState` and `sensors.SensorEvent` values.
+- Dashboard code does not read endpoint, OBD, or sensor reader code directly.
+- Static image widgets can render.
+- Numeric values render through digit display slots.
+- Decimal separators do not consume digit slots.
+- Indicators use `unknown` for stale, error, missing, or otherwise non-`ok` sensor status.
+- Unchanged formatted digit output does not trigger a changed scene result.
+- The slice does not implement `bar_display` or `frame_gauge`.
+- The slice does not add dashboard-level polling cadence.
+- The slice does not add YAML rules, scripts, formulas, or conditions.
+
+Verification follow-up:
+
+- PR #46 is acceptable for the v3.0.8 smallest selected dashboard slice.
+- `ApplyEvent()` currently rebuilds selected dashboard scenes via `Snapshot()` before detecting unchanged rendered output by scene signature. This is acceptable for the first dashboard seam, but later dashboard work should avoid rebuilding unaffected widgets or dashboards on every sensor event.
+- Track this before or during v3.0.10 richer dashboard widgets, or in any earlier performance-focused dashboard refinement.
+- Do not solve this by adding dashboard polling, YAML formulas, widget-owned sensor reads, or endpoint access from dashboard code.
