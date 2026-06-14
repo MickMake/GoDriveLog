@@ -21,6 +21,8 @@ const (
 	IndicatorStateUnknown = "unknown"
 )
 
+var requiredDigitCharacters = []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"}
+
 // Registry contains decoded v3 assets keyed by global asset family and ID.
 // It is built once from repo-root-relative config paths so widgets can reuse
 // decoded image data instead of loading or decoding in the hot render path.
@@ -179,7 +181,17 @@ func loadDigitSet(root, id string, cfg v3config.DigitSetConfig) (DigitSet, error
 			return DigitSet{}, err
 		}
 	}
+	for _, ch := range requiredDigitCharacters {
+		asset, err := loadRequiredImage(root, cfg.Characters[ch], fmt.Sprintf("assets.digit_sets.%s.characters.%s", id, ch))
+		if err != nil {
+			return DigitSet{}, err
+		}
+		set.Characters[ch] = asset
+	}
 	for _, ch := range sortedKeys(cfg.Characters) {
+		if _, exists := set.Characters[ch]; exists {
+			continue
+		}
 		asset, err := loadRequiredImage(root, cfg.Characters[ch], fmt.Sprintf("assets.digit_sets.%s.characters.%s", id, ch))
 		if err != nil {
 			return DigitSet{}, err
