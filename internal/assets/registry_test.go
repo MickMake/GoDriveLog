@@ -16,13 +16,14 @@ func TestLoadMinimalAssetRegistry(t *testing.T) {
 	root := t.TempDir()
 	writePNG(t, root, "assets/panel.png")
 	writePNG(t, root, "assets/digit_back.png")
-	writePNG(t, root, "assets/0.png")
-	writePNG(t, root, "assets/1.png")
 	writePNG(t, root, "assets/minus.png")
 	writePNG(t, root, "assets/dp.png")
 	writePNG(t, root, "assets/off.png")
 	writePNG(t, root, "assets/on.png")
 	writePNG(t, root, "assets/unknown.png")
+	for _, ch := range requiredDigitCharacters {
+		writePNG(t, root, "assets/"+ch+".png")
+	}
 
 	registry, err := Load(v3config.AssetConfig{
 		ImageSets: map[string]v3config.ImageSetConfig{
@@ -34,6 +35,14 @@ func TestLoadMinimalAssetRegistry(t *testing.T) {
 				Characters: map[string]string{
 					"0": "assets/0.png",
 					"1": "assets/1.png",
+					"2": "assets/2.png",
+					"3": "assets/3.png",
+					"4": "assets/4.png",
+					"5": "assets/5.png",
+					"6": "assets/6.png",
+					"7": "assets/7.png",
+					"8": "assets/8.png",
+					"9": "assets/9.png",
 					"-": "assets/minus.png",
 				},
 				DecimalPoint: "assets/dp.png",
@@ -66,6 +75,11 @@ func TestLoadMinimalAssetRegistry(t *testing.T) {
 	}
 	if digits.Spacing != 4 || digits.Background == nil || digits.DecimalPoint == nil {
 		t.Fatalf("expected digit metadata and optional layers")
+	}
+	for _, ch := range requiredDigitCharacters {
+		if _, ok := digits.Characters[ch]; !ok {
+			t.Fatalf("expected required digit character %q to be loaded", ch)
+		}
 	}
 	if _, ok := digits.Characters["-"]; !ok {
 		t.Fatalf("expected minus character to be loaded")
@@ -108,6 +122,35 @@ func TestLoadRejectsNonRootRelativeAssetPath(t *testing.T) {
 			assertContains(t, err.Error(), "repository-root relative")
 		})
 	}
+}
+
+func TestLoadReportsMissingRequiredDigitCharacter(t *testing.T) {
+	root := t.TempDir()
+	for _, ch := range []string{"0", "1", "3", "4", "5", "6", "7", "8", "9"} {
+		writePNG(t, root, "assets/"+ch+".png")
+	}
+
+	_, err := Load(v3config.AssetConfig{
+		DigitSets: map[string]v3config.DigitSetConfig{
+			"digits": {
+				Characters: map[string]string{
+					"0": "assets/0.png",
+					"1": "assets/1.png",
+					"3": "assets/3.png",
+					"4": "assets/4.png",
+					"5": "assets/5.png",
+					"6": "assets/6.png",
+					"7": "assets/7.png",
+					"8": "assets/8.png",
+					"9": "assets/9.png",
+				},
+			},
+		},
+	}, root)
+	if err == nil {
+		t.Fatalf("expected missing digit character to fail")
+	}
+	assertContains(t, err.Error(), "assets.digit_sets.digits.characters.2")
 }
 
 func TestLoadReportsMissingRequiredIndicatorState(t *testing.T) {
