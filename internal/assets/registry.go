@@ -30,6 +30,8 @@ type Registry struct {
 	repoRoot      string
 	Images        map[string]ImageSet
 	DigitSets     map[string]DigitSet
+	BarSets       map[string]BarSet
+	FrameSets     map[string]FrameSet
 	IndicatorSets map[string]IndicatorSet
 }
 
@@ -49,6 +51,23 @@ type DigitSet struct {
 	Spacing      int
 }
 
+type BarSet struct {
+	ID         string
+	Background *ImageAsset
+	Cells      map[string]ImageAsset
+	Foreground *ImageAsset
+	Spacing    int
+}
+
+type FrameSet struct {
+	ID         string
+	Background *ImageAsset
+	Frames     map[int]ImageAsset
+	First      int
+	Last       int
+	Foreground *ImageAsset
+}
+
 type IndicatorSet struct {
 	ID         string
 	Background *ImageAsset
@@ -63,7 +82,7 @@ type ImageAsset struct {
 	Bounds image.Rectangle
 }
 
-// Load builds a minimal v3 asset registry for image, digit, and indicator asset families.
+// Load builds the v3 asset registry for image-backed dashboard asset families.
 func Load(cfg v3config.AssetConfig, repoRoot string) (*Registry, error) {
 	root, err := cleanRepoRoot(repoRoot)
 	if err != nil {
@@ -74,6 +93,8 @@ func Load(cfg v3config.AssetConfig, repoRoot string) (*Registry, error) {
 		repoRoot:      root,
 		Images:        make(map[string]ImageSet, len(cfg.ImageSets)),
 		DigitSets:     make(map[string]DigitSet, len(cfg.DigitSets)),
+		BarSets:       make(map[string]BarSet, len(cfg.BarSets)),
+		FrameSets:     make(map[string]FrameSet, len(cfg.FrameSets)),
 		IndicatorSets: make(map[string]IndicatorSet, len(cfg.IndicatorSets)),
 	}
 
@@ -90,6 +111,20 @@ func Load(cfg v3config.AssetConfig, repoRoot string) (*Registry, error) {
 			return nil, err
 		}
 		registry.DigitSets[id] = set
+	}
+	for _, id := range sortedKeys(cfg.BarSets) {
+		set, err := loadBarSet(root, id, cfg.BarSets[id])
+		if err != nil {
+			return nil, err
+		}
+		registry.BarSets[id] = set
+	}
+	for _, id := range sortedKeys(cfg.FrameSets) {
+		set, err := loadFrameSet(root, id, cfg.FrameSets[id])
+		if err != nil {
+			return nil, err
+		}
+		registry.FrameSets[id] = set
 	}
 	for _, id := range sortedKeys(cfg.IndicatorSets) {
 		set, err := loadIndicatorSet(root, id, cfg.IndicatorSets[id])
@@ -122,6 +157,22 @@ func (r *Registry) DigitSet(id string) (DigitSet, bool) {
 		return DigitSet{}, false
 	}
 	set, ok := r.DigitSets[id]
+	return set, ok
+}
+
+func (r *Registry) BarSet(id string) (BarSet, bool) {
+	if r == nil {
+		return BarSet{}, false
+	}
+	set, ok := r.BarSets[id]
+	return set, ok
+}
+
+func (r *Registry) FrameSet(id string) (FrameSet, bool) {
+	if r == nil {
+		return FrameSet{}, false
+	}
+	set, ok := r.FrameSets[id]
 	return set, ok
 }
 
@@ -199,6 +250,88 @@ func loadDigitSet(root, id string, cfg v3config.DigitSetConfig) (DigitSet, error
 		set.Characters[ch] = asset
 	}
 	return set, nil
+}
+
+func loadBarSet(root, id string, cfg v3config.BarSetConfig) (BarSet, error) {
+	set := BarSet{ID: id, Cells: make(map[string]ImageAsset, len(cfg.Cells)), Spacing: cfg.Spacing}
+	var err error
+	if cfg.Background != "" {
+		set.Background, err = loadOptionalImage(root, cfg.Background, fmt.Sprintf("assets.bar_sets.%s.background", id))
+		if err != nil {
+			return BarSet{}, err
+		}
+	}
+	if cfg.Foreground != "" {
+		set.Foreground, err = loadOptionalImage(root, cfg.Foreground, fmt.Sprintf("assets.bar_sets.%s.foreground", id))
+		if err != nil {
+			return BarSet{}, err
+		}
+	}
+	if strings.TrimSpace(cfg.Cells["off"]) == "" {
+		return BarSet{}, fmt.Errorf("assets.bar_sets.%s.cells.off path must not be empty", id)
+	}
+	var cellBounds image.Rectangle
+	for _, cell := range sortedKeys(cfg.Cells) {
+		asset, err := loadRequiredImage(root, cfg.Cells[cell], fmt.Sprintf("assets.bar_sets.%s.cells.%s", id, cell))
+		if err != nil {
+			return BarSet{}, err
+		}
+		if cellBounds.Empty() {
+			cellBounds = asset.Bounds
+		} else if asset.Bounds != cellBounds {
+			return BarSet{}, fmt.Errorf("assets.bar_sets.%s.cells.%s dimensions %s must match cell dimensions %s", id, cell, asset.Bounds, cellBounds)
+		}
+		set.Cells[cell] = asset
+	}
+	return set, nil
+}
+
+func loadFrameSet(root, id string, cfg v3config.FrameSetConfig) (FrameSet, error) {
+	if cfg.Frames.First > cfg.Frames.Last {
+		return FrameSet{}, fmt.Errorf("assets.frame_sets.%s.frames.first must be less than or equal to last", id)
+	}
+	set := FrameSet{ID: id, Frames: make(map[int]ImageAsset, cfg.Frames.Last-cfg.Frames.First+1), First: cfg.Frames.First, Last: cfg.Frames.Last}
+	var err error
+	if cfg.Background != "" {
+		set.Background, err = loadOptionalImage(root, cfg.Background, fmt.Sprintf("assets.frame_sets.%s.background", id))
+		if err != nil {
+			return FrameSet{}, err
+		}
+	}
+	if cfg.Foreground != "" {
+		set.Foreground, err = loadOptionalImage(root, cfg.Foreground, fmt.Sprintf("assets.frame_sets.%s.foreground", id))
+		if err != nil {
+			return FrameSet{}, err
+		}
+	}
+	var frameBounds image.Rectangle
+	for frame := cfg.Frames.First; frame <= cfg.Frames.Last; frame++ {
+		assetPath := formatFramePath(cfg.Frames.Path, frame)
+		asset, err := loadRequiredImage(root, assetPath, fmt.Sprintf("assets.frame_sets.%s.frames.%d", id, frame))
+		if err != nil {
+			return FrameSet{}, err
+		}
+		if frameBounds.Empty() {
+			frameBounds = asset.Bounds
+		} else if asset.Bounds != frameBounds {
+			return FrameSet{}, fmt.Errorf("assets.frame_sets.%s.frames.%d dimensions %s must match frame dimensions %s", id, frame, asset.Bounds, frameBounds)
+		}
+		set.Frames[frame] = asset
+	}
+	if set.Background != nil && set.Background.Bounds != frameBounds {
+		return FrameSet{}, fmt.Errorf("assets.frame_sets.%s.background dimensions %s must match frame dimensions %s", id, set.Background.Bounds, frameBounds)
+	}
+	if set.Foreground != nil && set.Foreground.Bounds != frameBounds {
+		return FrameSet{}, fmt.Errorf("assets.frame_sets.%s.foreground dimensions %s must match frame dimensions %s", id, set.Foreground.Bounds, frameBounds)
+	}
+	return set, nil
+}
+
+func formatFramePath(pattern string, frame int) string {
+	if !strings.Contains(pattern, "%") {
+		return pattern
+	}
+	return fmt.Sprintf(pattern, frame)
 }
 
 func loadIndicatorSet(root, id string, cfg v3config.IndicatorSetConfig) (IndicatorSet, error) {
