@@ -13,7 +13,7 @@ This file is the repo-owned state tracker for the v3 migration.
 Current version: `v3.0.11`
 Current phase: retirement audit under review
 Current branch prefix: `v3.0.11`
-Current PR: `pending`
+Current PR: `#49`
 Current PR branch: `v3.0.11-retirement-audit`
 
 ## Current state
@@ -67,7 +67,7 @@ After v3.0.11 is merged, manually review the retirement audit before creating an
 | v3.0.1 | frozen v3 docs and schema target | complete |
 | v3.0.2 | strict config load and validation | complete |
 | v3.0.3 | RuntimePlan resolution | complete |
-| v3.0.4 | endpoint abstraction with serial/TCP simulator support | complete |
+| v3.0.4 | endpoint abstraction with serial and TCP simulator support | complete |
 | v3.0.5 | sensor event spine and latest-state store | complete |
 | v3.0.6 | selected JSONL logging | complete |
 | v3.0.7 | minimal asset registry: image, digit, indicator | complete |
