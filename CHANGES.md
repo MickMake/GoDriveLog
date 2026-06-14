@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added v3 retirement audit documentation for old/current paths that may be reviewed for later removal or archiving.
 - Added v3 richer dashboard widget rendering for `bar_display` and `frame_gauge`.
 - Added dashboard tests for bar fill mapping, reverse fill direction, zones, frame clamping, sensor status handling, and unchanged frame output handling.
 - Added v3 richer asset registry support for bar and frame asset families.
@@ -12,6 +13,7 @@
 - Added v3 minimal asset registry for image, digit, and indicator asset families.
 - Added reusable decoded image asset structs so future widgets can avoid hot-path asset loading.
 - Added tests for repository-root asset path resolution, missing asset errors, decoded digit assets, and required indicator states.
+- Updated v3 migration state for the v3.0.11 retirement audit slice.
 - Updated v3 migration state for the v3.0.10 implementation slice.
 - Updated v3 migration state for the v3.0.9 implementation slice.
 - Updated v3 migration state for the v3.0.8 implementation slice.
