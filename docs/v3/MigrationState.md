@@ -36,7 +36,7 @@ Current PR branch: `v3.0.10-richer-dashboard-widgets`
 ## Completed versions
 
 | Version | Status | PR | Notes |
-|---|---|---|
+|---|---|---|---|
 | v3.0.0 | complete | #36 | Defined versioned migration process, seam plan, branch naming rules, and this state tracker. |
 | v3.0.0 | complete | #37 | Added reusable implementation and verification chat prompts for the v3 migration workflow. |
 | v3.0.0 | complete | #38 | Added working-code inventory and seam plan before runtime implementation. |
