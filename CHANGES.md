@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Added v3 inverse implementation audit documentation for old/current behaviours not yet fully rebuilt as v3.
+- Updated v3 migration state for the v3.0.12 inverse implementation audit slice.
 - Added v3 retirement audit documentation for old/current paths that may be reviewed for later removal or archiving.
 - Added v3 richer dashboard widget rendering for `bar_display` and `frame_gauge`.
 - Added dashboard tests for bar fill mapping, reverse fill direction, zones, frame clamping, sensor status handling, and unchanged frame output handling.
