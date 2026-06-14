@@ -95,6 +95,82 @@ func TestLoadMinimalAssetRegistry(t *testing.T) {
 	}
 }
 
+func TestLoadRicherAssetFamilies(t *testing.T) {
+	root := t.TempDir()
+	for _, path := range []string{
+		"assets/bar/back.png",
+		"assets/bar/off.png",
+		"assets/bar/on.png",
+		"assets/bar/warning.png",
+		"assets/bar/front.png",
+		"assets/frame/back.png",
+		"assets/frame/frame_000.png",
+		"assets/frame/frame_001.png",
+		"assets/frame/frame_002.png",
+		"assets/frame/front.png",
+	} {
+		writePNG(t, root, path)
+	}
+
+	registry, err := Load(v3config.AssetConfig{
+		BarSets: map[string]v3config.BarSetConfig{
+			"temperature_bar": {
+				Background: "assets/bar/back.png",
+				Cells: map[string]string{
+					"off":     "assets/bar/off.png",
+					"on":      "assets/bar/on.png",
+					"warning": "assets/bar/warning.png",
+				},
+				Foreground: "assets/bar/front.png",
+				Spacing:    2,
+			},
+		},
+		FrameSets: map[string]v3config.FrameSetConfig{
+			"throttle_frames": {
+				Background: "assets/frame/back.png",
+				Frames: v3config.FrameRangeConfig{
+					Path:  "assets/frame/frame_%03d.png",
+					First: 0,
+					Last:  2,
+				},
+				Foreground: "assets/frame/front.png",
+			},
+		},
+	}, root)
+	if err != nil {
+		t.Fatalf("Load failed: %v", err)
+	}
+
+	bar, ok := registry.BarSet("temperature_bar")
+	if !ok {
+		t.Fatalf("expected bar set")
+	}
+	if bar.Spacing != 2 || bar.Background == nil || bar.Foreground == nil {
+		t.Fatalf("expected bar metadata and optional layers")
+	}
+	for _, cell := range []string{"off", "on", "warning"} {
+		if bar.Cells[cell].Image == nil {
+			t.Fatalf("expected decoded bar cell %q", cell)
+		}
+	}
+
+	frames, ok := registry.FrameSet("throttle_frames")
+	if !ok {
+		t.Fatalf("expected frame set")
+	}
+	if frames.First != 0 || frames.Last != 2 || len(frames.Frames) != 3 {
+		t.Fatalf("expected decoded frame range 0..2, got %#v", frames)
+	}
+	if frames.Background == nil || frames.Foreground == nil {
+		t.Fatalf("expected frame optional layers")
+	}
+	for frame := 0; frame <= 2; frame++ {
+		if frames.Frames[frame].Image == nil {
+			t.Fatalf("expected decoded frame %d", frame)
+		}
+	}
+}
+
 func TestLoadReportsMissingAssetClearly(t *testing.T) {
 	_, err := Load(v3config.AssetConfig{
 		ImageSets: map[string]v3config.ImageSetConfig{
@@ -153,6 +229,67 @@ func TestLoadReportsMissingRequiredDigitCharacter(t *testing.T) {
 	assertContains(t, err.Error(), "assets.digit_sets.digits.characters.2")
 }
 
+func TestLoadReportsMissingRequiredBarOffCell(t *testing.T) {
+	root := t.TempDir()
+	writePNG(t, root, "assets/on.png")
+
+	_, err := Load(v3config.AssetConfig{
+		BarSets: map[string]v3config.BarSetConfig{
+			"temperature_bar": {Cells: map[string]string{"on": "assets/on.png"}},
+		},
+	}, root)
+	if err == nil {
+		t.Fatalf("expected missing off cell to fail")
+	}
+	assertContains(t, err.Error(), "assets.bar_sets.temperature_bar.cells.off")
+}
+
+func TestLoadReportsBarCellDimensionMismatch(t *testing.T) {
+	root := t.TempDir()
+	writePNGSize(t, root, "assets/off.png", 2, 2)
+	writePNGSize(t, root, "assets/on.png", 3, 2)
+
+	_, err := Load(v3config.AssetConfig{
+		BarSets: map[string]v3config.BarSetConfig{
+			"temperature_bar": {Cells: map[string]string{"off": "assets/off.png", "on": "assets/on.png"}},
+		},
+	}, root)
+	if err == nil {
+		t.Fatalf("expected mismatched cell dimensions to fail")
+	}
+	assertContains(t, err.Error(), "assets.bar_sets.temperature_bar.cells.on")
+	assertContains(t, err.Error(), "dimensions")
+}
+
+func TestLoadReportsInvalidFrameRange(t *testing.T) {
+	_, err := Load(v3config.AssetConfig{
+		FrameSets: map[string]v3config.FrameSetConfig{
+			"throttle_frames": {Frames: v3config.FrameRangeConfig{Path: "assets/frame_%03d.png", First: 3, Last: 1}},
+		},
+	}, t.TempDir())
+	if err == nil {
+		t.Fatalf("expected invalid frame range to fail")
+	}
+	assertContains(t, err.Error(), "assets.frame_sets.throttle_frames.frames.first")
+}
+
+func TestLoadReportsFrameDimensionMismatch(t *testing.T) {
+	root := t.TempDir()
+	writePNGSize(t, root, "assets/frame_000.png", 2, 2)
+	writePNGSize(t, root, "assets/frame_001.png", 2, 3)
+
+	_, err := Load(v3config.AssetConfig{
+		FrameSets: map[string]v3config.FrameSetConfig{
+			"throttle_frames": {Frames: v3config.FrameRangeConfig{Path: "assets/frame_%03d.png", First: 0, Last: 1}},
+		},
+	}, root)
+	if err == nil {
+		t.Fatalf("expected mismatched frame dimensions to fail")
+	}
+	assertContains(t, err.Error(), "assets.frame_sets.throttle_frames.frames.1")
+	assertContains(t, err.Error(), "dimensions")
+}
+
 func TestLoadReportsMissingRequiredIndicatorState(t *testing.T) {
 	root := t.TempDir()
 	writePNG(t, root, "assets/off.png")
@@ -176,6 +313,11 @@ func TestLoadReportsMissingRequiredIndicatorState(t *testing.T) {
 
 func writePNG(t *testing.T, root, repoPath string) {
 	t.Helper()
+	writePNGSize(t, root, repoPath, 2, 2)
+}
+
+func writePNGSize(t *testing.T, root, repoPath string, width, height int) {
+	t.Helper()
 	fullPath := filepath.Join(root, filepath.FromSlash(repoPath))
 	if err := os.MkdirAll(filepath.Dir(fullPath), 0o755); err != nil {
 		t.Fatalf("MkdirAll failed: %v", err)
@@ -185,7 +327,7 @@ func writePNG(t *testing.T, root, repoPath string) {
 		t.Fatalf("Create failed: %v", err)
 	}
 	defer file.Close()
-	img := image.NewRGBA(image.Rect(0, 0, 2, 2))
+	img := image.NewRGBA(image.Rect(0, 0, width, height))
 	img.Set(0, 0, color.RGBA{R: 255, A: 255})
 	if err := png.Encode(file, img); err != nil {
 		t.Fatalf("png.Encode failed: %v", err)
