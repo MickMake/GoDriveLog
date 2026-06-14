@@ -29,9 +29,9 @@ type Runtime struct {
 }
 
 type Dashboard struct {
-	ID      string
-	Config  v3config.DashboardConfig
-	Assets  *v3assets.Registry
+	ID     string
+	Config v3config.DashboardConfig
+	Assets *v3assets.Registry
 }
 
 type Scene struct {
@@ -239,7 +239,7 @@ func stateForWidget(widget v3config.WidgetConfig, states map[string]sensors.Sens
 
 func formatValue(format string, value float64) string {
 	if strings.TrimSpace(format) == "" {
-		return strconv.FormatFloat(value, 'f', -1, 64)
+		return fmt.Sprintf("%.0f", value)
 	}
 	return fmt.Sprintf(format, value)
 }
@@ -252,8 +252,12 @@ func digitParts(set v3assets.DigitSet, text string, slots int, dashboardID, widg
 	if err != nil {
 		return nil, fmt.Errorf("dashboard %q widget %q: %w", dashboardID, widgetID, err)
 	}
+	decimalBySlot := map[int]bool{}
+	for _, slot := range decimalSlots {
+		decimalBySlot[slot] = true
+	}
 
-	parts := make([]Part, 0, len(characters)*3+len(decimalSlots))
+	parts := make([]Part, 0, len(characters)*4)
 	for slot, ch := range characters {
 		if set.Background != nil {
 			parts = append(parts, Part{Kind: PartKindBackground, AssetPath: set.Background.Path, Slot: slot})
@@ -265,15 +269,15 @@ func digitParts(set v3assets.DigitSet, text string, slots int, dashboardID, widg
 			}
 			parts = append(parts, Part{Kind: PartKindCharacter, AssetPath: asset.Path, Slot: slot, Character: ch})
 		}
+		if decimalBySlot[slot] {
+			if set.DecimalPoint == nil {
+				return nil, fmt.Errorf("dashboard %q widget %q digit set %q requires decimal_point", dashboardID, widgetID, assetID)
+			}
+			parts = append(parts, Part{Kind: PartKindDecimalPoint, AssetPath: set.DecimalPoint.Path, Slot: slot})
+		}
 		if set.Foreground != nil {
 			parts = append(parts, Part{Kind: PartKindForeground, AssetPath: set.Foreground.Path, Slot: slot})
 		}
-	}
-	for _, slot := range decimalSlots {
-		if set.DecimalPoint == nil {
-			return nil, fmt.Errorf("dashboard %q widget %q digit set %q requires decimal_point", dashboardID, widgetID, assetID)
-		}
-		parts = append(parts, Part{Kind: PartKindDecimalPoint, AssetPath: set.DecimalPoint.Path, Slot: slot})
 	}
 	return parts, nil
 }
