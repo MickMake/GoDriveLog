@@ -1,3 +1,4 @@
+
 name: build
 
 on:
@@ -37,8 +38,23 @@ jobs:
       - name: Tidy modules
         run: go mod tidy
 
+      - name: Test Code1
+        run: go test ./internal/logger -v
+
+      - name: Test Code2
+        run: go test ./internal/config/... -v
+
+      - name: Test Code3
+        run: go test ./internal/sensors/... -v
+
+      - name: Test Code4
+        run: go test ./internal/dashboard/... -v
+
+      - name: Test Code5
+        run: go test ./internal/ui/... -v
+
       - name: Test Code
-      - run: go test ./...
+        run: go test ./...
 
       - name: Build
         run: go build ./cmd/GoDriveLog

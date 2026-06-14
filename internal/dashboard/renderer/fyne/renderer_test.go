@@ -7,6 +7,7 @@ import (
 
 	fyneui "fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
+	fynetest "fyne.io/fyne/v2/test"
 
 	"github.com/MickMake/GoDriveLog/internal/config"
 	"github.com/MickMake/GoDriveLog/internal/dashboard/assets"
@@ -14,6 +15,7 @@ import (
 )
 
 func TestUpdateRendersVisibleElementsInSceneOrder(t *testing.T) {
+	setupFyneTestApp(t)
 	renderer := New(makeRegistry(t))
 
 	err := renderer.Update(scene.Scene{Elements: []scene.Element{
@@ -31,6 +33,7 @@ func TestUpdateRendersVisibleElementsInSceneOrder(t *testing.T) {
 }
 
 func TestUpdateRendersSpriteTextGlyphs(t *testing.T) {
+	setupFyneTestApp(t)
 	renderer := New(makeRegistry(t))
 
 	err := renderer.Update(scene.Scene{Elements: []scene.Element{
@@ -58,6 +61,7 @@ func TestUpdateRendersSpriteTextGlyphs(t *testing.T) {
 }
 
 func TestUpdateRendersGroupChildren(t *testing.T) {
+	setupFyneTestApp(t)
 	renderer := New(makeRegistry(t))
 
 	err := renderer.Update(scene.Scene{Elements: []scene.Element{
@@ -80,6 +84,7 @@ func TestUpdateRendersGroupChildren(t *testing.T) {
 }
 
 func TestRendererReusesUnchangedSpriteFrameObject(t *testing.T) {
+	setupFyneTestApp(t)
 	renderer := New(nil)
 	sceneState := scene.Scene{Elements: []scene.Element{spriteFrameElement("rpm", 1, "frame-1.png")}}
 
@@ -100,6 +105,7 @@ func TestRendererReusesUnchangedSpriteFrameObject(t *testing.T) {
 }
 
 func TestRendererUpdatesSpriteFrameResourceInPlace(t *testing.T) {
+	setupFyneTestApp(t)
 	renderer := New(nil)
 	firstScene := scene.Scene{Elements: []scene.Element{spriteFrameElement("rpm", 1, "frame-1.png")}}
 	secondScene := scene.Scene{Elements: []scene.Element{spriteFrameElement("rpm", 2, "frame-2.png")}}
@@ -127,6 +133,7 @@ func TestRendererUpdatesSpriteFrameResourceInPlace(t *testing.T) {
 }
 
 func TestRendererReusesGroupAndUpdatesChildSpriteFrame(t *testing.T) {
+	setupFyneTestApp(t)
 	renderer := New(nil)
 	firstScene := scene.Scene{Elements: []scene.Element{groupElement("panel", spriteFrameElement("rpm", 1, "frame-1.png"))}}
 	secondScene := scene.Scene{Elements: []scene.Element{groupElement("panel", spriteFrameElement("rpm", 2, "frame-2.png"))}}
@@ -158,6 +165,7 @@ func TestRendererReusesGroupAndUpdatesChildSpriteFrame(t *testing.T) {
 }
 
 func TestRendererDoesNotReuseCanvasObjectForRepeatedElementID(t *testing.T) {
+	setupFyneTestApp(t)
 	renderer := New(nil)
 	repeated := spriteFrameElement("rpm", 1, "frame-1.png")
 	firstScene := scene.Scene{Elements: []scene.Element{
@@ -195,6 +203,14 @@ func TestRendererDoesNotReuseCanvasObjectForRepeatedElementID(t *testing.T) {
 	if rightImage.Resource == nil || rightImage.Resource.Name() != "frame-2.png" {
 		t.Fatalf("right resource = %v, want frame-2.png", resourceName(rightImage.Resource))
 	}
+}
+
+func setupFyneTestApp(t *testing.T) {
+	t.Helper()
+	app := fynetest.NewApp()
+	t.Cleanup(func() {
+		app.Quit()
+	})
 }
 
 func makeRegistry(t *testing.T) *assets.Registry {
