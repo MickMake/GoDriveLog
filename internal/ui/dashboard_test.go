@@ -5,11 +5,15 @@ import (
 	"path/filepath"
 	"testing"
 
+	fynetest "fyne.io/fyne/v2/test"
+
 	"github.com/MickMake/GoDriveLog/internal/config"
 	"github.com/MickMake/GoDriveLog/internal/sensors"
 )
 
 func TestNewDashboardWithConfigPathResolvesAssetsRelativeToConfigFile(t *testing.T) {
+	setupFyneTestApp(t)
+
 	root := t.TempDir()
 	configDir := filepath.Join(root, "configs")
 	assetPath := filepath.Join(configDir, "assets", "background.png")
@@ -39,4 +43,12 @@ func TestNewDashboardWithConfigPathResolvesAssetsRelativeToConfigFile(t *testing
 	if dashboard.LastError() != nil {
 		t.Fatalf("dashboard LastError = %v, want nil", dashboard.LastError())
 	}
+}
+
+func setupFyneTestApp(t *testing.T) {
+	t.Helper()
+	app := fynetest.NewApp()
+	t.Cleanup(func() {
+		app.Quit()
+	})
 }
