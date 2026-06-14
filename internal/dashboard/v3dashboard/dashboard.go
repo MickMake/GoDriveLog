@@ -2,6 +2,7 @@ package v3dashboard
 
 import (
 	"fmt"
+	"math"
 	"sort"
 	"strconv"
 	"strings"
@@ -17,6 +18,8 @@ const (
 	PartKindCharacter    = "character"
 	PartKindDecimalPoint = "decimal_point"
 	PartKindState        = "state"
+	PartKindCell         = "cell"
+	PartKindFrame        = "frame"
 	PartKindForeground   = "foreground"
 )
 
@@ -59,6 +62,8 @@ type Part struct {
 	Slot      int
 	Character string
 	State     string
+	Cell      string
+	Frame     int
 }
 
 // NewRuntime builds the selected-dashboard runtime from an already resolved
@@ -204,6 +209,32 @@ func (d Dashboard) renderWidget(configWidget v3config.WidgetConfig, states map[s
 		}
 		widget.Text = text
 		widget.Parts = parts
+	case v3config.WidgetTypeBarDisplay:
+		state := stateForWidget(configWidget, states)
+		widget.Status = state.Status
+		widget.Error = state.Error
+		set, ok := d.Assets.BarSet(configWidget.Asset)
+		if !ok {
+			return Widget{}, fmt.Errorf("dashboard %q widget %q asset %q must reference assets.bar_sets", d.ID, configWidget.ID, configWidget.Asset)
+		}
+		parts, err := barParts(set, configWidget, state, d.ID)
+		if err != nil {
+			return Widget{}, err
+		}
+		widget.Parts = parts
+	case v3config.WidgetTypeFrameGauge:
+		state := stateForWidget(configWidget, states)
+		widget.Status = state.Status
+		widget.Error = state.Error
+		set, ok := d.Assets.FrameSet(configWidget.Asset)
+		if !ok {
+			return Widget{}, fmt.Errorf("dashboard %q widget %q asset %q must reference assets.frame_sets", d.ID, configWidget.ID, configWidget.Asset)
+		}
+		parts, err := frameGaugeParts(set, configWidget, state, d.ID)
+		if err != nil {
+			return Widget{}, err
+		}
+		widget.Parts = parts
 	case v3config.WidgetTypeIndicator:
 		state := stateForWidget(configWidget, states)
 		widget.Status = state.Status
@@ -214,8 +245,6 @@ func (d Dashboard) renderWidget(configWidget v3config.WidgetConfig, states map[s
 		}
 		indicatorState := indicatorStateFor(state)
 		widget.Parts = appendIndicatorParts(widget.Parts, set, indicatorState)
-	case v3config.WidgetTypeBarDisplay, v3config.WidgetTypeFrameGauge:
-		return Widget{}, fmt.Errorf("dashboard %q widget %q type %q belongs to a later v3 slice", d.ID, configWidget.ID, configWidget.Type)
 	default:
 		return Widget{}, fmt.Errorf("dashboard %q widget %q type %q is not supported", d.ID, configWidget.ID, configWidget.Type)
 	}
@@ -330,6 +359,166 @@ func appendDigitLayerParts(parts []Part, set v3assets.DigitSet, slots int) []Par
 	return parts
 }
 
+func barParts(set v3assets.BarSet, widget v3config.WidgetConfig, state sensors.SensorState, dashboardID string) ([]Part, error) {
+	if widget.Cells <= 0 {
+		return nil, fmt.Errorf("dashboard %q widget %q cells must be greater than zero", dashboardID, widget.ID)
+	}
+	if _, ok := set.Cells[v3assets.IndicatorStateOff]; !ok {
+		return nil, fmt.Errorf("dashboard %q widget %q bar set %q requires off cell", dashboardID, widget.ID, widget.Asset)
+	}
+
+	filled := 0
+	cellName := v3assets.IndicatorStateOff
+	if state.Status == sensors.StatusOK {
+		var err error
+		filled, err = filledBarCells(widget, state.Value)
+		if err != nil {
+			return nil, fmt.Errorf("dashboard %q widget %q: %w", dashboardID, widget.ID, err)
+		}
+		if filled > 0 {
+			cellName, err = barCellNameForValue(widget, set, state.Value)
+			if err != nil {
+				return nil, fmt.Errorf("dashboard %q widget %q: %w", dashboardID, widget.ID, err)
+			}
+		}
+	}
+
+	parts := []Part{}
+	if set.Background != nil {
+		parts = append(parts, Part{Kind: PartKindBackground, AssetPath: set.Background.Path})
+	}
+	for slot := 0; slot < widget.Cells; slot++ {
+		name := v3assets.IndicatorStateOff
+		if isFilledBarSlot(slot, filled, widget.Cells, widget.Reverse) {
+			name = cellName
+		}
+		asset, ok := set.Cells[name]
+		if !ok {
+			return nil, fmt.Errorf("dashboard %q widget %q bar set %q has no cell asset for %q", dashboardID, widget.ID, widget.Asset, name)
+		}
+		parts = append(parts, Part{Kind: PartKindCell, AssetPath: asset.Path, Slot: slot, Cell: name})
+	}
+	if set.Foreground != nil {
+		parts = append(parts, Part{Kind: PartKindForeground, AssetPath: set.Foreground.Path})
+	}
+	return parts, nil
+}
+
+func filledBarCells(widget v3config.WidgetConfig, value float64) (int, error) {
+	min, max := widgetRange(widget, float64(widget.Cells))
+	if max <= min {
+		return 0, fmt.Errorf("min must be less than max")
+	}
+	if value <= min {
+		return 0, nil
+	}
+	if value >= max {
+		return widget.Cells, nil
+	}
+	filled := int(math.Ceil(((value - min) / (max - min)) * float64(widget.Cells)))
+	if filled < 0 {
+		return 0, nil
+	}
+	if filled > widget.Cells {
+		return widget.Cells, nil
+	}
+	return filled, nil
+}
+
+func widgetRange(widget v3config.WidgetConfig, defaultMax float64) (float64, float64) {
+	min := 0.0
+	max := defaultMax
+	if widget.Min != nil {
+		min = *widget.Min
+	}
+	if widget.Max != nil {
+		max = *widget.Max
+	}
+	return min, max
+}
+
+func isFilledBarSlot(slot, filled, cells int, reverse bool) bool {
+	if filled <= 0 {
+		return false
+	}
+	if reverse {
+		return slot >= cells-filled
+	}
+	return slot < filled
+}
+
+func barCellNameForValue(widget v3config.WidgetConfig, set v3assets.BarSet, value float64) (string, error) {
+	if len(widget.Zones) == 0 {
+		if _, ok := set.Cells[v3assets.IndicatorStateOn]; !ok {
+			return "", fmt.Errorf("bar set %q requires on cell when zones are omitted", widget.Asset)
+		}
+		return v3assets.IndicatorStateOn, nil
+	}
+
+	last := widget.Zones[len(widget.Zones)-1].Cell
+	for _, zone := range widget.Zones {
+		if value <= zone.UpTo {
+			last = zone.Cell
+			break
+		}
+	}
+	if _, ok := set.Cells[last]; !ok {
+		return "", fmt.Errorf("bar set %q has no cell asset for zone cell %q", widget.Asset, last)
+	}
+	return last, nil
+}
+
+func frameGaugeParts(set v3assets.FrameSet, widget v3config.WidgetConfig, state sensors.SensorState, dashboardID string) ([]Part, error) {
+	parts := []Part{}
+	if set.Background != nil {
+		parts = append(parts, Part{Kind: PartKindBackground, AssetPath: set.Background.Path})
+	}
+	if state.Status == sensors.StatusOK {
+		frame, err := frameForValue(set, widget, state.Value)
+		if err != nil {
+			return nil, fmt.Errorf("dashboard %q widget %q: %w", dashboardID, widget.ID, err)
+		}
+		asset, ok := set.Frames[frame]
+		if !ok {
+			return nil, fmt.Errorf("dashboard %q widget %q frame set %q has no frame %d", dashboardID, widget.ID, widget.Asset, frame)
+		}
+		parts = append(parts, Part{Kind: PartKindFrame, AssetPath: asset.Path, Frame: frame})
+	}
+	if set.Foreground != nil {
+		parts = append(parts, Part{Kind: PartKindForeground, AssetPath: set.Foreground.Path})
+	}
+	return parts, nil
+}
+
+func frameForValue(set v3assets.FrameSet, widget v3config.WidgetConfig, value float64) (int, error) {
+	if set.Last < set.First {
+		return 0, fmt.Errorf("frame set %q has invalid range", widget.Asset)
+	}
+	if set.Last == set.First {
+		return set.First, nil
+	}
+	min, max := widgetRange(widget, 1)
+	if max <= min {
+		return 0, fmt.Errorf("min must be less than max")
+	}
+	if value <= min {
+		return set.First, nil
+	}
+	if value >= max {
+		return set.Last, nil
+	}
+	span := float64(set.Last - set.First)
+	offset := int(math.Round(((value - min) / (max - min)) * span))
+	frame := set.First + offset
+	if frame < set.First {
+		return set.First, nil
+	}
+	if frame > set.Last {
+		return set.Last, nil
+	}
+	return frame, nil
+}
+
 func indicatorStateFor(state sensors.SensorState) string {
 	if state.Status != sensors.StatusOK {
 		return v3assets.IndicatorStateUnknown
@@ -392,6 +581,10 @@ func sceneSignature(scene Scene) string {
 			b.WriteString(part.Character)
 			b.WriteString("#")
 			b.WriteString(part.State)
+			b.WriteString("#")
+			b.WriteString(part.Cell)
+			b.WriteString("#")
+			b.WriteString(strconv.Itoa(part.Frame))
 			b.WriteString(";")
 		}
 		b.WriteString("|")
