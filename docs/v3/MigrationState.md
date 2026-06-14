@@ -10,11 +10,11 @@ This file is the repo-owned state tracker for the v3 migration.
 
 ## Current migration position
 
-Current version: `v3.0.6`
-Current phase: selected JSONL logging under review
-Current branch prefix: `v3.0.6`
+Current version: `v3.0.7`
+Current phase: minimal asset registry under review
+Current branch prefix: `v3.0.7`
 Current PR: `pending`
-Current PR branch: `v3.0.6-jsonl-subscriber`
+Current PR branch: `v3.0.7-asset-registry`
 
 ## Current state
 
@@ -26,8 +26,9 @@ Current PR branch: `v3.0.6-jsonl-subscriber`
 - v3.0.3 RuntimePlan resolution has been merged.
 - v3.0.4 endpoint abstraction has been merged.
 - v3.0.5 sensor event spine and latest-state store has been merged.
-- v3.0.6 selected JSONL logging is open for verification.
-- Minimal asset registry has not started yet.
+- v3.0.6 selected JSONL logging has been merged.
+- v3.0.7 minimal asset registry is open for verification.
+- Smallest selected dashboard has not started yet.
 
 ## Completed versions
 
@@ -41,13 +42,14 @@ Current PR branch: `v3.0.6-jsonl-subscriber`
 | v3.0.3 | complete | #41 | Added RuntimePlan resolution. |
 | v3.0.4 | complete | #42 | Added endpoint abstraction with serial and TCP simulator support. |
 | v3.0.5 | complete | #43 | Added sensor event spine and latest-state store. |
+| v3.0.6 | complete | #44 | Added selected JSONL logging. |
 
 ## Next target
 
-Next version: `v3.0.6`
-Next action: verify the v3.0.6 selected JSONL logging PR against the v3.0.6 implementation prompt in `docs/v3/ChatPrompts.md`.
+Next version: `v3.0.7`
+Next action: verify the v3.0.7 minimal asset registry PR against the v3.0.7 implementation prompt in `docs/v3/ChatPrompts.md`.
 
-After v3.0.6 is merged, create the v3.0.7 minimal asset registry implementation slice.
+After v3.0.7 is merged, create the v3.0.8 smallest selected dashboard implementation slice.
 
 ## Version queue
 
@@ -59,8 +61,8 @@ After v3.0.6 is merged, create the v3.0.7 minimal asset registry implementation 
 | v3.0.3 | RuntimePlan resolution | complete |
 | v3.0.4 | endpoint abstraction with serial and TCP simulator support | complete |
 | v3.0.5 | sensor event spine and latest-state store | complete |
-| v3.0.6 | selected JSONL logging | PR under review |
-| v3.0.7 | minimal asset registry: image, digit, indicator | pending |
+| v3.0.6 | selected JSONL logging | complete |
+| v3.0.7 | minimal asset registry: image, digit, indicator | PR under review |
 | v3.0.8 | smallest selected dashboard: image plus digit_display plus indicator | pending |
 | v3.0.9 | richer asset registry: bar and frame assets | pending |
 | v3.0.10 | richer dashboard widgets: bar_display and frame_gauge | pending |
@@ -79,22 +81,21 @@ Examples:
 - v3.0.4-endpoint-abstraction
 - v3.0.5-sensor-event-spine
 - v3.0.6-jsonl-subscriber
+- v3.0.7-asset-registry
 
 ## Notes for current PR
 
-The current PR is a v3.0.6 selected JSONL logging slice.
+The current PR is a v3.0.7 minimal asset registry slice.
 
 Expected verification focus:
 
-- internal/logger contains a v3 JSONL event subscriber.
-- Selected logs come from RuntimePlan.Logs, resolved from vehicles.<id>.logs.
-- Logged sensors come from each selected logs.<id>.sensors definition.
-- JSONL output is driven only by sensors.SensorEvent values.
-- First readings, value changes, and status transitions are written.
-- Unchanged duplicate values do not spam logs.
-- Sensor read timestamp and status are included in every event record.
-- The logger does not poll sensors.
-- The logger does not own sensor cadence.
-- The logger does not cause extra endpoint reads.
-- It does not implement dashboard rendering.
-- It does not change the v3 YAML schema.
+- `internal/assets` contains a v3 asset registry for image, digit, and indicator assets.
+- Asset paths resolve as repository-root relative paths.
+- Missing assets fail clearly.
+- Required indicator states `off`, `on`, and `unknown` are loaded and validated by the registry boundary.
+- Digit character images, decimal point, and optional layer images can be decoded and reused.
+- Decoded images are loaded once into reusable registry structs for later widgets/renderers.
+- The registry does not implement bar or frame assets.
+- The registry does not implement dashboard rendering.
+- The registry does not add vehicle-owned asset lists.
+- The registry does not add YAML rules, scripts, formulas, or conditions.
