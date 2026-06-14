@@ -105,3 +105,10 @@ Expected verification focus:
 - The slice does not implement `bar_display` or `frame_gauge`.
 - The slice does not add dashboard-level polling cadence.
 - The slice does not add YAML rules, scripts, formulas, or conditions.
+
+Verification follow-up:
+
+- PR #46 is acceptable for the v3.0.8 smallest selected dashboard slice.
+- `ApplyEvent()` currently rebuilds selected dashboard scenes via `Snapshot()` before detecting unchanged rendered output by scene signature. This is acceptable for the first dashboard seam, but later dashboard work should avoid rebuilding unaffected widgets or dashboards on every sensor event.
+- Track this before or during v3.0.10 richer dashboard widgets, or in any earlier performance-focused dashboard refinement.
+- Do not solve this by adding dashboard polling, YAML formulas, widget-owned sensor reads, or endpoint access from dashboard code.
