@@ -10,11 +10,11 @@ This file is the repo-owned state tracker for the v3 migration.
 
 ## Current migration position
 
-Current version: `v3.0.9`
-Current phase: richer asset registry under review
-Current branch prefix: `v3.0.9`
+Current version: `v3.0.10`
+Current phase: richer dashboard widgets under review
+Current branch prefix: `v3.0.10`
 Current PR: `pending`
-Current PR branch: `v3.0.9-richer-asset-registry`
+Current PR branch: `v3.0.10-richer-dashboard-widgets`
 
 ## Current state
 
@@ -29,8 +29,9 @@ Current PR branch: `v3.0.9-richer-asset-registry`
 - v3.0.6 selected JSONL logging has been merged.
 - v3.0.7 minimal asset registry has been merged.
 - v3.0.8 smallest selected dashboard has been merged.
-- v3.0.9 richer asset registry is open for verification.
-- Richer dashboard widgets have not started yet.
+- v3.0.9 richer asset registry has been merged.
+- v3.0.10 richer dashboard widgets are open for verification.
+- Retiring or archiving replaced current paths has not started yet.
 
 ## Completed versions
 
@@ -47,13 +48,14 @@ Current PR branch: `v3.0.9-richer-asset-registry`
 | v3.0.6 | complete | #44 | Added selected JSONL logging. |
 | v3.0.7 | complete | #45 | Added minimal asset registry. |
 | v3.0.8 | complete | #46 | Added smallest selected dashboard scene runtime. |
+| v3.0.9 | complete | #47 | Added richer asset registry support for bar and frame assets. |
 
 ## Next target
 
-Next version: `v3.0.9`
-Next action: verify the v3.0.9 richer asset registry PR against the v3.0.9 implementation prompt in `docs/v3/ChatPrompts.md`.
+Next version: `v3.0.10`
+Next action: verify the v3.0.10 richer dashboard widgets PR against the v3.0.10 implementation prompt in `docs/v3/ChatPrompts.md`.
 
-After v3.0.9 is merged, create the v3.0.10 richer dashboard widgets implementation slice.
+After v3.0.10 is merged, create the v3.0.11 retire or archive replaced current paths implementation slice.
 
 ## Version queue
 
@@ -68,8 +70,8 @@ After v3.0.9 is merged, create the v3.0.10 richer dashboard widgets implementati
 | v3.0.6 | selected JSONL logging | complete |
 | v3.0.7 | minimal asset registry: image, digit, indicator | complete |
 | v3.0.8 | smallest selected dashboard: image plus digit_display plus indicator | complete |
-| v3.0.9 | richer asset registry: bar and frame assets | PR under review |
-| v3.0.10 | richer dashboard widgets: bar_display and frame_gauge | pending |
+| v3.0.9 | richer asset registry: bar and frame assets | complete |
+| v3.0.10 | richer dashboard widgets: bar_display and frame_gauge | PR under review |
 | v3.0.11 | retire or archive replaced current paths | pending |
 
 ## Branch naming reminder
@@ -88,27 +90,28 @@ Examples:
 - v3.0.7-asset-registry
 - v3.0.8-smallest-dashboard
 - v3.0.9-richer-asset-registry
+- v3.0.10-richer-dashboard-widgets
 
 ## Notes for current PR
 
-The current PR is a v3.0.9 richer asset registry slice.
+The current PR is a v3.0.10 richer dashboard widgets slice.
 
 Expected verification focus:
 
-- `internal/assets` contains v3 asset registry support for `assets.bar_sets` and `assets.frame_sets`.
-- Bar sets load and cache decoded cell images.
-- Bar sets require an `off` cell for unfilled cells.
-- Bar cell assets validate related dimensions where required.
-- Frame sets load and cache decoded frame images for the configured range.
-- Frame ranges validate `first <= last`.
-- Frame assets validate related dimensions where required.
-- Richer examples can resolve their referenced bar and frame asset shapes through the registry model.
-- The slice does not implement `bar_display` or `frame_gauge` dashboard rendering.
-- The slice does not add dashboard-level polling cadence.
+- `internal/dashboard/v3dashboard` renders `bar_display` widgets from selected dashboard state.
+- `bar_display` maps one sensor value to repeated cells.
+- Bar values clamp below widget `min` to zero filled cells and above widget `max` to all filled cells.
+- `reverse` changes fill direction only, not zone interpretation.
+- Bar zones choose configured cell names by ascending `up_to` thresholds.
+- `internal/dashboard/v3dashboard` renders `frame_gauge` widgets from selected dashboard state.
+- `frame_gauge` maps one sensor value to a frame from the referenced frame set.
+- Frame gauge values clamp outside widget min/max.
+- Non-OK sensor states do not render stale/error/missing values as live visual values.
+- The renderer remains event/state-driven.
+- The slice does not add dashboard polling, widget endpoint reads, or sensor cadence changes from dashboard config.
 - The slice does not add YAML formulas, scripts, conditions, hidden geometry languages, or widget mini-languages.
 
 Carried follow-up from v3.0.8:
 
-- `ApplyEvent()` currently rebuilds selected dashboard scenes via `Snapshot()` before detecting unchanged rendered output by scene signature. This was acceptable for the first dashboard seam, but later dashboard work should avoid rebuilding unaffected widgets or dashboards on every sensor event.
-- Track this before or during v3.0.10 richer dashboard widgets, or in any earlier performance-focused dashboard refinement.
+- `ApplyEvent()` currently rebuilds selected dashboard scenes via `Snapshot()` before detecting unchanged rendered output by scene signature. This remains acceptable for the richer widget slice, but future dashboard performance work should avoid rebuilding unaffected widgets or dashboards on every sensor event.
 - Do not solve this by adding dashboard polling, YAML formulas, widget-owned sensor reads, or endpoint access from dashboard code.
