@@ -106,7 +106,6 @@ func (w *JSONLEventWriter) ActivePath() string {
 }
 
 type loggedState struct {
-	Kind   string
 	Status string
 	Value  float64
 	Unit   string
@@ -117,9 +116,9 @@ type loggedState struct {
 // It never polls sensors and it never owns cadence; sensors own cadence and this
 // type only records selected events delivered by the sensor runtime.
 type JSONLSubscriber struct {
-	ID       string
-	writer   jsonlEventWriter
-	sensors  map[string]struct{}
+	ID      string
+	writer  jsonlEventWriter
+	sensors map[string]struct{}
 
 	mu       sync.Mutex
 	lastSeen map[string]loggedState
@@ -186,7 +185,6 @@ func (s *JSONLSubscriber) Handle(event sensors.SensorEvent) error {
 
 	record := s.recordFromEvent(event)
 	state := loggedState{
-		Kind:   record.Kind,
 		Status: record.Status,
 		Value:  record.Value,
 		Unit:   record.Unit,
