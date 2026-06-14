@@ -309,7 +309,7 @@ func validateCondition(path string, condition DashboardConditionConfig, sensors 
 		}
 	}
 	if condition.Decoder != "" && !decoders[condition.Decoder] {
-		return fmt.Errorf("%s.condition.decoder %q must reference a configured decoder", path)
+		return fmt.Errorf("%s.condition.decoder %q must reference a configured decoder", path, condition.Decoder)
 	}
 	return nil
 }
