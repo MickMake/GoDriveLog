@@ -21,7 +21,7 @@ Make the v3 path runnable, independently testable, visible, performant, and reti
 - Keep every slice small enough to review in isolation.
 - Keep config as data.
 - Keep dashboard code below the sensor/event boundary.
-- Make visual output testable before spending days on runtime wiring.
+- Make visual output testable through the real v3 dashboard/display path.
 - Target fast dashboard updates on Raspberry Pi 4 hardware.
 - Retire old paths only after replacement behaviour is verified.
 
@@ -47,15 +47,15 @@ Do not redesign the release plan inside a slice chat.
 
 | Version | Slice | Goal |
 |---|---|---|
-| v3.1.0 | dashboard and gauge test harness | Test gauges/widgets independently with dummy data before full runtime wiring. |
-| v3.1.1 | runnable command path | Wire the selected vehicle runtime path. |
-| v3.1.2 | display adapter | Show v3 dashboard scene output through a practical adapter. |
+| v3.1.0 | runnable command path | Wire the selected vehicle runtime path. |
+| v3.1.1 | display adapter | Show v3 dashboard scene output through a practical adapter. |
+| v3.1.2 | dashboard and gauge test harness | Test gauges/widgets independently with fake sensor events through the real v3 path. |
 | v3.1.3 | dashboard update performance target | Support 50ms target updates or at least 100ms updates on Pi 4. |
 | v3.1.4 | JSONL rotation decision | Decide whether daily rotation survives. |
 | v3.1.5 | typed sensor values | Decide whether numeric sensor values remain enough. |
 | v3.1.6 | unsupported and missing semantics | Decide how unavailable sensors are represented. |
 | v3.1.7 | dashboard event efficiency | Reduce avoidable scene rebuild work if needed. |
-| v3.1.8 | retirement readiness | Re-check old paths before one-swoop removal or archive slices. |
+| v3.1.8 | retirement readiness | Re-check old paths before archive slices. |
 
 ## PR 51 planning baseline checkpoints
 
@@ -67,18 +67,7 @@ Do not redesign the release plan inside a slice chat.
 - Per-slice prompt files exist under `docs/v3.1/prompts/`.
 - No code, test, schema, runtime, archive, or deletion changes.
 
-## v3.1.0 dashboard and gauge test harness checkpoints
-
-- Provides a way to test a dashboard, gauge, widget, or display element independently.
-- Runs without OBD.
-- Runs without full runtime startup.
-- Feeds dummy data through the v3 dashboard path where practical.
-- Supports a `sweep` pattern from min to max to min over 10 seconds.
-- Supports a `heartbeat` rhythm pattern for peak/response testing.
-- Allows update cadence selection, including 50ms and 100ms where practical.
-- Keeps this tooling separate from production OBD polling.
-
-## v3.1.1 runnable command path checkpoints
+## v3.1.0 runnable command path checkpoints
 
 - Loads v3 config.
 - Selects one vehicle.
@@ -90,14 +79,28 @@ Do not redesign the release plan inside a slice chat.
 - Shuts down cleanly.
 - Leaves old command/runtime paths available until the new path is verified.
 
-## v3.1.2 display adapter checkpoints
+## v3.1.1 display adapter checkpoints
 
 - Consumes v3 dashboard scene output.
 - Does not read sensors directly.
 - Does not access OBD endpoints.
 - Keeps display concerns below the dashboard runtime boundary.
 - Provides enough visible output to prove selected dashboard rendering works.
-- Documents whether old Fyne renderer caching/resource behaviour is ported or rejected.
+- Documents whether old renderer caching/resource behaviour is ported or rejected.
+
+## v3.1.2 dashboard and gauge test harness checkpoints
+
+- Provides a way to test a dashboard, gauge, widget, or display element without OBD.
+- Drives the same v3 dashboard/display path with fake sensor events.
+- Feeds fake values through the real v3 sensor event/state path where practical.
+- Exercises the real v3 dashboard scene generation.
+- Exercises the real display adapter once that exists.
+- Supports fixed values.
+- Supports a `sweep` pattern from min to max to min over 10 seconds.
+- Supports a `heartbeat` rhythm pattern for peak/response testing.
+- Allows update cadence selection, including 50ms and 100ms where practical.
+- Keeps this tooling separate from production OBD polling.
+- Avoids a separate demo renderer, special-case widget playground, or parallel dashboard path.
 
 ## v3.1.3 dashboard update performance checkpoints
 
@@ -140,15 +143,15 @@ Do not redesign the release plan inside a slice chat.
 - Confirms old path tests have been ported, rejected, or retained intentionally.
 - Confirms daily JSONL behaviour is decided.
 - Confirms display path is usable.
-- Confirms old runtime/UI/logger paths are safe to remove or archive.
+- Confirms old runtime/UI/logger paths are safe to archive.
 - Produces a retirement-ready checklist before any removal slice.
-- Supports the final goal of a boring one-swoop deletion PR.
+- Supports the final goal of a boring one-swoop cleanup PR.
 
 ## First implementation target
 
-The first real implementation slice is `v3.1.0-dashboard-gauge-test-harness`.
+The first real implementation slice is `v3.1.0-runnable-command-path`.
 
-That slice should prove dashboard and gauge output can be inspected independently before full runtime wiring grows around it.
+That slice should prove the existing v3 packages can run together through one selected vehicle before visual harness work grows around them.
 
 ## Non-goals for PR 51
 
