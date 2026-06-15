@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Revised the v3.1 release plan around branch-chat implementation workflow, the dashboard/gauge test harness, and dashboard update cadence targets.
 - Expanded v3.1 carry-forward and release plan docs with v3.0 implementation details and per-slice checkpoints.
 - Added v3.1 release planning stubs under `docs/v3.1/` for the next implementation phase.
 - Added v3 inverse implementation audit documentation for old/current behaviours not yet fully rebuilt as v3.
