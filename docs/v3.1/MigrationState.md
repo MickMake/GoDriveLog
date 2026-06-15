@@ -25,24 +25,23 @@ Current PR branch: `v3.1.0-release-planning-stubs`
 - v3.1 planning docs are being introduced under `docs/v3.1/`.
 - v3.1 starts from the merged v3.0 foundation.
 - v3.1 focuses on the remaining implementation needed for a runnable, visible, independently testable, performant app path.
-- v3.1 uses one canonical implementation prompt file: `docs/v3.1/ImplementationPrompt.md`.
+- v3.1 uses one prompt file per planned implementation slice under `docs/v3.1/prompts/`.
 - Each future branch chat should implement exactly one version slice from the plan.
-- No runtime, test, schema, archive, move, or deletion changes are part of v3.1.0.
+- No runtime, test, schema, archive, move, or deletion changes are part of this planning PR.
 
 ## Version queue
 
 | Version | Purpose | Status |
 |---|---|---|
-| v3.1.0 | release planning stubs | in review |
-| v3.1.1 | dashboard and gauge test harness | planned |
-| v3.1.2 | runnable command path | planned |
-| v3.1.3 | display adapter | planned |
-| v3.1.4 | dashboard update performance target | planned |
-| v3.1.5 | JSONL rotation decision | planned |
-| v3.1.6 | typed sensor values | planned |
-| v3.1.7 | unsupported and missing sensor semantics | planned |
-| v3.1.8 | dashboard event efficiency | planned |
-| v3.1.9 | retirement readiness review | planned |
+| v3.1.0 | runnable command path | planned |
+| v3.1.1 | display adapter | planned |
+| v3.1.2 | dashboard and gauge test harness | planned |
+| v3.1.3 | dashboard update performance target | planned |
+| v3.1.4 | JSONL rotation decision | planned |
+| v3.1.5 | typed sensor values | planned |
+| v3.1.6 | unsupported and missing sensor semantics | planned |
+| v3.1.7 | dashboard event efficiency | planned |
+| v3.1.8 | retirement readiness review | planned |
 
 ## Branch naming reminder
 
@@ -51,8 +50,9 @@ Branches for v3.1 work must start with the target version number.
 Examples:
 
 - `v3.1.0-release-planning-stubs`
-- `v3.1.1-dashboard-gauge-test-harness`
-- `v3.1.2-runnable-command-path`
+- `v3.1.0-runnable-command-path`
+- `v3.1.1-display-adapter`
+- `v3.1.2-dashboard-gauge-test-harness`
 
 ## Notes for current slice
 
@@ -64,5 +64,5 @@ Expected verification focus:
 - Planning stub files exist.
 - The structure follows the proven `docs/v3/` style.
 - Completed v3.0 history is summarised, not bulk-copied.
-- `ImplementationPrompt.md` contains branch-chat workflow instructions and one section per planned v3.1 implementation slice.
+- `docs/v3.1/prompts/` contains one prompt file per planned v3.1 implementation slice.
 - The slice does not change code, tests, runtime behaviour, archives, or schema.
