@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Split v3.1 implementation prompts into per-slice files under `docs/v3.1/prompts/`.
+- Reframed PR 51 as docs-only planning setup, with implementation starting at `v3.1.0`.
+- Added blocking and impact metadata to v3.1 open decisions.
 - Clarified v3.1 slice docs-update rules for `MigrationState.md` and `OpenDecisions.md`.
 - Revised the v3.1 release plan around branch-chat implementation workflow, the dashboard/gauge test harness, and dashboard update cadence targets.
 - Expanded v3.1 carry-forward and release plan docs with v3.0 implementation details and per-slice checkpoints.
