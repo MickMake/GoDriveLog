@@ -66,9 +66,9 @@ If a v3.1 slice starts by building a parallel replacement for one of these, stop
 
 The implementation process relies on branch chats.
 
-The planning chat maintains the v3.1 docs. Each future implementation chat should read the plan, implement one version slice, open a PR, and stop.
+The planning docs maintain the v3.1 plan. Each future implementation chat should read the plan, implement one version slice, open a PR, and stop.
 
-`docs/v3.1/ImplementationPrompt.md` is the canonical read-from source for that workflow. Do not split it into per-version prompt files.
+`docs/v3.1/prompts/README.md` is the common workflow source. Each implementation slice has its own prompt file under `docs/v3.1/prompts/`.
 
 ### Dashboard and gauge test harness
 
@@ -159,7 +159,7 @@ Current dashboard event handling may rebuild more scene state than necessary.
 
 This is not the first problem to solve. Optimise only after a real display path exists and the cost is visible.
 
-Do not solve this with dashboard polling, YAML formulas, widget-owned sensor reads, or endpoint access from dashboard code.
+Do not solve this with dashboard polling, config scripting, widget-owned sensor reads, or endpoint access from dashboard code.
 
 ### Asset loader lessons
 
