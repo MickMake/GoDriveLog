@@ -23,10 +23,27 @@ A slice implementation chat should:
 6. Implement only the named slice.
 7. Update `CHANGES.md`.
 8. Update `docs/v3.1/MigrationState.md`.
-9. Open a PR.
-10. Stop.
+9. Update `docs/v3.1/OpenDecisions.md` only when the slice resolves, changes, adds, or explicitly defers a decision.
+10. Open a PR.
+11. Stop.
 
 Do not redesign the release plan inside a slice chat.
+
+## Required docs update per slice
+
+Every implementation slice must update:
+
+- `CHANGES.md`
+- `docs/v3.1/MigrationState.md`
+
+A slice must also update `docs/v3.1/OpenDecisions.md` when it:
+
+- resolves a decision
+- changes a default position
+- adds a new decision
+- explicitly defers an existing decision with a reason
+
+Do not edit `OpenDecisions.md` just to say there was no change.
 
 ## Global implementation rules
 
@@ -74,6 +91,10 @@ Expected behaviour:
 - Support or prepare for cadence options including 50ms and 100ms.
 - Keep this test tool separate from production polling.
 
+OpenDecisions.md:
+
+- Update only if the slice resolves or changes the harness shape or cadence decision.
+
 Do not:
 
 - Implement the full display adapter slice.
@@ -114,6 +135,10 @@ Expected behaviour:
 - Expose a dashboard output boundary, even if the visible adapter lands separately.
 - Shut down cleanly.
 
+OpenDecisions.md:
+
+- Update only if the slice resolves or changes the minimum runnable path decision.
+
 Do not:
 
 - Build a new config system.
@@ -149,6 +174,10 @@ Expected behaviour:
 - Keep display concerns below the dashboard runtime boundary.
 - Provide enough visible output to prove selected dashboard rendering works.
 - Reuse or deliberately reject useful old Fyne renderer behaviour.
+
+OpenDecisions.md:
+
+- Update when the display adapter target is resolved, changed, or deferred.
 
 Do not:
 
@@ -190,6 +219,10 @@ Expected behaviour:
 - Use the dashboard/gauge test harness where useful.
 - Avoid broad rewrites until there is measurable evidence.
 
+OpenDecisions.md:
+
+- Update when the 50ms or 100ms cadence target is resolved, changed, or explicitly deferred.
+
 Do not:
 
 - Add dashboard polling as the solution.
@@ -222,6 +255,10 @@ Allowed outcomes:
 1. Keep exact configured JSONL path only.
 2. Add an explicit log type such as `daily_jsonl`.
 3. Add a documented rotation option under the v3 log definition.
+
+OpenDecisions.md:
+
+- Update this file because this slice exists to resolve or explicitly defer the JSONL rotation decision.
 
 Do not:
 
@@ -256,6 +293,10 @@ Expected behaviour:
 - Identify whether boolean or status values need stronger typing.
 - Avoid broad type rewrites unless a concrete runtime, display, or logging need exists.
 
+OpenDecisions.md:
+
+- Update this file because this slice exists to resolve or explicitly defer the typed sensor value decision.
+
 Do not:
 
 - Turn config into a programming language.
@@ -289,6 +330,10 @@ Expected behaviour:
 - Keep dashboard and logging interpretation consistent.
 - Document mappings clearly.
 
+OpenDecisions.md:
+
+- Update this file because this slice exists to resolve or explicitly defer unsupported and missing semantics.
+
 Do not:
 
 - Invent multiple incompatible meanings for missing/unsupported.
@@ -321,6 +366,10 @@ Expected behaviour:
 - Optimise after the display path and test harness make cost visible.
 - Avoid rebuilding unaffected widgets or dashboards when practical.
 - Preserve event-driven dashboard behaviour.
+
+OpenDecisions.md:
+
+- Update only if the slice discovers or resolves a decision about event efficiency.
 
 Do not:
 
@@ -358,6 +407,10 @@ Expected behaviour:
 - Confirm JSONL behaviour is decided.
 - Produce a retirement-ready checklist.
 
+OpenDecisions.md:
+
+- Update if this slice closes, defers, or discovers decisions that affect deletion readiness.
+
 Do not:
 
 - Delete old paths in this slice unless explicitly approved.
@@ -379,4 +432,5 @@ Acceptance checks:
 - Behaviour changed or not changed.
 - Tests run or not run.
 - Docs updated.
+- OpenDecisions changed or not applicable.
 - PR opened.
