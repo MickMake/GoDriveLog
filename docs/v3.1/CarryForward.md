@@ -5,7 +5,7 @@ Owner: migration implementor
 
 ## Purpose
 
-This file records unfinished work carried forward from the v3.0 docs.
+This file records unfinished work carried forward from the v3.0 docs and from v2 lessons that still matter.
 
 The original v3.0 docs remain the source history. This file keeps the active v3.1 reminders short enough to use during implementation review.
 
@@ -33,7 +33,7 @@ v3.1 should mostly wire these pieces together into a practical app path.
 
 ## Exact old/current paths to review
 
-These old/current paths still matter because they contain runnable behaviour, display behaviour, logging behaviour, or useful tests:
+These old/current paths still matter because they contain runnable behaviour, display behaviour, logging behaviour, CLI/test behaviour, or useful tests:
 
 - `cmd/GoDriveLog/main.go`
 - `internal/config/config.go`
@@ -62,6 +62,29 @@ If a v3.1 slice starts by building a parallel replacement for one of these, stop
 
 ## Carried work items
 
+### Branch-chat implementation process
+
+The implementation process relies on branch chats.
+
+The planning chat maintains the v3.1 docs. Each future implementation chat should read the plan, implement one version slice, open a PR, and stop.
+
+`docs/v3.1/ImplementationPrompt.md` is the canonical read-from source for that workflow. Do not split it into per-version prompt files.
+
+### Dashboard and gauge test harness
+
+The original CLI allowed display pieces to be tested without firing up the whole system. v3.1 should recover that ability early.
+
+The test harness should allow dashboards, gauges, widgets, or display elements to be exercised independently with dummy data.
+
+Required dummy data patterns:
+
+- `sweep`: min to max to min over 10 seconds.
+- `heartbeat`: pulse or rhythm pattern for peak/response testing.
+
+The harness should support or prepare for 50ms and 100ms update cadence options.
+
+This comes before major display/runtime work because visual problems should be found early, not after several days of plumbing.
+
 ### Runnable app path
 
 The active app path still needs to be wired through v3 config, RuntimePlan, endpoint connection, sensor polling runtime, selected logging, and dashboard output.
@@ -89,6 +112,18 @@ Retirement warning:
 
 - Do not retire `internal/ui/dashboard.go` until a v3 display path exists.
 - Do not retire `internal/dashboard/renderer/fyne/` until its useful rendering and caching lessons are ported or deliberately rejected.
+
+### Dashboard update performance
+
+v2 showed dashboard updates could be fast enough to feel responsive.
+
+v3.1 should target:
+
+- Preferred: 50ms update cadence, about 20Hz.
+- Minimum acceptable: 100ms update cadence, about 10Hz.
+- Reference hardware: Raspberry Pi 4.
+
+Dashboard rendering must not block OBD polling or logging.
 
 ### JSONL rotation
 
@@ -153,14 +188,14 @@ Retire these last, or only after their replacement behaviour is actively wired a
 2. `internal/ui/dashboard.go`
 3. `internal/dashboard/renderer/fyne/`
 4. `internal/logger/jsonl.go`, if daily rotation remains wanted
-5. Old dashboard asset, decoder, scene, and renderer tests that still capture wanted behaviour
+5. Old dashboard asset, decoder, scene, renderer, and CLI/test paths that still capture wanted behaviour
 
 ## Suggested v3.1 order
 
-1. Add a runnable v3 command path behind the existing command name or a temporary v3 command.
-2. Wire selected vehicle to endpoint connector and sensor polling runtime.
-3. Wire selected JSONL subscribers to sensor events.
-4. Build a display adapter for v3 dashboard scene output.
+1. Build the dashboard and gauge test harness.
+2. Add a runnable v3 command path behind the existing command name or a temporary v3 command.
+3. Build a display adapter for v3 dashboard scene output.
+4. Lock in and measure dashboard update cadence targets.
 5. Decide whether daily JSONL rotation survives in v3.
 6. Review typed sensor values.
 7. Review unsupported and missing sensor semantics.
