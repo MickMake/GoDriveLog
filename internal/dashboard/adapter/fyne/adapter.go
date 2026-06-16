@@ -10,7 +10,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"strconv"
 	"strings"
 
 	fyneui "fyne.io/fyne/v2"
@@ -84,7 +83,9 @@ func (a *Adapter) Update(scenes []v3dashboard.Scene) error {
 	} else {
 		a.root.Resize(fyneui.NewSize(maxWidth, yOffset-sceneGap))
 	}
-	a.root.Refresh()
+	if fyneui.CurrentApp() != nil {
+		a.root.Refresh()
+	}
 	return nil
 }
 
@@ -249,8 +250,4 @@ func countObjects(object fyneui.CanvasObject) int {
 		count += countObjects(child)
 	}
 	return count
-}
-
-func assetCacheKey(widget v3dashboard.Widget, part v3dashboard.Part, index int) string {
-	return widget.ID + ":" + part.Kind + ":" + strconv.Itoa(part.Slot) + ":" + strconv.Itoa(index)
 }
