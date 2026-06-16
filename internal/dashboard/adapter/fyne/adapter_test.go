@@ -47,6 +47,39 @@ func TestAdapterRendersScenePartsFromRepoRelativeAssets(t *testing.T) {
 	}
 }
 
+func TestAdapterRendersScenePartsFromResolvedAssetPaths(t *testing.T) {
+	dir := t.TempDir()
+	assetPath := filepath.Join(dir, "assets", "resolved.png")
+	if err := writeTestPNG(assetPath); err != nil {
+		t.Fatal(err)
+	}
+
+	adapter, err := New(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = adapter.Update([]v3dashboard.Scene{{
+		DashboardID: "primary",
+		Size:        v3config.SizeConfig{Width: 24, Height: 16},
+		Widgets: []v3dashboard.Widget{{
+			ID:       "resolved",
+			Type:     "image",
+			Position: []int{0, 0},
+			Parts: []v3dashboard.Part{{
+				Kind:      v3dashboard.PartKindImage,
+				AssetPath: assetPath,
+			}},
+		}},
+	}})
+	if err != nil {
+		t.Fatalf("Update returned error for resolved asset path: %v", err)
+	}
+	if adapter.RenderedObjectCount() != 1 {
+		t.Fatalf("RenderedObjectCount = %d, want 1", adapter.RenderedObjectCount())
+	}
+}
+
 func TestAdapterRejectsEscapingAssetPath(t *testing.T) {
 	adapter, err := New(t.TempDir())
 	if err != nil {
