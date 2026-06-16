@@ -22,8 +22,8 @@ import (
 const sceneGap = 12
 
 // Adapter renders v3 dashboard scene output with Fyne. It deliberately consumes
-// only dashboard scene data and repo-root-relative asset paths; it does not read
-// sensors, poll OBD endpoints, or own dashboard state.
+// only dashboard scene data and resolved asset paths; it does not read sensors,
+// poll OBD endpoints, or own dashboard state.
 type Adapter struct {
 	repoRoot string
 	root     *fyneui.Container
@@ -135,15 +135,14 @@ func (a *Adapter) renderWidget(widget v3dashboard.Widget) ([]fyneui.CanvasObject
 }
 
 func (a *Adapter) loadAsset(assetPath string) (cachedAsset, error) {
-	cleaned, err := cleanAssetPath(assetPath)
+	fullPath, cacheKey, err := a.resolveAssetPath(assetPath)
 	if err != nil {
 		return cachedAsset{}, err
 	}
-	if cached, ok := a.assets[cleaned]; ok {
+	if cached, ok := a.assets[cacheKey]; ok {
 		return cached, nil
 	}
 
-	fullPath := filepath.Join(a.repoRoot, filepath.FromSlash(cleaned))
 	data, err := os.ReadFile(fullPath)
 	if err != nil {
 		return cachedAsset{}, err
@@ -153,11 +152,32 @@ func (a *Adapter) loadAsset(assetPath string) (cachedAsset, error) {
 		return cachedAsset{}, err
 	}
 	cached := cachedAsset{
-		resource: fyneui.NewStaticResource(cleaned, data),
+		resource: fyneui.NewStaticResource(cacheKey, data),
 		size:     fyneui.NewSize(float32(config.Width), float32(config.Height)),
 	}
-	a.assets[cleaned] = cached
+	a.assets[cacheKey] = cached
 	return cached, nil
+}
+
+func (a *Adapter) resolveAssetPath(assetPath string) (string, string, error) {
+	trimmed := strings.TrimSpace(assetPath)
+	if trimmed == "" {
+		return "", "", fmt.Errorf("asset path must not be empty")
+	}
+	if strings.Contains(trimmed, "://") {
+		return "", "", fmt.Errorf("asset path %q must be a filesystem path, not a URL", assetPath)
+	}
+	if filepath.IsAbs(trimmed) {
+		cleaned := filepath.Clean(trimmed)
+		return cleaned, cleaned, nil
+	}
+
+	cleaned, err := cleanRelativeAssetPath(trimmed)
+	if err != nil {
+		return "", "", err
+	}
+	fullPath := filepath.Join(a.repoRoot, filepath.FromSlash(cleaned))
+	return fullPath, cleaned, nil
 }
 
 func cleanRepoRoot(repoRoot string) (string, error) {
@@ -172,18 +192,11 @@ func cleanRepoRoot(repoRoot string) (string, error) {
 	return abs, nil
 }
 
-func cleanAssetPath(assetPath string) (string, error) {
-	trimmed := strings.TrimSpace(assetPath)
-	if trimmed == "" {
-		return "", fmt.Errorf("asset path must not be empty")
+func cleanRelativeAssetPath(assetPath string) (string, error) {
+	if path.IsAbs(assetPath) || filepath.IsAbs(assetPath) {
+		return "", fmt.Errorf("asset path %q must be relative", assetPath)
 	}
-	if strings.Contains(trimmed, "://") {
-		return "", fmt.Errorf("asset path %q must be repository-relative, not a URL", assetPath)
-	}
-	if path.IsAbs(trimmed) || filepath.IsAbs(trimmed) {
-		return "", fmt.Errorf("asset path %q must be repository-relative", assetPath)
-	}
-	cleaned := path.Clean(strings.ReplaceAll(trimmed, "\\", "/"))
+	cleaned := path.Clean(strings.ReplaceAll(assetPath, "\\", "/"))
 	if cleaned == "." || strings.HasPrefix(cleaned, "../") || cleaned == ".." {
 		return "", fmt.Errorf("asset path %q must not escape the repository root", assetPath)
 	}
