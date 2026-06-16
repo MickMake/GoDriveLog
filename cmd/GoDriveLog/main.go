@@ -4,7 +4,9 @@ import (
 	"context"
 	"flag"
 	"log"
+	"os/signal"
 	"sync"
+	"syscall"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -14,13 +16,24 @@ import (
 
 	"github.com/MickMake/GoDriveLog/internal/config"
 	jsonlogger "github.com/MickMake/GoDriveLog/internal/logger"
+	v3runtime "github.com/MickMake/GoDriveLog/internal/runtime/v3runtime"
 	"github.com/MickMake/GoDriveLog/internal/sensors"
 	"github.com/MickMake/GoDriveLog/internal/ui"
 )
 
 func main() {
 	configPath := flag.String("config", "config.example.yaml", "path to YAML config")
+	useV3 := flag.Bool("v3", false, "run the v3 selected-vehicle runtime path")
+	vehicleID := flag.String("vehicle", "", "v3 vehicle id; required when the v3 config contains multiple vehicles")
+	repoRoot := flag.String("repo-root", ".", "repository root for v3 dashboard assets")
 	flag.Parse()
+
+	if *useV3 {
+		if err := runV3Command(*configPath, *vehicleID, *repoRoot); err != nil {
+			log.Fatal(err)
+		}
+		return
+	}
 
 	cfg, err := config.Load(*configPath)
 	if err != nil {
@@ -127,6 +140,27 @@ func main() {
 		window.Close()
 	})
 	window.ShowAndRun()
+}
+
+func runV3Command(configPath, vehicleID, repoRoot string) error {
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+
+	summary, err := v3runtime.Run(ctx, v3runtime.Options{
+		ConfigPath: configPath,
+		VehicleID:  vehicleID,
+		RepoRoot:   repoRoot,
+		Logger:     log.Default(),
+		DashboardSink: func(scenes []v3runtime.Scene) error {
+			log.Printf("v3 dashboard boundary update: scenes=%d", len(scenes))
+			return nil
+		},
+	})
+	if err != nil {
+		return err
+	}
+	log.Printf("v3 runtime summary: vehicle=%s endpoint=%s sensors=%d logs=%d dashboards=%d", summary.VehicleID, summary.Endpoint, summary.SensorCount, summary.LogCount, summary.DashboardCount)
+	return nil
 }
 
 func newReader(cfg config.Config) (sensors.Reader, error) {

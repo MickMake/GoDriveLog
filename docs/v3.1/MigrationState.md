@@ -1,7 +1,7 @@
 # GoDriveLog v3.1 migration state
 
-Status: planning
-Last updated: 2026-06-15
+Status: implementation
+Last updated: 2026-06-17
 State owner: migration implementor
 
 ## Purpose
@@ -15,25 +15,26 @@ v3.0 established the migration process, strict v3 config loading, RuntimePlan re
 ## Current migration position
 
 Current version: `v3.1.0`
-Current phase: release planning stubs
+Current phase: runnable command path
 Current branch prefix: `v3.1.0`
 Current PR: pending
-Current PR branch: `v3.1.0-release-planning-stubs`
+Current PR branch: `v3.1.0-runnable-command-path`
 
 ## Current state
 
-- v3.1 planning docs are being introduced under `docs/v3.1/`.
+- v3.1 planning docs exist under `docs/v3.1/`.
 - v3.1 starts from the merged v3.0 foundation.
 - v3.1 focuses on the remaining implementation needed for a runnable, visible, independently testable, performant app path.
-- v3.1 uses one prompt file per planned implementation slice under `docs/v3.1/prompts/`.
-- Each future branch chat should implement exactly one version slice from the plan.
-- No runtime, test, schema, archive, move, or deletion changes are part of this planning PR.
+- `v3.1.0` adds the first runnable v3 command path behind `--v3`.
+- The old command/runtime path remains the default when `--v3` is not supplied.
+- The v3 command path loads v3 config, selects one vehicle, resolves `RuntimePlan`, connects the configured endpoint, starts the sensor polling runtime, wires selected JSONL logs to sensor events, exposes the dashboard scene boundary, and shuts down on SIGINT/SIGTERM.
+- The visible display adapter is still deferred to `v3.1.1`.
 
 ## Version queue
 
 | Version | Purpose | Status |
 |---|---|---|
-| v3.1.0 | runnable command path | planned |
+| v3.1.0 | runnable command path | in progress |
 | v3.1.1 | display adapter | planned |
 | v3.1.2 | dashboard and gauge test harness | planned |
 | v3.1.3 | dashboard update performance target | planned |
@@ -56,13 +57,14 @@ Examples:
 
 ## Notes for current slice
 
-The current slice is docs-only.
+The current slice is implementation-only for the runnable v3 command path.
 
 Expected verification focus:
 
-- `docs/v3.1/` exists.
-- Planning stub files exist.
-- The structure follows the proven `docs/v3/` style.
-- Completed v3.0 history is summarised, not bulk-copied.
-- `docs/v3.1/prompts/` contains one prompt file per planned v3.1 implementation slice.
-- The slice does not change code, tests, runtime behaviour, archives, or schema.
+- `go test ./...` passes.
+- `go run ./cmd/GoDriveLog --v3 --config CONFIG --vehicle VEHICLE_ID` loads the selected v3 runtime path.
+- The selected vehicle endpoint is connected through `internal/vehicle.Connector`.
+- Sensor polling is owned by `internal/sensors.PollingRuntime`.
+- Selected JSONL logs consume sensor events and do not poll sensors directly.
+- Dashboard output is exposed as scene-boundary updates only; visible adapter details remain deferred.
+- Old runtime remains available without `--v3`.
