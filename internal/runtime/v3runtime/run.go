@@ -115,20 +115,26 @@ func Run(ctx context.Context, opts Options) (Summary, error) {
 	}
 
 	var wg sync.WaitGroup
-	errCh := make(chan error, len(logSubscribers)+1)
+	var firstErr error
+	var firstErrMu sync.Mutex
+	recordError := func(err error) {
+		if err == nil || isContextDone(err) {
+			return
+		}
+		firstErrMu.Lock()
+		defer firstErrMu.Unlock()
+		if firstErr == nil {
+			firstErr = err
+		}
+	}
+
 	for _, subscriber := range logSubscribers {
 		subscriber := subscriber
 		events := pollingRuntime.Subscribe(eventBuffer)
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			if err := subscriber.Run(runCtx, events); err != nil && !isContextDone(err) {
-				select {
-				case errCh <- fmt.Errorf("run v3 jsonl subscriber %q: %w", subscriber.ID, err):
-				default:
-				}
-				cancel()
-			}
+			runJSONLSubscriberDrain(runCtx, cancel, subscriber, events, recordError)
 		}()
 	}
 
@@ -137,13 +143,7 @@ func Run(ctx context.Context, opts Options) (Summary, error) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			if err := runDashboardSink(runCtx, dashboardRuntime, opts.DashboardSink, events); err != nil && !isContextDone(err) {
-				select {
-				case errCh <- fmt.Errorf("run v3 dashboard boundary: %w", err):
-				default:
-				}
-				cancel()
-			}
+			runDashboardSinkDrain(runCtx, cancel, dashboardRuntime, opts.DashboardSink, events, recordError)
 		}()
 	}
 
@@ -154,11 +154,10 @@ func Run(ctx context.Context, opts Options) (Summary, error) {
 	}()
 
 	wg.Wait()
-	close(errCh)
-	for err := range errCh {
-		if err != nil {
-			return summary, err
-		}
+	firstErrMu.Lock()
+	defer firstErrMu.Unlock()
+	if firstErr != nil {
+		return summary, firstErr
 	}
 	if logger != nil {
 		logger.Printf("v3 runtime stopped: vehicle=%s", summary.VehicleID)
@@ -181,25 +180,42 @@ func newDashboardRuntime(plan v3config.RuntimePlan, repoRoot string) (*v3dashboa
 	return dashboardRuntime, nil
 }
 
-func runDashboardSink(ctx context.Context, runtime *v3dashboard.Runtime, sink DashboardSink, events <-chan sensors.SensorEvent) error {
-	for {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case event, ok := <-events:
-			if !ok {
-				return nil
-			}
-			scenes, changed, err := runtime.ApplyEvent(event)
-			if err != nil {
-				return err
-			}
-			if !changed {
-				continue
-			}
-			if err := sink(scenes); err != nil {
-				return err
-			}
+func runJSONLSubscriberDrain(ctx context.Context, cancel context.CancelFunc, subscriber *jsonlogger.JSONLSubscriber, events <-chan sensors.SensorEvent, recordError func(error)) {
+	processing := true
+	for event := range events {
+		if !processing || ctx.Err() != nil {
+			processing = false
+			continue
+		}
+		if err := subscriber.Handle(event); err != nil {
+			recordError(fmt.Errorf("run v3 jsonl subscriber %q: %w", subscriber.ID, err))
+			cancel()
+			processing = false
+		}
+	}
+}
+
+func runDashboardSinkDrain(ctx context.Context, cancel context.CancelFunc, runtime *v3dashboard.Runtime, sink DashboardSink, events <-chan sensors.SensorEvent, recordError func(error)) {
+	processing := true
+	for event := range events {
+		if !processing || ctx.Err() != nil {
+			processing = false
+			continue
+		}
+		scenes, changed, err := runtime.ApplyEvent(event)
+		if err != nil {
+			recordError(fmt.Errorf("run v3 dashboard boundary: %w", err))
+			cancel()
+			processing = false
+			continue
+		}
+		if !changed {
+			continue
+		}
+		if err := sink(scenes); err != nil {
+			recordError(fmt.Errorf("run v3 dashboard boundary: %w", err))
+			cancel()
+			processing = false
 		}
 	}
 }
