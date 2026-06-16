@@ -8,6 +8,7 @@ import (
 
 	fyneui "fyne.io/fyne/v2"
 
+	"github.com/MickMake/GoDriveLog/internal/config/v3config"
 	"github.com/MickMake/GoDriveLog/internal/dashboard/v3dashboard"
 )
 
@@ -24,7 +25,7 @@ func TestAdapterRendersScenePartsFromRepoRelativeAssets(t *testing.T) {
 
 	err = adapter.Update([]v3dashboard.Scene{{
 		DashboardID: "primary",
-		Size:        struct{ Width, Height int }{Width: 24, Height: 16},
+		Size:        v3config.SizeConfig{Width: 24, Height: 16},
 		Widgets: []v3dashboard.Widget{{
 			ID:       "background",
 			Type:     "image",
