@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Added `v3.1.0` runnable v3 command path behind `--v3`, including selected vehicle resolution, endpoint connection, sensor polling runtime startup, selected JSONL event subscribers, dashboard scene boundary logging, and signal-based clean shutdown.
+- Added `internal/runtime/v3runtime` orchestration tests covering v3 config load, selected vehicle connection, sensor polling, selected JSONL event output, and reader cleanup.
 - Split v3.1 implementation prompts into per-slice files under `docs/v3.1/prompts/`.
 - Reframed PR 51 as docs-only planning setup, with implementation starting at `v3.1.0`.
 - Added blocking and impact metadata to v3.1 open decisions.
@@ -16,7 +18,6 @@
 - Added dashboard tests for bar fill mapping, reverse fill direction, zones, frame clamping, sensor status handling, and unchanged frame output handling.
 - Added v3 richer asset registry support for bar and frame asset families.
 - Added reusable decoded bar cell and frame asset structs for later dashboard widgets.
-- Added richer asset registry tests for bar cells, frame ranges, decoded frame assets, and related image dimension validation.
 - Added v3 smallest selected-dashboard scene runtime for image, digit display, and indicator widgets.
 - Added selected-dashboard scene tests for RuntimePlan dashboard selection, digit formatting, decimal point overlays, indicator status mapping, and unchanged formatted output handling.
 - Added v3 minimal asset registry for image, digit, and indicator asset families.
