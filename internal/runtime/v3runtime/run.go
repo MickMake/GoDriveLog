@@ -122,7 +122,7 @@ func Run(ctx context.Context, opts Options) (Summary, error) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			if err := subscriber.Run(runCtx, events); err != nil && !errors.Is(err, context.Canceled) {
+			if err := subscriber.Run(runCtx, events); err != nil && !isContextDone(err) {
 				select {
 				case errCh <- fmt.Errorf("run v3 jsonl subscriber %q: %w", subscriber.ID, err):
 				default:
@@ -137,7 +137,7 @@ func Run(ctx context.Context, opts Options) (Summary, error) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			if err := runDashboardSink(runCtx, dashboardRuntime, opts.DashboardSink, events); err != nil && !errors.Is(err, context.Canceled) {
+			if err := runDashboardSink(runCtx, dashboardRuntime, opts.DashboardSink, events); err != nil && !isContextDone(err) {
 				select {
 				case errCh <- fmt.Errorf("run v3 dashboard boundary: %w", err):
 				default:
@@ -202,6 +202,10 @@ func runDashboardSink(ctx context.Context, runtime *v3dashboard.Runtime, sink Da
 			}
 		}
 	}
+}
+
+func isContextDone(err error) bool {
+	return errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded)
 }
 
 func closeReader(reader vehicle.Reader) {
