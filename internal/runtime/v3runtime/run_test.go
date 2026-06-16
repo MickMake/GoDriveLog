@@ -2,8 +2,10 @@ package v3runtime
 
 import (
 	"context"
-	"encoding/base64"
 	"errors"
+	"image"
+	"image/color"
+	"image/png"
 	"os"
 	"path/filepath"
 	"strings"
@@ -200,13 +202,16 @@ dashboards:
 }
 
 func writeTinyPNG(path string) error {
-	const png1x1 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGJgYGAAAAAEAAGjChXjAAAAAElFTkSuQmCC"
-	data, err := base64.StdEncoding.DecodeString(png1x1)
-	if err != nil {
-		return err
-	}
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
 	}
-	return os.WriteFile(path, data, 0o644)
+	file, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	img := image.NewRGBA(image.Rect(0, 0, 1, 1))
+	img.Set(0, 0, color.RGBA{R: 255, A: 255})
+	return png.Encode(file, img)
 }
