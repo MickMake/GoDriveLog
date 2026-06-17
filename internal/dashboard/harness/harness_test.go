@@ -135,7 +135,6 @@ dashboards:
 	var sceneUpdates int
 	summary, err := Run(context.Background(), Options{
 		ConfigPath: configPath,
-		RepoRoot:   dir,
 		Pattern:    PatternHeartbeat,
 		MaxEvents:  2,
 		Now: func() time.Time {
