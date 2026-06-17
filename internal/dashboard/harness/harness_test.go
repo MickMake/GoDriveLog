@@ -84,57 +84,7 @@ func TestHeartbeatPatternUsesTwoPeaksAndNegativeDip(t *testing.T) {
 }
 
 func TestRunFeedsFakeEventsThroughDashboardScenePath(t *testing.T) {
-	dir := t.TempDir()
-	for _, name := range []string{"off", "on", "unknown"} {
-		if err := writeTestPNG(filepath.Join(dir, "assets", name+".png")); err != nil {
-			t.Fatal(err)
-		}
-	}
-	configPath := filepath.Join(dir, "config.yaml")
-	config := `vehicles:
-  demo:
-    name: Demo vehicle
-    obd:
-      address: serial:///dev/null
-      timeout: 1000
-    dashboards:
-      - primary
-sensors:
-  pulse:
-    type: obd
-    pid: "010C"
-    unit: rpm
-    poll: 100
-    min: 0
-    max: 100
-assets:
-  digit_sets: {}
-  bar_sets: {}
-  frame_sets: {}
-  image_sets: {}
-  indicator_sets:
-    pulse_indicator:
-      states:
-        "off": assets/off.png
-        "on": assets/on.png
-        "unknown": assets/unknown.png
-logs: {}
-dashboards:
-  primary:
-    display: main
-    size:
-      width: 32
-      height: 16
-    widgets:
-      - id: pulse_widget
-        type: indicator
-        sensor: pulse
-        asset: pulse_indicator
-        position: [0, 0]
-`
-	if err := os.WriteFile(configPath, []byte(config), 0o644); err != nil {
-		t.Fatal(err)
-	}
+	configPath := writeHarnessConfig(t)
 
 	var sceneUpdates int
 	summary, err := Run(context.Background(), Options{
@@ -165,9 +115,77 @@ dashboards:
 	if summary.Events != 2 {
 		t.Fatalf("summary.Events = %d, want 2", summary.Events)
 	}
-	if sceneUpdates == 0 {
-		t.Fatal("harness did not emit any dashboard scenes")
+	if sceneUpdates != 1 {
+		t.Fatalf("scene updates = %d, want one sink call for one harness tick", sceneUpdates)
 	}
+}
+
+func writeHarnessConfig(t *testing.T) string {
+	t.Helper()
+	dir := t.TempDir()
+	for _, name := range []string{"off", "on", "unknown"} {
+		if err := writeTestPNG(filepath.Join(dir, "assets", name+".png")); err != nil {
+			t.Fatal(err)
+		}
+	}
+	configPath := filepath.Join(dir, "config.yaml")
+	config := `vehicles:
+  demo:
+    name: Demo vehicle
+    obd:
+      address: serial:///dev/null
+      timeout: 1000
+    dashboards:
+      - primary
+sensors:
+  pulse:
+    type: obd
+    pid: "010C"
+    unit: rpm
+    poll: 100
+    min: 0
+    max: 100
+  temp:
+    type: obd
+    pid: "0105"
+    unit: C
+    poll: 100
+    min: 0
+    max: 100
+assets:
+  digit_sets: {}
+  bar_sets: {}
+  frame_sets: {}
+  image_sets: {}
+  indicator_sets:
+    pulse_indicator:
+      states:
+        "off": assets/off.png
+        "on": assets/on.png
+        "unknown": assets/unknown.png
+logs: {}
+dashboards:
+  primary:
+    display: main
+    size:
+      width: 32
+      height: 16
+    widgets:
+      - id: pulse_widget
+        type: indicator
+        sensor: pulse
+        asset: pulse_indicator
+        position: [0, 0]
+      - id: temp_widget
+        type: indicator
+        sensor: temp
+        asset: pulse_indicator
+        position: [8, 0]
+`
+	if err := os.WriteFile(configPath, []byte(config), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	return configPath
 }
 
 func writeTestPNG(path string) error {
