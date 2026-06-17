@@ -188,11 +188,10 @@ func runV3Command(configPath, vehicleID string) error {
 		})
 		if err == nil {
 			log.Printf("v3 runtime summary: vehicle=%s endpoint=%s sensors=%d logs=%d dashboards=%d", summary.VehicleID, summary.Endpoint, summary.SensorCount, summary.LogCount, summary.DashboardCount)
+		} else {
+			log.Printf("v3 runtime stopped with error: %v", err)
 		}
 		errCh <- err
-		fyne.Do(func() {
-			application.Quit()
-		})
 	}()
 
 	window.SetCloseIntercept(func() {
@@ -239,11 +238,10 @@ func runV3HarnessCommand(configPath, vehicleID, pattern string, interval time.Du
 		})
 		if err == nil {
 			log.Printf("v3 dashboard harness summary: vehicle=%s sensors=%d dashboards=%d pattern=%s interval=%s events=%d", summary.VehicleID, summary.SensorCount, summary.DashboardCount, summary.Pattern, summary.Interval, summary.Events)
+		} else {
+			log.Printf("v3 dashboard harness stopped with error: %v", err)
 		}
 		errCh <- err
-		fyne.Do(func() {
-			application.Quit()
-		})
 	}()
 
 	window.SetCloseIntercept(func() {
