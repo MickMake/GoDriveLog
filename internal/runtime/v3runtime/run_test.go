@@ -176,7 +176,6 @@ dashboards:
 		_, err := Run(ctx, Options{
 			ConfigPath: configPath,
 			VehicleID:  "test_vehicle",
-			RepoRoot:   dir,
 			Connector: vehicle.Connector{
 				NewSerialReader: func(target string) (vehicle.Reader, error) {
 					return reader, nil

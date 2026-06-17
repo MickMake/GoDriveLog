@@ -24,10 +24,10 @@ const (
 var requiredDigitCharacters = []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"}
 
 // Registry contains decoded v3 assets keyed by global asset family and ID.
-// It is built once from repo-root-relative config paths so widgets can reuse
+// It is built once from resolved asset search paths so widgets can reuse
 // decoded image data instead of loading or decoding in the hot render path.
 type Registry struct {
-	repoRoot      string
+	searchPaths   []string
 	Images        map[string]ImageSet
 	DigitSets     map[string]DigitSet
 	BarSets       map[string]BarSet
@@ -82,15 +82,51 @@ type ImageAsset struct {
 	Bounds image.Rectangle
 }
 
+// DefaultSearchPaths builds the standard v3 asset search path order.
+// Relative asset paths are checked in this order:
+//  1. config directory / vehicle ID
+//  2. current working directory / vehicle ID
+//  3. config directory
+//  4. current working directory
+func DefaultSearchPaths(configPath, vehicleID string) ([]string, error) {
+	configDir := "."
+	if strings.TrimSpace(configPath) != "" {
+		configDir = filepath.Dir(configPath)
+	}
+	configDir, err := filepath.Abs(configDir)
+	if err != nil {
+		return nil, fmt.Errorf("config directory for %q could not be resolved: %w", configPath, err)
+	}
+	pwd, err := os.Getwd()
+	if err != nil {
+		return nil, fmt.Errorf("current working directory could not be resolved: %w", err)
+	}
+
+	vehicleID = strings.TrimSpace(vehicleID)
+	candidates := []string{}
+	if vehicleID != "" {
+		candidates = append(candidates, filepath.Join(configDir, vehicleID), filepath.Join(pwd, vehicleID))
+	}
+	candidates = append(candidates, configDir, pwd)
+	return cleanSearchPaths(candidates)
+}
+
 // Load builds the v3 asset registry for image-backed dashboard asset families.
-func Load(cfg v3config.AssetConfig, repoRoot string) (*Registry, error) {
-	root, err := cleanRepoRoot(repoRoot)
+// It keeps the original one-root call shape for tests and simple callers.
+func Load(cfg v3config.AssetConfig, root string) (*Registry, error) {
+	return LoadWithSearchPaths(cfg, []string{root})
+}
+
+// LoadWithSearchPaths builds the v3 asset registry using ordered asset search
+// paths. The first path containing a requested relative asset wins.
+func LoadWithSearchPaths(cfg v3config.AssetConfig, searchPaths []string) (*Registry, error) {
+	paths, err := cleanSearchPaths(searchPaths)
 	if err != nil {
 		return nil, err
 	}
 
 	registry := &Registry{
-		repoRoot:      root,
+		searchPaths:   paths,
 		Images:        make(map[string]ImageSet, len(cfg.ImageSets)),
 		DigitSets:     make(map[string]DigitSet, len(cfg.DigitSets)),
 		BarSets:       make(map[string]BarSet, len(cfg.BarSets)),
@@ -99,35 +135,35 @@ func Load(cfg v3config.AssetConfig, repoRoot string) (*Registry, error) {
 	}
 
 	for _, id := range sortedKeys(cfg.ImageSets) {
-		set, err := loadImageSet(root, id, cfg.ImageSets[id])
+		set, err := loadImageSet(paths, id, cfg.ImageSets[id])
 		if err != nil {
 			return nil, err
 		}
 		registry.Images[id] = set
 	}
 	for _, id := range sortedKeys(cfg.DigitSets) {
-		set, err := loadDigitSet(root, id, cfg.DigitSets[id])
+		set, err := loadDigitSet(paths, id, cfg.DigitSets[id])
 		if err != nil {
 			return nil, err
 		}
 		registry.DigitSets[id] = set
 	}
 	for _, id := range sortedKeys(cfg.BarSets) {
-		set, err := loadBarSet(root, id, cfg.BarSets[id])
+		set, err := loadBarSet(paths, id, cfg.BarSets[id])
 		if err != nil {
 			return nil, err
 		}
 		registry.BarSets[id] = set
 	}
 	for _, id := range sortedKeys(cfg.FrameSets) {
-		set, err := loadFrameSet(root, id, cfg.FrameSets[id])
+		set, err := loadFrameSet(paths, id, cfg.FrameSets[id])
 		if err != nil {
 			return nil, err
 		}
 		registry.FrameSets[id] = set
 	}
 	for _, id := range sortedKeys(cfg.IndicatorSets) {
-		set, err := loadIndicatorSet(root, id, cfg.IndicatorSets[id])
+		set, err := loadIndicatorSet(paths, id, cfg.IndicatorSets[id])
 		if err != nil {
 			return nil, err
 		}
@@ -138,10 +174,17 @@ func Load(cfg v3config.AssetConfig, repoRoot string) (*Registry, error) {
 }
 
 func (r *Registry) RepoRoot() string {
-	if r == nil {
+	if r == nil || len(r.searchPaths) == 0 {
 		return ""
 	}
-	return r.repoRoot
+	return r.searchPaths[0]
+}
+
+func (r *Registry) SearchPaths() []string {
+	if r == nil {
+		return nil
+	}
+	return append([]string(nil), r.searchPaths...)
 }
 
 func (r *Registry) ImageSet(id string) (ImageSet, bool) {
@@ -184,23 +227,23 @@ func (r *Registry) IndicatorSet(id string) (IndicatorSet, bool) {
 	return set, ok
 }
 
-func loadImageSet(root, id string, cfg v3config.ImageSetConfig) (ImageSet, error) {
+func loadImageSet(searchPaths []string, id string, cfg v3config.ImageSetConfig) (ImageSet, error) {
 	set := ImageSet{ID: id}
 	var err error
 	if cfg.Image != "" {
-		set.Image, err = loadOptionalImage(root, cfg.Image, fmt.Sprintf("assets.image_sets.%s.image", id))
+		set.Image, err = loadOptionalImage(searchPaths, cfg.Image, fmt.Sprintf("assets.image_sets.%s.image", id))
 		if err != nil {
 			return ImageSet{}, err
 		}
 	}
 	if cfg.Background != "" {
-		set.Background, err = loadOptionalImage(root, cfg.Background, fmt.Sprintf("assets.image_sets.%s.background", id))
+		set.Background, err = loadOptionalImage(searchPaths, cfg.Background, fmt.Sprintf("assets.image_sets.%s.background", id))
 		if err != nil {
 			return ImageSet{}, err
 		}
 	}
 	if cfg.Foreground != "" {
-		set.Foreground, err = loadOptionalImage(root, cfg.Foreground, fmt.Sprintf("assets.image_sets.%s.foreground", id))
+		set.Foreground, err = loadOptionalImage(searchPaths, cfg.Foreground, fmt.Sprintf("assets.image_sets.%s.foreground", id))
 		if err != nil {
 			return ImageSet{}, err
 		}
@@ -211,29 +254,29 @@ func loadImageSet(root, id string, cfg v3config.ImageSetConfig) (ImageSet, error
 	return set, nil
 }
 
-func loadDigitSet(root, id string, cfg v3config.DigitSetConfig) (DigitSet, error) {
+func loadDigitSet(searchPaths []string, id string, cfg v3config.DigitSetConfig) (DigitSet, error) {
 	set := DigitSet{ID: id, Characters: make(map[string]ImageAsset, len(cfg.Characters)), Spacing: cfg.Spacing}
 	var err error
 	if cfg.Background != "" {
-		set.Background, err = loadOptionalImage(root, cfg.Background, fmt.Sprintf("assets.digit_sets.%s.background", id))
+		set.Background, err = loadOptionalImage(searchPaths, cfg.Background, fmt.Sprintf("assets.digit_sets.%s.background", id))
 		if err != nil {
 			return DigitSet{}, err
 		}
 	}
 	if cfg.DecimalPoint != "" {
-		set.DecimalPoint, err = loadOptionalImage(root, cfg.DecimalPoint, fmt.Sprintf("assets.digit_sets.%s.decimal_point", id))
+		set.DecimalPoint, err = loadOptionalImage(searchPaths, cfg.DecimalPoint, fmt.Sprintf("assets.digit_sets.%s.decimal_point", id))
 		if err != nil {
 			return DigitSet{}, err
 		}
 	}
 	if cfg.Foreground != "" {
-		set.Foreground, err = loadOptionalImage(root, cfg.Foreground, fmt.Sprintf("assets.digit_sets.%s.foreground", id))
+		set.Foreground, err = loadOptionalImage(searchPaths, cfg.Foreground, fmt.Sprintf("assets.digit_sets.%s.foreground", id))
 		if err != nil {
 			return DigitSet{}, err
 		}
 	}
 	for _, ch := range requiredDigitCharacters {
-		asset, err := loadRequiredImage(root, cfg.Characters[ch], fmt.Sprintf("assets.digit_sets.%s.characters.%s", id, ch))
+		asset, err := loadRequiredImage(searchPaths, cfg.Characters[ch], fmt.Sprintf("assets.digit_sets.%s.characters.%s", id, ch))
 		if err != nil {
 			return DigitSet{}, err
 		}
@@ -243,7 +286,7 @@ func loadDigitSet(root, id string, cfg v3config.DigitSetConfig) (DigitSet, error
 		if _, exists := set.Characters[ch]; exists {
 			continue
 		}
-		asset, err := loadRequiredImage(root, cfg.Characters[ch], fmt.Sprintf("assets.digit_sets.%s.characters.%s", id, ch))
+		asset, err := loadRequiredImage(searchPaths, cfg.Characters[ch], fmt.Sprintf("assets.digit_sets.%s.characters.%s", id, ch))
 		if err != nil {
 			return DigitSet{}, err
 		}
@@ -252,17 +295,17 @@ func loadDigitSet(root, id string, cfg v3config.DigitSetConfig) (DigitSet, error
 	return set, nil
 }
 
-func loadBarSet(root, id string, cfg v3config.BarSetConfig) (BarSet, error) {
+func loadBarSet(searchPaths []string, id string, cfg v3config.BarSetConfig) (BarSet, error) {
 	set := BarSet{ID: id, Cells: make(map[string]ImageAsset, len(cfg.Cells)), Spacing: cfg.Spacing}
 	var err error
 	if cfg.Background != "" {
-		set.Background, err = loadOptionalImage(root, cfg.Background, fmt.Sprintf("assets.bar_sets.%s.background", id))
+		set.Background, err = loadOptionalImage(searchPaths, cfg.Background, fmt.Sprintf("assets.bar_sets.%s.background", id))
 		if err != nil {
 			return BarSet{}, err
 		}
 	}
 	if cfg.Foreground != "" {
-		set.Foreground, err = loadOptionalImage(root, cfg.Foreground, fmt.Sprintf("assets.bar_sets.%s.foreground", id))
+		set.Foreground, err = loadOptionalImage(searchPaths, cfg.Foreground, fmt.Sprintf("assets.bar_sets.%s.foreground", id))
 		if err != nil {
 			return BarSet{}, err
 		}
@@ -272,7 +315,7 @@ func loadBarSet(root, id string, cfg v3config.BarSetConfig) (BarSet, error) {
 	}
 	var cellBounds image.Rectangle
 	for _, cell := range sortedKeys(cfg.Cells) {
-		asset, err := loadRequiredImage(root, cfg.Cells[cell], fmt.Sprintf("assets.bar_sets.%s.cells.%s", id, cell))
+		asset, err := loadRequiredImage(searchPaths, cfg.Cells[cell], fmt.Sprintf("assets.bar_sets.%s.cells.%s", id, cell))
 		if err != nil {
 			return BarSet{}, err
 		}
@@ -286,7 +329,7 @@ func loadBarSet(root, id string, cfg v3config.BarSetConfig) (BarSet, error) {
 	return set, nil
 }
 
-func loadFrameSet(root, id string, cfg v3config.FrameSetConfig) (FrameSet, error) {
+func loadFrameSet(searchPaths []string, id string, cfg v3config.FrameSetConfig) (FrameSet, error) {
 	if cfg.Frames.First > cfg.Frames.Last {
 		return FrameSet{}, fmt.Errorf("assets.frame_sets.%s.frames.first must be less than or equal to last", id)
 	}
@@ -296,13 +339,13 @@ func loadFrameSet(root, id string, cfg v3config.FrameSetConfig) (FrameSet, error
 	set := FrameSet{ID: id, Frames: make(map[int]ImageAsset, cfg.Frames.Last-cfg.Frames.First+1), First: cfg.Frames.First, Last: cfg.Frames.Last}
 	var err error
 	if cfg.Background != "" {
-		set.Background, err = loadOptionalImage(root, cfg.Background, fmt.Sprintf("assets.frame_sets.%s.background", id))
+		set.Background, err = loadOptionalImage(searchPaths, cfg.Background, fmt.Sprintf("assets.frame_sets.%s.background", id))
 		if err != nil {
 			return FrameSet{}, err
 		}
 	}
 	if cfg.Foreground != "" {
-		set.Foreground, err = loadOptionalImage(root, cfg.Foreground, fmt.Sprintf("assets.frame_sets.%s.foreground", id))
+		set.Foreground, err = loadOptionalImage(searchPaths, cfg.Foreground, fmt.Sprintf("assets.frame_sets.%s.foreground", id))
 		if err != nil {
 			return FrameSet{}, err
 		}
@@ -310,7 +353,7 @@ func loadFrameSet(root, id string, cfg v3config.FrameSetConfig) (FrameSet, error
 	var frameBounds image.Rectangle
 	for frame := cfg.Frames.First; frame <= cfg.Frames.Last; frame++ {
 		assetPath := formatFramePath(cfg.Frames.Path, frame)
-		asset, err := loadRequiredImage(root, assetPath, fmt.Sprintf("assets.frame_sets.%s.frames.%d", id, frame))
+		asset, err := loadRequiredImage(searchPaths, assetPath, fmt.Sprintf("assets.frame_sets.%s.frames.%d", id, frame))
 		if err != nil {
 			return FrameSet{}, err
 		}
@@ -354,24 +397,24 @@ func hasPrintfPlaceholder(pattern string) bool {
 	return false
 }
 
-func loadIndicatorSet(root, id string, cfg v3config.IndicatorSetConfig) (IndicatorSet, error) {
+func loadIndicatorSet(searchPaths []string, id string, cfg v3config.IndicatorSetConfig) (IndicatorSet, error) {
 	set := IndicatorSet{ID: id, States: make(map[string]ImageAsset, len(cfg.States))}
 	var err error
 	if cfg.Background != "" {
-		set.Background, err = loadOptionalImage(root, cfg.Background, fmt.Sprintf("assets.indicator_sets.%s.background", id))
+		set.Background, err = loadOptionalImage(searchPaths, cfg.Background, fmt.Sprintf("assets.indicator_sets.%s.background", id))
 		if err != nil {
 			return IndicatorSet{}, err
 		}
 	}
 	if cfg.Foreground != "" {
-		set.Foreground, err = loadOptionalImage(root, cfg.Foreground, fmt.Sprintf("assets.indicator_sets.%s.foreground", id))
+		set.Foreground, err = loadOptionalImage(searchPaths, cfg.Foreground, fmt.Sprintf("assets.indicator_sets.%s.foreground", id))
 		if err != nil {
 			return IndicatorSet{}, err
 		}
 	}
 	for _, state := range []string{IndicatorStateOff, IndicatorStateOn, IndicatorStateUnknown} {
 		assetPath := cfg.States[state]
-		asset, err := loadRequiredImage(root, assetPath, fmt.Sprintf("assets.indicator_sets.%s.states.%s", id, state))
+		asset, err := loadRequiredImage(searchPaths, assetPath, fmt.Sprintf("assets.indicator_sets.%s.states.%s", id, state))
 		if err != nil {
 			return IndicatorSet{}, err
 		}
@@ -381,7 +424,7 @@ func loadIndicatorSet(root, id string, cfg v3config.IndicatorSetConfig) (Indicat
 		if _, exists := set.States[state]; exists {
 			continue
 		}
-		asset, err := loadRequiredImage(root, cfg.States[state], fmt.Sprintf("assets.indicator_sets.%s.states.%s", id, state))
+		asset, err := loadRequiredImage(searchPaths, cfg.States[state], fmt.Sprintf("assets.indicator_sets.%s.states.%s", id, state))
 		if err != nil {
 			return IndicatorSet{}, err
 		}
@@ -390,28 +433,28 @@ func loadIndicatorSet(root, id string, cfg v3config.IndicatorSetConfig) (Indicat
 	return set, nil
 }
 
-func loadOptionalImage(root, assetPath, label string) (*ImageAsset, error) {
+func loadOptionalImage(searchPaths []string, assetPath, label string) (*ImageAsset, error) {
 	if strings.TrimSpace(assetPath) == "" {
 		return nil, nil
 	}
-	asset, err := loadRequiredImage(root, assetPath, label)
+	asset, err := loadRequiredImage(searchPaths, assetPath, label)
 	if err != nil {
 		return nil, err
 	}
 	return &asset, nil
 }
 
-func loadRequiredImage(root, assetPath, label string) (ImageAsset, error) {
+func loadRequiredImage(searchPaths []string, assetPath, label string) (ImageAsset, error) {
 	if strings.TrimSpace(assetPath) == "" {
 		return ImageAsset{}, fmt.Errorf("%s path must not be empty", label)
 	}
-	resolved, err := resolveAssetPath(root, assetPath)
+	resolved, searched, err := resolveAssetPath(searchPaths, assetPath)
 	if err != nil {
 		return ImageAsset{}, fmt.Errorf("%s path %q is invalid: %w", label, assetPath, err)
 	}
 	data, err := os.ReadFile(resolved)
 	if err != nil {
-		return ImageAsset{}, fmt.Errorf("%s path %q could not be loaded: %w", label, resolved, err)
+		return ImageAsset{}, fmt.Errorf("%s path %q could not be loaded after searching %s: %w", label, assetPath, strings.Join(searched, ", "), err)
 	}
 	decoded, _, err := image.Decode(strings.NewReader(string(data)))
 	if err != nil {
@@ -420,35 +463,64 @@ func loadRequiredImage(root, assetPath, label string) (ImageAsset, error) {
 	return ImageAsset{Path: resolved, Data: data, Image: decoded, Bounds: decoded.Bounds()}, nil
 }
 
-func cleanRepoRoot(repoRoot string) (string, error) {
-	if strings.TrimSpace(repoRoot) == "" {
-		repoRoot = "."
+func cleanSearchPaths(paths []string) ([]string, error) {
+	if len(paths) == 0 {
+		paths = []string{"."}
 	}
-	cleaned, err := filepath.Abs(repoRoot)
-	if err != nil {
-		return "", fmt.Errorf("repository root %q could not be resolved: %w", repoRoot, err)
+	cleaned := make([]string, 0, len(paths))
+	seen := map[string]bool{}
+	for _, item := range paths {
+		if strings.TrimSpace(item) == "" {
+			continue
+		}
+		absolute, err := filepath.Abs(item)
+		if err != nil {
+			return nil, fmt.Errorf("asset search path %q could not be resolved: %w", item, err)
+		}
+		absolute = filepath.Clean(absolute)
+		if seen[absolute] {
+			continue
+		}
+		seen[absolute] = true
+		cleaned = append(cleaned, absolute)
 	}
-	return filepath.Clean(cleaned), nil
+	if len(cleaned) == 0 {
+		return nil, fmt.Errorf("asset search paths must not be empty")
+	}
+	return cleaned, nil
 }
 
-func resolveAssetPath(root, assetPath string) (string, error) {
+func resolveAssetPath(searchPaths []string, assetPath string) (string, []string, error) {
 	trimmed := strings.TrimSpace(assetPath)
 	if strings.Contains(trimmed, "://") {
-		return "", fmt.Errorf("must be repository-root relative, not remote or URL-like")
+		return "", nil, fmt.Errorf("must be search-path relative, not remote or URL-like")
 	}
 	if filepath.IsAbs(trimmed) || path.IsAbs(filepath.ToSlash(trimmed)) {
-		return "", fmt.Errorf("must be repository-root relative")
+		return "", nil, fmt.Errorf("must be search-path relative")
 	}
 	slashPath := filepath.ToSlash(trimmed)
 	cleaned := path.Clean(slashPath)
 	if cleaned == "." || cleaned == ".." || strings.HasPrefix(cleaned, "../") || hasUpwardEscapeSegment(slashPath) {
-		return "", fmt.Errorf("must be repository-root relative")
+		return "", nil, fmt.Errorf("must be search-path relative")
 	}
-	resolved := filepath.Clean(filepath.Join(root, filepath.FromSlash(cleaned)))
-	if !isWithinRoot(root, resolved) {
-		return "", fmt.Errorf("must stay within repository root")
+	paths, err := cleanSearchPaths(searchPaths)
+	if err != nil {
+		return "", nil, err
 	}
-	return resolved, nil
+	searched := make([]string, 0, len(paths))
+	for _, base := range paths {
+		resolved := filepath.Clean(filepath.Join(base, filepath.FromSlash(cleaned)))
+		if !isWithinRoot(base, resolved) {
+			continue
+		}
+		searched = append(searched, resolved)
+		if _, err := os.Stat(resolved); err == nil {
+			return resolved, searched, nil
+		} else if !os.IsNotExist(err) {
+			return resolved, searched, err
+		}
+	}
+	return "", searched, fmt.Errorf("could not be found in asset search paths: %s", strings.Join(searched, ", "))
 }
 
 func isWithinRoot(root, candidate string) bool {

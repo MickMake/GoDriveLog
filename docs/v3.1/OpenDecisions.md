@@ -13,7 +13,7 @@ Each decision records what it blocks, what it affects, and how long it can safel
 
 ### 1. Dashboard and gauge test harness shape
 
-Status: open
+Status: decided
 
 Question: should the v3.1 test harness target whole dashboards, individual widgets, individual gauges, or all of these?
 
@@ -31,12 +31,13 @@ Decision options:
 - Widget/gauge only.
 - Both, with smallest useful path first.
 
-Decision: pending.
+Decision: whole selected-dashboard path first. The v3.1.2 harness runs behind `--v3 --harness`, feeds fake `sensors.SensorEvent` values through the real `v3dashboard.Runtime.ApplyEvent` path, and sends resulting scenes to the Fyne display adapter. Individual widget/gauge selection remains a later extension if needed.
 
 Required dummy data patterns:
 
-- `sweep`: min to max to min over 10 seconds.
-- `heartbeat`: pulse or rhythm pattern for peak/response testing.
+- `sweep`: 11 second cycle; min to max over 5 seconds, pause at max for 1 second, then max to min over 5 seconds.
+- `heartbeat`: 10 second cycle; slightly-above-min baseline, smaller first peak, negative dip, larger second peak at max, then return to baseline.
+- `fixed`: midpoint value for stable visual sanity checks.
 
 ### 2. Dashboard update cadence
 
@@ -58,7 +59,7 @@ Decision options:
 - 50ms preferred, 100ms acceptable.
 - 100ms initial target with later optimisation.
 
-Decision: pending.
+Decision: pending. The v3.1.2 harness accepts interval values such as `50ms` and `100ms`; final cadence acceptance remains in v3.1.3.
 
 ### 3. JSONL rotation
 

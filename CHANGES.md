@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Added `v3.1.2` dashboard harness behind `--v3 --harness`, feeding fake sensor events through the real v3 dashboard scene path and Fyne display adapter.
+- Removed the temporary `--repo-root` flag and added ordered relative asset search paths: config directory + vehicle ID, current working directory + vehicle ID, config directory, then current working directory.
+- Added explicit harness patterns: `sweep`, `heartbeat`, and `fixed`, including tuned sweep and heartbeat timing tests.
+- Documented dashboard harness command usage, asset search path order, pattern semantics, and 50ms/100ms cadence options.
 - Added `v3.1.1` Fyne display adapter for v3 dashboard scene output, keeping display code below the dashboard runtime boundary.
 - Wired the `--v3` command path to show selected v3 dashboard scenes in a Fyne window while retaining the existing runtime as the default path.
 - Added adapter tests covering repo-relative asset rendering and rejection of escaping asset paths.

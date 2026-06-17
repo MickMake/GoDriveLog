@@ -26,13 +26,13 @@ type DashboardSink func([]v3dashboard.Scene) error
 
 // Options controls one runnable v3 command path execution.
 type Options struct {
-	ConfigPath    string
-	VehicleID     string
-	RepoRoot      string
-	Connector     vehicle.Connector
-	DashboardSink DashboardSink
-	EventBuffer   int
-	Logger        *log.Logger
+	ConfigPath       string
+	VehicleID        string
+	AssetSearchPaths []string
+	Connector        vehicle.Connector
+	DashboardSink    DashboardSink
+	EventBuffer      int
+	Logger           *log.Logger
 }
 
 // Summary describes the resolved runnable v3 path.
@@ -87,7 +87,7 @@ func Run(ctx context.Context, opts Options) (Summary, error) {
 	}
 	defer closeSubscribers(logSubscribers)
 
-	dashboardRuntime, err := newDashboardRuntime(plan, opts.RepoRoot)
+	dashboardRuntime, err := newDashboardRuntime(plan, opts.ConfigPath, opts.AssetSearchPaths)
 	if err != nil {
 		return Summary{}, err
 	}
@@ -165,11 +165,19 @@ func Run(ctx context.Context, opts Options) (Summary, error) {
 	return summary, nil
 }
 
-func newDashboardRuntime(plan v3config.RuntimePlan, repoRoot string) (*v3dashboard.Runtime, error) {
+func newDashboardRuntime(plan v3config.RuntimePlan, configPath string, searchPaths []string) (*v3dashboard.Runtime, error) {
 	if len(plan.Dashboards) == 0 {
 		return nil, nil
 	}
-	registry, err := v3assets.Load(plan.Assets, repoRoot)
+	paths := searchPaths
+	var err error
+	if len(paths) == 0 {
+		paths, err = v3assets.DefaultSearchPaths(configPath, plan.VehicleID)
+		if err != nil {
+			return nil, err
+		}
+	}
+	registry, err := v3assets.LoadWithSearchPaths(plan.Assets, paths)
 	if err != nil {
 		return nil, fmt.Errorf("load v3 dashboard assets: %w", err)
 	}
