@@ -191,13 +191,13 @@ func runV3Command(configPath, vehicleID string) error {
 		}
 		errCh <- err
 		fyne.Do(func() {
-			window.Close()
+			application.Quit()
 		})
 	}()
 
 	window.SetCloseIntercept(func() {
 		stop()
-		window.Close()
+		application.Quit()
 	})
 	window.ShowAndRun()
 	stop()
@@ -242,13 +242,13 @@ func runV3HarnessCommand(configPath, vehicleID, pattern string, interval time.Du
 		}
 		errCh <- err
 		fyne.Do(func() {
-			window.Close()
+			application.Quit()
 		})
 	}()
 
 	window.SetCloseIntercept(func() {
 		stop()
-		window.Close()
+		application.Quit()
 	})
 	window.ShowAndRun()
 	stop()
