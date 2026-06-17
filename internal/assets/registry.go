@@ -31,7 +31,7 @@ type Registry struct {
 	Images        map[string]ImageSet
 	DigitSets     map[string]DigitSet
 	BarSets       map[string]BarSet
-	FrameSets     map[int]ImageSet
+	FrameSets     map[string]FrameSet
 	IndicatorSets map[string]IndicatorSet
 }
 
@@ -130,7 +130,7 @@ func LoadWithSearchPaths(cfg v3config.AssetConfig, searchPaths []string) (*Regis
 		Images:        make(map[string]ImageSet, len(cfg.ImageSets)),
 		DigitSets:     make(map[string]DigitSet, len(cfg.DigitSets)),
 		BarSets:       make(map[string]BarSet, len(cfg.BarSets)),
-		FrameSets:     make(map[int]ImageSet),
+		FrameSets:     make(map[string]FrameSet, len(cfg.FrameSets)),
 		IndicatorSets: make(map[string]IndicatorSet, len(cfg.IndicatorSets)),
 	}
 
