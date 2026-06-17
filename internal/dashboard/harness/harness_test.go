@@ -113,9 +113,9 @@ assets:
   indicator_sets:
     pulse_indicator:
       states:
-        off: assets/off.png
-        on: assets/on.png
-        unknown: assets/unknown.png
+        "off": assets/off.png
+        "on": assets/on.png
+        "unknown": assets/unknown.png
 logs: {}
 dashboards:
   primary:
