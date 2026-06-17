@@ -158,6 +158,8 @@ func Run(ctx context.Context, opts Options) (Summary, error) {
 	started := now()
 	emitAll := func(at time.Time) (bool, error) {
 		elapsed := at.Sub(started)
+		var latestScenes []Scene
+		anyChanged := false
 		for i := range sources {
 			event := eventForSource(&sources[i], pattern, elapsed, at)
 			scenes, changed, err := dashboardRuntime.ApplyEvent(event)
@@ -165,13 +167,22 @@ func Run(ctx context.Context, opts Options) (Summary, error) {
 				return false, err
 			}
 			if changed {
-				if err := opts.Sink(scenes); err != nil {
-					return false, err
-				}
+				latestScenes = scenes
+				anyChanged = true
 			}
 			summary.Events++
 			if opts.MaxEvents > 0 && summary.Events >= opts.MaxEvents {
+				if anyChanged {
+					if err := opts.Sink(latestScenes); err != nil {
+						return false, err
+					}
+				}
 				return true, nil
+			}
+		}
+		if anyChanged {
+			if err := opts.Sink(latestScenes); err != nil {
+				return false, err
 			}
 		}
 		return false, nil
