@@ -18,7 +18,6 @@ go run ./cmd/GoDriveLog \
   --harness \
   --config CONFIG \
   --vehicle VEHICLE_ID \
-  --repo-root REPO_ROOT \
   --pattern sweep \
   --interval 100ms
 ```
@@ -31,6 +30,21 @@ Useful cadence values:
 ```
 
 Pattern names are explicit. Unknown pattern names are rejected.
+
+## Asset search paths
+
+The harness and normal v3 dashboard runtime do not require a `--repo-root` flag.
+
+Relative asset paths are searched in this order:
+
+1. config file directory + vehicle ID
+2. current working directory + vehicle ID
+3. config file directory
+4. current working directory
+
+The first matching file wins. Vehicle-specific assets therefore override generic assets in both the config directory and the current working directory.
+
+Asset paths in config must remain relative and must not use `..`, absolute paths, or URL-like paths.
 
 ## Patterns
 
