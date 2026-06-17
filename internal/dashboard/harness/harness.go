@@ -39,14 +39,14 @@ type SceneSink func([]Scene) error
 // avoids endpoint access and feeds synthetic sensor events through the real v3
 // dashboard event/state path.
 type Options struct {
-	ConfigPath string
-	VehicleID  string
-	RepoRoot   string
-	Pattern    string
-	Interval   time.Duration
-	Sink       SceneSink
-	Logger     *log.Logger
-	Now        func() time.Time
+	ConfigPath       string
+	VehicleID        string
+	AssetSearchPaths []string
+	Pattern          string
+	Interval         time.Duration
+	Sink             SceneSink
+	Logger           *log.Logger
+	Now              func() time.Time
 
 	// MaxEvents is intended for focused tests. Zero means run until ctx is done.
 	MaxEvents int
@@ -126,7 +126,14 @@ func Run(ctx context.Context, opts Options) (Summary, error) {
 		return Summary{}, fmt.Errorf("v3 dashboard harness requires at least one sensor")
 	}
 
-	registry, err := v3assets.Load(plan.Assets, opts.RepoRoot)
+	searchPaths := opts.AssetSearchPaths
+	if len(searchPaths) == 0 {
+		searchPaths, err = v3assets.DefaultSearchPaths(opts.ConfigPath, plan.VehicleID)
+		if err != nil {
+			return Summary{}, err
+		}
+	}
+	registry, err := v3assets.LoadWithSearchPaths(plan.Assets, searchPaths)
 	if err != nil {
 		return Summary{}, fmt.Errorf("load v3 dashboard assets: %w", err)
 	}
