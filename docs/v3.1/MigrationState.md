@@ -33,7 +33,7 @@ Current PR branch: `v3.1.2-dashboard-gauge-test-harness`
 - The visible adapter is wired into the `--v3` command path while the old runtime remains available without `--v3`.
 - `v3.1.2` adds a dashboard harness behind `--v3 --harness` so selected v3 dashboards can be exercised without OBD hardware.
 - The harness feeds fake `sensors.SensorEvent` values through the real `v3dashboard.Runtime.ApplyEvent` path and then into the Fyne display adapter.
-- Relative v3 asset paths are resolved without a CLI repo-root flag, using config-dir/vehicle, pwd/vehicle, config-dir, then pwd.
+- Relative v3 asset paths are resolved without a CLI directory flag, using config-dir/vehicle, pwd/vehicle, config-dir, then pwd.
 - The harness supports explicit `sweep`, `heartbeat`, and `fixed` patterns and rejects unknown pattern names.
 
 ## Version queue

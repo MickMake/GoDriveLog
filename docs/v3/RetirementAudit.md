@@ -145,7 +145,7 @@ Risk: removing this too early may leave v3 dashboard logic without a display pat
 
 Current role: loads old dashboard-local assets, using config-relative paths and optional `asset_root`.
 
-v3 replacement: `internal/assets/registry.go` loads global repo-root-relative asset families.
+v3 replacement: `internal/assets/registry.go` loads global config-relative asset families.
 
 Recommendation: archive/remove later after active dashboard examples use v3 assets only.
 

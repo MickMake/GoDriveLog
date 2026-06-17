@@ -69,7 +69,7 @@ Tests inspected:
 | Logging | daily JSONL writer consumes `sensors.Reading` | log subscriber consuming sensor events | wrap/refactor |
 | Dashboard config | assets/decoders/blocks/layers mini-scene model | dashboard widgets selected by vehicle | archive/replace shape, salvage rendering ideas |
 | Dashboard runtime | UI refresh loop polls state store on cadence | dashboard subscriber consuming latest state/events | refactor |
-| Assets | dashboard-local asset list and `asset_root` | global repo-root-relative asset catalogue | replace shape, reuse loader pieces |
+| Assets | dashboard-local asset list and `asset_root` | global config-relative asset catalogue | replace shape, reuse loader pieces |
 | Renderer | scene -> Fyne cached objects | v3 widget renderer | reuse/refactor locally |
 | Tests | good validation/state/renderer behaviour tests but tied to old shapes | boundary tests for v3 config/runtime/assets/widgets | keep/rewrite selectively |
 

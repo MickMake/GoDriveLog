@@ -33,7 +33,7 @@ Pattern names are explicit. Unknown pattern names are rejected.
 
 ## Asset search paths
 
-The harness and normal v3 dashboard runtime do not require a `--repo-root` flag.
+The harness and normal v3 dashboard runtime do not require a `--asset-directory` flag.
 
 Relative asset paths are searched in this order:
 

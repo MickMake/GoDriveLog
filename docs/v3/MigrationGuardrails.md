@@ -106,7 +106,7 @@ If the target version is unclear, decide the target version before creating the 
 | Sensors | reader/state/cache-style concepts | global sensor catalogue plus polling runtime emits sensor events |
 | Logging | current JSONL writer behaviour | global log definitions selected by vehicle; log subscribers receive selected sensor events |
 | Dashboard | current Fyne/dashboard renderer pieces | global dashboard definitions selected by vehicle; widget-driven dashboard subscribers |
-| Assets | current asset experiments | global repo-root-relative asset catalogue with digit, bar, frame, indicator, and image families |
+| Assets | current asset experiments | global config-relative asset catalogue with digit, bar, frame, indicator, and image families |
 | Performance | current display path may be slow | optimise locally without changing the v3 schema |
 
 This table is not a complaint list. It is a migration map.
@@ -124,7 +124,7 @@ Every current subsystem should receive one decision:
 | JSONL writer behaviour | refactor or reuse as an event subscriber |
 | Sensor polling/cache logic | refactor or replace depending on coupling |
 | Dashboard renderer experiments | reuse ideas/code behind the new widget/renderer seam where practical |
-| Asset loading code | refactor or reuse if it fits the repo-root asset registry |
+| Asset loading code | refactor or reuse if it fits the config-relative asset registry |
 | Old dashboard config model | archive or replace |
 | Tests | keep if they prove behaviour still wanted; rewrite if they protect obsolete shape |
 
