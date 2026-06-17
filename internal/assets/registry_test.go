@@ -6,11 +6,78 @@ import (
 	"image/png"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 
 	"github.com/MickMake/GoDriveLog/internal/config/v3config"
 )
+
+func TestDefaultSearchPathsUsesExpectedOrder(t *testing.T) {
+	root := t.TempDir()
+	configDir := filepath.Join(root, "config")
+	pwdDir := filepath.Join(root, "work")
+	if err := os.MkdirAll(configDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(pwdDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	oldPwd, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		if err := os.Chdir(oldPwd); err != nil {
+			t.Fatalf("restore working directory: %v", err)
+		}
+	})
+	if err := os.Chdir(pwdDir); err != nil {
+		t.Fatal(err)
+	}
+
+	got, err := DefaultSearchPaths(filepath.Join(configDir, "config.v3.yaml"), "test_vehicle")
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []string{
+		filepath.Join(configDir, "test_vehicle"),
+		filepath.Join(pwdDir, "test_vehicle"),
+		configDir,
+		pwdDir,
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("DefaultSearchPaths order = %#v, want %#v", got, want)
+	}
+}
+
+func TestLoadWithSearchPathsUsesFirstMatchingAsset(t *testing.T) {
+	root := t.TempDir()
+	first := filepath.Join(root, "first")
+	second := filepath.Join(root, "second")
+	writePNGSize(t, first, "assets/panel.png", 2, 2)
+	writePNGSize(t, second, "assets/panel.png", 5, 5)
+
+	registry, err := LoadWithSearchPaths(v3config.AssetConfig{
+		ImageSets: map[string]v3config.ImageSetConfig{
+			"panel": {Image: "assets/panel.png"},
+		},
+	}, []string{first, second})
+	if err != nil {
+		t.Fatalf("LoadWithSearchPaths failed: %v", err)
+	}
+	panel, ok := registry.ImageSet("panel")
+	if !ok || panel.Image == nil {
+		t.Fatalf("expected panel image asset")
+	}
+	if got := panel.Image.Bounds.Dx(); got != 2 {
+		t.Fatalf("loaded asset width = %d, want first matching asset width 2", got)
+	}
+	if want := filepath.Join(first, "assets", "panel.png"); panel.Image.Path != want {
+		t.Fatalf("asset path = %q, want %q", panel.Image.Path, want)
+	}
+}
 
 func TestLoadMinimalAssetRegistry(t *testing.T) {
 	root := t.TempDir()
@@ -62,8 +129,8 @@ func TestLoadMinimalAssetRegistry(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Load failed: %v", err)
 	}
-	if registry.RepoRoot() != filepath.Clean(root) {
-		t.Fatalf("unexpected repo root: %q", registry.RepoRoot())
+	if got := registry.SearchPaths(); len(got) != 1 || got[0] != filepath.Clean(root) {
+		t.Fatalf("unexpected asset search paths: %#v", got)
 	}
 	panel, ok := registry.ImageSet("panel")
 	if !ok || panel.Image == nil || panel.Image.Image == nil {
@@ -184,7 +251,7 @@ func TestLoadReportsMissingAssetClearly(t *testing.T) {
 	assertContains(t, err.Error(), "missing.png")
 }
 
-func TestLoadRejectsNonRootRelativeAssetPath(t *testing.T) {
+func TestLoadRejectsNonSearchPathRelativeAssetPath(t *testing.T) {
 	for _, badPath := range []string{"../escape.png", "/tmp/escape.png", "https://example.invalid/image.png"} {
 		t.Run(badPath, func(t *testing.T) {
 			_, err := Load(v3config.AssetConfig{
@@ -195,7 +262,7 @@ func TestLoadRejectsNonRootRelativeAssetPath(t *testing.T) {
 			if err == nil {
 				t.Fatalf("expected bad path to fail")
 			}
-			assertContains(t, err.Error(), "repository-root relative")
+			assertContains(t, err.Error(), "search-path relative")
 		})
 	}
 }
