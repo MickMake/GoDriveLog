@@ -254,3 +254,17 @@ func runV3HarnessCommand(configPath, vehicleID, pattern string, interval time.Du
 	stop()
 	return <-errCh
 }
+
+func newReader(cfg config.Config) (sensors.Reader, error) {
+	if cfg.OBD.MockMode {
+		return sensors.NewMockReader(), nil
+	}
+	return sensors.NewELMOBDReader(cfg.OBD.Address, cfg.OBD.Debug)
+}
+
+func sourceName(mock bool) string {
+	if mock {
+		return "mock"
+	}
+	return "obd"
+}
