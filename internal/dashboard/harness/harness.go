@@ -28,9 +28,12 @@ const (
 	defaultHeartbeatBaseline = 0.08
 )
 
+// Scene is the harness dashboard scene boundary type.
+type Scene = v3dashboard.Scene
+
 // SceneSink is the harness output boundary. Production display adapters can
 // consume this just like the normal v3 dashboard runtime boundary.
-type SceneSink func([]v3dashboard.Scene) error
+type SceneSink func([]Scene) error
 
 // Options controls the v3 dashboard/gauge harness. The harness deliberately
 // avoids endpoint access and feeds synthetic sensor events through the real v3
