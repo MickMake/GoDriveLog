@@ -95,6 +95,8 @@ func TestRunFeedsFakeEventsThroughDashboardScenePath(t *testing.T) {
     obd:
       address: serial:///dev/null
       timeout: 1000
+    dashboards:
+      - primary
 sensors:
   pulse:
     type: obd
@@ -135,6 +137,7 @@ dashboards:
 	var sceneUpdates int
 	summary, err := Run(context.Background(), Options{
 		ConfigPath: configPath,
+		VehicleID:  "demo",
 		Pattern:    PatternHeartbeat,
 		MaxEvents:  2,
 		Now: func() time.Time {
