@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"testing"
 	"time"
+
+	"github.com/MickMake/GoDriveLog/internal/dashboard/v3dashboard"
 )
 
 func TestNormalizePatternRejectsUnknown(t *testing.T) {
@@ -139,13 +141,29 @@ dashboards:
 		Now: func() time.Time {
 			return time.Unix(0, 0)
 		},
-		Sink: func(scenes any) error {
+		Sink: func(scenes []v3dashboard.Scene) error {
+			sceneUpdates++
+			if len(scenes) != 1 {
+				t.Fatalf("scene count = %d, want 1", len(scenes))
+			}
+			if scenes[0].DashboardID != "primary" {
+				t.Fatalf("DashboardID = %q, want primary", scenes[0].DashboardID)
+			}
 			return nil
 		},
 	})
-	_ = summary
-	_ = sceneUpdates
-	_ = err
+	if err != nil {
+		t.Fatalf("Run returned error: %v", err)
+	}
+	if summary.Pattern != PatternHeartbeat {
+		t.Fatalf("summary.Pattern = %q, want %q", summary.Pattern, PatternHeartbeat)
+	}
+	if summary.Events != 2 {
+		t.Fatalf("summary.Events = %d, want 2", summary.Events)
+	}
+	if sceneUpdates == 0 {
+		t.Fatal("harness did not emit any dashboard scenes")
+	}
 }
 
 func writeTestPNG(path string) error {
