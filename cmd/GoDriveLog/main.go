@@ -15,6 +15,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 
 	v3fyneadapter "github.com/MickMake/GoDriveLog/internal/dashboard/adapter/fyne"
+	v3harness "github.com/MickMake/GoDriveLog/internal/dashboard/harness"
 	"github.com/MickMake/GoDriveLog/internal/config"
 	jsonlogger "github.com/MickMake/GoDriveLog/internal/logger"
 	v3runtime "github.com/MickMake/GoDriveLog/internal/runtime/v3runtime"
@@ -25,11 +26,23 @@ import (
 func main() {
 	configPath := flag.String("config", "config.example.yaml", "path to YAML config")
 	useV3 := flag.Bool("v3", false, "run the v3 selected-vehicle runtime path")
+	useHarness := flag.Bool("harness", false, "run the v3 dashboard harness without OBD; requires --v3")
 	vehicleID := flag.String("vehicle", "", "v3 vehicle id; required when the v3 config contains multiple vehicles")
 	repoRoot := flag.String("repo-root", ".", "repository root for v3 dashboard assets")
+	harnessPattern := flag.String("pattern", v3harness.PatternSweep, "v3 dashboard harness pattern: sweep, heartbeat, or fixed")
+	harnessInterval := flag.Duration("interval", 100*time.Millisecond, "v3 dashboard harness update interval, such as 50ms or 100ms")
 	flag.Parse()
 
+	if *useHarness && !*useV3 {
+		log.Fatal("--harness requires --v3")
+	}
 	if *useV3 {
+		if *useHarness {
+			if err := runV3HarnessCommand(*configPath, *vehicleID, *repoRoot, *harnessPattern, *harnessInterval); err != nil {
+				log.Fatal(err)
+			}
+			return
+		}
 		if err := runV3Command(*configPath, *vehicleID, *repoRoot); err != nil {
 			log.Fatal(err)
 		}
@@ -177,6 +190,58 @@ func runV3Command(configPath, vehicleID, repoRoot string) error {
 		})
 		if err == nil {
 			log.Printf("v3 runtime summary: vehicle=%s endpoint=%s sensors=%d logs=%d dashboards=%d", summary.VehicleID, summary.Endpoint, summary.SensorCount, summary.LogCount, summary.DashboardCount)
+		}
+		errCh <- err
+		fyne.Do(func() {
+			window.Close()
+		})
+	}()
+
+	window.SetCloseIntercept(func() {
+		stop()
+		window.Close()
+	})
+	window.ShowAndRun()
+	stop()
+	return <-errCh
+}
+
+func runV3HarnessCommand(configPath, vehicleID, repoRoot, pattern string, interval time.Duration) error {
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+
+	adapter, err := v3fyneadapter.New(repoRoot)
+	if err != nil {
+		return err
+	}
+
+	application := app.New()
+	window := application.NewWindow("GoDriveLog v3 harness")
+	window.Resize(fyne.NewSize(800, 480))
+	window.SetContent(adapter.CanvasObject())
+
+	errCh := make(chan error, 1)
+	go func() {
+		summary, err := v3harness.Run(ctx, v3harness.Options{
+			ConfigPath: configPath,
+			VehicleID:  vehicleID,
+			RepoRoot:   repoRoot,
+			Pattern:    pattern,
+			Interval:   interval,
+			Logger:     log.Default(),
+			Sink: func(scenes []v3harness.Scene) error {
+				var updateErr error
+				fyne.DoAndWait(func() {
+					updateErr = adapter.Update(scenes)
+				})
+				if updateErr == nil {
+					log.Printf("v3 dashboard harness adapter update: scenes=%d", len(scenes))
+				}
+				return updateErr
+			},
+		})
+		if err == nil {
+			log.Printf("v3 dashboard harness summary: vehicle=%s sensors=%d dashboards=%d pattern=%s interval=%s events=%d", summary.VehicleID, summary.SensorCount, summary.DashboardCount, summary.Pattern, summary.Interval, summary.Events)
 		}
 		errCh <- err
 		fyne.Do(func() {
