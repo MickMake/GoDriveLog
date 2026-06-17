@@ -1,6 +1,6 @@
 # GoDriveLog v3.1 open decisions
 
-Status: planning
+Status: implementation
 Owner: migration implementor
 
 ## Purpose
@@ -80,7 +80,7 @@ Decision options:
 - Explicit `daily_jsonl` log type.
 - Rotation option under the v3 log definition.
 
-Decision: pending.
+Decision: daily JSONL rotation.
 
 ### 4. Sensor value typing
 
@@ -128,7 +128,7 @@ Decision: pending.
 
 ### 6. Display adapter target
 
-Status: open
+Status: decided
 
 Question: should the first v3.1 display adapter be Fyne, headless, or both?
 
@@ -146,11 +146,11 @@ Decision options:
 - Headless first.
 - Both, if still small.
 
-Decision: pending.
+Decision: Fyne first. The v3.1.1 adapter renders v3 dashboard scene parts through Fyne and keeps display code below the dashboard boundary.
 
 ### 7. Minimum runnable path
 
-Status: open
+Status: decided
 
 Question: what is the smallest acceptable runnable v3.1 app path?
 
@@ -168,4 +168,4 @@ Decision options:
 - Selected vehicle + endpoint + sensors + JSONL + dashboard output boundary.
 - Temporary v3 command until the main command can safely switch.
 
-Decision: pending.
+Decision: selected vehicle + endpoint + sensors + selected JSONL + visible v3 dashboard output through the Fyne display adapter. The v3 path remains behind `--v3` for now.

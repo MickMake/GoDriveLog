@@ -14,6 +14,7 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 
+	v3fyneadapter "github.com/MickMake/GoDriveLog/internal/dashboard/adapter/fyne"
 	"github.com/MickMake/GoDriveLog/internal/config"
 	jsonlogger "github.com/MickMake/GoDriveLog/internal/logger"
 	v3runtime "github.com/MickMake/GoDriveLog/internal/runtime/v3runtime"
@@ -146,21 +147,50 @@ func runV3Command(configPath, vehicleID, repoRoot string) error {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	summary, err := v3runtime.Run(ctx, v3runtime.Options{
-		ConfigPath: configPath,
-		VehicleID:  vehicleID,
-		RepoRoot:   repoRoot,
-		Logger:     log.Default(),
-		DashboardSink: func(scenes []v3runtime.Scene) error {
-			log.Printf("v3 dashboard boundary update: scenes=%d", len(scenes))
-			return nil
-		},
-	})
+	adapter, err := v3fyneadapter.New(repoRoot)
 	if err != nil {
 		return err
 	}
-	log.Printf("v3 runtime summary: vehicle=%s endpoint=%s sensors=%d logs=%d dashboards=%d", summary.VehicleID, summary.Endpoint, summary.SensorCount, summary.LogCount, summary.DashboardCount)
-	return nil
+
+	application := app.New()
+	window := application.NewWindow("GoDriveLog v3")
+	window.Resize(fyne.NewSize(800, 480))
+	window.SetContent(adapter.CanvasObject())
+
+	errCh := make(chan error, 1)
+	go func() {
+		summary, err := v3runtime.Run(ctx, v3runtime.Options{
+			ConfigPath: configPath,
+			VehicleID:  vehicleID,
+			RepoRoot:   repoRoot,
+			Logger:     log.Default(),
+			DashboardSink: func(scenes []v3runtime.Scene) error {
+				var updateErr error
+				fyne.DoAndWait(func() {
+					updateErr = adapter.Update(scenes)
+				})
+				if updateErr == nil {
+					log.Printf("v3 dashboard adapter update: scenes=%d", len(scenes))
+				}
+				return updateErr
+			},
+		})
+		if err == nil {
+			log.Printf("v3 runtime summary: vehicle=%s endpoint=%s sensors=%d logs=%d dashboards=%d", summary.VehicleID, summary.Endpoint, summary.SensorCount, summary.LogCount, summary.DashboardCount)
+		}
+		errCh <- err
+		fyne.Do(func() {
+			window.Close()
+		})
+	}()
+
+	window.SetCloseIntercept(func() {
+		stop()
+		window.Close()
+	})
+	window.ShowAndRun()
+	stop()
+	return <-errCh
 }
 
 func newReader(cfg config.Config) (sensors.Reader, error) {

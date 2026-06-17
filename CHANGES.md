@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Added `v3.1.1` Fyne display adapter for v3 dashboard scene output, keeping display code below the dashboard runtime boundary.
+- Wired the `--v3` command path to show selected v3 dashboard scenes in a Fyne window while retaining the existing runtime as the default path.
+- Added adapter tests covering repo-relative asset rendering and rejection of escaping asset paths.
 - Added `v3.1.0` runnable v3 command path behind `--v3`, including selected vehicle resolution, endpoint connection, sensor polling runtime startup, selected JSONL event subscribers, dashboard scene boundary logging, and signal-based clean shutdown.
 - Added `internal/runtime/v3runtime` orchestration tests covering v3 config load, selected vehicle connection, sensor polling, selected JSONL event output, and reader cleanup.
 - Split v3.1 implementation prompts into per-slice files under `docs/v3.1/prompts/`.
@@ -26,7 +29,6 @@
 - Updated v3 migration state for the v3.0.11 retirement audit slice.
 - Updated v3 migration state for the v3.0.10 implementation slice.
 - Updated v3 migration state for the v3.0.9 implementation slice.
-- Updated v3 migration state for the v3.0.8 implementation slice.
 - Updated v3 migration state for the v3.0.7 implementation slice.
 
 ## 0.1 - 2026-06-08
