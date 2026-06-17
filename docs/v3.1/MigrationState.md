@@ -33,6 +33,7 @@ Current PR branch: `v3.1.2-dashboard-gauge-test-harness`
 - The visible adapter is wired into the `--v3` command path while the old runtime remains available without `--v3`.
 - `v3.1.2` adds a dashboard harness behind `--v3 --harness` so selected v3 dashboards can be exercised without OBD hardware.
 - The harness feeds fake `sensors.SensorEvent` values through the real `v3dashboard.Runtime.ApplyEvent` path and then into the Fyne display adapter.
+- Relative v3 asset paths are resolved without a CLI repo-root flag, using config-dir/vehicle, pwd/vehicle, config-dir, then pwd.
 - The harness supports explicit `sweep`, `heartbeat`, and `fixed` patterns and rejects unknown pattern names.
 
 ## Version queue
@@ -67,7 +68,7 @@ The current slice is implementation-only for the v3 dashboard and gauge test har
 Expected verification focus:
 
 - `go test ./...` passes.
-- `go run ./cmd/GoDriveLog --v3 --harness --config CONFIG --vehicle VEHICLE_ID --repo-root REPO_ROOT --pattern sweep --interval 100ms` opens a Fyne window for selected v3 dashboard output without OBD.
+- `go run ./cmd/GoDriveLog --v3 --harness --config CONFIG --vehicle VEHICLE_ID --pattern sweep --interval 100ms` opens a Fyne window for selected v3 dashboard output without OBD.
 - The harness uses fake sensor events but the real v3 dashboard event/state path.
 - The harness uses the real Fyne display adapter rather than a parallel renderer.
 - Unknown pattern names are rejected.
