@@ -13,6 +13,10 @@ const (
 	WidgetTypeBarDisplay   = "bar_display"
 	WidgetTypeFrameGauge   = "frame_gauge"
 	WidgetTypeIndicator    = "indicator"
+
+	ValueKindNumeric = "numeric"
+	ValueKindBool    = "bool"
+	ValueKindString  = "string"
 )
 
 type Config struct {
@@ -36,12 +40,13 @@ type OBDConfig struct {
 }
 
 type SensorConfig struct {
-	Type string   `yaml:"type"`
-	PID  string   `yaml:"pid,omitempty"`
-	Unit string   `yaml:"unit"`
-	Poll int      `yaml:"poll"`
-	Min  *float64 `yaml:"min,omitempty"`
-	Max  *float64 `yaml:"max,omitempty"`
+	Type      string   `yaml:"type"`
+	PID       string   `yaml:"pid,omitempty"`
+	ValueKind string   `yaml:"value_kind,omitempty"`
+	Unit      string   `yaml:"unit"`
+	Poll      int      `yaml:"poll"`
+	Min       *float64 `yaml:"min,omitempty"`
+	Max       *float64 `yaml:"max,omitempty"`
 }
 
 type AssetConfig struct {
@@ -146,4 +151,24 @@ func LoadBytes(data []byte) (Config, error) {
 		return Config{}, err
 	}
 	return cfg, nil
+}
+
+func SensorDeclaredValueKind(sensor SensorConfig) string {
+	return sensor.ValueKind
+}
+
+func SensorOutputValueKind(sensor SensorConfig) string {
+	switch sensor.Type {
+	case "obd":
+		return ValueKindNumeric
+	default:
+		return ""
+	}
+}
+
+func SensorEffectiveValueKind(sensor SensorConfig) string {
+	if sensor.ValueKind != "" {
+		return sensor.ValueKind
+	}
+	return SensorOutputValueKind(sensor)
 }
