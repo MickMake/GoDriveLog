@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Documented `v3.1.3` dashboard performance design decisions, including Raspberry Pi 4 2GB memory-churn rationale, Fyne image reuse, scene coalescing, render error propagation, config-derived startup window sizing, and shutdown constraints.
 - Added `v3.1.3` dashboard scene update coalescing so v3 display rendering keeps only the latest pending scene instead of queueing stale frames.
 - Wired both `--v3` and `--v3 --harness` display paths through the coalescing scene sink, preserving sensor polling and logging priority over dashboard freshness.
 - Added tests proving scene sink submission returns while rendering is busy and stale pending frames are replaced by the latest scene.
