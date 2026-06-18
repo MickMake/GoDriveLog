@@ -329,7 +329,7 @@ func (r *PollingRuntime) applyError(sensorID string, readErr error, readAt time.
 		previousStatus = previous.Status
 	}
 
-	if hadPrevious && previous.Status == StatusError && previous.Error == state.Error {
+	if hadPrevious && previous.Status == state.Status && previous.Error == state.Error {
 		return
 	}
 
