@@ -156,6 +156,28 @@ func TestPollingRuntimeEmitsErrorAndRecoveryTransitions(t *testing.T) {
 	}
 }
 
+func TestPollingRuntimeSuppressesRepeatedUnavailableErrors(t *testing.T) {
+	runtime := newRuntimeForEventTests(t)
+	events := runtime.Subscribe(4)
+	readAt := time.Date(2026, 6, 13, 8, 0, 0, 0, time.UTC)
+
+	runtime.applyError("rpm", ErrSensorTimeout, readAt)
+	runtime.applyError("rpm", ErrSensorTimeout, readAt.Add(time.Second))
+	runtime.applyError("rpm", ErrSensorUnsupported, readAt.Add(2*time.Second))
+	runtime.applyError("rpm", ErrSensorUnsupported, readAt.Add(3*time.Second))
+
+	timeoutEvent := receiveEvent(t, events)
+	unsupportedEvent := receiveEvent(t, events)
+	assertNoEvent(t, events)
+
+	if timeoutEvent.Kind != EventKindError || timeoutEvent.State.Status != StatusTimeout {
+		t.Fatalf("timeout event = %#v, want one timeout error event", timeoutEvent)
+	}
+	if unsupportedEvent.Kind != EventKindError || unsupportedEvent.State.Status != StatusUnsupported || unsupportedEvent.PreviousStatus != StatusTimeout {
+		t.Fatalf("unsupported event = %#v, want one unsupported transition from timeout", unsupportedEvent)
+	}
+}
+
 func TestPollingRuntimeUnbufferedSubscriberReceivesFirstRead(t *testing.T) {
 	runtime := newRuntimeForEventTests(t)
 	events := runtime.Subscribe(0)
