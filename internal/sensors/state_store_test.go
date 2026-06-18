@@ -2,6 +2,7 @@ package sensors
 
 import (
 	"errors"
+	"strings"
 	"testing"
 	"time"
 )
@@ -60,6 +61,26 @@ func TestStateStoreSetValueUpdatesLatestState(t *testing.T) {
 	}
 	if state.StaleAfter != 500*time.Millisecond {
 		t.Fatalf("StaleAfter = %v, want 500ms", state.StaleAfter)
+	}
+}
+
+func TestStateStoreSetTypedValueRejectsInvalidValues(t *testing.T) {
+	updatedAt := time.Date(2026, 6, 8, 10, 0, 0, 0, time.UTC)
+	store := NewStateStore([]SensorDefinition{{ID: "rpm", Unit: "rpm", Min: 0, Max: 7000, StaleAfter: 500 * time.Millisecond}})
+
+	state := store.SetTypedValue("rpm", Value{}, updatedAt)
+
+	if state.Status != StatusError {
+		t.Fatalf("Status = %q, want %q", state.Status, StatusError)
+	}
+	if state.TypedValue.Kind != ValueKindError {
+		t.Fatalf("TypedValue = %#v, want error value", state.TypedValue)
+	}
+	if !strings.Contains(state.Error, "sensor value kind is required") {
+		t.Fatalf("Error = %q, want missing kind error", state.Error)
+	}
+	if state.Value != 0 {
+		t.Fatalf("Value = %v, want invalid value not to become a live numeric reading", state.Value)
 	}
 }
 
