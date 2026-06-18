@@ -14,11 +14,11 @@ v3.0 established the migration process, strict v3 config loading, RuntimePlan re
 
 ## Current migration position
 
-Current version: `v3.1.5`
-Current phase: typed sensor values
-Current branch prefix: `v3.1.5`
+Current version: `v3.1.6`
+Current phase: unsupported and missing sensor semantics
+Current branch prefix: `v3.1.6`
 Current PR: pending
-Current PR branch: `v3.1.5-typed-sensor-values`
+Current PR branch: `v3.1.6-unsupported-missing-semantics`
 
 ## Current state
 
@@ -52,6 +52,9 @@ Current PR branch: `v3.1.5-typed-sensor-values`
 - Sensor config may declare `value_kind`; if omitted, the runtime derives it from the selected parser/output contract.
 - OBD parser output currently derives `numeric`; configured `value_kind` must match that parser output instead of relying on hard-coded sensor-id knowledge.
 - JSONL event records now write a typed `value` object instead of a bare number.
+- `v3.1.6` defines explicit unavailable/error status names: `missing`, `unsupported`, `timeout`, `parse_error`, plus generic `error`, existing `unknown`, `ok`, and `stale`.
+- `missing` and `unsupported` use typed `missing` values; timeout, parse, and generic errors use typed `error` values.
+- Dashboards expose the same status strings and do not render live numeric/gauge/indicator values for any non-`ok` status.
 
 ## Version queue
 
@@ -62,8 +65,8 @@ Current PR branch: `v3.1.5-typed-sensor-values`
 | v3.1.2 | dashboard and gauge test harness | implemented |
 | v3.1.3 | dashboard update performance target | implemented |
 | v3.1.4 | JSONL daily rotation | implemented |
-| v3.1.5 | typed sensor values | in progress |
-| v3.1.6 | unsupported and missing sensor semantics | planned |
+| v3.1.5 | typed sensor values | implemented |
+| v3.1.6 | unsupported and missing sensor semantics | in progress |
 | v3.1.7 | dashboard event efficiency | planned |
 | v3.1.8 | retirement readiness review | planned |
 
@@ -80,28 +83,26 @@ Examples:
 - `v3.1.3-dashboard-update-performance`
 - `v3.1.4-jsonl-daily-rotation`
 - `v3.1.5-typed-sensor-values`
+- `v3.1.6-unsupported-missing-semantics`
 
 ## Notes for current slice
 
-The current slice is implementation-only for v3 typed sensor values.
+The current slice is implementation-only for v3 unsupported and missing sensor semantics.
 
 Design intent:
 
-- Make sensor value type explicit with a mandatory `kind`.
-- Reject empty or unknown typed value kinds.
-- Do not infer value type from populated fields.
-- Avoid hard-coding sensor IDs such as `rpm` or `speed` to kinds.
-- Derive default kind from parser/output contract; for current OBD readers this is `numeric`.
-- Fail selected runtime setup when configured `value_kind` is invalid or incompatible with parser output.
-- Preserve runtime operation for live read/parse errors by emitting typed error values/events instead of coercing to zero.
-- Keep unsupported/missing/stale visual policy for `v3.1.6`.
+- Give every unavailable state one explicit status string.
+- Keep `0` as a valid numeric reading only; do not use it for unavailable state.
+- Keep existing event kinds and carry semantics through `SensorState.Status`, JSONL `status`, and dashboard widget `Status`.
+- Avoid retry/backoff, polling cadence, dashboard visual redesign, or new config schema work.
+- Treat unknown/generic failures as `error` unless the reader/runtime returns a known sentinel error.
+- Render non-`ok` dashboard values as unavailable/unknown rather than as live values.
 
 Expected verification focus:
 
 - `go test ./...` passes.
-- Numeric sensor reads produce typed numeric values.
-- Numeric zero remains a valid numeric value, not missing/error.
-- `Value{}` and unknown kinds are invalid.
-- Invalid configured `value_kind` fails selected runtime setup.
-- Configured kind mismatch with parser output fails selected runtime setup.
-- JSONL records include typed value objects.
+- Status mapping distinguishes `missing`, `unsupported`, `timeout`, `parse_error`, `error`, `stale`, `unknown`, and `ok`.
+- Typed values for `missing` and `unsupported` use `kind: missing`.
+- Typed values for timeout, parse, and generic errors use `kind: error`.
+- Dashboards expose non-`ok` statuses and avoid rendering live values for them.
+- `CHANGES.md`, `docs/v3.1/MigrationState.md`, and `docs/v3.1/OpenDecisions.md` are updated.

@@ -226,19 +226,43 @@ func TestBarDisplayUsesZonesBySensorValue(t *testing.T) {
 	}
 }
 
-func TestBarDisplayUsesOffCellsForNonOKStatus(t *testing.T) {
+func TestBarDisplayRendersNoCellsForNonOKStatus(t *testing.T) {
 	dashboard := Dashboard{ID: "primary", Assets: testAssetRegistry(), Config: v3config.DashboardConfig{Display: "test", Size: v3config.SizeConfig{Width: 320, Height: 120}, Widgets: []v3config.WidgetConfig{{ID: "temperature", Type: v3config.WidgetTypeBarDisplay, Sensor: "temperature", Asset: "temperature_bar", Position: []int{0, 0}, Cells: 5, Min: floatPtr(0), Max: floatPtr(100)}}}}
 
-	scene, err := dashboard.Render(map[string]sensors.SensorState{"temperature": {ID: "temperature", Value: 100, Status: sensors.StatusStale}})
-	if err != nil {
-		t.Fatalf("Render failed: %v", err)
+	statuses := []string{
+		sensors.StatusMissing,
+		sensors.StatusUnsupported,
+		sensors.StatusTimeout,
+		sensors.StatusParseError,
+		sensors.StatusError,
+		sensors.StatusStale,
 	}
-	widget := requireWidget(t, scene, "temperature")
-	if widget.Status != sensors.StatusStale {
-		t.Fatalf("expected stale status to be visible, got %#v", widget)
-	}
-	if got := cellNames(widget); got != "off,off,off,off,off" {
-		t.Fatalf("expected non-ok bar to avoid live filled cells, got %q", got)
+
+	for _, status := range statuses {
+		t.Run(status, func(t *testing.T) {
+			scene, err := dashboard.Render(map[string]sensors.SensorState{
+				"temperature": {
+					ID:     "temperature",
+					Value:  0,
+					Status: status,
+					Error:  "not available",
+				},
+			})
+			if err != nil {
+				t.Fatalf("Render failed: %v", err)
+			}
+
+			widget := requireWidget(t, scene, "temperature")
+			if widget.Status != status {
+				t.Fatalf("Status = %q, want %q", widget.Status, status)
+			}
+			if widget.Error != "not available" {
+				t.Fatalf("Error = %q, want not available", widget.Error)
+			}
+			if got := countParts(widget, PartKindCell); got != 0 {
+				t.Fatalf("expected non-ok bar to render no cell parts, got %d from %#v", got, widget.Parts)
+			}
+		})
 	}
 }
 
@@ -519,3 +543,4 @@ func statePart(widget Widget) string {
 	}
 	return ""
 }
+

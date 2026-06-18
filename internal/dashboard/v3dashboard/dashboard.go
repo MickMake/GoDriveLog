@@ -363,30 +363,33 @@ func barParts(set v3assets.BarSet, widget v3config.WidgetConfig, state sensors.S
 	if widget.Cells <= 0 {
 		return nil, fmt.Errorf("dashboard %q widget %q cells must be greater than zero", dashboardID, widget.ID)
 	}
-	if _, ok := set.Cells[v3assets.IndicatorStateOff]; !ok {
-		return nil, fmt.Errorf("dashboard %q widget %q bar set %q requires off cell", dashboardID, widget.ID, widget.Asset)
-	}
-
-	filled := 0
-	cellName := v3assets.IndicatorStateOff
-	if state.Status == sensors.StatusOK {
-		var err error
-		filled, err = filledBarCells(widget, state.Value)
-		if err != nil {
-			return nil, fmt.Errorf("dashboard %q widget %q: %w", dashboardID, widget.ID, err)
-		}
-		if filled > 0 {
-			cellName, err = barCellNameForValue(widget, set, state.Value)
-			if err != nil {
-				return nil, fmt.Errorf("dashboard %q widget %q: %w", dashboardID, widget.ID, err)
-			}
-		}
-	}
 
 	parts := []Part{}
 	if set.Background != nil {
 		parts = append(parts, Part{Kind: PartKindBackground, AssetPath: set.Background.Path})
 	}
+	if state.Status != sensors.StatusOK {
+		if set.Foreground != nil {
+			parts = append(parts, Part{Kind: PartKindForeground, AssetPath: set.Foreground.Path})
+		}
+		return parts, nil
+	}
+
+	if _, ok := set.Cells[v3assets.IndicatorStateOff]; !ok {
+		return nil, fmt.Errorf("dashboard %q widget %q bar set %q requires off cell", dashboardID, widget.ID, widget.Asset)
+	}
+	filled, err := filledBarCells(widget, state.Value)
+	if err != nil {
+		return nil, fmt.Errorf("dashboard %q widget %q: %w", dashboardID, widget.ID, err)
+	}
+	cellName := v3assets.IndicatorStateOff
+	if filled > 0 {
+		cellName, err = barCellNameForValue(widget, set, state.Value)
+		if err != nil {
+			return nil, fmt.Errorf("dashboard %q widget %q: %w", dashboardID, widget.ID, err)
+		}
+	}
+
 	for slot := 0; slot < widget.Cells; slot++ {
 		name := v3assets.IndicatorStateOff
 		if isFilledBarSlot(slot, filled, widget.Cells, widget.Reverse) {
