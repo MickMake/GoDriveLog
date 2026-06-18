@@ -92,23 +92,28 @@ func TestJSONLSubscriberWritesSelectedSensorEvents(t *testing.T) {
 	}
 
 	first := records[0]
+	firstValue, ok := first.Value.Numeric()
+	if !ok {
+		t.Fatalf("first value = %#v, want numeric", first.Value)
+	}
 	if first.LogID != "jsonl" || first.Kind != sensors.EventKindFirstRead || first.SensorID != "speed" {
 		t.Fatalf("first record = %#v, want jsonl first_read speed", first)
 	}
 	if !first.ReadAt.Equal(readAt) || !first.EventAt.Equal(eventAt) {
 		t.Fatalf("first timestamps = read %v event %v, want %v %v", first.ReadAt, first.EventAt, readAt, eventAt)
 	}
-	if first.Status != sensors.StatusOK || first.Value != 42 || first.Unit != "km/h" {
-		t.Fatalf("first state = %#v, want ok 42 km/h", first)
+	if first.Status != sensors.StatusOK || firstValue != 42 || first.Value.Unit != "km/h" {
+		t.Fatalf("first state = %#v, want ok numeric 42 km/h", first)
 	}
 
 	changed := records[1]
-	if changed.Kind != sensors.EventKindValueChange || changed.Value != 43 || changed.Status != sensors.StatusOK {
-		t.Fatalf("changed record = %#v, want value_change 43 ok", changed)
+	changedValue, ok := changed.Value.Numeric()
+	if !ok || changed.Kind != sensors.EventKindValueChange || changedValue != 43 || changed.Status != sensors.StatusOK {
+		t.Fatalf("changed record = %#v, want value_change numeric 43 ok", changed)
 	}
 
 	errorRecord := records[2]
-	if errorRecord.Kind != sensors.EventKindError || errorRecord.Status != sensors.StatusError || errorRecord.PreviousStatus != sensors.StatusOK || errorRecord.Error != "adapter timeout" {
+	if errorRecord.Kind != sensors.EventKindError || errorRecord.Status != sensors.StatusError || errorRecord.PreviousStatus != sensors.StatusOK || errorRecord.Error != "adapter timeout" || errorRecord.Value.Kind != sensors.ValueKindError {
 		t.Fatalf("error record = %#v, want error transition from ok", errorRecord)
 	}
 }
@@ -126,7 +131,7 @@ func TestJSONLEventWriterRotatesDaily(t *testing.T) {
 		}
 	}()
 
-	if err := writer.WriteEvent(JSONLEventRecord{LogID: "jsonl", SensorID: "speed", Status: sensors.StatusOK, Value: 1}); err != nil {
+	if err := writer.WriteEvent(JSONLEventRecord{LogID: "jsonl", SensorID: "speed", Status: sensors.StatusOK, Value: sensors.NewNumericValue(1, "")}); err != nil {
 		t.Fatalf("WriteEvent day one: %v", err)
 	}
 	dayOnePath := DailyJSONLPath(basePath, current)
@@ -135,7 +140,7 @@ func TestJSONLEventWriterRotatesDaily(t *testing.T) {
 	}
 
 	current = current.Add(2 * time.Minute)
-	if err := writer.WriteEvent(JSONLEventRecord{LogID: "jsonl", SensorID: "speed", Status: sensors.StatusOK, Value: 2}); err != nil {
+	if err := writer.WriteEvent(JSONLEventRecord{LogID: "jsonl", SensorID: "speed", Status: sensors.StatusOK, Value: sensors.NewNumericValue(2, "")}); err != nil {
 		t.Fatalf("WriteEvent day two: %v", err)
 	}
 	dayTwoPath := DailyJSONLPath(basePath, current)
@@ -145,10 +150,12 @@ func TestJSONLEventWriterRotatesDaily(t *testing.T) {
 
 	dayOne := readRecords(t, dayOnePath)
 	dayTwo := readRecords(t, dayTwoPath)
-	if len(dayOne) != 1 || dayOne[0].Value != 1 {
+	dayOneValue, _ := dayOne[0].Value.Numeric()
+	dayTwoValue, _ := dayTwo[0].Value.Numeric()
+	if len(dayOne) != 1 || dayOneValue != 1 {
 		t.Fatalf("day one records = %#v, want one value 1", dayOne)
 	}
-	if len(dayTwo) != 1 || dayTwo[0].Value != 2 {
+	if len(dayTwo) != 1 || dayTwoValue != 2 {
 		t.Fatalf("day two records = %#v, want one value 2", dayTwo)
 	}
 }
@@ -245,16 +252,21 @@ func TestJSONLSubscriberRunReturnsContextCancellation(t *testing.T) {
 }
 
 func sensorEvent(kind, sensorID, status string, value float64, unit string, readAt, eventAt time.Time, previousStatus, eventErr string) sensors.SensorEvent {
+	typedValue := sensors.NewNumericValue(value, unit)
+	if status == sensors.StatusError {
+		typedValue = sensors.NewErrorValue(eventErr)
+	}
 	return sensors.SensorEvent{
 		Kind:     kind,
 		SensorID: sensorID,
 		State: sensors.SensorState{
-			ID:        sensorID,
-			Value:     value,
-			Unit:      unit,
-			Status:    status,
-			Error:     eventErr,
-			UpdatedAt: readAt,
+			ID:         sensorID,
+			Value:      value,
+			TypedValue: typedValue,
+			Unit:       unit,
+			Status:     status,
+			Error:      eventErr,
+			UpdatedAt:  readAt,
 		},
 		PreviousStatus: previousStatus,
 		Timestamp:      eventAt,

@@ -55,6 +55,7 @@ func WithStaleCheckInterval(interval time.Duration) RuntimeOption {
 type pollingSensor struct {
 	ID         string
 	PID        string
+	ValueKind  string
 	Unit       string
 	Poll       time.Duration
 	StaleAfter time.Duration
@@ -90,6 +91,11 @@ func NewPollingRuntime(reader Reader, sensorConfigs map[string]v3config.SensorCo
 			return nil, fmt.Errorf("sensor %q pid must be set", sensorID)
 		}
 
+		valueKind, err := effectiveSensorValueKind(sensorID, cfg)
+		if err != nil {
+			return nil, err
+		}
+
 		poll := time.Duration(cfg.Poll) * time.Millisecond
 		staleAfter := StaleAfterForPoll(poll)
 		minValue := 0.0
@@ -104,6 +110,7 @@ func NewPollingRuntime(reader Reader, sensorConfigs map[string]v3config.SensorCo
 		sensors = append(sensors, pollingSensor{
 			ID:         sensorID,
 			PID:        cfg.PID,
+			ValueKind:  valueKind,
 			Unit:       cfg.Unit,
 			Poll:       poll,
 			StaleAfter: staleAfter,
@@ -116,6 +123,7 @@ func NewPollingRuntime(reader Reader, sensorConfigs map[string]v3config.SensorCo
 			Min:        minValue,
 			Max:        maxValue,
 			StaleAfter: staleAfter,
+			ValueKind:  valueKind,
 		})
 	}
 
@@ -129,6 +137,33 @@ func NewPollingRuntime(reader Reader, sensorConfigs map[string]v3config.SensorCo
 		opt(runtime)
 	}
 	return runtime, nil
+}
+
+func effectiveSensorValueKind(sensorID string, cfg v3config.SensorConfig) (string, error) {
+	parserKind := v3config.SensorOutputValueKind(cfg)
+	if parserKind == "" {
+		return "", fmt.Errorf("sensor %q type %q has no declared parser output value kind", sensorID, cfg.Type)
+	}
+	configuredKind := v3config.SensorDeclaredValueKind(cfg)
+	if configuredKind == "" {
+		return parserKind, nil
+	}
+	if !isAllowedRuntimeValueKind(configuredKind) {
+		return "", fmt.Errorf("sensor %q has invalid value_kind %q; allowed: numeric, bool, string", sensorID, configuredKind)
+	}
+	if configuredKind != parserKind {
+		return "", fmt.Errorf("sensor %q value_kind %q is incompatible with parser output kind %q", sensorID, configuredKind, parserKind)
+	}
+	return configuredKind, nil
+}
+
+func isAllowedRuntimeValueKind(kind string) bool {
+	switch kind {
+	case ValueKindNumeric, ValueKindBool, ValueKindString:
+		return true
+	default:
+		return false
+	}
 }
 
 func StaleAfterForPoll(poll time.Duration) time.Duration {
@@ -201,7 +236,11 @@ func (r *PollingRuntime) pollOnce(ctx context.Context, sensor pollingSensor) {
 		r.applyError(sensor.ID, err, readAt)
 		return
 	}
-	r.applyValue(sensor.ID, value, unit, readAt)
+	if sensor.ValueKind != ValueKindNumeric {
+		r.applyError(sensor.ID, fmt.Errorf("expected %s value, got numeric", sensor.ValueKind), readAt)
+		return
+	}
+	r.applyTypedValue(sensor.ID, NewNumericValue(value, unit), readAt)
 }
 
 func (r *PollingRuntime) staleLoop(ctx context.Context, sensor pollingSensor) {
@@ -239,8 +278,16 @@ func (r *PollingRuntime) staleLoop(ctx context.Context, sensor pollingSensor) {
 }
 
 func (r *PollingRuntime) applyValue(sensorID string, value float64, unit string, readAt time.Time) {
+	r.applyTypedValue(sensorID, NewNumericValue(value, unit), readAt)
+}
+
+func (r *PollingRuntime) applyTypedValue(sensorID string, value Value, readAt time.Time) {
 	previous, hadPrevious := r.store.Get(sensorID)
-	state := r.store.SetValue(sensorID, value, unit, readAt)
+	if err := value.Validate(); err != nil {
+		r.applyError(sensorID, err, readAt)
+		return
+	}
+	state := r.store.SetTypedValue(sensorID, value, readAt)
 
 	kind := ""
 	previousStatus := ""
@@ -255,7 +302,9 @@ func (r *PollingRuntime) applyValue(sensorID string, value float64, unit string,
 		kind = EventKindRecovery
 	case previous.Status != state.Status:
 		kind = EventKindStatusChange
-	case previous.Value != state.Value || previous.Unit != state.Unit:
+	case !previous.TypedValue.Equal(state.TypedValue):
+		kind = EventKindValueChange
+	case previous.Unit != state.Unit:
 		kind = EventKindValueChange
 	}
 	if kind == "" {

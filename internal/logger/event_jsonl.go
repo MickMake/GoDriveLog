@@ -15,20 +15,17 @@ import (
 )
 
 // JSONLEventRecord is the v3 JSON Lines representation of a sensor event.
-// It preserves the sensor read timestamp separately from the logger write time
-// so logs do not replace runtime timing with file-writer timing.
 type JSONLEventRecord struct {
-	LogID          string    `json:"log_id"`
-	Kind           string    `json:"kind"`
-	SensorID       string    `json:"sensor_id"`
-	EventAt        time.Time `json:"event_at"`
-	ReadAt         time.Time `json:"read_at"`
-	LoggedAt       time.Time `json:"logged_at"`
-	Status         string    `json:"status"`
-	PreviousStatus string    `json:"previous_status,omitempty"`
-	Value          float64   `json:"value"`
-	Unit           string    `json:"unit,omitempty"`
-	Error          string    `json:"error,omitempty"`
+	LogID          string        `json:"log_id"`
+	Kind           string        `json:"kind"`
+	SensorID       string        `json:"sensor_id"`
+	EventAt        time.Time     `json:"event_at"`
+	ReadAt         time.Time     `json:"read_at"`
+	LoggedAt       time.Time     `json:"logged_at"`
+	Status         string        `json:"status"`
+	PreviousStatus string        `json:"previous_status,omitempty"`
+	Value          sensors.Value `json:"value"`
+	Error          string        `json:"error,omitempty"`
 }
 
 type jsonlEventWriter interface {
@@ -37,9 +34,6 @@ type jsonlEventWriter interface {
 	ActivePath() string
 }
 
-// JSONLEventWriter writes v3 event records to a daily JSONL file derived from
-// the configured base path. v3.1.4 deliberately keeps this simple: daily
-// rotation is always enabled and there are no configurable rotation modes.
 type JSONLEventWriter struct {
 	mu       sync.Mutex
 	basePath string
@@ -69,9 +63,6 @@ func newJSONLEventWriter(path string, now func() time.Time) (*JSONLEventWriter, 
 	return writer, nil
 }
 
-// DailyJSONLPath returns the concrete path for a configured JSONL base path on
-// one day. For example, logs/vw_caddy.jsonl becomes
-// logs/vw_caddy-2026-06-18.jsonl.
 func DailyJSONLPath(basePath string, at time.Time) string {
 	day := at.Format("2006-01-02")
 	ext := filepath.Ext(basePath)
@@ -91,6 +82,9 @@ func (w *JSONLEventWriter) WriteEvent(record JSONLEventRecord) error {
 	if record.LoggedAt.IsZero() {
 		record.LoggedAt = w.now()
 	}
+	if err := record.Value.Validate(); err != nil {
+		return err
+	}
 	if err := w.rotateLocked(record.LoggedAt); err != nil {
 		return err
 	}
@@ -106,7 +100,6 @@ func (w *JSONLEventWriter) WriteEvent(record JSONLEventRecord) error {
 func (w *JSONLEventWriter) Close() error {
 	w.mu.Lock()
 	defer w.mu.Unlock()
-
 	if w.file == nil {
 		return nil
 	}
@@ -126,7 +119,6 @@ func (w *JSONLEventWriter) rotateLocked(at time.Time) error {
 	if w.file != nil && w.day == day {
 		return nil
 	}
-
 	nextPath := DailyJSONLPath(w.basePath, at)
 	if err := ensureJSONLDir(nextPath); err != nil {
 		return err
@@ -135,7 +127,6 @@ func (w *JSONLEventWriter) rotateLocked(at time.Time) error {
 	if err != nil {
 		return err
 	}
-
 	oldFile := w.file
 	w.file = nextFile
 	w.path = nextPath
@@ -158,19 +149,14 @@ func ensureJSONLDir(path string) error {
 
 type loggedState struct {
 	Status string
-	Value  float64
-	Unit   string
+	Value  sensors.Value
 	Error  string
 }
 
-// JSONLSubscriber consumes v3 sensor events for one selected log definition.
-// It never polls sensors and it never owns cadence; sensors own cadence and this
-// type only records selected events delivered by the sensor runtime.
 type JSONLSubscriber struct {
 	ID      string
 	writer  jsonlEventWriter
 	sensors map[string]struct{}
-
 	mu       sync.Mutex
 	lastSeen map[string]loggedState
 }
@@ -205,12 +191,7 @@ func NewJSONLSubscriberWithWriter(id string, sensorIDs []string, writer jsonlEve
 			selectedSensors[sensorID] = struct{}{}
 		}
 	}
-	return &JSONLSubscriber{
-		ID:       id,
-		writer:   writer,
-		sensors:  selectedSensors,
-		lastSeen: map[string]loggedState{},
-	}
+	return &JSONLSubscriber{ID: id, writer: writer, sensors: selectedSensors, lastSeen: map[string]loggedState{}}
 }
 
 func (s *JSONLSubscriber) Run(ctx context.Context, events <-chan sensors.SensorEvent) error {
@@ -233,18 +214,11 @@ func (s *JSONLSubscriber) Handle(event sensors.SensorEvent) error {
 	if !s.shouldConsider(event) {
 		return nil
 	}
-
 	record := s.recordFromEvent(event)
-	state := loggedState{
-		Status: record.Status,
-		Value:  record.Value,
-		Unit:   record.Unit,
-		Error:  record.Error,
-	}
-
+	state := loggedState{Status: record.Status, Value: record.Value, Error: record.Error}
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if previous, ok := s.lastSeen[record.SensorID]; ok && previous == state {
+	if previous, ok := s.lastSeen[record.SensorID]; ok && previous.Status == state.Status && previous.Error == state.Error && previous.Value.Equal(state.Value) {
 		return nil
 	}
 	if err := s.writer.WriteEvent(record); err != nil {
@@ -254,13 +228,8 @@ func (s *JSONLSubscriber) Handle(event sensors.SensorEvent) error {
 	return nil
 }
 
-func (s *JSONLSubscriber) Close() error {
-	return s.writer.Close()
-}
-
-func (s *JSONLSubscriber) ActivePath() string {
-	return s.writer.ActivePath()
-}
+func (s *JSONLSubscriber) Close() error { return s.writer.Close() }
+func (s *JSONLSubscriber) ActivePath() string { return s.writer.ActivePath() }
 
 func (s *JSONLSubscriber) shouldConsider(event sensors.SensorEvent) bool {
 	if _, ok := s.sensors[event.SensorID]; !ok {
@@ -271,12 +240,7 @@ func (s *JSONLSubscriber) shouldConsider(event sensors.SensorEvent) bool {
 
 func isLoggableEventKind(kind string) bool {
 	switch kind {
-	case sensors.EventKindFirstRead,
-		sensors.EventKindValueChange,
-		sensors.EventKindStatusChange,
-		sensors.EventKindStale,
-		sensors.EventKindError,
-		sensors.EventKindRecovery:
+	case sensors.EventKindFirstRead, sensors.EventKindValueChange, sensors.EventKindStatusChange, sensors.EventKindStale, sensors.EventKindError, sensors.EventKindRecovery:
 		return true
 	default:
 		return false
@@ -284,16 +248,9 @@ func isLoggableEventKind(kind string) bool {
 }
 
 func (s *JSONLSubscriber) recordFromEvent(event sensors.SensorEvent) JSONLEventRecord {
-	return JSONLEventRecord{
-		LogID:          s.ID,
-		Kind:           event.Kind,
-		SensorID:       event.SensorID,
-		EventAt:        event.Timestamp,
-		ReadAt:         event.ReadAt,
-		Status:         event.State.Status,
-		PreviousStatus: event.PreviousStatus,
-		Value:          event.State.Value,
-		Unit:           event.State.Unit,
-		Error:          event.Error,
+	value := event.State.TypedValue
+	if err := value.Validate(); err != nil {
+		value = sensors.NewErrorValue(err.Error())
 	}
+	return JSONLEventRecord{LogID: s.ID, Kind: event.Kind, SensorID: event.SensorID, EventAt: event.Timestamp, ReadAt: event.ReadAt, Status: event.State.Status, PreviousStatus: event.PreviousStatus, Value: value, Error: event.Error}
 }

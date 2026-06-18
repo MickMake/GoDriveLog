@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Added `v3.1.5` typed sensor values for v3 sensor state/events, making `kind` mandatory and rejecting empty or unknown value kinds.
+- Added parser/config value-kind contract checks so configured sensor `value_kind` must match the selected parser output kind; OBD sensors currently derive `numeric` from the parser contract when omitted.
+- Updated JSONL event records to write a typed `value` object instead of a bare numeric value, including explicit error values for bad or unavailable readings.
 - Added `v3.1.4` daily JSONL rotation for v3 event logs, deriving concrete files such as `logs/vw_caddy-2026-06-18.jsonl` from configured base paths such as `logs/vw_caddy.jsonl`.
 - Added tests for daily JSONL path generation and writer rollover across a date boundary.
 - Documented `v3.1.4` scope: daily rotation only, with no configurable rotation modes, retention policy, compression, upload, or logging architecture rewrite.

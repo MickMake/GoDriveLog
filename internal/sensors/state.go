@@ -13,6 +13,7 @@ const (
 type SensorState struct {
 	ID         string
 	Value      float64
+	TypedValue Value
 	Unit       string
 	Min        float64
 	Max        float64
@@ -28,4 +29,5 @@ type SensorDefinition struct {
 	Min        float64
 	Max        float64
 	StaleAfter time.Duration
+	ValueKind  string
 }
