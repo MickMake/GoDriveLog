@@ -19,6 +19,7 @@ func NewStateStore(definitions []SensorDefinition) *StateStore {
 		}
 		store.states[definition.ID] = SensorState{
 			ID:         definition.ID,
+			TypedValue: NewMissingValue("no value has been read yet"),
 			Unit:       definition.Unit,
 			Min:        definition.Min,
 			Max:        definition.Max,
@@ -30,13 +31,20 @@ func NewStateStore(definitions []SensorDefinition) *StateStore {
 }
 
 func (s *StateStore) SetValue(id string, value float64, unit string, updatedAt time.Time) SensorState {
+	return s.SetTypedValue(id, NewNumericValue(value, unit), updatedAt)
+}
+
+func (s *StateStore) SetTypedValue(id string, value Value, updatedAt time.Time) SensorState {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	state := s.states[id]
 	state.ID = id
-	state.Value = value
-	if unit != "" {
-		state.Unit = unit
+	state.TypedValue = value
+	if numeric, ok := value.Numeric(); ok {
+		state.Value = numeric
+	}
+	if value.Unit != "" {
+		state.Unit = value.Unit
 	}
 	state.Status = StatusOK
 	state.Error = ""
@@ -54,6 +62,9 @@ func (s *StateStore) SetError(id string, readErr error, updatedAt time.Time) Sen
 	state.Error = ""
 	if readErr != nil {
 		state.Error = readErr.Error()
+		state.TypedValue = NewErrorValue(readErr.Error())
+	} else {
+		state.TypedValue = NewErrorValue("")
 	}
 	state.UpdatedAt = updatedAt
 	s.states[id] = state
