@@ -5,9 +5,13 @@ import "time"
 const (
 	StatusUnknown            = "unknown"
 	StatusOK                 = "ok"
+	StatusMissing            = "missing"
+	StatusUnsupported        = "unsupported"
+	StatusTimeout            = "timeout"
+	StatusParseError         = "parse_error"
 	StatusError              = "error"
 	StatusStale              = "stale"
-	StatusMissingUnsupported = "missing/unsupported"
+	StatusMissingUnsupported = StatusMissing
 )
 
 type SensorState struct {
