@@ -11,17 +11,20 @@ import (
 type Sink func([]v3dashboard.Scene) error
 
 // LatestSink coalesces dashboard scene updates so slow rendering never builds a
-// stale-frame backlog. Submit stores the latest scenes and returns quickly; one
-// worker renders the latest available frame in order.
+// stale-frame backlog. Submit stores the latest scenes and waits until that
+// frame has either rendered or been superseded by a newer pending frame.
 type LatestSink struct {
-	mu      sync.Mutex
-	cond    *sync.Cond
-	update  Sink
-	latest  []v3dashboard.Scene
-	pending bool
-	closed  bool
-	err     error
-	done    chan struct{}
+	mu           sync.Mutex
+	cond         *sync.Cond
+	update       Sink
+	latest       []v3dashboard.Scene
+	pending      bool
+	closed       bool
+	err          error
+	done         chan struct{}
+	seq          uint64
+	renderingSeq uint64
+	renderedSeq  uint64
 }
 
 // NewLatestSink starts a coalescing dashboard scene sink.
@@ -36,7 +39,9 @@ func NewLatestSink(update Sink) (*LatestSink, error) {
 }
 
 // Submit records the latest scenes for display. If rendering is already in
-// progress, older pending scenes are replaced rather than queued.
+// progress, older pending scenes are replaced rather than queued. Submit returns
+// once its frame has rendered, has been superseded before rendering, or a render
+// error is observed.
 func (s *LatestSink) Submit(scenes []v3dashboard.Scene) error {
 	if s == nil {
 		return fmt.Errorf("dashboard scene sink is nil")
@@ -49,10 +54,28 @@ func (s *LatestSink) Submit(scenes []v3dashboard.Scene) error {
 	if s.closed {
 		return fmt.Errorf("dashboard scene sink is closed")
 	}
+
+	s.seq++
+	seq := s.seq
 	s.latest = cloneScenes(scenes)
 	s.pending = true
-	s.cond.Signal()
-	return nil
+	s.cond.Broadcast()
+
+	for {
+		if s.err != nil {
+			return s.err
+		}
+		if s.renderedSeq >= seq {
+			return nil
+		}
+		if s.renderingSeq != seq && s.seq > seq {
+			return nil
+		}
+		if s.closed && !s.pending && s.renderingSeq != seq {
+			return fmt.Errorf("dashboard scene sink is closed")
+		}
+		s.cond.Wait()
+	}
 }
 
 // Close waits for the worker to finish the latest pending frame and returns the
@@ -64,7 +87,7 @@ func (s *LatestSink) Close() error {
 	s.mu.Lock()
 	if !s.closed {
 		s.closed = true
-		s.cond.Signal()
+		s.cond.Broadcast()
 	}
 	s.mu.Unlock()
 	<-s.done
@@ -89,23 +112,37 @@ func (s *LatestSink) run() {
 			s.cond.Wait()
 		}
 		if !s.pending && s.closed {
+			s.cond.Broadcast()
 			s.mu.Unlock()
 			return
 		}
 		scenes := s.latest
+		seq := s.seq
 		s.latest = nil
 		s.pending = false
+		s.renderingSeq = seq
+		s.cond.Broadcast()
 		s.mu.Unlock()
 
-		if err := s.update(scenes); err != nil {
-			s.mu.Lock()
-			if s.err == nil {
-				s.err = err
-			}
+		err := s.update(scenes)
+
+		s.mu.Lock()
+		if err != nil && s.err == nil {
+			s.err = err
 			s.closed = true
+		}
+		if s.renderingSeq == seq {
+			s.renderingSeq = 0
+		}
+		if s.renderedSeq < seq {
+			s.renderedSeq = seq
+		}
+		s.cond.Broadcast()
+		if s.err != nil {
 			s.mu.Unlock()
 			return
 		}
+		s.mu.Unlock()
 	}
 }
 
