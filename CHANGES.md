@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added `v3.1.6` explicit sensor status semantics for `missing`, `unsupported`, `timeout`, `parse_error`, generic `error`, `unknown`, `ok`, and `stale`.
 - Added `v3.1.5` typed sensor values for v3 sensor state/events, making `kind` mandatory and rejecting empty or unknown value kinds.
 - Added parser/config value-kind contract checks so configured sensor `value_kind` must match the selected parser output kind; OBD sensors currently derive `numeric` from the parser contract when omitted.
 - Updated JSONL event records to write a typed `value` object instead of a bare numeric value, including explicit error values for bad or unavailable readings.
