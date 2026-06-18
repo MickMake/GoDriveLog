@@ -1,6 +1,7 @@
 package scenesink
 
 import (
+	"errors"
 	"fmt"
 	"sync/atomic"
 	"testing"
@@ -28,29 +29,22 @@ func TestLatestSinkDropsStalePendingFrames(t *testing.T) {
 		return nil
 	})
 	if err != nil {
-		t.Error(err)
-		return
+		t.Fatal(err)
 	}
 
-	if err := sink.Submit(scene("first")); err != nil {
-		t.Error(err)
-		return
-	}
+	firstDone := submitAsync(sink, scene("first"))
 	<-startedFirst
 
-	if err := sink.Submit(scene("stale")); err != nil {
-		t.Error(err)
-		return
-	}
-	if err := sink.Submit(scene("latest")); err != nil {
-		t.Error(err)
-		return
-	}
+	staleDone := submitAsync(sink, scene("stale"))
+	latestDone := submitAsync(sink, scene("latest"))
+
+	assertSubmitReturns(t, staleDone, "stale")
 	close(releaseFirst)
+	assertSubmitReturns(t, firstDone, "first")
+	assertSubmitReturns(t, latestDone, "latest")
 
 	if err := sink.Close(); err != nil {
-		t.Error(err)
-		return
+		t.Fatal(err)
 	}
 	close(updates)
 
@@ -60,58 +54,53 @@ func TestLatestSinkDropsStalePendingFrames(t *testing.T) {
 	}
 	want := []string{"first", "latest"}
 	if len(got) != len(want) {
-		t.Errorf("updates = %v, want %v", got, want)
-		return
+		t.Fatalf("updates = %v, want %v", got, want)
 	}
 	for i := range want {
 		if got[i] != want[i] {
-			t.Errorf("updates = %v, want %v", got, want)
-			return
+			t.Fatalf("updates = %v, want %v", got, want)
 		}
 	}
 }
 
-func TestLatestSinkSubmitReturnsWhileRendererIsBusy(t *testing.T) {
-	startedFirst := make(chan struct{})
-	releaseFirst := make(chan struct{})
-
+func TestLatestSinkSubmitReturnsRenderError(t *testing.T) {
+	wantErr := errors.New("render failed")
 	sink, err := NewLatestSink(func(scenes []v3dashboard.Scene) error {
-		if scenes[0].DashboardID == "first" {
-			close(startedFirst)
-			<-releaseFirst
+		if scenes[0].DashboardID == "bad" {
+			return wantErr
 		}
 		return nil
 	})
 	if err != nil {
-		t.Error(err)
-		return
+		t.Fatal(err)
 	}
 
-	if err := sink.Submit(scene("first")); err != nil {
-		t.Error(err)
-		return
+	err = sink.Submit(scene("bad"))
+	if !errors.Is(err, wantErr) {
+		t.Fatalf("Submit error = %v, want %v", err, wantErr)
 	}
-	<-startedFirst
+	if !errors.Is(sink.Err(), wantErr) {
+		t.Fatalf("sink Err = %v, want %v", sink.Err(), wantErr)
+	}
+}
 
+func submitAsync(sink *LatestSink, scenes []v3dashboard.Scene) <-chan error {
 	done := make(chan error, 1)
 	go func() {
-		done <- sink.Submit(scene("second"))
+		done <- sink.Submit(scenes)
 	}()
+	return done
+}
 
+func assertSubmitReturns(t *testing.T, done <-chan error, label string) {
+	t.Helper()
 	select {
 	case err := <-done:
 		if err != nil {
-			t.Error(err)
-			return
+			t.Fatalf("Submit(%s) error = %v", label, err)
 		}
 	case <-time.After(200 * time.Millisecond):
-		t.Error("Submit blocked behind busy renderer")
-		return
-	}
-
-	close(releaseFirst)
-	if err := sink.Close(); err != nil {
-		t.Error(err)
+		t.Fatalf("Submit(%s) did not return", label)
 	}
 }
 
