@@ -37,35 +37,48 @@ type jsonlEventWriter interface {
 	ActivePath() string
 }
 
-// JSONLEventWriter writes v3 event records to the exact path configured by the
-// selected log definition. The old daily JSONL writer remains available for the
-// current runtime path; this writer is intentionally event-first for v3.
+// JSONLEventWriter writes v3 event records to a daily JSONL file derived from
+// the configured base path. v3.1.4 deliberately keeps this simple: daily
+// rotation is always enabled and there are no configurable rotation modes.
 type JSONLEventWriter struct {
-	mu   sync.Mutex
-	path string
-	file *os.File
-	now  func() time.Time
+	mu       sync.Mutex
+	basePath string
+	path     string
+	day      string
+	file     *os.File
+	now      func() time.Time
 }
 
 func NewJSONLEventWriter(path string) (*JSONLEventWriter, error) {
+	return newJSONLEventWriter(path, time.Now)
+}
+
+func newJSONLEventWriter(path string, now func() time.Time) (*JSONLEventWriter, error) {
 	trimmed := strings.TrimSpace(path)
 	if trimmed == "" {
 		return nil, fmt.Errorf("jsonl event writer requires a path")
 	}
-
-	dir := filepath.Dir(trimmed)
-	if dir != "." {
-		if err := os.MkdirAll(dir, 0o755); err != nil {
-			return nil, err
-		}
+	if now == nil {
+		now = time.Now
 	}
 
-	file, err := os.OpenFile(trimmed, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
-	if err != nil {
+	writer := &JSONLEventWriter{basePath: trimmed, now: now}
+	if err := writer.rotateLocked(now()); err != nil {
 		return nil, err
 	}
+	return writer, nil
+}
 
-	return &JSONLEventWriter{path: trimmed, file: file, now: time.Now}, nil
+// DailyJSONLPath returns the concrete path for a configured JSONL base path on
+// one day. For example, logs/vw_caddy.jsonl becomes
+// logs/vw_caddy-2026-06-18.jsonl.
+func DailyJSONLPath(basePath string, at time.Time) string {
+	day := at.Format("2006-01-02")
+	ext := filepath.Ext(basePath)
+	if ext == "" {
+		return basePath + "-" + day
+	}
+	return strings.TrimSuffix(basePath, ext) + "-" + day + ext
 }
 
 func (w *JSONLEventWriter) WriteEvent(record JSONLEventRecord) error {
@@ -77,6 +90,9 @@ func (w *JSONLEventWriter) WriteEvent(record JSONLEventRecord) error {
 	}
 	if record.LoggedAt.IsZero() {
 		record.LoggedAt = w.now()
+	}
+	if err := w.rotateLocked(record.LoggedAt); err != nil {
+		return err
 	}
 
 	line, err := json.Marshal(record)
@@ -103,6 +119,41 @@ func (w *JSONLEventWriter) ActivePath() string {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 	return w.path
+}
+
+func (w *JSONLEventWriter) rotateLocked(at time.Time) error {
+	day := at.Format("2006-01-02")
+	if w.file != nil && w.day == day {
+		return nil
+	}
+
+	nextPath := DailyJSONLPath(w.basePath, at)
+	if err := ensureJSONLDir(nextPath); err != nil {
+		return err
+	}
+	nextFile, err := os.OpenFile(nextPath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
+	if err != nil {
+		return err
+	}
+
+	oldFile := w.file
+	w.file = nextFile
+	w.path = nextPath
+	w.day = day
+	if oldFile != nil {
+		if err := oldFile.Close(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func ensureJSONLDir(path string) error {
+	dir := filepath.Dir(path)
+	if dir == "." {
+		return nil
+	}
+	return os.MkdirAll(dir, 0o755)
 }
 
 type loggedState struct {
