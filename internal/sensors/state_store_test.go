@@ -84,6 +84,39 @@ func TestStateStoreSetTypedValueRejectsInvalidValues(t *testing.T) {
 	}
 }
 
+func TestStateStoreSetErrorMapsExplicitUnavailableStatuses(t *testing.T) {
+	updatedAt := time.Date(2026, 6, 8, 10, 0, 0, 0, time.UTC)
+	store := NewStateStore([]SensorDefinition{{ID: "rpm", Unit: "rpm", Min: 0, Max: 7000, StaleAfter: 500 * time.Millisecond}})
+
+	tests := []struct {
+		name      string
+		err       error
+		status    string
+		valueKind string
+	}{
+		{name: "missing", err: ErrSensorMissing, status: StatusMissing, valueKind: ValueKindMissing},
+		{name: "unsupported", err: ErrSensorUnsupported, status: StatusUnsupported, valueKind: ValueKindMissing},
+		{name: "timeout", err: ErrSensorTimeout, status: StatusTimeout, valueKind: ValueKindError},
+		{name: "parse", err: ErrSensorParse, status: StatusParseError, valueKind: ValueKindError},
+		{name: "generic", err: errors.New("adapter failed"), status: StatusError, valueKind: ValueKindError},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			state := store.SetError("rpm", test.err, updatedAt)
+			if state.Status != test.status {
+				t.Fatalf("Status = %q, want %q", state.Status, test.status)
+			}
+			if state.TypedValue.Kind != test.valueKind {
+				t.Fatalf("TypedValue = %#v, want kind %q", state.TypedValue, test.valueKind)
+			}
+			if state.Error != test.err.Error() {
+				t.Fatalf("Error = %q, want %q", state.Error, test.err.Error())
+			}
+		})
+	}
+}
+
 func TestStateStoreSetValueOverridesUnitWhenProvided(t *testing.T) {
 	store := NewStateStore([]SensorDefinition{{ID: "coolant", Unit: "C", Min: -40, Max: 120}})
 
