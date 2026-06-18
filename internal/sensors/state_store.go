@@ -68,14 +68,12 @@ func (s *StateStore) SetError(id string, readErr error, updatedAt time.Time) Sen
 func (s *StateStore) setErrorLocked(id string, readErr error, updatedAt time.Time) SensorState {
 	state := s.states[id]
 	state.ID = id
-	state.Status = StatusError
+	state.Status = StatusForError(readErr)
 	state.Error = ""
 	if readErr != nil {
 		state.Error = readErr.Error()
-		state.TypedValue = NewErrorValue(readErr.Error())
-	} else {
-		state.TypedValue = NewErrorValue("")
 	}
+	state.TypedValue = ValueForStatus(state.Status, state.Error)
 	state.UpdatedAt = updatedAt
 	s.states[id] = state
 	return state
