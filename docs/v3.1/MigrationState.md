@@ -14,11 +14,11 @@ v3.0 established the migration process, strict v3 config loading, RuntimePlan re
 
 ## Current migration position
 
-Current version: `v3.1.3`
-Current phase: dashboard update performance target
-Current branch prefix: `v3.1.3`
+Current version: `v3.1.4`
+Current phase: JSONL daily rotation
+Current branch prefix: `v3.1.4`
 Current PR: pending
-Current PR branch: `v3.1.3-dashboard-update-performance`
+Current PR branch: `v3.1.4-jsonl-daily-rotation`
 
 ## Current state
 
@@ -43,6 +43,10 @@ Current PR branch: `v3.1.3-dashboard-update-performance`
 - Sensor polling and JSONL subscribers remain upstream of display rendering; dashboard freshness yields to runtime/logging correctness.
 - The v3 window is now sized from selected dashboard config before startup instead of starting at a hard-coded `800x480` and relying on later window resize behaviour.
 - Fyne UI work remains inside `fyne.DoAndWait`, and shutdown avoids window manipulation during drain/close to prevent Ctrl-C Fyne thread warnings.
+- `v3.1.4` keeps JSONL logging simple: v3 event logs rotate daily by default.
+- The configured log path is treated as a base path, and the active file path inserts the date before the extension.
+- Example: `logs/vw_caddy.jsonl` writes to `logs/vw_caddy-2026-06-18.jsonl` for that day.
+- No configurable rotation modes, retention policy, compression, upload, or logging architecture rewrite are part of `v3.1.4`.
 
 ## Version queue
 
@@ -51,8 +55,8 @@ Current PR branch: `v3.1.3-dashboard-update-performance`
 | v3.1.0 | runnable command path | implemented |
 | v3.1.1 | display adapter | implemented |
 | v3.1.2 | dashboard and gauge test harness | implemented |
-| v3.1.3 | dashboard update performance target | in progress |
-| v3.1.4 | JSONL rotation decision | planned |
+| v3.1.3 | dashboard update performance target | implemented |
+| v3.1.4 | JSONL daily rotation | in progress |
 | v3.1.5 | typed sensor values | planned |
 | v3.1.6 | unsupported and missing sensor semantics | planned |
 | v3.1.7 | dashboard event efficiency | planned |
@@ -69,28 +73,27 @@ Examples:
 - `v3.1.1-display-adapter`
 - `v3.1.2-dashboard-gauge-test-harness`
 - `v3.1.3-dashboard-update-performance`
+- `v3.1.4-jsonl-daily-rotation`
 
 ## Notes for current slice
 
-The current slice is implementation-only for the v3 dashboard update performance target.
+The current slice is implementation-only for v3 JSONL daily rotation.
 
 Design intent:
 
-- Fix visible Fyne display memory churn on Raspberry Pi 4 2GB class hardware.
-- Keep the v3 schema unchanged.
-- Keep dashboards as consumers of v3 dashboard scenes, not direct sensor readers.
-- Keep sensor polling and JSONL logging upstream of display rendering.
-- Prefer latest visible dashboard state over queued stale display frames.
-- Preserve render error propagation instead of hiding display adapter failures.
-- Leave deeper dirty-widget rendering, event pipeline optimisation, and remaining sustained-render-backpressure work to `v3.1.7`.
+- Keep logging useful for the current van logger use case.
+- Use daily JSONL rotation unconditionally for v3 event logs.
+- Treat the configured log path as the base path.
+- Insert the active date before the extension.
+- Roll to a new file when the logger write date changes.
+- Keep selected-log and selected-sensor behaviour unchanged.
+- Avoid new config schema fields or rotation mode choices.
 
 Expected verification focus:
 
 - `go test ./...` passes.
-- Coalescing scene sink tests prove stale pending frames are dropped in favour of the latest frame.
-- Scene sink submission returns when its frame renders, is superseded, or hits a render error.
-- `go run ./cmd/GoDriveLog --v3 --harness --config CONFIG --vehicle VEHICLE_ID --pattern sweep --interval 50ms` can be used as the preferred visual cadence check.
-- RSS should not grow rapidly due to repeated full Fyne object-tree rebuilds.
-- Ctrl-C should stop the harness/runtime cleanly and avoid Fyne thread warnings.
-- `100ms` remains the minimum acceptable fallback if 50ms is not reliable on Raspberry Pi 4 class hardware.
-- Dashboard event efficiency remains a later slice for deeper dirty-widget optimisation and any remaining sustained-render-backpressure work.
+- Existing selected-log subscriber tests still pass with daily paths.
+- Daily path generation is tested.
+- JSONL event writer rollover is tested across a date boundary.
+- `ActivePath()` reports the concrete daily file path, not the configured base path.
+- No dashboard, sensor polling, or v3 schema changes are included.
