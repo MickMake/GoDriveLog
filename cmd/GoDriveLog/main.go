@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log"
 	"os/signal"
 	"sync"
@@ -19,6 +20,7 @@ import (
 	"github.com/MickMake/GoDriveLog/internal/dashboard/scenesink"
 	"github.com/MickMake/GoDriveLog/internal/dashboard/v3dashboard"
 	"github.com/MickMake/GoDriveLog/internal/config"
+	"github.com/MickMake/GoDriveLog/internal/config/v3config"
 	jsonlogger "github.com/MickMake/GoDriveLog/internal/logger"
 	v3runtime "github.com/MickMake/GoDriveLog/internal/runtime/v3runtime"
 	"github.com/MickMake/GoDriveLog/internal/sensors"
@@ -163,6 +165,10 @@ func runV3Command(configPath, vehicleID string) error {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
+	initialSize, err := initialV3WindowSize(configPath, vehicleID)
+	if err != nil {
+		return err
+	}
 	adapter, err := v3fyneadapter.New(".")
 	if err != nil {
 		return err
@@ -170,7 +176,7 @@ func runV3Command(configPath, vehicleID string) error {
 
 	application := app.New()
 	window := application.NewWindow("GoDriveLog v3")
-	window.Resize(fyne.NewSize(800, 480))
+	window.Resize(initialSize)
 	window.SetContent(adapter.CanvasObject())
 	windowSizer := newSceneWindowSizer(window)
 
@@ -217,6 +223,10 @@ func runV3HarnessCommand(configPath, vehicleID, pattern string, interval time.Du
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
+	initialSize, err := initialV3WindowSize(configPath, vehicleID)
+	if err != nil {
+		return err
+	}
 	adapter, err := v3fyneadapter.New(".")
 	if err != nil {
 		return err
@@ -224,7 +234,7 @@ func runV3HarnessCommand(configPath, vehicleID, pattern string, interval time.Du
 
 	application := app.New()
 	window := application.NewWindow("GoDriveLog v3 harness")
-	window.Resize(fyne.NewSize(800, 480))
+	window.Resize(initialSize)
 	window.SetContent(adapter.CanvasObject())
 	windowSizer := newSceneWindowSizer(window)
 
@@ -301,6 +311,39 @@ func (s *sceneWindowSizer) ResizeForScenes(scenes []v3dashboard.Scene) {
 	}
 	s.size = size
 	s.window.Resize(size)
+}
+
+func initialV3WindowSize(configPath, vehicleID string) (fyne.Size, error) {
+	cfg, err := v3config.LoadFile(configPath)
+	if err != nil {
+		return fyne.Size{}, fmt.Errorf("load v3 config for initial window size: %w", err)
+	}
+	plan, err := v3config.Resolve(cfg, vehicleID)
+	if err != nil {
+		return fyne.Size{}, fmt.Errorf("resolve v3 runtime plan for initial window size: %w", err)
+	}
+	return selectedDashboardsSize(plan.Dashboards), nil
+}
+
+func selectedDashboardsSize(dashboards []v3config.ResolvedDashboard) fyne.Size {
+	var width float32
+	var height float32
+	for index, dashboard := range dashboards {
+		if float32(dashboard.Config.Size.Width) > width {
+			width = float32(dashboard.Config.Size.Width)
+		}
+		height += float32(dashboard.Config.Size.Height)
+		if index < len(dashboards)-1 {
+			height += v3SceneGap
+		}
+	}
+	if width <= 0 {
+		width = 800
+	}
+	if height <= 0 {
+		height = 480
+	}
+	return fyne.NewSize(width, height)
 }
 
 func selectedScenesSize(scenes []v3dashboard.Scene) fyne.Size {
