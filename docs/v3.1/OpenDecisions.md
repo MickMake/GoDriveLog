@@ -63,7 +63,7 @@ Decision: pending. The v3.1.2 harness accepts interval values such as `50ms` and
 
 ### 3. JSONL rotation
 
-Status: open
+Status: decided
 
 Question: should v3.1 keep daily JSONL rotation, use exact configured paths only, or add an explicit rotation option?
 
@@ -85,7 +85,7 @@ Decision: daily JSONL rotation.
 
 ### 4. Sensor value typing
 
-Status: open
+Status: decided
 
 Question: are numeric sensor values enough for v3.1, or does v3.1 need typed values for boolean and status sensors?
 
@@ -103,11 +103,11 @@ Decision options:
 - Add documented boolean/status conventions without changing the core value type.
 - Add typed sensor values only if a small concrete need is proven.
 
-Decision: pending.
+Decision: v3.1.5 adds explicit `sensors.Value` typed payloads while keeping the existing numeric field as a compatibility bridge for current dashboard rendering. Numeric OBD sensors derive `numeric` from the parser contract unless `value_kind` is configured, and configured kinds must match the parser output kind.
 
 ### 5. Unsupported and missing sensors
 
-Status: open
+Status: decided
 
 Question: should unavailable sensors produce explicit runtime events, or remain represented through error and missing state handling?
 
@@ -125,7 +125,18 @@ Decision options:
 - Add explicit unsupported/unavailable runtime events.
 - Document a hybrid mapping if needed.
 
-Decision: pending.
+Decision: use explicit status names carried by normal sensor events and state/log/dashboard records. No new event kinds are added in this slice. The status vocabulary is:
+
+- `unknown`: sensor is configured but no successful or failed read has yet established a current state.
+- `ok`: latest value is valid and may be rendered/logged as a live value.
+- `missing`: the value is absent or no dashboard state exists for a referenced sensor.
+- `unsupported`: the endpoint/vehicle indicates the sensor is not supported.
+- `timeout`: the read did not complete in time.
+- `parse_error`: a response arrived but could not be parsed into the expected typed value.
+- `error`: generic read or runtime failure that is not one of the more specific unavailable states.
+- `stale`: a previously OK value is older than its stale threshold.
+
+`missing` and `unsupported` use typed `missing` values; `timeout`, `parse_error`, and generic `error` use typed `error` values. Dashboards must not render live numeric/gauge/indicator values for any non-`ok` status. JSONL records carry the same status string and typed value object.
 
 ### 6. Display adapter target
 
