@@ -110,9 +110,11 @@ dashboards: {}
 		t.Fatal("reader was not closed")
 	}
 
-	data, err := os.ReadFile(logPath)
+	logExt := filepath.Ext(logPath)
+	datedLogPath := strings.TrimSuffix(logPath, logExt) + "-" + time.Now().Format("2006-01-02") + logExt
+	data, err := os.ReadFile(datedLogPath)
 	if err != nil {
-		t.Fatalf("read log file: %v", err)
+		t.Fatalf("read log file %s: %v", datedLogPath, err)
 	}
 	line := string(data)
 	for _, want := range []string{`"log_id":"jsonl"`, `"sensor_id":"rpm"`, `"kind":"first_read"`, `"status":"ok"`} {
