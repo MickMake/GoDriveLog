@@ -25,6 +25,8 @@ import (
 	"github.com/MickMake/GoDriveLog/internal/ui"
 )
 
+const v3SceneGap = 12
+
 func main() {
 	configPath := flag.String("config", "config.example.yaml", "path to YAML config")
 	useV3 := flag.Bool("v3", false, "run the v3 selected-vehicle runtime path")
@@ -310,7 +312,7 @@ func selectedScenesSize(scenes []v3dashboard.Scene) fyne.Size {
 		}
 		height += float32(scene.Size.Height)
 		if index < len(scenes)-1 {
-			height += sceneGap
+			height += v3SceneGap
 		}
 	}
 	return fyne.NewSize(width, height)
