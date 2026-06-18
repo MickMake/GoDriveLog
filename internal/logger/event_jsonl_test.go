@@ -15,8 +15,8 @@ import (
 )
 
 func TestNewJSONLSubscribersFromPlanUsesSelectedVehicleLogs(t *testing.T) {
-	selectedPath := filepath.Join(t.TempDir(), "selected.jsonl")
-	ignoredPath := filepath.Join(t.TempDir(), "ignored.jsonl")
+	selectedBasePath := filepath.Join(t.TempDir(), "selected.jsonl")
+	ignoredBasePath := filepath.Join(t.TempDir(), "ignored.jsonl")
 	cfg := v3config.Config{
 		Vehicles: map[string]v3config.VehicleConfig{
 			"van": {
@@ -30,8 +30,8 @@ func TestNewJSONLSubscribersFromPlanUsesSelectedVehicleLogs(t *testing.T) {
 			"rpm":   {Type: "obd", PID: "010C", Unit: "rpm", Poll: 250},
 		},
 		Logs: map[string]v3config.LogConfig{
-			"selected": {Path: selectedPath, Sensors: []string{"speed"}},
-			"ignored":  {Path: ignoredPath, Sensors: []string{"rpm"}},
+			"selected": {Path: selectedBasePath, Sensors: []string{"speed"}},
+			"ignored":  {Path: ignoredBasePath, Sensors: []string{"rpm"}},
 		},
 	}
 
@@ -52,17 +52,19 @@ func TestNewJSONLSubscribersFromPlanUsesSelectedVehicleLogs(t *testing.T) {
 	if subscribers[0].ID != "selected" {
 		t.Fatalf("subscriber ID = %q, want selected", subscribers[0].ID)
 	}
-	if subscribers[0].ActivePath() != selectedPath {
-		t.Fatalf("subscriber path = %q, want %q", subscribers[0].ActivePath(), selectedPath)
+	if subscribers[0].ActivePath() != DailyJSONLPath(selectedBasePath, time.Now()) {
+		t.Fatalf("subscriber path = %q, want daily path for %q", subscribers[0].ActivePath(), selectedBasePath)
 	}
 }
 
 func TestJSONLSubscriberWritesSelectedSensorEvents(t *testing.T) {
-	path := filepath.Join(t.TempDir(), "events.jsonl")
-	subscriber, err := NewJSONLSubscriber("jsonl", v3config.LogConfig{Path: path, Sensors: []string{"speed"}})
+	basePath := filepath.Join(t.TempDir(), "events.jsonl")
+	loggedAt := time.Date(2026, 6, 14, 12, 0, 0, 0, time.UTC)
+	writer, err := newJSONLEventWriter(basePath, func() time.Time { return loggedAt })
 	if err != nil {
-		t.Fatalf("NewJSONLSubscriber: %v", err)
+		t.Fatalf("newJSONLEventWriter: %v", err)
 	}
+	subscriber := NewJSONLSubscriberWithWriter("jsonl", []string{"speed"}, writer)
 	defer func() {
 		if err := subscriber.Close(); err != nil {
 			t.Fatalf("Close: %v", err)
@@ -84,7 +86,7 @@ func TestJSONLSubscriberWritesSelectedSensorEvents(t *testing.T) {
 		t.Fatalf("Handle error: %v", err)
 	}
 
-	records := readRecords(t, path)
+	records := readRecords(t, DailyJSONLPath(basePath, loggedAt))
 	if len(records) != 3 {
 		t.Fatalf("len(records) = %d, want 3: %#v", len(records), records)
 	}
@@ -111,12 +113,63 @@ func TestJSONLSubscriberWritesSelectedSensorEvents(t *testing.T) {
 	}
 }
 
-func TestJSONLSubscriberSuppressesUnchangedDuplicateEvents(t *testing.T) {
-	path := filepath.Join(t.TempDir(), "events.jsonl")
-	subscriber, err := NewJSONLSubscriber("jsonl", v3config.LogConfig{Path: path, Sensors: []string{"speed"}})
+func TestJSONLEventWriterRotatesDaily(t *testing.T) {
+	basePath := filepath.Join(t.TempDir(), "events.jsonl")
+	current := time.Date(2026, 6, 14, 23, 59, 0, 0, time.UTC)
+	writer, err := newJSONLEventWriter(basePath, func() time.Time { return current })
 	if err != nil {
-		t.Fatalf("NewJSONLSubscriber: %v", err)
+		t.Fatalf("newJSONLEventWriter: %v", err)
 	}
+	defer func() {
+		if err := writer.Close(); err != nil {
+			t.Fatalf("Close: %v", err)
+		}
+	}()
+
+	if err := writer.WriteEvent(JSONLEventRecord{LogID: "jsonl", SensorID: "speed", Status: sensors.StatusOK, Value: 1}); err != nil {
+		t.Fatalf("WriteEvent day one: %v", err)
+	}
+	dayOnePath := DailyJSONLPath(basePath, current)
+	if writer.ActivePath() != dayOnePath {
+		t.Fatalf("ActivePath day one = %q, want %q", writer.ActivePath(), dayOnePath)
+	}
+
+	current = current.Add(2 * time.Minute)
+	if err := writer.WriteEvent(JSONLEventRecord{LogID: "jsonl", SensorID: "speed", Status: sensors.StatusOK, Value: 2}); err != nil {
+		t.Fatalf("WriteEvent day two: %v", err)
+	}
+	dayTwoPath := DailyJSONLPath(basePath, current)
+	if writer.ActivePath() != dayTwoPath {
+		t.Fatalf("ActivePath day two = %q, want %q", writer.ActivePath(), dayTwoPath)
+	}
+
+	dayOne := readRecords(t, dayOnePath)
+	dayTwo := readRecords(t, dayTwoPath)
+	if len(dayOne) != 1 || dayOne[0].Value != 1 {
+		t.Fatalf("day one records = %#v, want one value 1", dayOne)
+	}
+	if len(dayTwo) != 1 || dayTwo[0].Value != 2 {
+		t.Fatalf("day two records = %#v, want one value 2", dayTwo)
+	}
+}
+
+func TestDailyJSONLPathAddsDateBeforeExtension(t *testing.T) {
+	at := time.Date(2026, 6, 14, 9, 30, 0, 0, time.UTC)
+	got := DailyJSONLPath(filepath.Join("logs", "vw_caddy.jsonl"), at)
+	want := filepath.Join("logs", "vw_caddy-2026-06-14.jsonl")
+	if got != want {
+		t.Fatalf("DailyJSONLPath = %q, want %q", got, want)
+	}
+}
+
+func TestJSONLSubscriberSuppressesUnchangedDuplicateEvents(t *testing.T) {
+	basePath := filepath.Join(t.TempDir(), "events.jsonl")
+	loggedAt := time.Date(2026, 6, 14, 12, 0, 0, 0, time.UTC)
+	writer, err := newJSONLEventWriter(basePath, func() time.Time { return loggedAt })
+	if err != nil {
+		t.Fatalf("newJSONLEventWriter: %v", err)
+	}
+	subscriber := NewJSONLSubscriberWithWriter("jsonl", []string{"speed"}, writer)
 	defer func() {
 		if err := subscriber.Close(); err != nil {
 			t.Fatalf("Close: %v", err)
@@ -135,18 +188,20 @@ func TestJSONLSubscriberSuppressesUnchangedDuplicateEvents(t *testing.T) {
 		t.Fatalf("Handle unchanged value_change: %v", err)
 	}
 
-	records := readRecords(t, path)
+	records := readRecords(t, DailyJSONLPath(basePath, loggedAt))
 	if len(records) != 1 {
 		t.Fatalf("len(records) = %d, want duplicate suppression to leave 1", len(records))
 	}
 }
 
 func TestJSONLSubscriberRunConsumesEventChannel(t *testing.T) {
-	path := filepath.Join(t.TempDir(), "events.jsonl")
-	subscriber, err := NewJSONLSubscriber("jsonl", v3config.LogConfig{Path: path, Sensors: []string{"speed"}})
+	basePath := filepath.Join(t.TempDir(), "events.jsonl")
+	loggedAt := time.Date(2026, 6, 14, 12, 0, 0, 0, time.UTC)
+	writer, err := newJSONLEventWriter(basePath, func() time.Time { return loggedAt })
 	if err != nil {
-		t.Fatalf("NewJSONLSubscriber: %v", err)
+		t.Fatalf("newJSONLEventWriter: %v", err)
 	}
+	subscriber := NewJSONLSubscriberWithWriter("jsonl", []string{"speed"}, writer)
 	defer func() {
 		if err := subscriber.Close(); err != nil {
 			t.Fatalf("Close: %v", err)
@@ -162,18 +217,20 @@ func TestJSONLSubscriberRunConsumesEventChannel(t *testing.T) {
 		t.Fatalf("Run: %v", err)
 	}
 
-	records := readRecords(t, path)
+	records := readRecords(t, DailyJSONLPath(basePath, loggedAt))
 	if len(records) != 1 || records[0].SensorID != "speed" {
 		t.Fatalf("records = %#v, want one speed record", records)
 	}
 }
 
 func TestJSONLSubscriberRunReturnsContextCancellation(t *testing.T) {
-	path := filepath.Join(t.TempDir(), "events.jsonl")
-	subscriber, err := NewJSONLSubscriber("jsonl", v3config.LogConfig{Path: path, Sensors: []string{"speed"}})
+	basePath := filepath.Join(t.TempDir(), "events.jsonl")
+	loggedAt := time.Date(2026, 6, 14, 12, 0, 0, 0, time.UTC)
+	writer, err := newJSONLEventWriter(basePath, func() time.Time { return loggedAt })
 	if err != nil {
-		t.Fatalf("NewJSONLSubscriber: %v", err)
+		t.Fatalf("newJSONLEventWriter: %v", err)
 	}
+	subscriber := NewJSONLSubscriberWithWriter("jsonl", []string{"speed"}, writer)
 	defer func() {
 		if err := subscriber.Close(); err != nil {
 			t.Fatalf("Close: %v", err)
