@@ -16,6 +16,7 @@ import (
 
 	v3fyneadapter "github.com/MickMake/GoDriveLog/internal/dashboard/adapter/fyne"
 	v3harness "github.com/MickMake/GoDriveLog/internal/dashboard/harness"
+	"github.com/MickMake/GoDriveLog/internal/dashboard/scenesink"
 	"github.com/MickMake/GoDriveLog/internal/config"
 	jsonlogger "github.com/MickMake/GoDriveLog/internal/logger"
 	v3runtime "github.com/MickMake/GoDriveLog/internal/runtime/v3runtime"
@@ -169,23 +170,24 @@ func runV3Command(configPath, vehicleID string) error {
 	window.Resize(fyne.NewSize(800, 480))
 	window.SetContent(adapter.CanvasObject())
 
+	displaySink, err := newFyneSceneSink(func(scenes []v3runtime.Scene) error {
+		return adapter.Update(scenes)
+	}, "v3 dashboard adapter update")
+	if err != nil {
+		return err
+	}
+
 	errCh := make(chan error, 1)
 	go func() {
 		summary, err := v3runtime.Run(ctx, v3runtime.Options{
-			ConfigPath: configPath,
-			VehicleID:  vehicleID,
-			Logger:     log.Default(),
-			DashboardSink: func(scenes []v3runtime.Scene) error {
-				var updateErr error
-				fyne.DoAndWait(func() {
-					updateErr = adapter.Update(scenes)
-				})
-				if updateErr == nil {
-					log.Printf("v3 dashboard adapter update: scenes=%d", len(scenes))
-				}
-				return updateErr
-			},
+			ConfigPath:    configPath,
+			VehicleID:     vehicleID,
+			Logger:        log.Default(),
+			DashboardSink: displaySink.Submit,
 		})
+		if closeErr := displaySink.Close(); err == nil {
+			err = closeErr
+		}
 		if err == nil {
 			log.Printf("v3 runtime summary: vehicle=%s endpoint=%s sensors=%d logs=%d dashboards=%d", summary.VehicleID, summary.Endpoint, summary.SensorCount, summary.LogCount, summary.DashboardCount)
 		} else {
@@ -217,6 +219,13 @@ func runV3HarnessCommand(configPath, vehicleID, pattern string, interval time.Du
 	window.Resize(fyne.NewSize(800, 480))
 	window.SetContent(adapter.CanvasObject())
 
+	displaySink, err := newFyneSceneSink(func(scenes []v3harness.Scene) error {
+		return adapter.Update(scenes)
+	}, "v3 dashboard harness adapter update")
+	if err != nil {
+		return err
+	}
+
 	errCh := make(chan error, 1)
 	go func() {
 		summary, err := v3harness.Run(ctx, v3harness.Options{
@@ -225,17 +234,11 @@ func runV3HarnessCommand(configPath, vehicleID, pattern string, interval time.Du
 			Pattern:    pattern,
 			Interval:   interval,
 			Logger:     log.Default(),
-			Sink: func(scenes []v3harness.Scene) error {
-				var updateErr error
-				fyne.DoAndWait(func() {
-					updateErr = adapter.Update(scenes)
-				})
-				if updateErr == nil {
-					log.Printf("v3 dashboard harness adapter update: scenes=%d", len(scenes))
-				}
-				return updateErr
-			},
+			Sink:       displaySink.Submit,
 		})
+		if closeErr := displaySink.Close(); err == nil {
+			err = closeErr
+		}
 		if err == nil {
 			log.Printf("v3 dashboard harness summary: vehicle=%s sensors=%d dashboards=%d pattern=%s interval=%s events=%d", summary.VehicleID, summary.SensorCount, summary.DashboardCount, summary.Pattern, summary.Interval, summary.Events)
 		} else {
@@ -251,6 +254,19 @@ func runV3HarnessCommand(configPath, vehicleID, pattern string, interval time.Du
 	window.ShowAndRun()
 	stop()
 	return <-errCh
+}
+
+func newFyneSceneSink(update scenesink.Sink, label string) (*scenesink.LatestSink, error) {
+	return scenesink.NewLatestSink(func(scenes []v3runtime.Scene) error {
+		var updateErr error
+		fyne.DoAndWait(func() {
+			updateErr = update(scenes)
+		})
+		if updateErr == nil {
+			log.Printf("%s: scenes=%d", label, len(scenes))
+		}
+		return updateErr
+	})
 }
 
 func newReader(cfg config.Config) (sensors.Reader, error) {
