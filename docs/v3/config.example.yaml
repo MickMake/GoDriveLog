@@ -103,7 +103,7 @@ dashboards:
         type: digit_display
         sensor: speed
         asset: simple_amber_digits
-        position: [40, 40]
+        position: [0, 0]
         digits: 3
         format: "%03.0f"
 
@@ -111,7 +111,7 @@ dashboards:
         type: digit_display
         sensor: rpm
         asset: simple_amber_digits
-        position: [40, 180]
+        position: [900, 0]
         digits: 4
         format: "%04.0f"
 
@@ -119,4 +119,4 @@ dashboards:
         type: indicator
         sensor: engine_warning
         asset: engine_warning
-        position: [40, 340]
+        position: [800, 400]

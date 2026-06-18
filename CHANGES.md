@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Documented `v3.1.3` dashboard performance design decisions, including Raspberry Pi 4 2GB memory-churn rationale, Fyne image reuse, scene coalescing, render error propagation, config-derived startup window sizing, and shutdown constraints.
+- Added `v3.1.3` dashboard scene update coalescing so v3 display rendering keeps only the latest pending scene instead of queueing stale frames.
+- Wired both `--v3` and `--v3 --harness` display paths through the coalescing scene sink, preserving sensor polling and logging priority over dashboard freshness.
+- Added tests proving scene sink submission returns while rendering is busy and stale pending frames are replaced by the latest scene.
 - Added `v3.1.2` dashboard harness behind `--v3 --harness`, feeding fake sensor events through the real v3 dashboard scene path and Fyne display adapter.
 - Removed the temporary `--repo-root` flag and added ordered relative asset search paths: config directory + vehicle ID, current working directory + vehicle ID, config directory, then current working directory.
 - Added explicit harness patterns: `sweep`, `heartbeat`, and `fixed`, including tuned sweep and heartbeat timing tests.
