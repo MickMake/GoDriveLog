@@ -36,6 +36,7 @@ func TestLatestSinkDropsStalePendingFrames(t *testing.T) {
 	<-startedFirst
 
 	staleDone := submitAsync(sink, scene("stale"))
+	waitForPendingSeq(t, sink, 2)
 	latestDone := submitAsync(sink, scene("latest"))
 
 	assertSubmitReturns(t, staleDone, "stale")
@@ -81,6 +82,26 @@ func TestLatestSinkSubmitReturnsRenderError(t *testing.T) {
 	}
 	if !errors.Is(sink.Err(), wantErr) {
 		t.Fatalf("sink Err = %v, want %v", sink.Err(), wantErr)
+	}
+}
+
+func waitForPendingSeq(t *testing.T, sink *LatestSink, seq uint64) {
+	t.Helper()
+	deadline := time.After(200 * time.Millisecond)
+	ticker := time.NewTicker(time.Millisecond)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-deadline:
+			t.Fatalf("pending seq %d was not observed", seq)
+		case <-ticker.C:
+			sink.mu.Lock()
+			pending := sink.pending && sink.seq == seq
+			sink.mu.Unlock()
+			if pending {
+				return
+			}
+		}
 	}
 }
 
