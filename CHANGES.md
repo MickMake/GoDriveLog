@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Added `v3.1.4` daily JSONL rotation for v3 event logs, deriving concrete files such as `logs/vw_caddy-2026-06-18.jsonl` from configured base paths such as `logs/vw_caddy.jsonl`.
+- Added tests for daily JSONL path generation and writer rollover across a date boundary.
+- Documented `v3.1.4` scope: daily rotation only, with no configurable rotation modes, retention policy, compression, upload, or logging architecture rewrite.
 - Documented `v3.1.3` dashboard performance design decisions, including Raspberry Pi 4 2GB memory-churn rationale, Fyne image reuse, scene coalescing, render error propagation, config-derived startup window sizing, and shutdown constraints.
 - Added `v3.1.3` dashboard scene update coalescing so v3 display rendering keeps only the latest pending scene instead of queueing stale frames.
 - Wired both `--v3` and `--v3 --harness` display paths through the coalescing scene sink, preserving sensor polling and logging priority over dashboard freshness.
