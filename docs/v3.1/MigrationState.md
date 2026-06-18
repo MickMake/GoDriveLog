@@ -14,11 +14,11 @@ v3.0 established the migration process, strict v3 config loading, RuntimePlan re
 
 ## Current migration position
 
-Current version: `v3.1.4`
-Current phase: JSONL daily rotation
-Current branch prefix: `v3.1.4`
+Current version: `v3.1.5`
+Current phase: typed sensor values
+Current branch prefix: `v3.1.5`
 Current PR: pending
-Current PR branch: `v3.1.4-jsonl-daily-rotation`
+Current PR branch: `v3.1.5-typed-sensor-values`
 
 ## Current state
 
@@ -47,6 +47,11 @@ Current PR branch: `v3.1.4-jsonl-daily-rotation`
 - The configured log path is treated as a base path, and the active file path inserts the date before the extension.
 - Example: `logs/vw_caddy.jsonl` writes to `logs/vw_caddy-2026-06-18.jsonl` for that day.
 - No configurable rotation modes, retention policy, compression, upload, or logging architecture rewrite are part of `v3.1.4`.
+- `v3.1.5` introduces an explicit typed sensor value payload alongside the existing numeric compatibility field.
+- Typed sensor values require a non-empty supported `kind`; the zero value `Value{}` is invalid and must not be treated as a valid sensor reading.
+- Sensor config may declare `value_kind`; if omitted, the runtime derives it from the selected parser/output contract.
+- OBD parser output currently derives `numeric`; configured `value_kind` must match that parser output instead of relying on hard-coded sensor-id knowledge.
+- JSONL event records now write a typed `value` object instead of a bare number.
 
 ## Version queue
 
@@ -56,8 +61,8 @@ Current PR branch: `v3.1.4-jsonl-daily-rotation`
 | v3.1.1 | display adapter | implemented |
 | v3.1.2 | dashboard and gauge test harness | implemented |
 | v3.1.3 | dashboard update performance target | implemented |
-| v3.1.4 | JSONL daily rotation | in progress |
-| v3.1.5 | typed sensor values | planned |
+| v3.1.4 | JSONL daily rotation | implemented |
+| v3.1.5 | typed sensor values | in progress |
 | v3.1.6 | unsupported and missing sensor semantics | planned |
 | v3.1.7 | dashboard event efficiency | planned |
 | v3.1.8 | retirement readiness review | planned |
@@ -74,26 +79,29 @@ Examples:
 - `v3.1.2-dashboard-gauge-test-harness`
 - `v3.1.3-dashboard-update-performance`
 - `v3.1.4-jsonl-daily-rotation`
+- `v3.1.5-typed-sensor-values`
 
 ## Notes for current slice
 
-The current slice is implementation-only for v3 JSONL daily rotation.
+The current slice is implementation-only for v3 typed sensor values.
 
 Design intent:
 
-- Keep logging useful for the current van logger use case.
-- Use daily JSONL rotation unconditionally for v3 event logs.
-- Treat the configured log path as the base path.
-- Insert the active date before the extension.
-- Roll to a new file when the logger write date changes.
-- Keep selected-log and selected-sensor behaviour unchanged.
-- Avoid new config schema fields or rotation mode choices.
+- Make sensor value type explicit with a mandatory `kind`.
+- Reject empty or unknown typed value kinds.
+- Do not infer value type from populated fields.
+- Avoid hard-coding sensor IDs such as `rpm` or `speed` to kinds.
+- Derive default kind from parser/output contract; for current OBD readers this is `numeric`.
+- Fail selected runtime setup when configured `value_kind` is invalid or incompatible with parser output.
+- Preserve runtime operation for live read/parse errors by emitting typed error values/events instead of coercing to zero.
+- Keep unsupported/missing/stale visual policy for `v3.1.6`.
 
 Expected verification focus:
 
 - `go test ./...` passes.
-- Existing selected-log subscriber tests still pass with daily paths.
-- Daily path generation is tested.
-- JSONL event writer rollover is tested across a date boundary.
-- `ActivePath()` reports the concrete daily file path, not the configured base path.
-- No dashboard, sensor polling, or v3 schema changes are included.
+- Numeric sensor reads produce typed numeric values.
+- Numeric zero remains a valid numeric value, not missing/error.
+- `Value{}` and unknown kinds are invalid.
+- Invalid configured `value_kind` fails selected runtime setup.
+- Configured kind mismatch with parser output fails selected runtime setup.
+- JSONL records include typed value objects.
