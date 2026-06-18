@@ -28,11 +28,18 @@ type Adapter struct {
 	repoRoot string
 	root     *fyneui.Container
 	assets   map[string]cachedAsset
+	images   []*canvas.Image
 }
 
 type cachedAsset struct {
 	resource fyneui.Resource
 	size     fyneui.Size
+}
+
+type renderedPart struct {
+	asset cachedAsset
+	x     float32
+	y     float32
 }
 
 // New creates a Fyne adapter for v3 dashboard scene output.
@@ -53,85 +60,117 @@ func (a *Adapter) CanvasObject() fyneui.CanvasObject {
 	return a.root
 }
 
-// Update renders the latest v3 dashboard scenes. Multiple selected scenes are
-// stacked vertically; most vehicles are expected to select one scene initially.
+// Update renders the latest v3 dashboard scenes. It reuses existing Fyne image
+// objects when the rendered part count is unchanged so fast dashboard updates do
+// not build native canvas/image object churn.
 func (a *Adapter) Update(scenes []v3dashboard.Scene) error {
 	if a == nil {
 		return fmt.Errorf("v3 Fyne adapter is nil")
 	}
 
-	objects := make([]fyneui.CanvasObject, 0, len(scenes))
-	yOffset := float32(0)
-	maxWidth := float32(0)
-	for _, scene := range scenes {
-		sceneObject, size, err := a.renderScene(scene)
-		if err != nil {
-			return err
-		}
-		sceneObject.Move(fyneui.NewPos(0, yOffset))
-		sceneObject.Resize(size)
-		objects = append(objects, sceneObject)
-		yOffset += size.Height + sceneGap
-		if size.Width > maxWidth {
-			maxWidth = size.Width
-		}
+	parts, size, err := a.renderParts(scenes)
+	if err != nil {
+		return err
 	}
 
-	a.root.Objects = objects
-	if len(objects) == 0 {
-		a.root.Resize(fyneui.NewSize(1, 1))
+	if len(a.images) != len(parts) {
+		a.rebuildImages(parts)
 	} else {
-		a.root.Resize(fyneui.NewSize(maxWidth, yOffset-sceneGap))
+		a.updateImages(parts)
 	}
+	if size.Width <= 0 {
+		size.Width = 1
+	}
+	if size.Height <= 0 {
+		size.Height = 1
+	}
+	a.root.Resize(size)
 	if fyneui.CurrentApp() != nil {
 		a.root.Refresh()
 	}
 	return nil
 }
 
-func (a *Adapter) renderScene(scene v3dashboard.Scene) (*fyneui.Container, fyneui.Size, error) {
-	sceneRoot := container.NewWithoutLayout()
-	objects := []fyneui.CanvasObject{}
+func (a *Adapter) renderParts(scenes []v3dashboard.Scene) ([]renderedPart, fyneui.Size, error) {
+	parts := []renderedPart{}
+	yOffset := float32(0)
+	maxWidth := float32(0)
+	for _, scene := range scenes {
+		sceneParts, sceneSize, err := a.renderSceneParts(scene, yOffset)
+		if err != nil {
+			return nil, fyneui.Size{}, err
+		}
+		parts = append(parts, sceneParts...)
+		yOffset += sceneSize.Height + sceneGap
+		if sceneSize.Width > maxWidth {
+			maxWidth = sceneSize.Width
+		}
+	}
+	if len(scenes) == 0 {
+		return parts, fyneui.NewSize(1, 1), nil
+	}
+	return parts, fyneui.NewSize(maxWidth, yOffset-sceneGap), nil
+}
 
+func (a *Adapter) renderSceneParts(scene v3dashboard.Scene, yOffset float32) ([]renderedPart, fyneui.Size, error) {
+	parts := []renderedPart{}
 	for _, widget := range scene.Widgets {
-		widgetObjects, err := a.renderWidget(widget)
+		widgetParts, err := a.renderWidgetParts(widget, yOffset)
 		if err != nil {
 			return nil, fyneui.Size{}, fmt.Errorf("dashboard %q widget %q: %w", scene.DashboardID, widget.ID, err)
 		}
-		objects = append(objects, widgetObjects...)
+		parts = append(parts, widgetParts...)
 	}
-
-	sceneRoot.Objects = objects
 	size := fyneui.NewSize(float32(scene.Size.Width), float32(scene.Size.Height))
 	if size.Width <= 0 {
-		size.Width = boundsWidth(objects)
+		size.Width = partsWidth(parts)
 	}
 	if size.Height <= 0 {
-		size.Height = boundsHeight(objects)
+		size.Height = partsHeight(parts, yOffset)
 	}
-	sceneRoot.Resize(size)
-	return sceneRoot, size, nil
+	return parts, size, nil
 }
 
-func (a *Adapter) renderWidget(widget v3dashboard.Widget) ([]fyneui.CanvasObject, error) {
-	objects := make([]fyneui.CanvasObject, 0, len(widget.Parts))
+func (a *Adapter) renderWidgetParts(widget v3dashboard.Widget, yOffset float32) ([]renderedPart, error) {
+	parts := make([]renderedPart, 0, len(widget.Parts))
 	baseX, baseY := widgetPosition(widget)
+	baseY += yOffset
 
 	for index, part := range widget.Parts {
 		asset, err := a.loadAsset(part.AssetPath)
 		if err != nil {
 			return nil, fmt.Errorf("part %d %q asset %q: %w", index, part.Kind, part.AssetPath, err)
 		}
-		object := canvas.NewImageFromResource(asset.resource)
-		object.FillMode = canvas.ImageFillStretch
-
 		x, y := partPosition(baseX, baseY, asset.size, part)
-		object.Move(fyneui.NewPos(x, y))
-		object.Resize(asset.size)
+		parts = append(parts, renderedPart{asset: asset, x: x, y: y})
+	}
+	return parts, nil
+}
+
+func (a *Adapter) rebuildImages(parts []renderedPart) {
+	objects := make([]fyneui.CanvasObject, 0, len(parts))
+	a.images = make([]*canvas.Image, 0, len(parts))
+	for _, part := range parts {
+		object := canvas.NewImageFromResource(part.asset.resource)
+		object.FillMode = canvas.ImageFillStretch
+		object.Move(fyneui.NewPos(part.x, part.y))
+		object.Resize(part.asset.size)
+		a.images = append(a.images, object)
 		objects = append(objects, object)
 	}
+	a.root.Objects = objects
+}
 
-	return objects, nil
+func (a *Adapter) updateImages(parts []renderedPart) {
+	for index, part := range parts {
+		object := a.images[index]
+		if object.Resource != part.asset.resource {
+			object.Resource = part.asset.resource
+			object.Refresh()
+		}
+		object.Move(fyneui.NewPos(part.x, part.y))
+		object.Resize(part.asset.size)
+	}
 }
 
 func (a *Adapter) loadAsset(assetPath string) (cachedAsset, error) {
@@ -219,10 +258,10 @@ func partPosition(baseX, baseY float32, size fyneui.Size, part v3dashboard.Part)
 	return x, y
 }
 
-func boundsWidth(objects []fyneui.CanvasObject) float32 {
+func partsWidth(parts []renderedPart) float32 {
 	var width float32 = 1
-	for _, object := range objects {
-		right := object.Position().X + object.Size().Width
+	for _, part := range parts {
+		right := part.x + part.asset.size.Width
 		if right > width {
 			width = right
 		}
@@ -230,10 +269,10 @@ func boundsWidth(objects []fyneui.CanvasObject) float32 {
 	return width
 }
 
-func boundsHeight(objects []fyneui.CanvasObject) float32 {
+func partsHeight(parts []renderedPart, yOffset float32) float32 {
 	var height float32 = 1
-	for _, object := range objects {
-		bottom := object.Position().Y + object.Size().Height
+	for _, part := range parts {
+		bottom := part.y + part.asset.size.Height - yOffset
 		if bottom > height {
 			height = bottom
 		}
@@ -246,21 +285,5 @@ func (a *Adapter) RenderedObjectCount() int {
 	if a == nil || a.root == nil {
 		return 0
 	}
-	count := 0
-	for _, sceneObject := range a.root.Objects {
-		count += countObjects(sceneObject)
-	}
-	return count
-}
-
-func countObjects(object fyneui.CanvasObject) int {
-	containerObject, ok := object.(*fyneui.Container)
-	if !ok {
-		return 1
-	}
-	count := 0
-	for _, child := range containerObject.Objects {
-		count += countObjects(child)
-	}
-	return count
+	return len(a.root.Objects)
 }
