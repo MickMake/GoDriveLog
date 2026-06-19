@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Added `v3.2.0` planning baseline docs for self-contained gauge packages under `docs/v3.2/`, including `ImplementationState.md`, `OpenDecisions.md`, `ReleasePlan.md`, `CarryForward.md`, and per-slice prompts.
+- Documented the v3.2 gauge package architecture: dashboard `type: gauge` widgets place gauge packages, gauge packages own sensor binding and radial gauge definition, and `assets/gauges/**/gauge.yaml` is the only required gauge package filename.
+- Normalised active v3 root config, examples, and simple dashboard assets.
+- Archived v3.0 baseline docs under `docs/archive/v3.0/`.
+- Marked v3.1.7 dashboard event efficiency and v3.1.8 retirement readiness as deferred, not cancelled, until the gauge package direction is established.
 - Added `v3.1.6` explicit sensor status semantics for `missing`, `unsupported`, `timeout`, `parse_error`, generic `error`, `unknown`, `ok`, and `stale`.
 - Added `v3.1.5` typed sensor values for v3 sensor state/events, making `kind` mandatory and rejecting empty or unknown value kinds.
 - Added parser/config value-kind contract checks so configured sensor `value_kind` must match the selected parser output kind; OBD sensors currently derive `numeric` from the parser contract when omitted.
@@ -21,7 +26,7 @@
 - Wired the `--v3` command path to show selected v3 dashboard scenes in a Fyne window while retaining the existing runtime as the default path.
 - Added adapter tests covering repo-relative asset rendering and rejection of escaping asset paths.
 - Added `v3.1.0` runnable v3 command path behind `--v3`, including selected vehicle resolution, endpoint connection, sensor polling runtime startup, selected JSONL event subscribers, dashboard scene boundary logging, and signal-based clean shutdown.
-- Added `internal/runtime/v3runtime` orchestration tests covering v3 config load, selected vehicle connection, sensor polling, selected JSONL event output, and reader cleanup.
+- Added `internal/runtime/v3runtime` orchestration tests covering v3 config load, selected vehicle connection, selected JSONL event output, and reader cleanup.
 - Split v3.1 implementation prompts into per-slice files under `docs/v3.1/prompts/`.
 - Reframed PR 51 as docs-only planning setup, with implementation starting at `v3.1.0`.
 - Added blocking and impact metadata to v3.1 open decisions.
@@ -30,7 +35,6 @@
 - Expanded v3.1 carry-forward and release plan docs with v3.0 implementation details and per-slice checkpoints.
 - Added v3.1 release planning stubs under `docs/v3.1/` for the next implementation phase.
 - Added v3 inverse implementation audit documentation for old/current behaviours not yet fully rebuilt as v3.
-- Updated v3 migration state for the v3.0.12 inverse implementation audit slice.
 - Added v3 retirement audit documentation for old/current paths that may be reviewed for later removal or archiving.
 - Added v3 richer dashboard widget rendering for `bar_display` and `frame_gauge`.
 - Added dashboard tests for bar fill mapping, reverse fill direction, zones, frame clamping, sensor status handling, and unchanged frame output handling.

@@ -30,7 +30,7 @@ const v3SceneGap = 12
 
 func main() {
 	configPath := flag.String("config", "config.example.yaml", "path to YAML config")
-	useV3 := flag.Bool("v3", false, "run the v3 selected-vehicle runtime path")
+	useV3 := flag.Bool("v3", true, "run the v3 selected-vehicle runtime path")
 	useHarness := flag.Bool("harness", false, "run the v3 dashboard harness without OBD; requires --v3")
 	vehicleID := flag.String("vehicle", "", "v3 vehicle id; required when the v3 config contains multiple vehicles")
 	harnessPattern := flag.String("pattern", v3harness.PatternSweep, "v3 dashboard harness pattern: sweep, heartbeat, or fixed")

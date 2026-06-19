@@ -7,7 +7,7 @@ import (
 )
 
 func TestLoadDocsV3ConfigExample(t *testing.T) {
-	cfg := loadTestConfig(t, "docs/v3/config.example.yaml")
+	cfg := loadTestConfig(t, "config.example.yaml")
 	if len(cfg.Vehicles) != 1 {
 		t.Fatalf("expected one vehicle, got %d", len(cfg.Vehicles))
 	}
@@ -20,7 +20,7 @@ func TestLoadDocsV3ConfigExample(t *testing.T) {
 }
 
 func TestLoadDocsV3ConfigFull(t *testing.T) {
-	cfg := loadTestConfig(t, "docs/v3/config.full.yaml")
+	cfg := loadTestConfig(t, "config.full.yaml")
 	if len(cfg.Vehicles) < 2 {
 		t.Fatalf("expected multiple vehicle profiles, got %d", len(cfg.Vehicles))
 	}
@@ -34,9 +34,9 @@ func TestLoadDocsV3ConfigFull(t *testing.T) {
 
 func TestLoadDocsV3StandaloneExamples(t *testing.T) {
 	for _, path := range []string{
-		"docs/v3/examples/simple_speed_warning.yaml",
-		"docs/v3/examples/nissan_300zx_z31_inspired.yaml",
-		"docs/v3/examples/honda_s2000_inspired.yaml",
+		"examples/simple_speed_warning.yaml",
+		"examples/nissan_300zx_z31_inspired.yaml",
+		"examples/honda_s2000_inspired.yaml",
 	} {
 		t.Run(path, func(t *testing.T) {
 			loadTestConfig(t, path)
