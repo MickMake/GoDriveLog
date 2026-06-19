@@ -1,24 +1,42 @@
 # Asset placeholders
 
-The examples reference these asset paths but do not include image files yet.
+The examples reference these asset paths but do not include all image files yet.
 
-## Shared seven-segment assets
+## 7Seg assets
 
-Expected amber paths:
+Expected shared shell paths near the `7Seg` package examples:
 
 ```text
-assets/gauges/shared/seven_segment/amber/panel_2_digit.png
-assets/gauges/shared/seven_segment/amber/panel_3_digit.png
-assets/gauges/shared/seven_segment/amber/panel_4_digit.png
-assets/gauges/shared/seven_segment/amber/panel_5_digit.png
-assets/gauges/shared/seven_segment/amber/glass.png
-assets/gauges/shared/seven_segment/amber/digit_back.png
-assets/gauges/shared/seven_segment/amber/0.png ... 9.png
-assets/gauges/shared/seven_segment/amber/minus.png
-assets/gauges/shared/seven_segment/amber/dp.png
+assets/gauges/7Seg/7Seg1Digits.png
+assets/gauges/7Seg/7Seg2Digits.png
+assets/gauges/7Seg/7Seg3Digits.png
+assets/gauges/7Seg/7Seg4Digits.png
+assets/gauges/7Seg/7Seg5Digits.png
+assets/gauges/7Seg/7SegBack.png
+assets/gauges/7Seg/Glass.png
 ```
 
-Expected green paths are the same under `assets/gauges/shared/seven_segment/green/`.
+Expected amber digit paths:
+
+```text
+assets/gauges/7Seg/amber/7Seg0.png ... 7Seg9.png
+assets/gauges/7Seg/amber/7SegMinus.png
+assets/gauges/7Seg/amber/7SegDP.png
+```
+
+Expected green shared paths used by the current green package examples:
+
+```text
+assets/gauges/shared/seven_segment/7SegmentLED2Digits.png
+assets/gauges/shared/seven_segment/7SegmentLED3Digits.png
+assets/gauges/shared/seven_segment/7SegmentLED4Digits.png
+assets/gauges/shared/seven_segment/7SegmentLED5Digits.png
+assets/gauges/shared/seven_segment/Glass.png
+assets/gauges/shared/seven_segment/green/digit_back.png
+assets/gauges/shared/seven_segment/green/0.png ... 9.png
+assets/gauges/shared/seven_segment/green/minus.png
+assets/gauges/shared/seven_segment/green/dp.png
+```
 
 ## Radial assets
 
