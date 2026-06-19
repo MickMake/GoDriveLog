@@ -1,7 +1,7 @@
 # GoDriveLog v3.2 implementation state
 
-Status: v3.2.3 seven-segment gauge scene model implemented, pending review
-Current target: v3.2.4 Fyne seven-segment renderer
+Status: v3.2.3 seven-segment gauge dashboard path implemented, pending review
+Current target: v3.2.4 Fyne seven-segment renderer hardening and visual verification
 Current branch: v3.2.3-seven-segment-gauge-scene-model
 
 ## Purpose
@@ -121,7 +121,7 @@ digits:
 
 ## Radial package direction
 
-Radial gauges remain in scope, but they follow after the seven-segment package path proves the package model.
+Radial gauges remain in scope, but they follow after the seven-segment package path proves the package model through dashboard runtime and visual rendering.
 
 Example `gauge.yaml`:
 
@@ -175,13 +175,15 @@ value_map:
 
 ## v3.2.3 implementation notes
 
-- Added a seven-segment scene model for already-loaded gauge packages.
-- Scene generation combines a loaded `seven_segment` package, dashboard placement, and current sensor state.
-- Scene data includes package id/path/type, package-owned sensor id, widget position, scale, package size, status/error, formatted text, static layer parts, digit asset parts, and digit positions.
+- Added a seven-segment scene model for loaded gauge packages.
+- Wired dashboard runtime `type: gauge` widgets to load the configured `widget.gauge` package.
+- Gauge widgets use the package-owned sensor id to read current sensor state.
+- Dashboard scene widgets now carry gauge package identity, package path, scale, status/error, formatted text, static layer parts, digit asset parts, digit positions, and scene-signature data.
+- Fyne adapter positioning now honours package-owned part coordinates and widget scale while preserving slot-based positioning for legacy digit widgets.
 - Static package layers are included even for non-`ok` sensor states.
 - Live digit text, digit backgrounds, character parts, decimal-point parts, and foreground parts are emitted only for `ok` sensor states.
-- Scene signatures include package, placement, size, status, text, layer, asset, character, slot, and digit position data so formatted-output and layout changes are detectable.
-- This slice intentionally does not add Fyne drawing, radial gauge scene model, dashboard-runtime package loading, example assets, inheritance, cluster, or sensor override behaviour.
+- Scene signatures include package, placement, size, status, text, layer, asset, character, slot, and digit-position data so formatted-output and layout changes are detectable.
+- This slice intentionally does not add radial gauge scene model, example assets, inheritance, cluster, or sensor override behaviour.
 
 ## Completed slices
 
@@ -190,13 +192,13 @@ value_map:
 | v3.2.0 | completed | Planning docs, prompts, repo hygiene, active example/assets normalisation, and v3.0 doc archiving. |
 | v3.2.1 | completed | Gauge package loader and tests for `assets/gauges/**/gauge.yaml`. |
 | v3.2.2 | completed | Dashboard gauge widget config fields and validation. |
-| v3.2.3 | implemented, pending review | Seven-segment gauge scene model and tests. |
+| v3.2.3 | implemented, pending review | Seven-segment gauge scene model, dashboard runtime package loading, and adapter positioning. |
 
 ## Pending slices
 
 | Version | Status | Next action |
 |---|---|---|
-| v3.2.4 | not started | Add Fyne seven-segment renderer. |
+| v3.2.4 | not started | Add visual verification and harden Fyne seven-segment rendering. |
 | v3.2.5 | not started | Add radial gauge scene model. |
 | v3.2.6 | not started | Add Fyne radial renderer. |
 | v3.2.7 | not started | Add example gauge packages. |
