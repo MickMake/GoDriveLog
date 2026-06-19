@@ -1,0 +1,244 @@
+package gauges
+
+import (
+	"bytes"
+	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
+
+	"gopkg.in/yaml.v3"
+)
+
+const (
+	TypeSevenSegment = "seven_segment"
+	TypeRadial       = "radial"
+)
+
+type Package struct {
+	ID        string            `yaml:"id"`
+	Type      string            `yaml:"type"`
+	Sensor    string            `yaml:"sensor"`
+	Format    string            `yaml:"format,omitempty"`
+	Size      Size              `yaml:"size"`
+	Layers    map[string]string `yaml:"layers,omitempty"`
+	DigitSet  DigitSet          `yaml:"digit_set,omitempty"`
+	Digits    Digits            `yaml:"digits,omitempty"`
+	Pivot     Pivot             `yaml:"pivot,omitempty"`
+	ValueMap  ValueMap          `yaml:"value_map,omitempty"`
+	Path      string            `yaml:"-"`
+	YAMLPath  string            `yaml:"-"`
+	AssetRoot string            `yaml:"-"`
+}
+
+type Size struct {
+	Width  int `yaml:"width"`
+	Height int `yaml:"height"`
+}
+
+type DigitSet struct {
+	Background   string            `yaml:"background,omitempty"`
+	Characters   map[string]string `yaml:"characters,omitempty"`
+	DecimalPoint string            `yaml:"decimal_point,omitempty"`
+	Foreground   string            `yaml:"foreground,omitempty"`
+	Spacing      int               `yaml:"spacing,omitempty"`
+}
+
+type Digits struct {
+	Count     int     `yaml:"count"`
+	Positions [][]int `yaml:"positions,omitempty"`
+}
+
+type Pivot struct {
+	Face   Point `yaml:"face,omitempty"`
+	Needle Point `yaml:"needle,omitempty"`
+}
+
+type Point struct {
+	X float64 `yaml:"x"`
+	Y float64 `yaml:"y"`
+}
+
+type ValueMap struct {
+	Min        float64 `yaml:"min"`
+	Max        float64 `yaml:"max"`
+	StartAngle float64 `yaml:"start_angle"`
+	EndAngle   float64 `yaml:"end_angle"`
+	Clamp      bool    `yaml:"clamp"`
+}
+
+func LoadPackage(packageDir string) (Package, error) {
+	if packageDir == "" {
+		return Package{}, fmt.Errorf("gauge package path must not be empty")
+	}
+	if isRemotePath(packageDir) {
+		return Package{}, fmt.Errorf("gauge package path %q must be local", packageDir)
+	}
+
+	resolvedPackageDir, err := filepath.Abs(filepath.Clean(packageDir))
+	if err != nil {
+		return Package{}, fmt.Errorf("gauge package path %q could not be resolved: %w", packageDir, err)
+	}
+	assetRoot, err := findAssetRoot(resolvedPackageDir)
+	if err != nil {
+		return Package{}, err
+	}
+
+	yamlPath := filepath.Join(resolvedPackageDir, "gauge.yaml")
+	data, err := os.ReadFile(yamlPath)
+	if err != nil {
+		return Package{}, fmt.Errorf("gauge package %q could not load gauge.yaml: %w", resolvedPackageDir, err)
+	}
+
+	pkg, err := parsePackage(data)
+	if err != nil {
+		return Package{}, fmt.Errorf("gauge package %q could not parse gauge.yaml: %w", resolvedPackageDir, err)
+	}
+	pkg.Path = resolvedPackageDir
+	pkg.YAMLPath = yamlPath
+	pkg.AssetRoot = assetRoot
+
+	if err := validatePackage(pkg); err != nil {
+		return Package{}, fmt.Errorf("gauge package %q is invalid: %w", resolvedPackageDir, err)
+	}
+	if err := resolvePackagePaths(&pkg, filepath.Dir(yamlPath)); err != nil {
+		return Package{}, fmt.Errorf("gauge package %q is invalid: %w", resolvedPackageDir, err)
+	}
+
+	return pkg, nil
+}
+
+func parsePackage(data []byte) (Package, error) {
+	var pkg Package
+	decoder := yaml.NewDecoder(bytes.NewReader(data))
+	decoder.KnownFields(true)
+	if err := decoder.Decode(&pkg); err != nil {
+		return Package{}, err
+	}
+	return pkg, nil
+}
+
+func validatePackage(pkg Package) error {
+	if pkg.ID == "" {
+		return fmt.Errorf("id must not be empty")
+	}
+	if pkg.Type == "" {
+		return fmt.Errorf("type must not be empty")
+	}
+	switch pkg.Type {
+	case TypeSevenSegment, TypeRadial:
+	default:
+		return fmt.Errorf("type %q is not supported", pkg.Type)
+	}
+	if pkg.Sensor == "" {
+		return fmt.Errorf("sensor must not be empty")
+	}
+	if pkg.Size.Width <= 0 || pkg.Size.Height <= 0 {
+		return fmt.Errorf("size width and height must be positive")
+	}
+	return nil
+}
+
+func resolvePackagePaths(pkg *Package, yamlDir string) error {
+	var err error
+	pkg.Layers, err = resolvePathMap(pkg.AssetRoot, yamlDir, pkg.Layers, "layer")
+	if err != nil {
+		return err
+	}
+
+	pkg.DigitSet.Background, err = resolveOptionalPath(pkg.AssetRoot, yamlDir, pkg.DigitSet.Background, "digit_set background")
+	if err != nil {
+		return err
+	}
+	pkg.DigitSet.DecimalPoint, err = resolveOptionalPath(pkg.AssetRoot, yamlDir, pkg.DigitSet.DecimalPoint, "digit_set decimal_point")
+	if err != nil {
+		return err
+	}
+	pkg.DigitSet.Foreground, err = resolveOptionalPath(pkg.AssetRoot, yamlDir, pkg.DigitSet.Foreground, "digit_set foreground")
+	if err != nil {
+		return err
+	}
+	pkg.DigitSet.Characters, err = resolvePathMap(pkg.AssetRoot, yamlDir, pkg.DigitSet.Characters, "digit_set character")
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func resolvePathMap(assetRoot string, yamlDir string, paths map[string]string, label string) (map[string]string, error) {
+	if len(paths) == 0 {
+		return paths, nil
+	}
+	resolved := make(map[string]string, len(paths))
+	for key, path := range paths {
+		if key == "" {
+			return nil, fmt.Errorf("%s key must not be empty", label)
+		}
+		resolvedPath, err := resolveRequiredPath(assetRoot, yamlDir, path, fmt.Sprintf("%s %q", label, key))
+		if err != nil {
+			return nil, err
+		}
+		resolved[key] = resolvedPath
+	}
+	return resolved, nil
+}
+
+func resolveOptionalPath(assetRoot string, yamlDir string, path string, label string) (string, error) {
+	if path == "" {
+		return "", nil
+	}
+	return resolveRequiredPath(assetRoot, yamlDir, path, label)
+}
+
+func resolveRequiredPath(assetRoot string, yamlDir string, path string, label string) (string, error) {
+	if path == "" {
+		return "", fmt.Errorf("%s path must not be empty", label)
+	}
+	if isRemotePath(path) {
+		return "", fmt.Errorf("%s path %q must be local", label, path)
+	}
+	resolved := path
+	if !filepath.IsAbs(resolved) {
+		resolved = filepath.Join(yamlDir, path)
+	}
+	resolved = filepath.Clean(resolved)
+	if !isInside(assetRoot, resolved) {
+		return "", fmt.Errorf("%s path %q escapes asset tree %q", label, path, assetRoot)
+	}
+	return resolved, nil
+}
+
+func findAssetRoot(packageDir string) (string, error) {
+	current := packageDir
+	for {
+		if filepath.Base(current) == "assets" {
+			rel, err := filepath.Rel(current, packageDir)
+			if err == nil {
+				rel = filepath.ToSlash(rel)
+				if strings.HasPrefix(rel, "gauges/") {
+					return current, nil
+				}
+			}
+		}
+		parent := filepath.Dir(current)
+		if parent == current {
+			break
+		}
+		current = parent
+	}
+	return "", fmt.Errorf("gauge package path %q must be under assets/gauges", packageDir)
+}
+
+func isInside(root string, path string) bool {
+	root = filepath.Clean(root)
+	path = filepath.Clean(path)
+	rel, err := filepath.Rel(root, path)
+	if err != nil {
+		return false
+	}
+	return rel == "." || (rel != ".." && !strings.HasPrefix(rel, ".."+string(os.PathSeparator)) && !filepath.IsAbs(rel))
+}
+
+func isRemotePath(path string) bool {
+	return strings.Contains(path, "://")
+}

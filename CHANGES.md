@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Added `v3.2.1` gauge package loader support for self-contained packages under `assets/gauges/**/gauge.yaml`, including `seven_segment` and `radial` package parsing.
+- Added gauge package loader tests for valid seven-segment and radial packages, arbitrary package directory names, shared relative image paths, missing `gauge.yaml`, unsupported types, and asset-tree traversal rejection.
 - Added `v3.2.0` planning baseline docs for self-contained gauge packages under `docs/v3.2/`, including `ImplementationState.md`, `OpenDecisions.md`, `ReleasePlan.md`, `CarryForward.md`, and per-slice prompts.
 - Documented the v3.2 gauge package architecture: dashboard `type: gauge` widgets place gauge packages, gauge packages own sensor binding and radial gauge definition, and `assets/gauges/**/gauge.yaml` is the only required gauge package filename.
 - Normalised active v3 root config, examples, and simple dashboard assets.
