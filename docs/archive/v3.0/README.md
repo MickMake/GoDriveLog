@@ -1,6 +1,6 @@
 # GoDriveLog v3 docs
 
-This directory describes the intended v3 direction for GoDriveLog.
+This directory describes the historic v3 direction for GoDriveLog.
 
 The codebase may still contain current-runtime or earlier-dashboard pieces while migration is underway. These docs define where the project is heading and how to get there without dragging old assumptions into the new shape.
 
