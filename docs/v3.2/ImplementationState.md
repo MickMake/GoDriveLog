@@ -42,43 +42,78 @@ For v3.2:
 
 - the dashboard widget places the gauge;
 - the gauge package owns the sensor binding;
-- the gauge package owns value mapping;
+- the gauge package owns value mapping and/or formatting;
 - the gauge package owns visual layers;
-- the gauge package owns pivots;
+- the gauge package owns layout geometry such as digit positions or pivots;
+- `sensor` on a `type: gauge` widget is rejected;
 - no widget-level sensor override is planned;
 - no code inheritance is planned;
 - no cluster layer is planned.
 
-## Desired minimal example
+## Seven-segment package direction
 
-Dashboard config:
+The first concrete gauge package type is `seven_segment`.
+
+This lets a complete 2, 3, 4, or 5 digit seven-segment display be packaged with its panel/bezel, glass, digit count, digit positions, format, and sensor binding.
+
+Existing `digit_sets` remain useful as reusable raw glyph artwork. A seven-segment gauge package turns those glyphs into a complete mounted dashboard instrument.
+
+Example dashboard widget:
 
 ```yaml
 widgets:
   - id: rpm
     type: gauge
-    gauge: gauges/classic/rpm
+    gauge: gauges/seven_segment/amber/4_digit
     position: [100, 20]
-    scale: 0.75
+    scale: 1.0
 ```
 
-Gauge package:
+Example package:
 
 ```text
 assets/
   gauges/
-    classic/
-      images/
-        bezel.png
-        face_dark.png
-        needle_red.png
-        glass_overlay.png
-      rpm/
-        gauge.yaml
-        ticks.png
+    seven_segment/
+      amber/
+        4_digit/
+          gauge.yaml
+          panel.png
+          glass.png
 ```
 
-`assets/gauges/classic/rpm/gauge.yaml`:
+Example `gauge.yaml`:
+
+```yaml
+id: amber_4_digit_rpm
+type: seven_segment
+sensor: engine_rpm
+format: "%04.0f"
+
+size:
+  width: 420
+  height: 140
+
+layers:
+  panel: panel.png
+  glass: glass.png
+
+digit_set: amber_7seg
+
+digits:
+  count: 4
+  positions:
+    - [42, 35]
+    - [132, 35]
+    - [222, 35]
+    - [312, 35]
+```
+
+## Radial package direction
+
+Radial gauges remain in scope, but they follow after the seven-segment package path proves the package model.
+
+Example `gauge.yaml`:
 
 ```yaml
 id: rpm
@@ -120,18 +155,20 @@ value_map:
 |---|---|---|
 | v3.2.1 | not started | Implement gauge package loader. |
 | v3.2.2 | not started | Add gauge widget config support. |
-| v3.2.3 | not started | Add radial gauge scene model. |
-| v3.2.4 | not started | Add Fyne radial renderer. |
-| v3.2.5 | not started | Add example gauge package. |
-| v3.2.6 | not started | Add harness verification. |
-| v3.2.7 | not started | Checkpoint next direction. |
+| v3.2.3 | not started | Add seven-segment gauge scene model. |
+| v3.2.4 | not started | Add Fyne seven-segment renderer. |
+| v3.2.5 | not started | Add radial gauge scene model. |
+| v3.2.6 | not started | Add Fyne radial renderer. |
+| v3.2.7 | not started | Add example gauge packages. |
+| v3.2.8 | not started | Add harness verification. |
+| v3.2.9 | not started | Checkpoint next direction. |
 
 ## Deferred v3.1 work
 
 - v3.1.7 dashboard event efficiency is deferred.
 - v3.1.8 retirement readiness is deferred.
 
-They are not cancelled. They should be reconsidered at the v3.2.7 checkpoint.
+They are not cancelled. They should be reconsidered at the v3.2.9 checkpoint.
 
 ## Update rule
 

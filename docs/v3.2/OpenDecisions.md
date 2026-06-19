@@ -30,14 +30,22 @@ Anything under `assets/gauges/` may be arbitrarily named. Directory names do not
 The dashboard references the gauge package directory using an asset-root relative path, for example:
 
 ```yaml
-gauge: gauges/classic/rpm
+gauge: gauges/seven_segment/amber/4_digit
 ```
 
 The loader resolves that to:
 
 ```text
-assets/gauges/classic/rpm/gauge.yaml
+assets/gauges/seven_segment/amber/4_digit/gauge.yaml
 ```
+
+### One gauge per file
+
+State: Decided
+
+A package contains exactly one gauge definition in `gauge.yaml`.
+
+The supported shape is the positive rule: one package directory, one `gauge.yaml`, one instrument definition.
 
 ### Gauge type location
 
@@ -46,10 +54,54 @@ State: Decided
 Gauge type is declared inside `gauge.yaml`:
 
 ```yaml
+type: seven_segment
+```
+
+or:
+
+```yaml
 type: radial
 ```
 
 It is not inferred from the directory path.
+
+### Gauge packages are complete instrument packages
+
+State: Decided
+
+A gauge package is a complete dashboard instrument package. It can represent a radial gauge, a seven-segment display module, or later another instrument type.
+
+The dashboard widget places the package. The package owns the instrument behaviour.
+
+### First renderer target
+
+State: Decided
+
+The first concrete package type is:
+
+```yaml
+type: seven_segment
+```
+
+Reason: seven-segment displays reuse known existing digit-display behaviour while proving the new ownership model.
+
+A seven-segment package owns panel/bezel artwork, glass artwork, digit count, digit positions, format, and sensor binding.
+
+### Existing digit sets stay useful
+
+State: Decided
+
+Existing `digit_sets` remain reusable raw glyph artwork.
+
+A seven-segment gauge package is a complete mounted display that can reference a digit set.
+
+Relationship:
+
+```text
+digit_sets = reusable raw glyphs
+seven_segment gauge = complete display module
+widget = placement only
+```
 
 ### Sensor binding
 
@@ -63,7 +115,7 @@ sensor: engine_rpm
 
 A dashboard `type: gauge` widget does not bind or override the sensor.
 
-Reason: the layout and range of a gauge are usually designed with a specific sensor in mind.
+If `sensor` appears on a `type: gauge` widget, validation rejects it.
 
 ### Widget role
 
@@ -82,6 +134,9 @@ The widget owns:
 The widget does not own:
 
 - sensor binding;
+- `format`;
+- digit count;
+- digit positions;
 - value range;
 - pivots;
 - layers;
@@ -105,18 +160,6 @@ This is not code inheritance. It is file reference reuse.
 
 Layer paths are resolved relative to the `gauge.yaml` directory.
 
-### First renderer target
-
-State: Decided
-
-The first gauge type is:
-
-```yaml
-type: radial
-```
-
-Radial gauges use layered images and a rotating needle.
-
 ### Radial gauge pivot model
 
 State: Decided
@@ -137,6 +180,14 @@ Gauge widgets must follow the existing v3 dashboard status semantics.
 For non-`ok` states, including missing, unsupported, timeout, parse_error, error, stale, and unknown, the dashboard must not render fake live numeric values or pretend the gauge value is valid.
 
 Do not map non-`ok` to zero, min, midpoint, or stale-looking live values unless a later explicit unavailable-state design is added.
+
+### Example asset source
+
+State: Decided
+
+Use simple generated/placeholder PNG assets for first example gauge packages.
+
+The assets only need to prove package layout, layer order, digit positions, relative paths, and renderer behaviour. They can be replaced later.
 
 ## Deferred
 
@@ -172,15 +223,15 @@ No generated ticks, labels, arcs, zones, or procedural gauge drawing in the firs
 
 The first version is image-layer based.
 
-### Multiple gauge types
-
-State: Deferred
-
-Only `type: radial` is targeted first.
-
-Future gauge types can be added later without changing the package discovery rule.
-
 ## Open
+
+### Exact scene structure for seven-segment gauges
+
+State: Open
+
+Need to decide the cleanest scene representation for complete seven-segment gauge packages without breaking existing digit display widgets.
+
+Target slice: v3.2.3
 
 ### Exact scene part structure for radial gauges
 
@@ -193,7 +244,7 @@ Need to decide whether radial gauge scene data should:
 
 Guidance: prefer the smallest clean change that does not turn `Part` into a junk drawer.
 
-Target slice: v3.2.3
+Target slice: v3.2.5
 
 ### Fyne rotation implementation details
 
@@ -201,12 +252,4 @@ State: Open
 
 Need to confirm the exact Fyne implementation for rotating and placing a needle image around a normalised pivot.
 
-Target slice: v3.2.4
-
-### Example gauge asset source
-
-State: Open
-
-Need to decide which first example gauge package to add and where its image assets come from.
-
-Target slice: v3.2.5
+Target slice: v3.2.6

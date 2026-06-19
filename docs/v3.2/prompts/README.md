@@ -24,17 +24,20 @@ Before implementing a slice:
 |---|---|
 | v3.2.1 | `v3.2.1-gauge-package-loader.md` |
 | v3.2.2 | `v3.2.2-gauge-widget-support.md` |
-| v3.2.3 | `v3.2.3-radial-gauge-scene-model.md` |
-| v3.2.4 | `v3.2.4-fyne-radial-rendering.md` |
-| v3.2.5 | `v3.2.5-example-gauge-package.md` |
-| v3.2.6 | `v3.2.6-harness-verification.md` |
-| v3.2.7 | `v3.2.7-checkpoint.md` |
+| v3.2.3 | `v3.2.3-seven-segment-gauge-scene-model.md` |
+| v3.2.4 | `v3.2.4-fyne-seven-segment-rendering.md` |
+| v3.2.5 | `v3.2.5-radial-gauge-scene-model.md` |
+| v3.2.6 | `v3.2.6-fyne-radial-rendering.md` |
+| v3.2.7 | `v3.2.7-example-gauge-packages.md` |
+| v3.2.8 | `v3.2.8-harness-verification.md` |
+| v3.2.9 | `v3.2.9-checkpoint.md` |
 
 ## Common guardrails
 
 - Do not add clusters in v3.2 unless a later checkpoint explicitly decides to.
 - Do not add gauge inheritance.
 - Do not add widget-level sensor override.
+- Reject `sensor` on `type: gauge` widgets.
 - Do not infer gauge type from directory names.
 - Do not break existing widget types.
 - Do not render fake live gauge values for non-`ok` sensor states.

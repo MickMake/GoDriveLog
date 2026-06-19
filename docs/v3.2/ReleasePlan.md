@@ -11,20 +11,25 @@ v3.2 temporarily benches the remaining v3.1.7 dashboard event efficiency and v3.
 
 ## Release goal
 
-Add a minimal, self-contained gauge package model that lets dashboards place complete gauge instruments without refactoring the existing dashboard/widget architecture.
+Add a minimal, self-contained gauge package model that lets dashboards place complete dashboard instruments without refactoring the existing dashboard/widget architecture.
+
+The first concrete package type is a seven-segment display package. This proves the package model using a display path that already mostly works: digit assets, formatted values, and dashboard scene parts.
+
+Radial gauges come after the seven-segment package path is proven.
 
 ## Release principles
 
 - Keep the existing dashboard and widget model.
 - Add `type: gauge` as an extension, not a rewrite.
 - Gauge widgets place gauge packages using a gauge path, position, and scale.
-- Gauge packages own their sensor binding, visual layers, value mapping, pivots, and asset references.
+- Gauge packages own sensor binding, visual layers, formatting, layout geometry, value mapping, pivots, and asset references.
 - Directory names under `assets/gauges/` are arbitrary and carry no renderer meaning.
 - The only required gauge package filename is `gauge.yaml`.
 - Gauge type is declared inside `gauge.yaml`.
 - Image paths inside `gauge.yaml` are resolved relative to that `gauge.yaml` file.
-- File-based reuse is allowed through relative image references, such as `../images/needle.png`.
-- Do not add code inheritance, clusters, sensor overrides, themes, variants, or procedural ticks in the first pass.
+- Keep existing `digit_sets` useful as reusable raw glyph artwork; seven-segment gauge packages build complete mounted displays from digit sets.
+- For `type: gauge` dashboard widgets, reject widget-level `sensor` so sensor ownership stays in the package.
+- Do not add clusters, inheritance, themes, variants, or procedural drawing in the first pass.
 - Keep dashboard code below the sensor/event boundary.
 - Preserve existing widget types and behaviour.
 
@@ -64,11 +69,13 @@ Do not redesign the release plan inside a slice chat.
 | v3.2.0 | planning baseline | Create the v3.2 planning docs and prompts. |
 | v3.2.1 | gauge package loader | Load `assets/gauges/**/gauge.yaml` packages. |
 | v3.2.2 | gauge widget support | Add `type: gauge` widgets that place gauge packages. |
-| v3.2.3 | radial gauge scene model | Convert radial gauge package + sensor state into dashboard scene parts. |
-| v3.2.4 | Fyne radial rendering | Render layered PNG radial gauges and rotate/place the needle. |
-| v3.2.5 | example gauge package | Add one working example gauge package. |
-| v3.2.6 | harness verification | Exercise gauge widgets through the existing v3 dashboard harness. |
-| v3.2.7 | checkpoint | Decide whether to resume v3.1.7/v3.1.8, continue gauge work, or add cluster support later. |
+| v3.2.3 | seven-segment gauge scene model | Convert seven-segment gauge packages + sensor state into dashboard scene data. |
+| v3.2.4 | Fyne seven-segment rendering | Render complete seven-segment gauge packages using existing digit-display knowledge. |
+| v3.2.5 | radial gauge scene model | Convert radial gauge package + sensor state into dashboard scene data. |
+| v3.2.6 | Fyne radial rendering | Render layered PNG radial gauges and rotate/place the needle. |
+| v3.2.7 | example gauge packages | Add small seven-segment and radial example gauge packages. |
+| v3.2.8 | harness verification | Exercise gauge widgets through the existing v3 dashboard harness. |
+| v3.2.9 | checkpoint | Decide whether to resume v3.1.7/v3.1.8, continue gauge work, or add cluster support later. |
 
 ## v3.2.0 planning baseline checkpoints
 
@@ -87,7 +94,7 @@ Do not redesign the release plan inside a slice chat.
 - Allow relative reuse such as `../images/bezel.png` when the final path remains inside the asset root.
 - Reject missing `gauge.yaml` files with clear errors.
 - Reject invalid path traversal outside the asset root.
-- Support `type: radial` in parsed gauge packages.
+- Support at least `type: seven_segment` and `type: radial` in parsed gauge packages.
 
 ## v3.2.2 gauge widget support checkpoints
 
@@ -95,16 +102,32 @@ Do not redesign the release plan inside a slice chat.
 - Add `gauge` path and `scale` fields needed for gauge placement.
 - Preserve all existing widget types and validation behaviour.
 - For v3.2, gauge widgets do not define or override sensors.
+- Reject `sensor` on `type: gauge` widgets.
 - The sensor binding comes from `gauge.yaml`.
 
-## v3.2.3 radial gauge scene model checkpoints
+## v3.2.3 seven-segment gauge scene model checkpoints
+
+- Convert a loaded seven-segment gauge package and current sensor state into scene data.
+- Move display behaviour such as `format`, digit count, digit positions, panel/bezel, and glass into `gauge.yaml`.
+- Preserve existing `digit_sets` as reusable raw glyph assets.
+- Preserve non-`ok` dashboard semantics: do not render live values for missing, unsupported, timeout, parse_error, error, stale, or unknown states.
+- Keep Fyne-specific rendering out of the dashboard scene model.
+
+## v3.2.4 Fyne seven-segment rendering checkpoints
+
+- Render static display layers such as panel/bezel and glass.
+- Render digit glyphs using the configured digit set and package-owned digit positions.
+- Use widget position and scale for placement only.
+- Keep existing display adapter behaviour for existing widget types.
+
+## v3.2.5 radial gauge scene model checkpoints
 
 - Convert a loaded radial gauge package and current sensor state into scene parts.
 - Preserve non-`ok` dashboard semantics: do not render live values for missing, unsupported, timeout, parse_error, error, stale, or unknown states.
 - Include enough scene data for the display adapter to draw static layers and rotate/place the needle.
 - Keep Fyne-specific rendering out of the dashboard scene model.
 
-## v3.2.4 Fyne radial rendering checkpoints
+## v3.2.6 Fyne radial rendering checkpoints
 
 - Render layer order: background, face, ticks, needle, overlay.
 - Rotate the needle around `needle` pivot.
@@ -112,21 +135,23 @@ Do not redesign the release plan inside a slice chat.
 - Use normalised pivot coordinates.
 - Keep existing display adapter behaviour for existing widget types.
 
-## v3.2.5 example gauge package checkpoints
+## v3.2.7 example gauge packages checkpoints
 
-- Add one small example gauge package under `assets/gauges/`.
+- Add small example gauge packages under `assets/gauges/`.
+- Include at least one seven-segment display package using generated/placeholder PNG assets.
+- Include a radial example package if radial rendering is complete enough to exercise.
 - Use arbitrary directory names; only `gauge.yaml` is required.
 - Demonstrate shared image references with relative paths if practical.
-- Keep the example small enough for harness/manual verification.
+- Keep examples small enough for harness/manual verification.
 
-## v3.2.6 harness verification checkpoints
+## v3.2.8 harness verification checkpoints
 
 - Exercise the gauge widget path through the existing v3 dashboard harness.
 - Use fake sensor events through the real dashboard runtime path.
 - Confirm fixed and sweep values behave as expected.
 - Confirm non-`ok` states do not render fake live gauge values.
 
-## v3.2.7 checkpoint checks
+## v3.2.9 checkpoint checks
 
 - Decide whether v3.1.7 dashboard event efficiency should resume as v3.1.7 or continue as v3.2.x.
 - Decide whether v3.1.8 retirement readiness should resume as v3.1.8 or continue as v3.2.x.

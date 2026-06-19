@@ -32,6 +32,14 @@ Carry forward.
 
 Do not break or redesign existing image, digit display, bar display, frame gauge, or indicator widgets while adding `type: gauge`.
 
+### Existing digit sets remain useful
+
+Carry forward.
+
+The current `digit_sets` model is good reusable raw glyph artwork. v3.2 should not throw it away.
+
+The new seven-segment gauge package should use digit sets to build complete mounted displays with panel/bezel, glass, digit count, digit positions, `format`, and sensor binding in the package.
+
 ### Harness path matters
 
 Carry forward.
@@ -48,7 +56,7 @@ Dashboard runtime should build scene data. Fyne-specific image rotation and draw
 
 Carry forward.
 
-The radial gauge scene should provide enough information for Fyne to draw the gauge, but not directly call Fyne from dashboard runtime code.
+The gauge scene should provide enough information for Fyne to draw the instrument, but not directly call Fyne from dashboard runtime code.
 
 ### v3.1.7 and v3.1.8 are deferred, not abandoned
 
@@ -65,8 +73,9 @@ A gauge package owns:
 - sensor binding;
 - gauge type;
 - image layers;
-- value mapping;
-- pivots;
+- formatting where applicable;
+- value mapping where applicable;
+- layout geometry such as digit positions or pivots;
 - default presentation details if needed.
 
 ### Widgets place gauges
@@ -78,7 +87,7 @@ A dashboard `type: gauge` widget owns:
 - position;
 - scale.
 
-It does not own sensor binding in v3.2.
+It does not own sensor binding in v3.2. If `sensor` appears on a gauge widget, validation rejects it.
 
 ### Directory names are not type names
 
@@ -87,7 +96,7 @@ Everything under `assets/gauges/` is user-defined structure.
 This is valid:
 
 ```text
-assets/gauges/classic/rpm/gauge.yaml
+assets/gauges/seven_segment/amber/4_digit/gauge.yaml
 ```
 
 This is also valid:
