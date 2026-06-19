@@ -88,6 +88,30 @@ func TestRejectBadWidgetAssetFamily(t *testing.T) {
 	assertErrorContains(t, err, "assets.digit_sets")
 }
 
+func TestAllowGaugeWidgetWithoutSensor(t *testing.T) {
+	cfg, err := LoadBytes([]byte(validMinimalYAMLWithGaugeWidget("")))
+	if err != nil {
+		t.Fatalf("expected gauge widget config to load: %v", err)
+	}
+
+	widgets := cfg.Dashboards["simple_primary"].Widgets
+	gauge := widgets[len(widgets)-1]
+	if gauge.Type != WidgetTypeGauge || gauge.Sensor != "" || gauge.Asset != "" {
+		t.Fatalf("gauge widget identity = %#v", gauge)
+	}
+	if gauge.Gauge != "assets/gauges/7Seg/amber/4_digit_rpm" || gauge.Scale != 1.0 {
+		t.Fatalf("gauge widget placement = %#v", gauge)
+	}
+}
+
+func TestRejectGaugeWidgetSensor(t *testing.T) {
+	_, err := LoadBytes([]byte(validMinimalYAMLWithGaugeWidget("        sensor: speed\n")))
+	if err == nil {
+		t.Fatalf("expected gauge widget sensor to fail")
+	}
+	assertErrorContains(t, err, "sensor must be empty for gauge widgets")
+}
+
 func TestRejectInvalidIDs(t *testing.T) {
 	bad := strings.Replace(validMinimalYAML(), "vw_caddy:", "VW-Caddy:", 1)
 	_, err := LoadBytes([]byte(bad))
@@ -159,6 +183,15 @@ func assertErrorContains(t *testing.T, err error, want string) {
 
 func removeDigitDecimalPoint(cfgText string) string {
 	return strings.Replace(cfgText, "      decimal_point: assets/dashboard/simple/digits/dp.png\n", "", 1)
+}
+
+func validMinimalYAMLWithGaugeWidget(extraLines string) string {
+	return validMinimalYAML() + `
+      - id: rpm_gauge
+        type: gauge
+` + extraLines + `        gauge: assets/gauges/7Seg/amber/4_digit_rpm
+        position: [780, 40]
+        scale: 1.0`
 }
 
 func validMinimalYAML() string {
