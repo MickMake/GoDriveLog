@@ -1,8 +1,8 @@
 # GoDriveLog v3.2 implementation state
 
-Status: planning baseline in progress
-Current target: v3.2.0 planning baseline
-Current branch: v3.2.0-planning-baseline
+Status: v3.2.1 gauge package loader implemented, pending review
+Current target: v3.2.2 gauge widget support
+Current branch: v3.2.1-gauge-package-loader
 
 ## Purpose
 
@@ -153,17 +153,27 @@ value_map:
   clamp: true
 ```
 
+## v3.2.1 implementation notes
+
+- Added `internal/dashboard/gauges` as the loader package for self-contained gauge packages.
+- `LoadPackage` accepts a package directory under `assets/gauges/**` and resolves `gauge.yaml` from that directory.
+- The loader parses `seven_segment` and `radial` package types with package-owned fields including `sensor`, `format`, `digit_set`, `digits`, `layers`, `pivot`, and `value_map`.
+- Layer and digit image paths resolve relative to the package `gauge.yaml` directory.
+- Relative image paths such as `../7Seg0.png` and `../../7Seg4Digits.png` are allowed when the resolved path remains inside the inferred `assets` tree.
+- Paths escaping the asset tree are rejected.
+- This slice intentionally does not add dashboard widget config, scene model, renderer, Fyne, inheritance, cluster, or example asset behaviour.
+
 ## Completed slices
 
 | Version | Status | Notes |
 |---|---|---|
-| v3.2.0 | in progress | Planning docs, prompts, repo hygiene, active example/assets normalisation, and v3.0 doc archiving. |
+| v3.2.0 | completed | Planning docs, prompts, repo hygiene, active example/assets normalisation, and v3.0 doc archiving. |
+| v3.2.1 | implemented, pending review | Gauge package loader and tests for `assets/gauges/**/gauge.yaml`. |
 
 ## Pending slices
 
 | Version | Status | Next action |
 |---|---|---|
-| v3.2.1 | not started | Implement gauge package loader. |
 | v3.2.2 | not started | Add gauge widget config support. |
 | v3.2.3 | not started | Add seven-segment gauge scene model. |
 | v3.2.4 | not started | Add Fyne seven-segment renderer. |
