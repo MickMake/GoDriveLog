@@ -38,6 +38,7 @@ type cachedAsset struct {
 
 type renderedPart struct {
 	asset cachedAsset
+	size  fyneui.Size
 	x     float32
 	y     float32
 }
@@ -135,14 +136,19 @@ func (a *Adapter) renderWidgetParts(widget v3dashboard.Widget, yOffset float32) 
 	parts := make([]renderedPart, 0, len(widget.Parts))
 	baseX, baseY := widgetPosition(widget)
 	baseY += yOffset
+	widgetScale := widget.Scale
+	if widgetScale <= 0 {
+		widgetScale = 1
+	}
 
 	for index, part := range widget.Parts {
 		asset, err := a.loadAsset(part.AssetPath)
 		if err != nil {
 			return nil, fmt.Errorf("part %d %q asset %q: %w", index, part.Kind, part.AssetPath, err)
 		}
-		x, y := partPosition(baseX, baseY, asset.size, part)
-		parts = append(parts, renderedPart{asset: asset, x: x, y: y})
+		size := scaledSize(asset.size, widgetScale)
+		x, y := partPosition(baseX, baseY, size, widgetScale, part)
+		parts = append(parts, renderedPart{asset: asset, size: size, x: x, y: y})
 	}
 	return parts, nil
 }
@@ -154,7 +160,7 @@ func (a *Adapter) rebuildImages(parts []renderedPart) {
 		object := canvas.NewImageFromResource(part.asset.resource)
 		object.FillMode = canvas.ImageFillStretch
 		object.Move(fyneui.NewPos(part.x, part.y))
-		object.Resize(part.asset.size)
+		object.Resize(part.size)
 		a.images = append(a.images, object)
 		objects = append(objects, object)
 	}
@@ -169,7 +175,7 @@ func (a *Adapter) updateImages(parts []renderedPart) {
 			object.Refresh()
 		}
 		object.Move(fyneui.NewPos(part.x, part.y))
-		object.Resize(part.asset.size)
+		object.Resize(part.size)
 	}
 }
 
@@ -249,9 +255,21 @@ func widgetPosition(widget v3dashboard.Widget) (float32, float32) {
 	return float32(widget.Position[0]), float32(widget.Position[1])
 }
 
-func partPosition(baseX, baseY float32, size fyneui.Size, part v3dashboard.Part) (float32, float32) {
+func scaledSize(size fyneui.Size, scale float64) fyneui.Size {
+	if scale <= 0 || scale == 1 {
+		return size
+	}
+	return fyneui.NewSize(size.Width*float32(scale), size.Height*float32(scale))
+}
+
+func partPosition(baseX, baseY float32, size fyneui.Size, scale float64, part v3dashboard.Part) (float32, float32) {
 	x := baseX
 	y := baseY
+	if len(part.Position) >= 2 {
+		x += float32(part.Position[0]) * float32(scale)
+		y += float32(part.Position[1]) * float32(scale)
+		return x, y
+	}
 	if part.Slot > 0 {
 		x += float32(part.Slot) * size.Width
 	}
@@ -259,31 +277,23 @@ func partPosition(baseX, baseY float32, size fyneui.Size, part v3dashboard.Part)
 }
 
 func partsWidth(parts []renderedPart) float32 {
-	var width float32 = 1
+	max := float32(0)
 	for _, part := range parts {
-		right := part.x + part.asset.size.Width
-		if right > width {
-			width = right
+		width := part.x + part.size.Width
+		if width > max {
+			max = width
 		}
 	}
-	return width
+	return max
 }
 
 func partsHeight(parts []renderedPart, yOffset float32) float32 {
-	var height float32 = 1
+	max := yOffset
 	for _, part := range parts {
-		bottom := part.y + part.asset.size.Height - yOffset
-		if bottom > height {
-			height = bottom
+		height := part.y + part.size.Height
+		if height > max {
+			max = height
 		}
 	}
-	return height
-}
-
-// RenderedObjectCount is intended for focused adapter tests.
-func (a *Adapter) RenderedObjectCount() int {
-	if a == nil || a.root == nil {
-		return 0
-	}
-	return len(a.root.Objects)
+	return max
 }
