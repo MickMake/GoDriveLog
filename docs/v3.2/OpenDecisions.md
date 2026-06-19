@@ -27,16 +27,18 @@ The only required filename is `gauge.yaml`.
 
 Anything under `assets/gauges/` may be arbitrarily named. Directory names do not imply renderer type, sensor type, gauge type, style, family, or inheritance.
 
-The dashboard references the gauge package directory using an asset-root relative path, for example:
+The current seven-segment examples use the `7Seg` directory name.
+
+The dashboard references the gauge package directory using the configured package path, for example:
 
 ```yaml
-gauge: gauges/seven_segment/amber/4_digit
+gauge: assets/gauges/7Seg/amber/4_digit_rpm
 ```
 
 The loader resolves that to:
 
 ```text
-assets/gauges/seven_segment/amber/4_digit/gauge.yaml
+assets/gauges/7Seg/amber/4_digit_rpm/gauge.yaml
 ```
 
 ### One gauge per file
@@ -151,14 +153,16 @@ Gauge packages may share image files through relative layer paths, for example:
 
 ```yaml
 layers:
-  background: ../images/bezel.png
-  face: ../images/face_dark.png
-  needle: ../images/needle_red.png
+  panel: ../../7Seg4Digits.png
+  glass: ../../Glass.png
+  background: ../../7SegBack.png
 ```
 
 This is not code inheritance. It is file reference reuse.
 
 Layer paths are resolved relative to the `gauge.yaml` directory.
+
+Relative paths such as `../` and `../../` are acceptable when they remain inside the asset tree and do not go up and then back down through several unrelated folders.
 
 ### Radial gauge pivot model
 
