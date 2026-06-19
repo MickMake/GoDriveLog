@@ -7,11 +7,11 @@ size:
   height: 512
 
 layers:
-  background: ../shared/radial/simple_rpm/bezel.png
-  face: ../shared/radial/simple_rpm/face.png
-  ticks: ../shared/radial/simple_rpm/ticks.png
-  needle: ../shared/radial/simple_rpm/needle.png
-  overlay: ../shared/radial/simple_rpm/glass.png
+  background: bezel.png
+  face: face.png
+  ticks: ticks.png
+  needle: needle.png
+  overlay: glass.png
 
 pivot:
   face: { x: 0.5, y: 0.55 }
