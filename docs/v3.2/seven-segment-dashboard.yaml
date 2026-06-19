@@ -39,6 +39,7 @@ sensors:
   odometer:
     type: virtual
     unit: "km"
+    poll: 250
     min: 0
     max: 99999
 

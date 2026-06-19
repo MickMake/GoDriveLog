@@ -8,24 +8,24 @@ size:
   height: 150
 
 layers:
-  panel: ../../../shared/seven_segment/green/panel_2_digit.png
-  glass: ../../../shared/seven_segment/green/glass.png
+  panel: ../../7Seg2Digits.png
+  glass: ../../Glass.png
 
 digit_set:
-  background: ../../../shared/seven_segment/green/digit_back.png
+  background: ../../7SegBack.png
   characters:
-    "0": ../../../shared/seven_segment/green/0.png
-    "1": ../../../shared/seven_segment/green/1.png
-    "2": ../../../shared/seven_segment/green/2.png
-    "3": ../../../shared/seven_segment/green/3.png
-    "4": ../../../shared/seven_segment/green/4.png
-    "5": ../../../shared/seven_segment/green/5.png
-    "6": ../../../shared/seven_segment/green/6.png
-    "7": ../../../shared/seven_segment/green/7.png
-    "8": ../../../shared/seven_segment/green/8.png
-    "9": ../../../shared/seven_segment/green/9.png
-    "-": ../../../shared/seven_segment/green/minus.png
-  decimal_point: ../../../shared/seven_segment/green/dp.png
+    "0": ../7Seg0.png
+    "1": ../7Seg1.png
+    "2": ../7Seg2.png
+    "3": ../7Seg3.png
+    "4": ../7Seg4.png
+    "5": ../7Seg5.png
+    "6": ../7Seg6.png
+    "7": ../7Seg7.png
+    "8": ../7Seg8.png
+    "9": ../7Seg9.png
+    "-": ../7SegMinus.png
+  decimal_point: ../7SegDP.png
   spacing: 4
 
 digits:
