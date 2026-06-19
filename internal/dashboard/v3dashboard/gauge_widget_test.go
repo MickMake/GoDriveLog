@@ -38,6 +38,9 @@ func TestRuntimeLoadsGaugeWidgetPackageAndRendersSensorState(t *testing.T) {
 	if got := countParts(widget, PartKindLayer); got != 2 {
 		t.Fatalf("expected panel/glass static layers, got %d from %#v", got, widget.Parts)
 	}
+	if got := gaugePartSequence(widget); !strings.HasPrefix(got, "layer:panel,") || !strings.HasSuffix(got, ",layer:glass") {
+		t.Fatalf("expected panel under digits and glass over digits, got %q", got)
+	}
 	if got := characters(widget); got != "0012" {
 		t.Fatalf("expected rendered RPM characters 0012, got %q", got)
 	}
@@ -73,6 +76,9 @@ func TestRuntimeGaugeWidgetNonOKStateDoesNotRenderLiveDigits(t *testing.T) {
 	if got := countParts(widget, PartKindLayer); got != 2 {
 		t.Fatalf("expected static layers to remain, got %d", got)
 	}
+	if got := gaugePartSequence(widget); got != "layer:panel,layer:glass" {
+		t.Fatalf("expected non-ok static layers in draw order, got %q", got)
+	}
 }
 
 func TestRuntimeGaugeWidgetSceneSignatureChangesWithFormattedOutput(t *testing.T) {
@@ -103,6 +109,33 @@ func TestRuntimeGaugeWidgetSceneSignatureChangesWithFormattedOutput(t *testing.T
 	}
 	if !changed {
 		t.Fatalf("expected changed formatted gauge output to redraw")
+	}
+}
+
+func TestRuntimeGaugeWidgetSceneSignatureChangesWithNonOKDigitPositions(t *testing.T) {
+	packageDir := makeDashboardGaugePackage(t, 4, "%04.0f")
+	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 1024, Height: 600}, Widgets: []v3config.WidgetConfig{{ID: "rpm", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{780, 40}, Scale: 1}}}}}}
+	runtime, err := NewRuntime(plan, testAssetRegistry())
+	if err != nil {
+		t.Fatalf("NewRuntime failed: %v", err)
+	}
+	runtime.SetState(sensors.SensorState{ID: "rpm", Status: sensors.StatusTimeout})
+
+	scenes, err := runtime.Snapshot()
+	if err != nil {
+		t.Fatalf("Snapshot failed: %v", err)
+	}
+	firstSignature := sceneSignature(scenes[0])
+
+	if err := os.WriteFile(filepath.Join(packageDir, "gauge.yaml"), []byte(dashboardGaugeYAMLWithOffset(4, "%04.0f", 777)), 0o600); err != nil {
+		t.Fatalf("WriteFile: %v", err)
+	}
+	scenes, err = runtime.Snapshot()
+	if err != nil {
+		t.Fatalf("Snapshot failed: %v", err)
+	}
+	if firstSignature == sceneSignature(scenes[0]) {
+		t.Fatalf("expected non-ok scene signature to change when package digit positions change")
 	}
 }
 
@@ -138,9 +171,13 @@ func makeDashboardGaugePackage(t *testing.T, count int, format string) string {
 }
 
 func dashboardGaugeYAML(count int, format string) string {
+	return dashboardGaugeYAMLWithOffset(count, format, 2)
+}
+
+func dashboardGaugeYAMLWithOffset(count int, format string, xOffset int) string {
 	var positions strings.Builder
 	for slot := 0; slot < count; slot++ {
-		positions.WriteString(fmt.Sprintf("    - [%d, 12]\n", slot*10+2))
+		positions.WriteString(fmt.Sprintf("    - [%d, 12]\n", slot*10+xOffset))
 	}
 	return fmt.Sprintf(`id: dashboard_%d_digit_rpm
 type: seven_segment
@@ -180,6 +217,21 @@ func firstPartCharacter(widget Widget, character string) Part {
 		}
 	}
 	return Part{}
+}
+
+func gaugePartSequence(widget Widget) string {
+	parts := make([]string, 0, len(widget.Parts))
+	for _, part := range widget.Parts {
+		switch part.Kind {
+		case PartKindLayer:
+			parts = append(parts, "layer:"+part.Layer)
+		case PartKindCharacter:
+			parts = append(parts, "character:"+part.Character)
+		default:
+			parts = append(parts, part.Kind)
+		}
+	}
+	return strings.Join(parts, ",")
 }
 
 var _ = v3assets.IndicatorStateOff
