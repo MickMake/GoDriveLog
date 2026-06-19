@@ -13,6 +13,7 @@ const (
 	WidgetTypeBarDisplay   = "bar_display"
 	WidgetTypeFrameGauge   = "frame_gauge"
 	WidgetTypeIndicator    = "indicator"
+	WidgetTypeGauge        = "gauge"
 
 	ValueKindNumeric = "numeric"
 	ValueKindBool    = "bool"
@@ -116,8 +117,10 @@ type WidgetConfig struct {
 	ID       string       `yaml:"id"`
 	Type     string       `yaml:"type"`
 	Sensor   string       `yaml:"sensor,omitempty"`
-	Asset    string       `yaml:"asset"`
+	Asset    string       `yaml:"asset,omitempty"`
+	Gauge    string       `yaml:"gauge,omitempty"`
 	Position []int        `yaml:"position"`
+	Scale    float64      `yaml:"scale,omitempty"`
 	Digits   int          `yaml:"digits,omitempty"`
 	Format   string       `yaml:"format,omitempty"`
 	Cells    int          `yaml:"cells,omitempty"`
