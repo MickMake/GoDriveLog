@@ -29,8 +29,8 @@ func TestSevenSegmentSceneUsesPackageOwnedFormatPositionsAndStaticLayers(t *test
 	if scene.Size.Width != 398 || scene.Size.Height != 150 {
 		t.Fatalf("scene size = %#v", scene.Size)
 	}
-	if got := layerNames(scene); got != "glass,panel" {
-		t.Fatalf("static layer names = %q, want glass,panel", got)
+	if got := layerNames(scene); got != "panel,glass" {
+		t.Fatalf("static layer names = %q, want panel,glass", got)
 	}
 	if got := sceneCharacters(scene); got != "0012" {
 		t.Fatalf("characters = %q, want 0012", got)
@@ -38,6 +38,24 @@ func TestSevenSegmentSceneUsesPackageOwnedFormatPositionsAndStaticLayers(t *test
 	char := firstCharacterPart(scene, "1")
 	if char.Slot != 2 || char.Position[0] != 22 || char.Position[1] != 12 {
 		t.Fatalf("expected character 1 at slot 2 position [22,12], got %#v", char)
+	}
+}
+
+func TestSevenSegmentSceneEmitsPanelUnderDigitsAndGlassOverDigits(t *testing.T) {
+	pkg := loadSevenSegmentScenePackage(t, 4, "%04.0f")
+	scene, err := SevenSegmentScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("rpm", 12))
+	if err != nil {
+		t.Fatalf("SevenSegmentScene returned error: %v", err)
+	}
+	sequence := partLayerSequence(scene)
+	if !strings.HasPrefix(sequence, "layer:panel,") {
+		t.Fatalf("expected panel underlay first, got %q", sequence)
+	}
+	if !strings.HasSuffix(sequence, ",layer:glass") {
+		t.Fatalf("expected glass overlay last, got %q", sequence)
+	}
+	if strings.Index(sequence, "layer:glass") < strings.Index(sequence, "character:1") {
+		t.Fatalf("expected glass after live digits, got %q", sequence)
 	}
 }
 
@@ -94,6 +112,9 @@ func TestSevenSegmentSceneDoesNotRenderLiveDigitsForNonOKStates(t *testing.T) {
 			if got := countSceneParts(scene, ScenePartKindLayer); got != 2 {
 				t.Fatalf("expected static panel/glass layers for %q, got %d", status, got)
 			}
+			if got := layerNames(scene); got != "panel,glass" {
+				t.Fatalf("expected non-ok layers to keep draw order, got %q", got)
+			}
 		})
 	}
 }
@@ -118,6 +139,22 @@ func TestSevenSegmentSceneSignatureChangesWithFormattedOutput(t *testing.T) {
 	}
 	if first.Signature() == changed.Signature() {
 		t.Fatalf("expected changed formatted output to change signature")
+	}
+}
+
+func TestSevenSegmentSceneSignatureIncludesDigitPositionsForNonOKState(t *testing.T) {
+	pkg := loadSevenSegmentScenePackage(t, 4, "%04.0f")
+	first, err := SevenSegmentScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, sensors.SensorState{ID: "rpm", Status: sensors.StatusTimeout})
+	if err != nil {
+		t.Fatalf("SevenSegmentScene returned error: %v", err)
+	}
+	pkg.Digits.Positions[2] = []int{999, 12}
+	changed, err := SevenSegmentScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, sensors.SensorState{ID: "rpm", Status: sensors.StatusTimeout})
+	if err != nil {
+		t.Fatalf("SevenSegmentScene returned error: %v", err)
+	}
+	if first.Signature() == changed.Signature() {
+		t.Fatalf("expected non-ok signature to change when digit positions change")
 	}
 }
 
@@ -202,6 +239,21 @@ func layerNames(scene Scene) string {
 		}
 	}
 	return strings.Join(names, ",")
+}
+
+func partLayerSequence(scene Scene) string {
+	parts := make([]string, 0, len(scene.Parts))
+	for _, part := range scene.Parts {
+		switch part.Kind {
+		case ScenePartKindLayer:
+			parts = append(parts, "layer:"+part.Layer)
+		case ScenePartKindCharacter:
+			parts = append(parts, "character:"+part.Character)
+		default:
+			parts = append(parts, part.Kind)
+		}
+	}
+	return strings.Join(parts, ",")
 }
 
 func sceneCharacters(scene Scene) string {
