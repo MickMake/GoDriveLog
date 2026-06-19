@@ -112,6 +112,23 @@ func TestRejectGaugeWidgetSensor(t *testing.T) {
 	assertErrorContains(t, err, "sensor must be empty for gauge widgets")
 }
 
+func TestRejectGaugeWidgetAsset(t *testing.T) {
+	_, err := LoadBytes([]byte(validMinimalYAMLWithGaugeWidget("        asset: digits\n")))
+	if err == nil {
+		t.Fatalf("expected gauge widget asset to fail")
+	}
+	assertErrorContains(t, err, "asset must be empty for gauge widgets")
+}
+
+func TestRejectNonGaugeWidgetGauge(t *testing.T) {
+	bad := strings.Replace(validMinimalYAML(), "position: [0, 0]", "position: [0, 0]\n        gauge: assets/gauges/7Seg/amber/4_digit_rpm", 1)
+	_, err := LoadBytes([]byte(bad))
+	if err == nil {
+		t.Fatalf("expected non-gauge widget gauge field to fail")
+	}
+	assertErrorContains(t, err, "gauge must be empty for non-gauge widgets")
+}
+
 func TestRejectInvalidIDs(t *testing.T) {
 	bad := strings.Replace(validMinimalYAML(), "vw_caddy:", "VW-Caddy:", 1)
 	_, err := LoadBytes([]byte(bad))
