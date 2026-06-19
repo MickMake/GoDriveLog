@@ -60,24 +60,24 @@ dashboards:
     widgets:
       - id: temp_2_digit
         type: gauge
-        gauge: assets/gauges/seven_segment/green/2_digit_temp
+        gauge: assets/gauges/7Seg/green/2_digit_temp
         position: [40, 40]
         scale: 1.0
 
       - id: speed_3_digit
         type: gauge
-        gauge: assets/gauges/seven_segment/amber/3_digit_speed
+        gauge: assets/gauges/7Seg/amber/3_digit_speed
         position: [360, 40]
         scale: 1.0
 
       - id: rpm_4_digit
         type: gauge
-        gauge: assets/gauges/seven_segment/amber/4_digit_rpm
+        gauge: assets/gauges/7Seg/amber/4_digit_rpm
         position: [780, 40]
         scale: 1.0
 
       - id: odometer_5_digit
         type: gauge
-        gauge: assets/gauges/seven_segment/green/5_digit_trip
+        gauge: assets/gauges/7Seg/green/5_digit_trip
         position: [1280, 40]
         scale: 1.0

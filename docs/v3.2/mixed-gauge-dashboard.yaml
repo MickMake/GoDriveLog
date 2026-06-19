@@ -57,12 +57,12 @@ dashboards:
 
       - id: speed_3_digit
         type: gauge
-        gauge: assets/gauges/seven_segment/amber/3_digit_speed
+        gauge: assets/gauges/7Seg/amber/3_digit_speed
         position: [780, 120]
         scale: 1.0
 
       - id: gear_2_digit
         type: gauge
-        gauge: assets/gauges/seven_segment/green/2_digit_temp
+        gauge: assets/gauges/7Seg/green/2_digit_temp
         position: [1280, 120]
         scale: 1.0
