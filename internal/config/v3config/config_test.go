@@ -7,7 +7,7 @@ import (
 )
 
 func TestLoadDocsV3ConfigExample(t *testing.T) {
-	cfg := loadTestConfig(t, "docs/v3/config.example.yaml")
+	cfg := loadTestConfig(t, "config.example.yaml")
 	if len(cfg.Vehicles) != 1 {
 		t.Fatalf("expected one vehicle, got %d", len(cfg.Vehicles))
 	}

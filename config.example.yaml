@@ -1,6 +1,6 @@
 # GoDriveLog v3 minimal configuration example
 #
-# This file is intentionally small. Use docs/v3/config.full.yaml for the
+# This file is intentionally small. Use config.full.yaml for the
 # fully commented schema tour.
 
 vehicles:

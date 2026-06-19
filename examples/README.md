@@ -2,7 +2,7 @@
 
 These are draft GoDriveLog v3 dashboard configuration examples for sleeping on, arguing with tomorrow, and hopefully not summoning a YAML demon.
 
-They are active v3 examples, not decorative confetti. Every file in this directory should validate against the same v3 schema rules as `docs/v3/config.example.yaml` and `docs/v3/config.full.yaml`.
+They are active v3 examples, not decorative confetti. Every file in this directory should validate against the same v3 schema rules as `config.example.yaml` and `config.full.yaml`.
 
 Asset paths are repository-root relative. Use `assets/dashboard/...` paths in active v3 examples.
 
