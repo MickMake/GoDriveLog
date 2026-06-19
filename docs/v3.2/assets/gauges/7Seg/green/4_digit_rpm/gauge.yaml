@@ -1,0 +1,37 @@
+id: green_4_digit_rpm
+type: seven_segment
+sensor: rpm
+format: "%04.0f"
+
+size:
+  width: 398
+  height: 150
+
+layers:
+  panel: ../../../shared/seven_segment/green/panel_4_digit.png
+  glass: ../../../shared/seven_segment/green/glass.png
+
+digit_set:
+  background: ../../../shared/seven_segment/green/digit_back.png
+  characters:
+    "0": ../../../shared/seven_segment/green/0.png
+    "1": ../../../shared/seven_segment/green/1.png
+    "2": ../../../shared/seven_segment/green/2.png
+    "3": ../../../shared/seven_segment/green/3.png
+    "4": ../../../shared/seven_segment/green/4.png
+    "5": ../../../shared/seven_segment/green/5.png
+    "6": ../../../shared/seven_segment/green/6.png
+    "7": ../../../shared/seven_segment/green/7.png
+    "8": ../../../shared/seven_segment/green/8.png
+    "9": ../../../shared/seven_segment/green/9.png
+    "-": ../../../shared/seven_segment/green/minus.png
+  decimal_point: ../../../shared/seven_segment/green/dp.png
+  spacing: 4
+
+digits:
+  count: 4
+  positions:
+    - [35, 35]
+    - [117, 35]
+    - [199, 35]
+    - [281, 35]

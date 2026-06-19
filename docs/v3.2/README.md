@@ -12,6 +12,9 @@ v3.2 benches the remaining v3.1.7 dashboard event efficiency and v3.1.8 retireme
 - `CarryForward.md` - v3.1 lessons and constraints that still matter.
 - `prompts/README.md` - prompt index and common implementation guardrails.
 - `prompts/v3.2.x-*.md` - one prompt per implementation slice.
+- `seven-segment-dashboard.yaml` - dashboard using 2, 3, 4, and 5 digit seven-segment gauge packages.
+- `radial-dashboard.yaml` - dashboard using a radial RPM gauge package.
+- `mixed-gauge-dashboard.yaml` - dashboard combining radial and seven-segment packages.
 
 ## Direction
 

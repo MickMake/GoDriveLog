@@ -1,0 +1,30 @@
+id: simple_radial_rpm
+type: radial
+sensor: rpm
+
+size:
+  width: 512
+  height: 512
+
+layers:
+  background: ../shared/radial/simple_rpm/bezel.png
+  face: ../shared/radial/simple_rpm/face.png
+  ticks: ../shared/radial/simple_rpm/ticks.png
+  needle: ../shared/radial/simple_rpm/needle.png
+  overlay: ../shared/radial/simple_rpm/glass.png
+
+pivot:
+  face: { x: 0.5, y: 0.55 }
+  needle: { x: 0.5, y: 0.9 }
+
+value_map:
+  min: 0
+  max: 7000
+  start_angle: -135
+  end_angle: 135
+  clamp: true
+
+labels:
+  major_step: 1000
+  minor_step: 500
+  unit: rpm
