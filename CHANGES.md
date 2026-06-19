@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Aligned v3.2 gauge-package planning docs and prompts with the newer `assets/gauges/7Seg/...` example layout without removing existing files or package examples.
+- Clarified that v3.2 gauge package asset paths may use `../` and `../../` when they remain inside the asset tree and avoid unreadable up-and-back-down folder trips.
 - Added `v3.2.0` planning baseline docs for self-contained gauge packages under `docs/v3.2/`, including `ImplementationState.md`, `OpenDecisions.md`, `ReleasePlan.md`, `CarryForward.md`, and per-slice prompts.
 - Documented the v3.2 gauge package architecture: dashboard `type: gauge` widgets place gauge packages, gauge packages own sensor binding and radial gauge definition, and `assets/gauges/**/gauge.yaml` is the only required gauge package filename.
 - Normalised active v3 root config, examples, and simple dashboard assets.
