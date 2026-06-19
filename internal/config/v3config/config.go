@@ -15,6 +15,9 @@ const (
 	WidgetTypeIndicator    = "indicator"
 	WidgetTypeGauge        = "gauge"
 
+	SensorTypeOBD     = "obd"
+	SensorTypeVirtual = "virtual"
+
 	ValueKindNumeric = "numeric"
 	ValueKindBool    = "bool"
 	ValueKindString  = "string"
@@ -162,7 +165,7 @@ func SensorDeclaredValueKind(sensor SensorConfig) string {
 
 func SensorOutputValueKind(sensor SensorConfig) string {
 	switch sensor.Type {
-	case "obd":
+	case SensorTypeOBD, SensorTypeVirtual:
 		return ValueKindNumeric
 	default:
 		return ""
