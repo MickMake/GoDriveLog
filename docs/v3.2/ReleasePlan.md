@@ -24,9 +24,11 @@ Radial gauges come after the seven-segment package path is proven.
 - Gauge widgets place gauge packages using a gauge path, position, and scale.
 - Gauge packages own sensor binding, visual layers, formatting, layout geometry, value mapping, pivots, and asset references.
 - Directory names under `assets/gauges/` are arbitrary and carry no renderer meaning.
+- The current seven-segment examples use `assets/gauges/7Seg/`.
 - The only required gauge package filename is `gauge.yaml`.
 - Gauge type is declared inside `gauge.yaml`.
 - Image paths inside `gauge.yaml` are resolved relative to that `gauge.yaml` file.
+- Relative paths such as `../` and `../../` are acceptable when they stay inside the asset tree and do not go up and then back down through several unrelated folders.
 - Keep existing `digit_sets` useful as reusable raw glyph artwork; seven-segment gauge packages build complete mounted displays from digit sets.
 - For `type: gauge` dashboard widgets, reject widget-level `sensor` so sensor ownership stays in the package.
 - Do not add clusters, inheritance, themes, variants, or procedural drawing in the first pass.
@@ -89,12 +91,12 @@ Do not redesign the release plan inside a slice chat.
 ## v3.2.1 gauge package loader checkpoints
 
 - Load a gauge package from `assets/gauges/**/gauge.yaml`.
-- Treat the dashboard `gauge` value as an asset-root relative directory path.
+- Accept dashboard `gauge` values that point at package directories such as `assets/gauges/7Seg/amber/4_digit_rpm`.
 - Resolve `gauge.yaml` from that directory.
 - Resolve layer image paths relative to the `gauge.yaml` directory.
-- Allow relative reuse such as `../images/bezel.png` when the final path remains inside the asset root.
+- Allow relative reuse such as `../../7Seg4Digits.png` when the final path remains inside the asset tree.
 - Reject missing `gauge.yaml` files with clear errors.
-- Reject invalid path traversal outside the asset root.
+- Reject invalid path traversal outside the asset tree.
 - Support at least `type: seven_segment` and `type: radial` in parsed gauge packages.
 
 ## v3.2.2 gauge widget support checkpoints
@@ -139,7 +141,7 @@ Do not redesign the release plan inside a slice chat.
 ## v3.2.7 example gauge packages checkpoints
 
 - Add small example gauge packages under `assets/gauges/`.
-- Include at least one seven-segment display package using generated/placeholder PNG assets.
+- Include at least one seven-segment display package using generated/placeholder PNG assets, following the current `assets/gauges/7Seg/` example layout.
 - Include a radial example package if radial rendering is complete enough to exercise.
 - Use arbitrary directory names; only `gauge.yaml` is required.
 - Demonstrate shared image references with relative paths if practical.

@@ -28,7 +28,7 @@ The only required filename is `gauge.yaml`.
 dashboard
   widgets[]
     type: gauge
-    gauge: gauges/.../<package-dir>
+    gauge: assets/gauges/.../<package-dir>
     position: [x, y]
     scale: n
 
@@ -56,6 +56,8 @@ The first concrete gauge package type is `seven_segment`.
 
 This lets a complete 2, 3, 4, or 5 digit seven-segment display be packaged with its panel/bezel, glass, digit count, digit positions, format, and sensor binding.
 
+The current example directory for seven-segment gauge packages is `assets/gauges/7Seg/`.
+
 Existing `digit_sets` remain useful as reusable raw glyph artwork. A seven-segment gauge package turns those glyphs into a complete mounted dashboard instrument.
 
 Example dashboard widget:
@@ -64,8 +66,8 @@ Example dashboard widget:
 widgets:
   - id: rpm
     type: gauge
-    gauge: gauges/seven_segment/amber/4_digit
-    position: [100, 20]
+    gauge: assets/gauges/7Seg/amber/4_digit_rpm
+    position: [780, 40]
     scale: 1.0
 ```
 
@@ -74,12 +76,15 @@ Example package:
 ```text
 assets/
   gauges/
-    seven_segment/
+    7Seg/
+      7Seg4Digits.png
+      Glass.png
+      7SegBack.png
       amber/
-        4_digit/
+        4_digit_rpm/
           gauge.yaml
-          panel.png
-          glass.png
+        7Seg0.png
+        7Seg1.png
 ```
 
 Example `gauge.yaml`:
@@ -87,26 +92,31 @@ Example `gauge.yaml`:
 ```yaml
 id: amber_4_digit_rpm
 type: seven_segment
-sensor: engine_rpm
+sensor: rpm
 format: "%04.0f"
 
 size:
-  width: 420
-  height: 140
+  width: 398
+  height: 150
 
 layers:
-  panel: panel.png
-  glass: glass.png
+  panel: ../../7Seg4Digits.png
+  glass: ../../Glass.png
 
-digit_set: amber_7seg
+digit_set:
+  background: ../../7SegBack.png
+  characters:
+    "0": ../7Seg0.png
+    "1": ../7Seg1.png
+  spacing: 4
 
 digits:
   count: 4
   positions:
-    - [42, 35]
-    - [132, 35]
-    - [222, 35]
-    - [312, 35]
+    - [35, 35]
+    - [117, 35]
+    - [199, 35]
+    - [281, 35]
 ```
 
 ## Radial package direction
@@ -116,20 +126,20 @@ Radial gauges remain in scope, but they follow after the seven-segment package p
 Example `gauge.yaml`:
 
 ```yaml
-id: rpm
+id: simple_radial_rpm
 type: radial
-sensor: engine_rpm
+sensor: rpm
 
 size:
   width: 512
   height: 512
 
 layers:
-  background: ../images/bezel.png
-  face: ../images/face_dark.png
-  ticks: ticks.png
-  needle: ../images/needle_red.png
-  overlay: ../images/glass_overlay.png
+  background: ../shared/radial/simple_rpm/bezel.png
+  face: ../shared/radial/simple_rpm/face.png
+  ticks: ../shared/radial/simple_rpm/ticks.png
+  needle: ../shared/radial/simple_rpm/needle.png
+  overlay: ../shared/radial/simple_rpm/glass.png
 
 pivot:
   face: { x: 0.5, y: 0.55 }
@@ -137,7 +147,7 @@ pivot:
 
 value_map:
   min: 0
-  max: 8000
+  max: 7000
   start_angle: -135
   end_angle: 135
   clamp: true

@@ -96,7 +96,7 @@ Everything under `assets/gauges/` is user-defined structure.
 This is valid:
 
 ```text
-assets/gauges/seven_segment/amber/4_digit/gauge.yaml
+assets/gauges/7Seg/amber/4_digit_rpm/gauge.yaml
 ```
 
 This is also valid:
@@ -115,11 +115,11 @@ Example:
 
 ```yaml
 layers:
-  background: ../images/bezel.png
-  needle: ../images/needle_red.png
+  panel: ../../7Seg4Digits.png
+  glass: ../../Glass.png
 ```
 
-The implementation must prevent paths escaping the asset root.
+The implementation must prevent paths escaping the asset tree.
 
 ## Things not to carry into v3.2 yet
 
