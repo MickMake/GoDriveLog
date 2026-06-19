@@ -83,7 +83,8 @@ Do not redesign the release plan inside a slice chat.
 - `docs/v3.2/prompts/` contains one prompt per planned implementation slice.
 - v3.1.7 and v3.1.8 are clearly marked as deferred, not cancelled.
 - The gauge package direction is documented.
-- No Go code, tests, runtime behaviour, config schema, renderer code, or assets are changed.
+- No Go code, tests, runtime behaviour, config schema, or renderer code are changed.
+- Existing assets, examples, and historical docs may be normalised or archived.
 
 ## v3.2.1 gauge package loader checkpoints
 
