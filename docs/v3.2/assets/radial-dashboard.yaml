@@ -1,0 +1,40 @@
+# GoDriveLog v3.2 radial gauge dashboard example
+
+vehicles:
+  vw_caddy:
+    name: "VW Caddy"
+    obd:
+      address: "serial:///dev/ttyUSB0"
+      timeout: 1000
+    logs:
+      - jsonl
+    dashboards:
+      - v3_2_radial_demo
+
+sensors:
+  rpm:
+    type: obd
+    pid: "010C"
+    unit: "rpm"
+    poll: 250
+    min: 0
+    max: 7000
+
+logs:
+  jsonl:
+    path: "logs/godrivelog.jsonl"
+    sensors:
+      - rpm
+
+dashboards:
+  v3_2_radial_demo:
+    display: "HDMI-1"
+    size:
+      width: 800
+      height: 800
+    widgets:
+      - id: rpm_radial
+        type: gauge
+        gauge: assets/gauges/radial/simple_rpm
+        position: [0, 0]
+        scale: 1.0

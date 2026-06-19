@@ -1,0 +1,68 @@
+# GoDriveLog v3.2 mixed gauge dashboard example
+
+vehicles:
+  vw_caddy:
+    name: "VW Caddy"
+    obd:
+      address: "serial:///dev/ttyUSB0"
+      timeout: 1000
+    logs:
+      - jsonl
+    dashboards:
+      - v3_2_mixed_demo
+
+sensors:
+  speed:
+    type: obd
+    pid: "010D"
+    unit: "km/h"
+    poll: 250
+    min: 0
+    max: 220
+
+  rpm:
+    type: obd
+    pid: "010C"
+    unit: "rpm"
+    poll: 250
+    min: 0
+    max: 7000
+
+  gear:
+    type: virtual
+    unit: "gear"
+    min: 0
+    max: 6
+
+logs:
+  jsonl:
+    path: "logs/godrivelog.jsonl"
+    sensors:
+      - speed
+      - rpm
+      - gear
+
+dashboards:
+  v3_2_mixed_demo:
+    display: "HDMI-1"
+    size:
+      width: 1920
+      height: 720
+    widgets:
+      - id: rpm_radial
+        type: gauge
+        gauge: assets/gauges/radial/simple_rpm
+        position: [40, 40]
+        scale: 0.85
+
+      - id: speed_3_digit
+        type: gauge
+        gauge: assets/gauges/seven_segment/amber/3_digit_speed
+        position: [780, 120]
+        scale: 1.0
+
+      - id: gear_2_digit
+        type: gauge
+        gauge: assets/gauges/seven_segment/green/2_digit_temp
+        position: [1280, 120]
+        scale: 1.0

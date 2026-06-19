@@ -1,0 +1,83 @@
+# GoDriveLog v3.2 seven-segment gauge dashboard example
+
+vehicles:
+  vw_caddy:
+    name: "VW Caddy"
+    obd:
+      address: "serial:///dev/ttyUSB0"
+      timeout: 1000
+    logs:
+      - jsonl
+    dashboards:
+      - v3_2_seven_segment_demo
+
+sensors:
+  coolant_temperature:
+    type: obd
+    pid: "0105"
+    unit: "C"
+    poll: 5000
+    min: -40
+    max: 140
+
+  speed:
+    type: obd
+    pid: "010D"
+    unit: "km/h"
+    poll: 250
+    min: 0
+    max: 220
+
+  rpm:
+    type: obd
+    pid: "010C"
+    unit: "rpm"
+    poll: 250
+    min: 0
+    max: 7000
+
+  odometer:
+    type: virtual
+    unit: "km"
+    min: 0
+    max: 99999
+
+logs:
+  jsonl:
+    path: "logs/godrivelog.jsonl"
+    sensors:
+      - coolant_temperature
+      - speed
+      - rpm
+      - odometer
+
+dashboards:
+  v3_2_seven_segment_demo:
+    display: "HDMI-1"
+    size:
+      width: 1920
+      height: 480
+    widgets:
+      - id: temp_2_digit
+        type: gauge
+        gauge: assets/gauges/seven_segment/green/2_digit_temp
+        position: [40, 40]
+        scale: 1.0
+
+      - id: speed_3_digit
+        type: gauge
+        gauge: assets/gauges/seven_segment/amber/3_digit_speed
+        position: [360, 40]
+        scale: 1.0
+
+      - id: rpm_4_digit
+        type: gauge
+        gauge: assets/gauges/seven_segment/amber/4_digit_rpm
+        position: [780, 40]
+        scale: 1.0
+
+      - id: odometer_5_digit
+        type: gauge
+        gauge: assets/gauges/seven_segment/green/5_digit_trip
+        position: [1280, 40]
+        scale: 1.0
