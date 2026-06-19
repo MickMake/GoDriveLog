@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Added `v3.2.3` seven-segment gauge scene model support for loaded gauge packages, including static layers, digit positions, package-owned formatting, non-ok suppression, and scene signatures.
+- Added `v3.2.3` seven-segment gauge support through the dashboard scene path, including `type: gauge` package loading, package-owned sensor state, static layers, digit positions, package-owned formatting, non-ok suppression, Fyne adapter positioning, and scene signatures.
 - Removed the redundant post-`Validate` gauge widget ownership pass now that ownership validation lives inside `Validate`.
 - Added `v3.2.2` dashboard config support for `type: gauge` widgets with package-owned gauge paths, placement, and scale.
 - Added validation tests proving gauge widgets do not own sensors and reject widget-level `sensor` fields.
