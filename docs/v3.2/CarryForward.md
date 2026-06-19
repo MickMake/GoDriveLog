@@ -121,8 +121,6 @@ layers:
 
 The implementation must prevent paths escaping the asset tree.
 
-Relative paths such as `../` and `../../` are fine when they stay readable and do not go up and then back down through several unrelated folders.
-
 ## Things not to carry into v3.2 yet
 
 - Gauge inheritance.
