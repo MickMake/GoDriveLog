@@ -2,9 +2,7 @@ package v3config
 
 import (
 	"bytes"
-	"fmt"
 	"os"
-	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -155,26 +153,7 @@ func LoadBytes(data []byte) (Config, error) {
 	if err := Validate(cfg); err != nil {
 		return Config{}, err
 	}
-	if err := validateGaugeWidgetFieldOwnership(cfg); err != nil {
-		return Config{}, err
-	}
 	return cfg, nil
-}
-
-func validateGaugeWidgetFieldOwnership(cfg Config) error {
-	v := validator{}
-	for dashboardID, dashboard := range sortedMap(cfg.Dashboards) {
-		for i, widget := range dashboard.Widgets {
-			path := fmt.Sprintf("dashboards.%s.widgets[%d]", dashboardID, i)
-			if widget.Type != WidgetTypeGauge && strings.TrimSpace(widget.Gauge) != "" {
-				v.add("%s.gauge must be empty for non-gauge widgets", path)
-			}
-		}
-	}
-	if len(v.errs) > 0 {
-		return ValidationError{Errors: v.errs}
-	}
-	return nil
 }
 
 func SensorDeclaredValueKind(sensor SensorConfig) string {
