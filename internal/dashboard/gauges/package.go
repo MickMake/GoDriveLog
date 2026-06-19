@@ -79,6 +79,13 @@ func LoadPackage(packageDir string) (Package, error) {
 	if err != nil {
 		return Package{}, fmt.Errorf("gauge package path %q could not be resolved: %w", packageDir, err)
 	}
+	if _, err := os.Stat(filepath.Join(resolvedPackageDir, "gauge.yaml")); os.IsNotExist(err) && !filepath.IsAbs(packageDir) {
+		if fallback, ok := firstGaugePackageInSearchPaths(defaultGaugeSearchPaths(), packageDir); ok {
+			resolvedPackageDir = fallback
+		}
+	} else if err != nil {
+		return Package{}, fmt.Errorf("gauge package %q could not check gauge.yaml: %w", resolvedPackageDir, err)
+	}
 	assetRoot, err := findAssetRoot(resolvedPackageDir)
 	if err != nil {
 		return Package{}, err
@@ -119,24 +126,83 @@ func LoadPackageWithSearchPaths(searchPaths []string, packageDir string) (Packag
 		return LoadPackage(packageDir)
 	}
 
-	cleanedPackageDir := filepath.Clean(packageDir)
+	if candidate, ok := firstGaugePackageInSearchPaths(searchPaths, packageDir); ok {
+		return LoadPackage(candidate)
+	}
+
 	tried := make([]string, 0, len(searchPaths))
+	for _, root := range searchPaths {
+		if strings.TrimSpace(root) != "" {
+			tried = append(tried, filepath.Join(root, filepath.Clean(packageDir)))
+		}
+	}
+	return Package{}, fmt.Errorf("gauge package path %q could not be found in asset search paths: %s", packageDir, strings.Join(tried, ", "))
+}
+
+func firstGaugePackageInSearchPaths(searchPaths []string, packageDir string) (string, bool) {
+	cleanedPackageDir := filepath.Clean(packageDir)
 	for _, root := range searchPaths {
 		if strings.TrimSpace(root) == "" {
 			continue
 		}
 		candidate := filepath.Join(root, cleanedPackageDir)
-		tried = append(tried, candidate)
-		if _, err := os.Stat(filepath.Join(candidate, "gauge.yaml")); err != nil {
-			if os.IsNotExist(err) {
-				continue
-			}
-			return Package{}, fmt.Errorf("gauge package %q could not check gauge.yaml: %w", candidate, err)
+		if _, err := os.Stat(filepath.Join(candidate, "gauge.yaml")); err == nil {
+			return candidate, true
 		}
-		return LoadPackage(candidate)
 	}
+	return "", false
+}
 
-	return Package{}, fmt.Errorf("gauge package path %q could not be found in asset search paths: %s", packageDir, strings.Join(tried, ", "))
+func defaultGaugeSearchPaths() []string {
+	paths := []string{}
+	if pwd, err := os.Getwd(); err == nil {
+		paths = append(paths, pwd)
+	}
+	if configPath := commandLineConfigPath(os.Args[1:]); configPath != "" {
+		if configDir, err := filepath.Abs(filepath.Dir(configPath)); err == nil {
+			paths = append(paths, configDir)
+		}
+	}
+	return dedupePaths(paths)
+}
+
+func commandLineConfigPath(args []string) string {
+	for index, arg := range args {
+		if arg == "--config" || arg == "-config" {
+			if index+1 < len(args) {
+				return args[index+1]
+			}
+			return ""
+		}
+		if strings.HasPrefix(arg, "--config=") {
+			return strings.TrimPrefix(arg, "--config=")
+		}
+		if strings.HasPrefix(arg, "-config=") {
+			return strings.TrimPrefix(arg, "-config=")
+		}
+	}
+	return ""
+}
+
+func dedupePaths(paths []string) []string {
+	seen := map[string]bool{}
+	cleaned := make([]string, 0, len(paths))
+	for _, path := range paths {
+		if strings.TrimSpace(path) == "" {
+			continue
+		}
+		abs, err := filepath.Abs(path)
+		if err != nil {
+			continue
+		}
+		abs = filepath.Clean(abs)
+		if seen[abs] {
+			continue
+		}
+		seen[abs] = true
+		cleaned = append(cleaned, abs)
+	}
+	return cleaned
 }
 
 func parsePackage(data []byte) (Package, error) {
