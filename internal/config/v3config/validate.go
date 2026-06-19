@@ -266,6 +266,17 @@ func (v *validator) validateAssetPath(pathName, assetPath string) {
 	}
 }
 
+func (v *validator) validateGaugePath(pathName, gaugePath string) {
+	v.validateAssetPath(pathName, gaugePath)
+	cleaned := path.Clean(filepath.ToSlash(strings.TrimSpace(gaugePath)))
+	if cleaned == "assets/gauges" || !strings.HasPrefix(cleaned, "assets/gauges/") {
+		v.add("%s must reference a package directory under assets/gauges", pathName)
+	}
+	if strings.HasSuffix(cleaned, "/gauge.yaml") {
+		v.add("%s must reference a gauge package directory, not gauge.yaml", pathName)
+	}
+}
+
 func hasUpwardEscapeSegment(slashPath string) bool {
 	for _, segment := range strings.Split(slashPath, "/") {
 		if segment == ".." {
@@ -315,7 +326,7 @@ func (v *validator) validateDashboard(path string, dashboard DashboardConfig, cf
 
 func (v *validator) validateWidget(path string, widget WidgetConfig, cfg Config) {
 	if !isKnownWidgetType(widget.Type) {
-		v.add("%s.type must be image, digit_display, bar_display, frame_gauge, or indicator", path)
+		v.add("%s.type must be image, digit_display, bar_display, frame_gauge, indicator, or gauge", path)
 	}
 	if len(widget.Position) != 2 {
 		v.add("%s.position must contain exactly two integers", path)
@@ -323,6 +334,12 @@ func (v *validator) validateWidget(path string, widget WidgetConfig, cfg Config)
 	if widget.Min != nil && widget.Max != nil && *widget.Min >= *widget.Max {
 		v.add("%s.min must be less than max", path)
 	}
+
+	if widget.Type == WidgetTypeGauge {
+		v.validateGaugeWidget(path, widget)
+		return
+	}
+
 	if widget.Type != WidgetTypeImage {
 		if strings.TrimSpace(widget.Sensor) == "" {
 			v.add("%s.sensor must not be empty for non-image widgets", path)
@@ -375,6 +392,23 @@ func (v *validator) validateWidget(path string, widget WidgetConfig, cfg Config)
 	}
 }
 
+func (v *validator) validateGaugeWidget(path string, widget WidgetConfig) {
+	if strings.TrimSpace(widget.Sensor) != "" {
+		v.add("%s.sensor must be empty for gauge widgets", path)
+	}
+	if strings.TrimSpace(widget.Asset) != "" {
+		v.add("%s.asset must be empty for gauge widgets", path)
+	}
+	if strings.TrimSpace(widget.Gauge) == "" {
+		v.add("%s.gauge must not be empty", path)
+	} else {
+		v.validateGaugePath(path+".gauge", widget.Gauge)
+	}
+	if widget.Scale <= 0 {
+		v.add("%s.scale must be greater than zero for gauge widgets", path)
+	}
+}
+
 func (v *validator) validateZones(path string, zones []ZoneConfig, set BarSetConfig) {
 	var previous float64
 	for i, zone := range zones {
@@ -393,7 +427,7 @@ func (v *validator) validateZones(path string, zones []ZoneConfig, set BarSetCon
 
 func isKnownWidgetType(widgetType string) bool {
 	switch widgetType {
-	case WidgetTypeImage, WidgetTypeDigitDisplay, WidgetTypeBarDisplay, WidgetTypeFrameGauge, WidgetTypeIndicator:
+	case WidgetTypeImage, WidgetTypeDigitDisplay, WidgetTypeBarDisplay, WidgetTypeFrameGauge, WidgetTypeIndicator, WidgetTypeGauge:
 		return true
 	default:
 		return false
