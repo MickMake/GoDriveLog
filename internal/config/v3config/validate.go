@@ -339,6 +339,9 @@ func (v *validator) validateWidget(path string, widget WidgetConfig, cfg Config)
 		v.validateGaugeWidget(path, widget)
 		return
 	}
+	if strings.TrimSpace(widget.Gauge) != "" {
+		v.add("%s.gauge must be empty for non-gauge widgets", path)
+	}
 
 	if widget.Type != WidgetTypeImage {
 		if strings.TrimSpace(widget.Sensor) == "" {
