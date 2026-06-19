@@ -1,8 +1,8 @@
 # GoDriveLog v3.2 implementation state
 
-Status: v3.2.1 gauge package loader implemented, pending review
-Current target: v3.2.2 gauge widget support
-Current branch: v3.2.1-gauge-package-loader
+Status: v3.2.2 gauge widget support implemented, pending review
+Current target: v3.2.3 seven-segment gauge scene model
+Current branch: v3.2.2-gauge-widget-support
 
 ## Purpose
 
@@ -163,18 +163,27 @@ value_map:
 - Paths escaping the asset tree are rejected.
 - This slice intentionally does not add dashboard widget config, scene model, renderer, Fyne, inheritance, cluster, or example asset behaviour.
 
+## v3.2.2 implementation notes
+
+- Added `type: gauge` to dashboard widget config parsing and validation.
+- Gauge widgets use `gauge` for the package directory, `position` for placement, and `scale` for sizing.
+- Gauge widgets reject widget-level `sensor` because sensor ownership stays inside the gauge package.
+- Gauge widgets also reject widget-level `asset`; existing asset families remain for legacy image, digit, bar, frame, and indicator widgets.
+- Gauge paths must be repository-root relative package directories under `assets/gauges/`.
+- This slice intentionally does not add scene model, renderer, Fyne, package loading from dashboard runtime, inheritance, cluster, or example asset behaviour.
+
 ## Completed slices
 
 | Version | Status | Notes |
 |---|---|---|
 | v3.2.0 | completed | Planning docs, prompts, repo hygiene, active example/assets normalisation, and v3.0 doc archiving. |
-| v3.2.1 | implemented, pending review | Gauge package loader and tests for `assets/gauges/**/gauge.yaml`. |
+| v3.2.1 | completed | Gauge package loader and tests for `assets/gauges/**/gauge.yaml`. |
+| v3.2.2 | implemented, pending review | Dashboard gauge widget config fields and validation. |
 
 ## Pending slices
 
 | Version | Status | Next action |
 |---|---|---|
-| v3.2.2 | not started | Add gauge widget config support. |
 | v3.2.3 | not started | Add seven-segment gauge scene model. |
 | v3.2.4 | not started | Add Fyne seven-segment renderer. |
 | v3.2.5 | not started | Add radial gauge scene model. |
