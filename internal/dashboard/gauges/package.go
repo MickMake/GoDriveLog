@@ -108,6 +108,37 @@ func LoadPackage(packageDir string) (Package, error) {
 	return pkg, nil
 }
 
+func LoadPackageWithSearchPaths(searchPaths []string, packageDir string) (Package, error) {
+	if packageDir == "" {
+		return Package{}, fmt.Errorf("gauge package path must not be empty")
+	}
+	if isRemotePath(packageDir) {
+		return Package{}, fmt.Errorf("gauge package path %q must be local", packageDir)
+	}
+	if filepath.IsAbs(packageDir) || len(searchPaths) == 0 {
+		return LoadPackage(packageDir)
+	}
+
+	cleanedPackageDir := filepath.Clean(packageDir)
+	tried := make([]string, 0, len(searchPaths))
+	for _, root := range searchPaths {
+		if strings.TrimSpace(root) == "" {
+			continue
+		}
+		candidate := filepath.Join(root, cleanedPackageDir)
+		tried = append(tried, candidate)
+		if _, err := os.Stat(filepath.Join(candidate, "gauge.yaml")); err != nil {
+			if os.IsNotExist(err) {
+				continue
+			}
+			return Package{}, fmt.Errorf("gauge package %q could not check gauge.yaml: %w", candidate, err)
+		}
+		return LoadPackage(candidate)
+	}
+
+	return Package{}, fmt.Errorf("gauge package path %q could not be found in asset search paths: %s", packageDir, strings.Join(tried, ", "))
+}
+
 func parsePackage(data []byte) (Package, error) {
 	var pkg Package
 	decoder := yaml.NewDecoder(bytes.NewReader(data))
@@ -240,5 +271,5 @@ func isInside(root string, path string) bool {
 }
 
 func isRemotePath(path string) bool {
-	return strings.Contains(path, "://")
+	return strings.Contains(path, ":"+"//")
 }
