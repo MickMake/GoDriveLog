@@ -2,7 +2,6 @@ package gauges
 
 import (
 	"fmt"
-	"sort"
 	"strconv"
 	"strings"
 
@@ -23,17 +22,18 @@ type Placement struct {
 }
 
 type Scene struct {
-	PackageID   string
-	PackagePath string
-	Type        string
-	SensorID    string
-	Position    []int
-	Scale       float64
-	Size        Size
-	Status      string
-	Error       string
-	Text        string
-	Parts       []ScenePart
+	PackageID      string
+	PackagePath    string
+	Type           string
+	SensorID       string
+	Position       []int
+	Scale          float64
+	Size           Size
+	Status         string
+	Error          string
+	Text           string
+	DigitPositions [][]int
+	Parts          []ScenePart
 }
 
 type ScenePart struct {
@@ -61,19 +61,21 @@ func SevenSegmentScene(pkg Package, placement Placement, state sensors.SensorSta
 
 	state = stateForPackage(pkg.Sensor, state)
 	scene := Scene{
-		PackageID:   pkg.ID,
-		PackagePath: pkg.Path,
-		Type:        pkg.Type,
-		SensorID:    pkg.Sensor,
-		Position:    cloneInts(placement.Position),
-		Scale:       placement.Scale,
-		Size:        pkg.Size,
-		Status:      state.Status,
-		Error:       state.Error,
-		Parts:       staticLayerParts(pkg.Layers),
+		PackageID:      pkg.ID,
+		PackagePath:    pkg.Path,
+		Type:           pkg.Type,
+		SensorID:       pkg.Sensor,
+		Position:       cloneInts(placement.Position),
+		Scale:          placement.Scale,
+		Size:           pkg.Size,
+		Status:         state.Status,
+		Error:          state.Error,
+		DigitPositions: cloneIntSlices(pkg.Digits.Positions),
+		Parts:          underlayLayerParts(pkg.Layers),
 	}
 
 	if state.Status != sensors.StatusOK {
+		scene.Parts = append(scene.Parts, overlayLayerParts(pkg.Layers)...)
 		return scene, nil
 	}
 
@@ -110,6 +112,7 @@ func SevenSegmentScene(pkg Package, placement Placement, state sensors.SensorSta
 			scene.Parts = append(scene.Parts, ScenePart{Kind: ScenePartKindForeground, AssetPath: pkg.DigitSet.Foreground, Slot: slot, Position: position})
 		}
 	}
+	scene.Parts = append(scene.Parts, overlayLayerParts(pkg.Layers)...)
 	return scene, nil
 }
 
@@ -136,6 +139,8 @@ func (s Scene) Signature() string {
 	b.WriteString(s.Error)
 	b.WriteString("|")
 	b.WriteString(s.Text)
+	b.WriteString("|positions=")
+	b.WriteString(formatIntSlices(s.DigitPositions))
 	b.WriteString("|")
 	for _, part := range s.Parts {
 		b.WriteString(part.Kind)
@@ -164,18 +169,22 @@ func stateForPackage(sensorID string, state sensors.SensorState) sensors.SensorS
 	return state
 }
 
-func staticLayerParts(layers map[string]string) []ScenePart {
-	if len(layers) == 0 {
-		return nil
-	}
-	names := make([]string, 0, len(layers))
-	for name := range layers {
-		names = append(names, name)
-	}
-	sort.Strings(names)
-	parts := make([]ScenePart, 0, len(names))
-	for _, name := range names {
-		parts = append(parts, ScenePart{Kind: ScenePartKindLayer, Layer: name, AssetPath: layers[name]})
+func underlayLayerParts(layers map[string]string) []ScenePart {
+	return namedLayerParts(layers, []string{"background", "panel", "bezel", "face", "ticks"})
+}
+
+func overlayLayerParts(layers map[string]string) []ScenePart {
+	return namedLayerParts(layers, []string{"glass", "overlay", "foreground"})
+}
+
+func namedLayerParts(layers map[string]string, orderedNames []string) []ScenePart {
+	parts := []ScenePart{}
+	for _, name := range orderedNames {
+		assetPath := strings.TrimSpace(layers[name])
+		if assetPath == "" {
+			continue
+		}
+		parts = append(parts, ScenePart{Kind: ScenePartKindLayer, Layer: name, AssetPath: assetPath})
 	}
 	return parts
 }
@@ -234,6 +243,17 @@ func cloneInts(values []int) []int {
 	return append([]int(nil), values...)
 }
 
+func cloneIntSlices(values [][]int) [][]int {
+	if values == nil {
+		return nil
+	}
+	cloned := make([][]int, len(values))
+	for i, value := range values {
+		cloned[i] = cloneInts(value)
+	}
+	return cloned
+}
+
 func formatIntSlice(values []int) string {
 	if len(values) == 0 {
 		return ""
@@ -243,4 +263,15 @@ func formatIntSlice(values []int) string {
 		parts[i] = strconv.Itoa(value)
 	}
 	return strings.Join(parts, ",")
+}
+
+func formatIntSlices(values [][]int) string {
+	if len(values) == 0 {
+		return ""
+	}
+	parts := make([]string, len(values))
+	for i, value := range values {
+		parts[i] = formatIntSlice(value)
+	}
+	return strings.Join(parts, ";")
 }
