@@ -129,6 +129,17 @@ func TestRejectNonGaugeWidgetGauge(t *testing.T) {
 	assertErrorContains(t, err, "gauge must be empty for non-gauge widgets")
 }
 
+func TestValidateRejectsNonGaugeWidgetGauge(t *testing.T) {
+	cfg := validMinimalConfig()
+	cfg.Dashboards["simple_primary"].Widgets[0].Gauge = "assets/gauges/7Seg/amber/4_digit_rpm"
+
+	err := Validate(cfg)
+	if err == nil {
+		t.Fatalf("expected Validate to reject non-gauge widget gauge field")
+	}
+	assertErrorContains(t, err, "gauge must be empty for non-gauge widgets")
+}
+
 func TestRejectInvalidIDs(t *testing.T) {
 	bad := strings.Replace(validMinimalYAML(), "vw_caddy:", "VW-Caddy:", 1)
 	_, err := LoadBytes([]byte(bad))
@@ -200,6 +211,14 @@ func assertErrorContains(t *testing.T, err error, want string) {
 
 func removeDigitDecimalPoint(cfgText string) string {
 	return strings.Replace(cfgText, "      decimal_point: assets/dashboard/simple/digits/dp.png\n", "", 1)
+}
+
+func validMinimalConfig() Config {
+	cfg, err := LoadBytes([]byte(validMinimalYAML()))
+	if err != nil {
+		panic(err)
+	}
+	return cfg
 }
 
 func validMinimalYAMLWithGaugeWidget(extraLines string) string {
