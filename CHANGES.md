@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Added `v3.2.2` dashboard config support for `type: gauge` widgets with package-owned gauge paths, placement, and scale.
+- Added validation tests proving gauge widgets do not own sensors and reject widget-level `sensor` fields.
 - Added `v3.2.1` gauge package loader support for self-contained packages under `assets/gauges/**/gauge.yaml`, including `seven_segment` and `radial` package parsing.
 - Added gauge package loader tests for valid seven-segment and radial packages, arbitrary package directory names, shared relative image paths, missing `gauge.yaml`, unsupported types, and asset-tree traversal rejection.
 - Added `v3.2.0` planning baseline docs for self-contained gauge packages under `docs/v3.2/`, including `ImplementationState.md`, `OpenDecisions.md`, `ReleasePlan.md`, `CarryForward.md`, and per-slice prompts.
@@ -29,7 +31,7 @@
 - Added adapter tests covering repo-relative asset rendering and rejection of escaping asset paths.
 - Added `v3.1.0` runnable v3 command path behind `--v3`, including selected vehicle resolution, endpoint connection, sensor polling runtime startup, selected JSONL event subscribers, dashboard scene boundary logging, and signal-based clean shutdown.
 - Added `internal/runtime/v3runtime` orchestration tests covering v3 config load, selected vehicle connection, selected JSONL event output, and reader cleanup.
-- Split v3.1 implementation prompts into per-slice files under `docs/v3.1/prompts/`.
+- Split v3.1 implementation prompts into per-slice files under `docs/v3.1/`.
 - Reframed PR 51 as docs-only planning setup, with implementation starting at `v3.1.0`.
 - Added blocking and impact metadata to v3.1 open decisions.
 - Clarified v3.1 slice docs-update rules for `MigrationState.md` and `OpenDecisions.md`.
