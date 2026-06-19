@@ -147,7 +147,7 @@ value_map:
 
 | Version | Status | Notes |
 |---|---|---|
-| v3.2.0 | in progress | Planning docs and prompts. |
+| v3.2.0 | in progress | Planning docs, prompts, repo hygiene, active example/assets normalisation, and v3.0 doc archiving. |
 
 ## Pending slices
 
