@@ -153,17 +153,23 @@ func validateEndpoint(address string) error {
 			return fmt.Errorf("must include host and port")
 		}
 	default:
-		return fmt.Errorf("must use serial:// or tcp://")
+		return fmt.Errorf("must use serial or tcp endpoint scheme")
 	}
 	return nil
 }
 
 func (v *validator) validateSensor(path string, sensor SensorConfig) {
-	if sensor.Type != "obd" {
-		v.add("%s.type must be obd", path)
-	}
-	if sensor.Type == "obd" && strings.TrimSpace(sensor.PID) == "" {
-		v.add("%s.pid must not be empty for obd sensors", path)
+	switch sensor.Type {
+	case SensorTypeOBD:
+		if strings.TrimSpace(sensor.PID) == "" {
+			v.add("%s.pid must not be empty for obd sensors", path)
+		}
+	case SensorTypeVirtual:
+		if strings.TrimSpace(sensor.PID) != "" {
+			v.add("%s.pid must be empty for virtual sensors", path)
+		}
+	default:
+		v.add("%s.type must be obd or virtual", path)
 	}
 	if strings.TrimSpace(sensor.Unit) == "" {
 		v.add("%s.unit must not be empty", path)
