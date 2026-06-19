@@ -47,18 +47,19 @@ type Scene struct {
 }
 
 type Widget struct {
-	ID        string
-	Type      string
-	SensorID  string
-	AssetID   string
-	GaugeID   string
-	GaugePath string
-	Scale     float64
-	Position  []int
-	Status    string
-	Text      string
-	Parts     []Part
-	Error     string
+	ID                  string
+	Type                string
+	SensorID            string
+	AssetID             string
+	GaugeID             string
+	GaugePath           string
+	GaugeDigitPositions [][]int
+	Scale               float64
+	Position            []int
+	Status              string
+	Text                string
+	Parts               []Part
+	Error               string
 }
 
 type Part struct {
@@ -268,6 +269,7 @@ func (d Dashboard) renderWidget(configWidget v3config.WidgetConfig, states map[s
 		widget.SensorID = gaugeScene.SensorID
 		widget.GaugeID = gaugeScene.PackageID
 		widget.GaugePath = gaugeScene.PackagePath
+		widget.GaugeDigitPositions = cloneIntSlices(gaugeScene.DigitPositions)
 		widget.Scale = gaugeScene.Scale
 		widget.Status = gaugeScene.Status
 		widget.Error = gaugeScene.Error
@@ -621,6 +623,8 @@ func sceneSignature(scene Scene) string {
 		b.WriteString(":")
 		b.WriteString(widget.GaugePath)
 		b.WriteString(":")
+		b.WriteString(formatPartPositions(widget.GaugeDigitPositions))
+		b.WriteString(":")
 		b.WriteString(strconv.FormatFloat(widget.Scale, 'f', -1, 64))
 		b.WriteString(":")
 		b.WriteString(widget.Status)
@@ -661,6 +665,28 @@ func formatPartPosition(position []int) string {
 		parts[index] = strconv.Itoa(value)
 	}
 	return strings.Join(parts, ",")
+}
+
+func formatPartPositions(positions [][]int) string {
+	if len(positions) == 0 {
+		return ""
+	}
+	parts := make([]string, len(positions))
+	for index, position := range positions {
+		parts[index] = formatPartPosition(position)
+	}
+	return strings.Join(parts, ";")
+}
+
+func cloneIntSlices(values [][]int) [][]int {
+	if values == nil {
+		return nil
+	}
+	cloned := make([][]int, len(values))
+	for index, value := range values {
+		cloned[index] = append([]int(nil), value...)
+	}
+	return cloned
 }
 
 func sortedWidgetIDs(widgets []Widget) []string {
