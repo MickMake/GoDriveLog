@@ -130,21 +130,7 @@ func TestAdapterKeepsGlassOverlayLastAndReusesGaugeObjects(t *testing.T) {
 
 func TestAdapterRendersRadialNeedleAroundPivots(t *testing.T) {
 	dir := t.TempDir()
-	for _, asset := range []struct {
-		path   string
-		width  int
-		height int
-	}{
-		{path: "assets/background.png", width: 100, height: 100},
-		{path: "assets/face.png", width: 100, height: 100},
-		{path: "assets/ticks.png", width: 100, height: 100},
-		{path: "assets/needle.png", width: 10, height: 20},
-		{path: "assets/overlay.png", width: 100, height: 100},
-	} {
-		if err := writeSizedTestPNG(filepath.Join(dir, asset.path), asset.width, asset.height); err != nil {
-			t.Fatal(err)
-		}
-	}
+	writeRadialAssets(t, dir)
 	adapter := newNoRefreshAdapter(t, dir)
 
 	parts, err := adapter.renderWidgetParts("primary", radialWidgetWithNeedle(90), 0)
@@ -165,36 +151,24 @@ func TestAdapterRendersRadialNeedleAroundPivots(t *testing.T) {
 
 func TestAdapterReusesRadialNeedleObjectAcrossAngleChanges(t *testing.T) {
 	dir := t.TempDir()
-	for _, asset := range []struct {
-		path   string
-		width  int
-		height int
-	}{
-		{path: "assets/face.png", width: 100, height: 100},
-		{path: "assets/needle.png", width: 10, height: 20},
-		{path: "assets/overlay.png", width: 100, height: 100},
-	} {
-		if err := writeSizedTestPNG(filepath.Join(dir, asset.path), asset.width, asset.height); err != nil {
-			t.Fatal(err)
-		}
-	}
+	writeRadialAssets(t, dir)
 	adapter := newNoRefreshAdapter(t, dir)
 
 	if err := adapter.Update([]v3dashboard.Scene{radialSceneWithNeedle(0)}); err != nil {
 		t.Fatalf("first radial Update returned error: %v", err)
 	}
-	if got := adapter.RenderedObjectCount(); got != 3 {
-		t.Fatalf("RenderedObjectCount = %d, want 3", got)
+	if got := adapter.RenderedObjectCount(); got != 5 {
+		t.Fatalf("RenderedObjectCount = %d, want 5", got)
 	}
-	firstNeedle := adapter.root.Objects[1]
+	firstNeedle := adapter.root.Objects[3]
 
 	if err := adapter.Update([]v3dashboard.Scene{radialSceneWithNeedle(90)}); err != nil {
 		t.Fatalf("second radial Update returned error: %v", err)
 	}
-	if got := adapter.RenderedObjectCount(); got != 3 {
-		t.Fatalf("RenderedObjectCount after angle change = %d, want 3", got)
+	if got := adapter.RenderedObjectCount(); got != 5 {
+		t.Fatalf("RenderedObjectCount after angle change = %d, want 5", got)
 	}
-	if adapter.root.Objects[1] != firstNeedle {
+	if adapter.root.Objects[3] != firstNeedle {
 		t.Fatalf("radial needle object was rebuilt across an angle-only change")
 	}
 }
@@ -293,6 +267,25 @@ func assertLastResourceName(t *testing.T, adapter *Adapter, want string) {
 	}
 	if image.Resource.Name() != want {
 		t.Fatalf("last resource = %q, want glass overlay %q", image.Resource.Name(), want)
+	}
+}
+
+func writeRadialAssets(t *testing.T, dir string) {
+	t.Helper()
+	for _, asset := range []struct {
+		path   string
+		width  int
+		height int
+	}{
+		{path: "assets/background.png", width: 100, height: 100},
+		{path: "assets/face.png", width: 100, height: 100},
+		{path: "assets/ticks.png", width: 100, height: 100},
+		{path: "assets/needle.png", width: 10, height: 20},
+		{path: "assets/overlay.png", width: 100, height: 100},
+	} {
+		if err := writeSizedTestPNG(filepath.Join(dir, asset.path), asset.width, asset.height); err != nil {
+			t.Fatal(err)
+		}
 	}
 }
 
