@@ -23,6 +23,7 @@ const (
 	PartKindFrame        = "frame"
 	PartKindForeground   = "foreground"
 	PartKindLayer        = "layer"
+	PartKindNeedle       = "needle"
 )
 
 // Runtime owns selected v3 dashboard scene state. It consumes sensor state/events
@@ -54,6 +55,9 @@ type Widget struct {
 	GaugeID             string
 	GaugePath           string
 	GaugeDigitPositions [][]int
+	GaugeFacePivot      v3gauges.Point
+	GaugeNeedlePivot    v3gauges.Point
+	GaugeAngle          float64
 	Scale               float64
 	Position            []int
 	Status              string
@@ -63,15 +67,18 @@ type Widget struct {
 }
 
 type Part struct {
-	Kind      string
-	Layer     string
-	AssetPath string
-	Slot      int
-	Character string
-	Position  []int
-	State     string
-	Cell      string
-	Frame     int
+	Kind        string
+	Layer       string
+	AssetPath   string
+	Slot        int
+	Character   string
+	Position    []int
+	State       string
+	Cell        string
+	Frame       int
+	Angle       float64
+	FacePivot   v3gauges.Point
+	NeedlePivot v3gauges.Point
 }
 
 // NewRuntime builds the selected-dashboard runtime from an already resolved
@@ -258,28 +265,40 @@ func (d Dashboard) renderWidget(configWidget v3config.WidgetConfig, states map[s
 		if err != nil {
 			return Widget{}, fmt.Errorf("dashboard %q widget %q gauge %q could not load package: %w", d.ID, configWidget.ID, configWidget.Gauge, err)
 		}
-		if pkg.Type != v3gauges.TypeSevenSegment {
+		state := stateForSensor(pkg.Sensor, states)
+		var gaugeScene v3gauges.Scene
+		switch pkg.Type {
+		case v3gauges.TypeSevenSegment:
+			gaugeScene, err = v3gauges.SevenSegmentScene(pkg, v3gauges.Placement{Position: configWidget.Position, Scale: configWidget.Scale}, state)
+		case v3gauges.TypeRadial:
+			gaugeScene, err = v3gauges.RadialScene(pkg, v3gauges.Placement{Position: configWidget.Position, Scale: configWidget.Scale}, state)
+		default:
 			return Widget{}, fmt.Errorf("dashboard %q widget %q gauge package type %q is not supported by dashboard scene runtime", d.ID, configWidget.ID, pkg.Type)
 		}
-		state := stateForSensor(pkg.Sensor, states)
-		gaugeScene, err := v3gauges.SevenSegmentScene(pkg, v3gauges.Placement{Position: configWidget.Position, Scale: configWidget.Scale}, state)
 		if err != nil {
 			return Widget{}, fmt.Errorf("dashboard %q widget %q: %w", d.ID, configWidget.ID, err)
 		}
-		widget.SensorID = gaugeScene.SensorID
-		widget.GaugeID = gaugeScene.PackageID
-		widget.GaugePath = gaugeScene.PackagePath
-		widget.GaugeDigitPositions = cloneIntSlices(gaugeScene.DigitPositions)
-		widget.Scale = gaugeScene.Scale
-		widget.Status = gaugeScene.Status
-		widget.Error = gaugeScene.Error
-		widget.Text = gaugeScene.Text
-		widget.Parts = gaugeSceneParts(gaugeScene)
+		applyGaugeScene(&widget, gaugeScene)
 	default:
 		return Widget{}, fmt.Errorf("dashboard %q widget %q type %q is not supported", d.ID, configWidget.ID, configWidget.Type)
 	}
 
 	return widget, nil
+}
+
+func applyGaugeScene(widget *Widget, scene v3gauges.Scene) {
+	widget.SensorID = scene.SensorID
+	widget.GaugeID = scene.PackageID
+	widget.GaugePath = scene.PackagePath
+	widget.GaugeDigitPositions = cloneIntSlices(scene.DigitPositions)
+	widget.GaugeFacePivot = scene.FacePivot
+	widget.GaugeNeedlePivot = scene.NeedlePivot
+	widget.GaugeAngle = scene.Angle
+	widget.Scale = scene.Scale
+	widget.Status = scene.Status
+	widget.Error = scene.Error
+	widget.Text = scene.Text
+	widget.Parts = gaugeSceneParts(scene)
 }
 
 func stateForWidget(widget v3config.WidgetConfig, states map[string]sensors.SensorState) sensors.SensorState {
@@ -397,12 +416,15 @@ func gaugeSceneParts(scene v3gauges.Scene) []Part {
 	parts := make([]Part, 0, len(scene.Parts))
 	for _, scenePart := range scene.Parts {
 		parts = append(parts, Part{
-			Kind:      scenePart.Kind,
-			Layer:     scenePart.Layer,
-			AssetPath: scenePart.AssetPath,
-			Slot:      scenePart.Slot,
-			Character: scenePart.Character,
-			Position:  append([]int(nil), scenePart.Position...),
+			Kind:        scenePart.Kind,
+			Layer:       scenePart.Layer,
+			AssetPath:   scenePart.AssetPath,
+			Slot:        scenePart.Slot,
+			Character:   scenePart.Character,
+			Position:    append([]int(nil), scenePart.Position...),
+			Angle:       scenePart.Angle,
+			FacePivot:   scenePart.FacePivot,
+			NeedlePivot: scenePart.NeedlePivot,
 		})
 	}
 	return parts
@@ -625,6 +647,12 @@ func sceneSignature(scene Scene) string {
 		b.WriteString(":")
 		b.WriteString(formatPartPositions(widget.GaugeDigitPositions))
 		b.WriteString(":")
+		b.WriteString(formatGaugePoint(widget.GaugeFacePivot))
+		b.WriteString(":")
+		b.WriteString(formatGaugePoint(widget.GaugeNeedlePivot))
+		b.WriteString(":")
+		b.WriteString(strconv.FormatFloat(widget.GaugeAngle, 'f', -1, 64))
+		b.WriteString(":")
 		b.WriteString(strconv.FormatFloat(widget.Scale, 'f', -1, 64))
 		b.WriteString(":")
 		b.WriteString(widget.Status)
@@ -649,6 +677,12 @@ func sceneSignature(scene Scene) string {
 			b.WriteString(strconv.Itoa(part.Frame))
 			b.WriteString("#")
 			b.WriteString(formatPartPosition(part.Position))
+			b.WriteString("#")
+			b.WriteString(strconv.FormatFloat(part.Angle, 'f', -1, 64))
+			b.WriteString("#")
+			b.WriteString(formatGaugePoint(part.FacePivot))
+			b.WriteString("#")
+			b.WriteString(formatGaugePoint(part.NeedlePivot))
 			b.WriteString(";")
 		}
 		b.WriteString("|")
@@ -676,6 +710,13 @@ func formatPartPositions(positions [][]int) string {
 		parts[index] = formatPartPosition(position)
 	}
 	return strings.Join(parts, ";")
+}
+
+func formatGaugePoint(point v3gauges.Point) string {
+	if point == (v3gauges.Point{}) {
+		return ""
+	}
+	return strconv.FormatFloat(point.X, 'f', -1, 64) + "," + strconv.FormatFloat(point.Y, 'f', -1, 64)
 }
 
 func cloneIntSlices(values [][]int) [][]int {
