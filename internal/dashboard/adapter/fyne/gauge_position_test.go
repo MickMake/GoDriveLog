@@ -19,7 +19,7 @@ func TestAdapterPositionsGaugePartsFromPackageCoordinatesAndScale(t *testing.T) 
 		t.Fatal(err)
 	}
 
-	parts, err := adapter.renderWidgetParts(v3dashboard.Widget{
+	parts, err := adapter.renderWidgetParts("primary", v3dashboard.Widget{
 		ID:       "rpm",
 		Type:     v3dashboard.PartKindLayer,
 		Position: []int{10, 20},
