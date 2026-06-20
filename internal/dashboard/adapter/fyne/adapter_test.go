@@ -10,10 +10,18 @@ import (
 
 	fyneui "fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
+	fynetest "fyne.io/fyne/v2/test"
 
 	"github.com/MickMake/GoDriveLog/internal/config/v3config"
 	"github.com/MickMake/GoDriveLog/internal/dashboard/v3dashboard"
 )
+
+func TestMain(m *testing.M) {
+	app := fynetest.NewApp()
+	code := m.Run()
+	app.Quit()
+	os.Exit(code)
+}
 
 func TestAdapterRendersScenePartsFromRepoRelativeAssets(t *testing.T) {
 	dir := t.TempDir()
