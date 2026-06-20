@@ -1,8 +1,8 @@
 # GoDriveLog v3.2 implementation state
 
-Status: v3.2.5 radial gauge scene model in progress
-Current target: v3.2.5 radial gauge dashboard runtime routing and scene data preservation
-Current branch: v3.2.5-radial-gauge-scene-model
+Status: v3.2.6 Fyne radial rendering in progress
+Current target: v3.2.6 radial layer rendering and needle rotation/placement
+Current branch: v3.2.6-fyne-radial-rendering
 
 ## Purpose
 
@@ -121,7 +121,7 @@ digits:
 
 ## Radial package direction
 
-Radial gauges are now routed through the dashboard scene runtime. Actual Fyne drawing and image rotation remain intentionally deferred to v3.2.6.
+Radial gauges are routed through the dashboard scene runtime. Fyne radial rendering rotates the needle image around the package-owned normalised `pivot.needle` and places that rotated pivot at the package-owned normalised `pivot.face`.
 
 Example `gauge.yaml`:
 
@@ -206,6 +206,16 @@ value_map:
 - Added runtime coverage for radial gauge widget package loading, angle/pivot preservation, non-ok needle suppression, and angle-based redraw detection.
 - This slice intentionally does not add Fyne radial drawing/rotation, example assets, inheritance, cluster, or sensor override behaviour.
 
+## v3.2.6 implementation notes
+
+- Added Fyne adapter support for radial gauge scene parts.
+- Static radial layer parts render through the existing ordered dashboard scene part list.
+- Needle PNGs are rotated inside the Fyne adapter using the radial scene angle.
+- Needle placement aligns the rotated needle pivot with the gauge face pivot using normalised package-owned pivots.
+- Rotated needle resources are cached and keyed separately from canvas object identity, so angle changes can update the image resource without rebuilding the canvas object tree.
+- Existing seven-segment and non-gauge widget rendering paths are preserved.
+- This slice intentionally does not add gauge package loading changes, dashboard config changes, example gauge packages, sensor overrides, inheritance, clusters, animation, or procedural drawing.
+
 ## Completed slices
 
 | Version | Status | Notes |
@@ -215,13 +225,13 @@ value_map:
 | v3.2.2 | completed | Dashboard gauge widget config fields and validation. |
 | v3.2.3 | completed | Seven-segment gauge scene model, dashboard runtime package loading, and adapter positioning. |
 | v3.2.4 | completed | Fyne seven-segment glass overlay verification, keyed object reuse, and deterministic benchmark coverage. |
-| v3.2.5 | in progress | Radial gauge scene model, dashboard runtime routing, angle/pivot preservation, and runtime coverage. |
+| v3.2.5 | completed | Radial gauge scene model, dashboard runtime routing, angle/pivot preservation, and runtime coverage. |
+| v3.2.6 | in progress | Fyne radial layer rendering, image-space needle rotation, pivot placement, and adapter coverage. |
 
 ## Pending slices
 
 | Version | Status | Next action |
 |---|---|---|
-| v3.2.6 | not started | Add Fyne radial renderer. |
 | v3.2.7 | not started | Add example gauge packages. |
 | v3.2.8 | not started | Add harness verification. |
 | v3.2.9 | not started | Checkpoint next direction. |
