@@ -127,6 +127,77 @@ func TestAdapterKeepsGlassOverlayLastAndReusesGaugeObjects(t *testing.T) {
 	assertLastResourceName(t, adapter, "assets/glass.png")
 }
 
+func TestAdapterRendersRadialNeedleAroundPivots(t *testing.T) {
+	dir := t.TempDir()
+	for _, asset := range []struct {
+		path   string
+		width  int
+		height int
+	}{
+		{path: "assets/background.png", width: 100, height: 100},
+		{path: "assets/face.png", width: 100, height: 100},
+		{path: "assets/ticks.png", width: 100, height: 100},
+		{path: "assets/needle.png", width: 10, height: 20},
+		{path: "assets/overlay.png", width: 100, height: 100},
+	} {
+		if err := writeSizedTestPNG(filepath.Join(dir, asset.path), asset.width, asset.height); err != nil {
+			t.Fatal(err)
+		}
+	}
+	adapter := newNoRefreshAdapter(t, dir)
+
+	parts, err := adapter.renderWidgetParts("primary", radialWidgetWithNeedle(90), 0)
+	if err != nil {
+		t.Fatalf("renderWidgetParts returned error: %v", err)
+	}
+	if len(parts) != 5 {
+		t.Fatalf("rendered radial part count = %d, want 5", len(parts))
+	}
+	needle := parts[3]
+	if needle.size != fyneui.NewSize(40, 20) {
+		t.Fatalf("rotated/scaled needle size = %v, want 40x20", needle.size)
+	}
+	if needle.x != 110 || needle.y != 110 {
+		t.Fatalf("rotated needle position = (%v,%v), want (110,110)", needle.x, needle.y)
+	}
+}
+
+func TestAdapterReusesRadialNeedleObjectAcrossAngleChanges(t *testing.T) {
+	dir := t.TempDir()
+	for _, asset := range []struct {
+		path   string
+		width  int
+		height int
+	}{
+		{path: "assets/face.png", width: 100, height: 100},
+		{path: "assets/needle.png", width: 10, height: 20},
+		{path: "assets/overlay.png", width: 100, height: 100},
+	} {
+		if err := writeSizedTestPNG(filepath.Join(dir, asset.path), asset.width, asset.height); err != nil {
+			t.Fatal(err)
+		}
+	}
+	adapter := newNoRefreshAdapter(t, dir)
+
+	if err := adapter.Update([]v3dashboard.Scene{radialSceneWithNeedle(0)}); err != nil {
+		t.Fatalf("first radial Update returned error: %v", err)
+	}
+	if got := adapter.RenderedObjectCount(); got != 3 {
+		t.Fatalf("RenderedObjectCount = %d, want 3", got)
+	}
+	firstNeedle := adapter.root.Objects[1]
+
+	if err := adapter.Update([]v3dashboard.Scene{radialSceneWithNeedle(90)}); err != nil {
+		t.Fatalf("second radial Update returned error: %v", err)
+	}
+	if got := adapter.RenderedObjectCount(); got != 3 {
+		t.Fatalf("RenderedObjectCount after angle change = %d, want 3", got)
+	}
+	if adapter.root.Objects[1] != firstNeedle {
+		t.Fatalf("radial needle object was rebuilt across an angle-only change")
+	}
+}
+
 func newNoRefreshAdapter(t *testing.T, repoRoot string) *Adapter {
 	t.Helper()
 	adapter, err := New(repoRoot)
@@ -169,6 +240,47 @@ func gaugeSceneWithDigit(digitAsset string) v3dashboard.Scene {
 	}
 }
 
+func radialSceneWithNeedle(angle float64) v3dashboard.Scene {
+	return v3dashboard.Scene{
+		DashboardID: "primary",
+		Size:        v3config.SizeConfig{Width: 240, Height: 240},
+		Widgets:    []v3dashboard.Widget{radialWidgetWithNeedle(angle)},
+	}
+}
+
+func radialWidgetWithNeedle(angle float64) v3dashboard.Widget {
+	return v3dashboard.Widget{
+		ID:       "rpm",
+		Type:     "gauge",
+		Position: []int{10, 20},
+		Scale:    2,
+		Parts: []v3dashboard.Part{{
+			Kind:      v3dashboard.PartKindLayer,
+			Layer:     "background",
+			AssetPath: "assets/background.png",
+		}, {
+			Kind:      v3dashboard.PartKindLayer,
+			Layer:     "face",
+			AssetPath: "assets/face.png",
+		}, {
+			Kind:      v3dashboard.PartKindLayer,
+			Layer:     "ticks",
+			AssetPath: "assets/ticks.png",
+		}, {
+			Kind:        v3dashboard.PartKindNeedle,
+			Layer:       "needle",
+			AssetPath:   "assets/needle.png",
+			Angle:       angle,
+			FacePivot:   v3dashboard.GaugePoint{X: 0.5, Y: 0.5},
+			NeedlePivot: v3dashboard.GaugePoint{X: 0.5, Y: 1},
+		}, {
+			Kind:      v3dashboard.PartKindLayer,
+			Layer:     "overlay",
+			AssetPath: "assets/overlay.png",
+		}},
+	}
+}
+
 func assertLastResourceName(t *testing.T, adapter *Adapter, want string) {
 	t.Helper()
 	if len(adapter.root.Objects) == 0 {
@@ -184,8 +296,16 @@ func assertLastResourceName(t *testing.T, adapter *Adapter, want string) {
 }
 
 func writeTestPNG(path string) error {
-	img := image.NewRGBA(image.Rect(0, 0, 1, 1))
-	img.Set(0, 0, color.RGBA{R: 255, G: 255, B: 255, A: 255})
+	return writeSizedTestPNG(path, 1, 1)
+}
+
+func writeSizedTestPNG(path string, width int, height int) error {
+	img := image.NewRGBA(image.Rect(0, 0, width, height))
+	for y := 0; y < height; y++ {
+		for x := 0; x < width; x++ {
+			img.Set(x, y, color.RGBA{R: 255, G: 255, B: 255, A: 255})
+		}
+	}
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
 	}
