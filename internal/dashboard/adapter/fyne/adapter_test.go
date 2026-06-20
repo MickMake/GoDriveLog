@@ -12,6 +12,7 @@ import (
 	"fyne.io/fyne/v2/canvas"
 
 	"github.com/MickMake/GoDriveLog/internal/config/v3config"
+	"github.com/MickMake/GoDriveLog/internal/dashboard/gauges"
 	"github.com/MickMake/GoDriveLog/internal/dashboard/v3dashboard"
 )
 
@@ -271,8 +272,8 @@ func radialWidgetWithNeedle(angle float64) v3dashboard.Widget {
 			Layer:       "needle",
 			AssetPath:   "assets/needle.png",
 			Angle:       angle,
-			FacePivot:   v3dashboard.GaugePoint{X: 0.5, Y: 0.5},
-			NeedlePivot: v3dashboard.GaugePoint{X: 0.5, Y: 1},
+			FacePivot:   gauges.Point{X: 0.5, Y: 0.5},
+			NeedlePivot: gauges.Point{X: 0.5, Y: 1},
 		}, {
 			Kind:      v3dashboard.PartKindLayer,
 			Layer:     "overlay",
