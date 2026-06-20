@@ -10,18 +10,10 @@ import (
 
 	fyneui "fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
-	fynetest "fyne.io/fyne/v2/test"
 
 	"github.com/MickMake/GoDriveLog/internal/config/v3config"
 	"github.com/MickMake/GoDriveLog/internal/dashboard/v3dashboard"
 )
-
-func TestMain(m *testing.M) {
-	app := fynetest.NewApp()
-	code := m.Run()
-	app.Quit()
-	os.Exit(code)
-}
 
 func TestAdapterRendersScenePartsFromRepoRelativeAssets(t *testing.T) {
 	dir := t.TempDir()
@@ -29,12 +21,9 @@ func TestAdapterRendersScenePartsFromRepoRelativeAssets(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	adapter, err := New(dir)
-	if err != nil {
-		t.Fatal(err)
-	}
+	adapter := newNoRefreshAdapter(t, dir)
 
-	err = adapter.Update([]v3dashboard.Scene{{
+	err := adapter.Update([]v3dashboard.Scene{{
 		DashboardID: "primary",
 		Size:        v3config.SizeConfig{Width: 24, Height: 16},
 		Widgets: []v3dashboard.Widget{{
@@ -65,12 +54,9 @@ func TestAdapterRendersScenePartsFromResolvedAssetPaths(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	adapter, err := New(dir)
-	if err != nil {
-		t.Fatal(err)
-	}
+	adapter := newNoRefreshAdapter(t, dir)
 
-	err = adapter.Update([]v3dashboard.Scene{{
+	err := adapter.Update([]v3dashboard.Scene{{
 		DashboardID: "primary",
 		Size:        v3config.SizeConfig{Width: 24, Height: 16},
 		Widgets: []v3dashboard.Widget{{
@@ -92,12 +78,9 @@ func TestAdapterRendersScenePartsFromResolvedAssetPaths(t *testing.T) {
 }
 
 func TestAdapterRejectsEscapingAssetPath(t *testing.T) {
-	adapter, err := New(t.TempDir())
-	if err != nil {
-		t.Fatal(err)
-	}
+	adapter := newNoRefreshAdapter(t, t.TempDir())
 
-	err = adapter.Update([]v3dashboard.Scene{{
+	err := adapter.Update([]v3dashboard.Scene{{
 		DashboardID: "primary",
 		Widgets: []v3dashboard.Widget{{
 			ID: "bad",
@@ -119,10 +102,7 @@ func TestAdapterKeepsGlassOverlayLastAndReusesGaugeObjects(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	adapter, err := New(dir)
-	if err != nil {
-		t.Fatal(err)
-	}
+	adapter := newNoRefreshAdapter(t, dir)
 
 	if err := adapter.Update([]v3dashboard.Scene{gaugeSceneWithDigit("assets/digit0.png")}); err != nil {
 		t.Fatalf("first Update returned error: %v", err)
@@ -145,6 +125,21 @@ func TestAdapterKeepsGlassOverlayLastAndReusesGaugeObjects(t *testing.T) {
 		}
 	}
 	assertLastResourceName(t, adapter, "assets/glass.png")
+}
+
+func newNoRefreshAdapter(t *testing.T, repoRoot string) *Adapter {
+	t.Helper()
+	adapter, err := New(repoRoot)
+	if err != nil {
+		t.Fatal(err)
+	}
+	disableRefresh(adapter)
+	return adapter
+}
+
+func disableRefresh(adapter *Adapter) {
+	adapter.refreshRoot = func(*fyneui.Container) {}
+	adapter.refreshImage = func(*canvas.Image) {}
 }
 
 func gaugeSceneWithDigit(digitAsset string) v3dashboard.Scene {
