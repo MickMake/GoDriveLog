@@ -9,7 +9,7 @@ size:
 
 layers:
   panel: ../../7Seg4Digits.png
-  glass: ../../Glass.png
+  glass: ../../7Seg4DigitsGlass.png
 
 digit_set:
   background: ../../7SegBack.png
