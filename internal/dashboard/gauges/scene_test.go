@@ -169,11 +169,107 @@ func TestSevenSegmentSceneRejectsMissingDecimalPointWhenFormatNeedsIt(t *testing
 	assertErrorContains(t, err, "decimal_point")
 }
 
+func TestRadialSceneUsesPackageOwnedPivotsValueMapAndLayerOrder(t *testing.T) {
+	pkg := loadRadialScenePackage(t)
+
+	scene, err := RadialScene(pkg, Placement{Position: []int{120, 80}, Scale: 0.75}, okGaugeState("rpm", 3500))
+	if err != nil {
+		t.Fatalf("RadialScene returned error: %v", err)
+	}
+
+	if scene.PackageID != "simple_radial_rpm" || scene.SensorID != "rpm" || scene.Type != TypeRadial {
+		t.Fatalf("scene identity = %#v", scene)
+	}
+	if scene.Position[0] != 120 || scene.Position[1] != 80 || scene.Scale != 0.75 {
+		t.Fatalf("scene placement = %#v / %v", scene.Position, scene.Scale)
+	}
+	if scene.Size.Width != 512 || scene.Size.Height != 512 {
+		t.Fatalf("scene size = %#v", scene.Size)
+	}
+	if scene.FacePivot.X != 0.5 || scene.FacePivot.Y != 0.55 || scene.NeedlePivot.X != 0.5 || scene.NeedlePivot.Y != 0.9 {
+		t.Fatalf("scene pivots = face %#v needle %#v", scene.FacePivot, scene.NeedlePivot)
+	}
+	if !almostEqual(scene.Angle, 0) {
+		t.Fatalf("scene angle = %v, want 0", scene.Angle)
+	}
+	if got := partLayerSequence(scene); got != "layer:background,layer:face,layer:ticks,needle:0,layer:overlay" {
+		t.Fatalf("part sequence = %q", got)
+	}
+	needle := firstPart(scene, ScenePartKindNeedle)
+	if needle.Layer != "needle" || needle.AssetPath == "" || !almostEqual(needle.Angle, 0) {
+		t.Fatalf("needle part = %#v", needle)
+	}
+	if needle.FacePivot != scene.FacePivot || needle.NeedlePivot != scene.NeedlePivot {
+		t.Fatalf("needle pivots = face %#v needle %#v", needle.FacePivot, needle.NeedlePivot)
+	}
+}
+
+func TestRadialSceneClampsAnglesAndChangesSignatureWithAngle(t *testing.T) {
+	pkg := loadRadialScenePackage(t)
+
+	minimum, err := RadialScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("rpm", -100))
+	if err != nil {
+		t.Fatalf("RadialScene returned error: %v", err)
+	}
+	maximum, err := RadialScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("rpm", 9999))
+	if err != nil {
+		t.Fatalf("RadialScene returned error: %v", err)
+	}
+
+	if !almostEqual(minimum.Angle, -135) || !almostEqual(maximum.Angle, 135) {
+		t.Fatalf("clamped angles = %v/%v, want -135/135", minimum.Angle, maximum.Angle)
+	}
+	if minimum.Signature() == maximum.Signature() {
+		t.Fatal("expected signature to change when radial angle changes")
+	}
+}
+
+func TestRadialSceneDoesNotRenderNeedleForNonOKStates(t *testing.T) {
+	pkg := loadRadialScenePackage(t)
+
+	scene, err := RadialScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, sensors.SensorState{ID: "rpm", Status: sensors.StatusTimeout, Error: "not live"})
+	if err != nil {
+		t.Fatalf("RadialScene returned error: %v", err)
+	}
+	if scene.Status != sensors.StatusTimeout || scene.Error != "not live" {
+		t.Fatalf("scene status/error = %q/%q", scene.Status, scene.Error)
+	}
+	if got := countSceneParts(scene, ScenePartKindNeedle); got != 0 {
+		t.Fatalf("expected no needle for non-ok state, got %d", got)
+	}
+	if got := partLayerSequence(scene); got != "layer:background,layer:face,layer:ticks,layer:overlay" {
+		t.Fatalf("non-ok radial sequence = %q", got)
+	}
+}
+
+func TestRadialSceneRejectsMissingNeedleLayer(t *testing.T) {
+	pkg := loadRadialScenePackage(t)
+	delete(pkg.Layers, "needle")
+
+	_, err := RadialScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("rpm", 10))
+	if err == nil {
+		t.Fatal("expected missing needle layer to fail")
+	}
+	assertErrorContains(t, err, "needle")
+}
+
 func loadSevenSegmentScenePackage(t *testing.T, count int, format string) Package {
 	t.Helper()
 	root := makeGaugeFixtures(t)
 	packageDir := filepath.Join(root, "assets", "gauges", "7Seg", "amber", fmt.Sprintf("%d_digit_rpm", count))
 	writeGaugeYAML(t, packageDir, sevenSegmentGaugeYAML(count, format))
+	pkg, err := LoadPackage(packageDir)
+	if err != nil {
+		t.Fatalf("LoadPackage returned error: %v", err)
+	}
+	return pkg
+}
+
+func loadRadialScenePackage(t *testing.T) Package {
+	t.Helper()
+	root := makeGaugeFixtures(t)
+	packageDir := filepath.Join(root, "assets", "gauges", "radial", "simple_rpm")
+	writeGaugeYAML(t, packageDir, radialGaugeYAML())
 	pkg, err := LoadPackage(packageDir)
 	if err != nil {
 		t.Fatalf("LoadPackage returned error: %v", err)
@@ -217,6 +313,31 @@ digits:
 %s`, count, format, count, positions.String())
 }
 
+func radialGaugeYAML() string {
+	return `id: simple_radial_rpm
+type: radial
+sensor: rpm
+size:
+  width: 512
+  height: 512
+layers:
+  background: background.png
+  face: face.png
+  ticks: ticks.png
+  needle: needle.png
+  overlay: overlay.png
+pivot:
+  face: { x: 0.5, y: 0.55 }
+  needle: { x: 0.5, y: 0.9 }
+value_map:
+  min: 0
+  max: 7000
+  start_angle: -135
+  end_angle: 135
+  clamp: true
+`
+}
+
 func okGaugeState(id string, value float64) sensors.SensorState {
 	return sensors.SensorState{ID: id, Value: value, Status: sensors.StatusOK}
 }
@@ -249,6 +370,8 @@ func partLayerSequence(scene Scene) string {
 			parts = append(parts, "layer:"+part.Layer)
 		case ScenePartKindCharacter:
 			parts = append(parts, "character:"+part.Character)
+		case ScenePartKindNeedle:
+			parts = append(parts, fmt.Sprintf("needle:%.0f", part.Angle))
 		default:
 			parts = append(parts, part.Kind)
 		}
@@ -269,6 +392,15 @@ func sceneCharacters(scene Scene) string {
 func firstCharacterPart(scene Scene, character string) ScenePart {
 	for _, part := range scene.Parts {
 		if part.Kind == ScenePartKindCharacter && part.Character == character {
+			return part
+		}
+	}
+	return ScenePart{}
+}
+
+func firstPart(scene Scene, kind string) ScenePart {
+	for _, part := range scene.Parts {
+		if part.Kind == kind {
 			return part
 		}
 	}

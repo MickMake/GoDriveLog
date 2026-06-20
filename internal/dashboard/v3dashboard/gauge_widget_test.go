@@ -139,6 +139,97 @@ func TestRuntimeGaugeWidgetSceneSignatureChangesWithNonOKDigitPositions(t *testi
 	}
 }
 
+func TestRuntimeLoadsRadialGaugeWidgetPackageAndPreservesAnglePivots(t *testing.T) {
+	packageDir := makeDashboardRadialGaugePackage(t)
+	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 1024, Height: 600}, Widgets: []v3config.WidgetConfig{{ID: "rpm", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{120, 80}, Scale: 0.75}}}}}}
+	runtime, err := NewRuntime(plan, testAssetRegistry())
+	if err != nil {
+		t.Fatalf("NewRuntime failed: %v", err)
+	}
+
+	runtime.SetState(okState("rpm", 3500, "rpm"))
+	scenes, err := runtime.Snapshot()
+	if err != nil {
+		t.Fatalf("Snapshot failed: %v", err)
+	}
+	widget := requireWidget(t, scenes[0], "rpm")
+	if widget.Type != v3config.WidgetTypeGauge || widget.SensorID != "rpm" || widget.GaugeID != "dashboard_radial_rpm" {
+		t.Fatalf("radial widget identity = %#v", widget)
+	}
+	if widget.Status != sensors.StatusOK || widget.Scale != 0.75 || widget.GaugeAngle != 0 {
+		t.Fatalf("radial widget status/scale/angle = %#v", widget)
+	}
+	if widget.GaugeFacePivot.X != 0.5 || widget.GaugeFacePivot.Y != 0.55 || widget.GaugeNeedlePivot.X != 0.5 || widget.GaugeNeedlePivot.Y != 0.9 {
+		t.Fatalf("radial widget pivots = face %#v needle %#v", widget.GaugeFacePivot, widget.GaugeNeedlePivot)
+	}
+	if got := gaugePartSequence(widget); got != "layer:background,layer:face,layer:ticks,needle:0,layer:overlay" {
+		t.Fatalf("radial part sequence = %q", got)
+	}
+	needle := firstPartKind(widget, PartKindNeedle)
+	if needle.Layer != "needle" || needle.AssetPath == "" || needle.Angle != 0 {
+		t.Fatalf("needle part = %#v", needle)
+	}
+	if needle.FacePivot != widget.GaugeFacePivot || needle.NeedlePivot != widget.GaugeNeedlePivot {
+		t.Fatalf("needle pivots = face %#v needle %#v", needle.FacePivot, needle.NeedlePivot)
+	}
+}
+
+func TestRuntimeRadialGaugeWidgetNonOKStateDoesNotRenderNeedle(t *testing.T) {
+	packageDir := makeDashboardRadialGaugePackage(t)
+	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 1024, Height: 600}, Widgets: []v3config.WidgetConfig{{ID: "rpm", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{0, 0}, Scale: 1}}}}}}
+	runtime, err := NewRuntime(plan, testAssetRegistry())
+	if err != nil {
+		t.Fatalf("NewRuntime failed: %v", err)
+	}
+
+	runtime.SetState(sensors.SensorState{ID: "rpm", Status: sensors.StatusTimeout, Error: "no response"})
+	scenes, err := runtime.Snapshot()
+	if err != nil {
+		t.Fatalf("Snapshot failed: %v", err)
+	}
+	widget := requireWidget(t, scenes[0], "rpm")
+	if widget.Status != sensors.StatusTimeout || widget.Error != "no response" {
+		t.Fatalf("radial widget status/error = %#v", widget)
+	}
+	if got := countParts(widget, PartKindNeedle); got != 0 {
+		t.Fatalf("expected no live radial needle for non-ok state, got %d", got)
+	}
+	if got := gaugePartSequence(widget); got != "layer:background,layer:face,layer:ticks,layer:overlay" {
+		t.Fatalf("expected static radial layers in draw order, got %q", got)
+	}
+}
+
+func TestRuntimeRadialGaugeWidgetSceneSignatureChangesWithAngle(t *testing.T) {
+	packageDir := makeDashboardRadialGaugePackage(t)
+	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 1024, Height: 600}, Widgets: []v3config.WidgetConfig{{ID: "rpm", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{0, 0}, Scale: 1}}}}}}
+	runtime, err := NewRuntime(plan, testAssetRegistry())
+	if err != nil {
+		t.Fatalf("NewRuntime failed: %v", err)
+	}
+
+	_, changed, err := runtime.ApplyEvent(sensorEvent("rpm", okState("rpm", 3500, "rpm")))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected first radial event to change rendered output")
+	}
+	_, changed, err = runtime.ApplyEvent(sensorEvent("rpm", okState("rpm", 3500, "rpm")))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if changed {
+		t.Fatalf("expected unchanged radial angle to skip redraw")
+	}
+	_, changed, err = runtime.ApplyEvent(sensorEvent("rpm", okState("rpm", 4000, "rpm")))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected changed radial angle to redraw")
+	}
+}
+
 func makeDashboardGaugePackage(t *testing.T, count int, format string) string {
 	t.Helper()
 	root := t.TempDir()
@@ -165,6 +256,35 @@ func makeDashboardGaugePackage(t *testing.T, count int, format string) string {
 		t.Fatalf("MkdirAll: %v", err)
 	}
 	if err := os.WriteFile(filepath.Join(packageDir, "gauge.yaml"), []byte(dashboardGaugeYAML(count, format)), 0o600); err != nil {
+		t.Fatalf("WriteFile: %v", err)
+	}
+	return packageDir
+}
+
+func makeDashboardRadialGaugePackage(t *testing.T) string {
+	t.Helper()
+	root := t.TempDir()
+	files := []string{
+		"assets/gauges/radial/simple_rpm/background.png",
+		"assets/gauges/radial/simple_rpm/face.png",
+		"assets/gauges/radial/simple_rpm/ticks.png",
+		"assets/gauges/radial/simple_rpm/needle.png",
+		"assets/gauges/radial/simple_rpm/overlay.png",
+	}
+	for _, path := range files {
+		fullPath := filepath.Join(root, path)
+		if err := os.MkdirAll(filepath.Dir(fullPath), 0o755); err != nil {
+			t.Fatalf("MkdirAll: %v", err)
+		}
+		if err := os.WriteFile(fullPath, []byte(path), 0o600); err != nil {
+			t.Fatalf("WriteFile: %v", err)
+		}
+	}
+	packageDir := filepath.Join(root, "assets", "gauges", "radial", "simple_rpm")
+	if err := os.MkdirAll(packageDir, 0o755); err != nil {
+		t.Fatalf("MkdirAll: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(packageDir, "gauge.yaml"), []byte(dashboardRadialGaugeYAML()), 0o600); err != nil {
 		t.Fatalf("WriteFile: %v", err)
 	}
 	return packageDir
@@ -210,9 +330,43 @@ digits:
 %s`, count, format, count, positions.String())
 }
 
+func dashboardRadialGaugeYAML() string {
+	return `id: dashboard_radial_rpm
+type: radial
+sensor: rpm
+size:
+  width: 512
+  height: 512
+layers:
+  background: background.png
+  face: face.png
+  ticks: ticks.png
+  needle: needle.png
+  overlay: overlay.png
+pivot:
+  face: { x: 0.5, y: 0.55 }
+  needle: { x: 0.5, y: 0.9 }
+value_map:
+  min: 0
+  max: 7000
+  start_angle: -135
+  end_angle: 135
+  clamp: true
+`
+}
+
 func firstPartCharacter(widget Widget, character string) Part {
 	for _, part := range widget.Parts {
 		if part.Kind == PartKindCharacter && part.Character == character {
+			return part
+		}
+	}
+	return Part{}
+}
+
+func firstPartKind(widget Widget, kind string) Part {
+	for _, part := range widget.Parts {
+		if part.Kind == kind {
 			return part
 		}
 	}
@@ -227,6 +381,8 @@ func gaugePartSequence(widget Widget) string {
 			parts = append(parts, "layer:"+part.Layer)
 		case PartKindCharacter:
 			parts = append(parts, "character:"+part.Character)
+		case PartKindNeedle:
+			parts = append(parts, fmt.Sprintf("needle:%.0f", part.Angle))
 		default:
 			parts = append(parts, part.Kind)
 		}

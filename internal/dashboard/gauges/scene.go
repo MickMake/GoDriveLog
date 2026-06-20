@@ -2,6 +2,7 @@ package gauges
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 
@@ -14,6 +15,7 @@ const (
 	ScenePartKindCharacter    = "character"
 	ScenePartKindDecimalPoint = "decimal_point"
 	ScenePartKindForeground   = "foreground"
+	ScenePartKindNeedle       = "needle"
 )
 
 type Placement struct {
@@ -33,16 +35,22 @@ type Scene struct {
 	Error          string
 	Text           string
 	DigitPositions [][]int
+	FacePivot      Point
+	NeedlePivot    Point
+	Angle          float64
 	Parts          []ScenePart
 }
 
 type ScenePart struct {
-	Kind      string
-	Layer     string
-	AssetPath string
-	Slot      int
-	Character string
-	Position  []int
+	Kind        string
+	Layer       string
+	AssetPath   string
+	Slot        int
+	Character   string
+	Position    []int
+	Angle       float64
+	FacePivot   Point
+	NeedlePivot Point
 }
 
 func SevenSegmentScene(pkg Package, placement Placement, state sensors.SensorState) (Scene, error) {
@@ -116,6 +124,74 @@ func SevenSegmentScene(pkg Package, placement Placement, state sensors.SensorSta
 	return scene, nil
 }
 
+func RadialScene(pkg Package, placement Placement, state sensors.SensorState) (Scene, error) {
+	if pkg.Type != TypeRadial {
+		return Scene{}, fmt.Errorf("gauge package %q type %q is not radial", pkg.ID, pkg.Type)
+	}
+	if placement.Scale <= 0 {
+		return Scene{}, fmt.Errorf("gauge package %q placement scale must be greater than zero", pkg.ID)
+	}
+	needlePath := strings.TrimSpace(pkg.Layers["needle"])
+	if needlePath == "" {
+		return Scene{}, fmt.Errorf("gauge package %q radial layer needle must not be empty", pkg.ID)
+	}
+	if pkg.ValueMap.Max <= pkg.ValueMap.Min {
+		return Scene{}, fmt.Errorf("gauge package %q value_map max must be greater than min", pkg.ID)
+	}
+
+	state = stateForPackage(pkg.Sensor, state)
+	scene := Scene{
+		PackageID:   pkg.ID,
+		PackagePath: pkg.Path,
+		Type:        pkg.Type,
+		SensorID:    pkg.Sensor,
+		Position:    cloneInts(placement.Position),
+		Scale:       placement.Scale,
+		Size:        pkg.Size,
+		Status:      state.Status,
+		Error:       state.Error,
+		FacePivot:   pkg.Pivot.Face,
+		NeedlePivot: pkg.Pivot.Needle,
+		Parts:       radialUnderlayLayerParts(pkg.Layers),
+	}
+
+	if state.Status == sensors.StatusOK {
+		angle, err := radialAngle(pkg.ValueMap, state.Value)
+		if err != nil {
+			return Scene{}, fmt.Errorf("gauge package %q: %w", pkg.ID, err)
+		}
+		scene.Angle = angle
+		scene.Parts = append(scene.Parts, ScenePart{
+			Kind:        ScenePartKindNeedle,
+			Layer:       "needle",
+			AssetPath:   needlePath,
+			Angle:       angle,
+			FacePivot:   pkg.Pivot.Face,
+			NeedlePivot: pkg.Pivot.Needle,
+		})
+	}
+
+	scene.Parts = append(scene.Parts, radialOverlayLayerParts(pkg.Layers)...)
+	return scene, nil
+}
+
+func radialAngle(valueMap ValueMap, value float64) (float64, error) {
+	if valueMap.Max <= valueMap.Min {
+		return 0, fmt.Errorf("value_map max must be greater than min")
+	}
+	mappedValue := value
+	if valueMap.Clamp {
+		if mappedValue < valueMap.Min {
+			mappedValue = valueMap.Min
+		}
+		if mappedValue > valueMap.Max {
+			mappedValue = valueMap.Max
+		}
+	}
+	ratio := (mappedValue - valueMap.Min) / (valueMap.Max - valueMap.Min)
+	return valueMap.StartAngle + ratio*(valueMap.EndAngle-valueMap.StartAngle), nil
+}
+
 func (s Scene) Signature() string {
 	var b strings.Builder
 	b.WriteString(s.PackageID)
@@ -141,6 +217,12 @@ func (s Scene) Signature() string {
 	b.WriteString(s.Text)
 	b.WriteString("|positions=")
 	b.WriteString(formatIntSlices(s.DigitPositions))
+	b.WriteString("|face=")
+	b.WriteString(formatPoint(s.FacePivot))
+	b.WriteString("|needle=")
+	b.WriteString(formatPoint(s.NeedlePivot))
+	b.WriteString("|angle=")
+	b.WriteString(strconv.FormatFloat(s.Angle, 'f', -1, 64))
 	b.WriteString("|")
 	for _, part := range s.Parts {
 		b.WriteString(part.Kind)
@@ -154,6 +236,12 @@ func (s Scene) Signature() string {
 		b.WriteString(part.Character)
 		b.WriteString("#")
 		b.WriteString(formatIntSlice(part.Position))
+		b.WriteString("#")
+		b.WriteString(strconv.FormatFloat(part.Angle, 'f', -1, 64))
+		b.WriteString("#")
+		b.WriteString(formatPoint(part.FacePivot))
+		b.WriteString("#")
+		b.WriteString(formatPoint(part.NeedlePivot))
 		b.WriteString(";")
 	}
 	return b.String()
@@ -174,6 +262,14 @@ func underlayLayerParts(layers map[string]string) []ScenePart {
 }
 
 func overlayLayerParts(layers map[string]string) []ScenePart {
+	return namedLayerParts(layers, []string{"glass", "overlay", "foreground"})
+}
+
+func radialUnderlayLayerParts(layers map[string]string) []ScenePart {
+	return namedLayerParts(layers, []string{"background", "panel", "bezel", "face", "ticks"})
+}
+
+func radialOverlayLayerParts(layers map[string]string) []ScenePart {
 	return namedLayerParts(layers, []string{"glass", "overlay", "foreground"})
 }
 
@@ -274,4 +370,15 @@ func formatIntSlices(values [][]int) string {
 		parts[i] = formatIntSlice(value)
 	}
 	return strings.Join(parts, ";")
+}
+
+func formatPoint(point Point) string {
+	if point == (Point{}) {
+		return ""
+	}
+	return strconv.FormatFloat(point.X, 'f', -1, 64) + "," + strconv.FormatFloat(point.Y, 'f', -1, 64)
+}
+
+func almostEqual(a, b float64) bool {
+	return math.Abs(a-b) < 0.000001
 }
