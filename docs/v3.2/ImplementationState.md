@@ -1,8 +1,8 @@
 # GoDriveLog v3.2 implementation state
 
-Status: v3.2.4 Fyne seven-segment rendering hardening in progress
-Current target: v3.2.4 glass overlay verification and deterministic speed-quality checks
-Current branch: v3.2.4-fyne-seven-segment-rendering
+Status: v3.2.5 radial gauge scene model in progress
+Current target: v3.2.5 radial gauge dashboard runtime routing and scene data preservation
+Current branch: v3.2.5-radial-gauge-scene-model
 
 ## Purpose
 
@@ -121,7 +121,7 @@ digits:
 
 ## Radial package direction
 
-Radial gauges remain in scope, but they follow after the seven-segment package path proves the package model through dashboard runtime and visual rendering.
+Radial gauges are now routed through the dashboard scene runtime. Actual Fyne drawing and image rotation remain intentionally deferred to v3.2.6.
 
 Example `gauge.yaml`:
 
@@ -193,6 +193,19 @@ value_map:
 - Added deterministic speed-quality coverage through `BenchmarkSevenSegmentAdapterUpdate`, which measures repeated seven-segment digit updates with allocations.
 - The benchmark is intentionally comparative rather than a hard time threshold because CI and Raspberry Pi hardware vary.
 
+## v3.2.5 implementation notes
+
+- Added radial gauge scene model support for loaded `radial` gauge packages.
+- Routed radial gauge packages through dashboard runtime `type: gauge` widgets.
+- Dashboard `Widget` scene data now preserves radial face pivot, needle pivot, and calculated angle.
+- Dashboard `Part` scene data now preserves radial needle angle, face pivot, and needle pivot for the later renderer.
+- Value mapping uses package-owned `value_map` min/max/start/end angles and honours `clamp`.
+- Static radial package layers are included even for non-`ok` sensor states.
+- Live radial needle parts are emitted only for `ok` sensor states.
+- Dashboard scene signatures include radial angle and pivot data so angle and geometry changes are detectable.
+- Added runtime coverage for radial gauge widget package loading, angle/pivot preservation, non-ok needle suppression, and angle-based redraw detection.
+- This slice intentionally does not add Fyne radial drawing/rotation, example assets, inheritance, cluster, or sensor override behaviour.
+
 ## Completed slices
 
 | Version | Status | Notes |
@@ -201,13 +214,13 @@ value_map:
 | v3.2.1 | completed | Gauge package loader and tests for `assets/gauges/**/gauge.yaml`. |
 | v3.2.2 | completed | Dashboard gauge widget config fields and validation. |
 | v3.2.3 | completed | Seven-segment gauge scene model, dashboard runtime package loading, and adapter positioning. |
-| v3.2.4 | in progress | Fyne seven-segment glass overlay verification, keyed object reuse, and deterministic benchmark coverage. |
+| v3.2.4 | completed | Fyne seven-segment glass overlay verification, keyed object reuse, and deterministic benchmark coverage. |
+| v3.2.5 | in progress | Radial gauge scene model, dashboard runtime routing, angle/pivot preservation, and runtime coverage. |
 
 ## Pending slices
 
 | Version | Status | Next action |
 |---|---|---|
-| v3.2.5 | not started | Add radial gauge scene model. |
 | v3.2.6 | not started | Add Fyne radial renderer. |
 | v3.2.7 | not started | Add example gauge packages. |
 | v3.2.8 | not started | Add harness verification. |
