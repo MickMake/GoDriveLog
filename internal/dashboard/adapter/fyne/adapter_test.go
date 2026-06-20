@@ -1,7 +1,9 @@
 package fyne
 
 import (
-	"encoding/base64"
+	"image"
+	"image/color"
+	"image/png"
 	"os"
 	"path/filepath"
 	"testing"
@@ -179,13 +181,15 @@ func assertLastResourceName(t *testing.T, adapter *Adapter, want string) {
 }
 
 func writeTestPNG(path string) error {
-	const png1x1 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGJgYGAAAAAEAAGjChXjAAAAAElFTkSuQmCC"
-	data, err := base64.StdEncoding.DecodeString(png1x1)
-	if err != nil {
-		return err
-	}
+	img := image.NewRGBA(image.Rect(0, 0, 1, 1))
+	img.Set(0, 0, color.RGBA{R: 255, G: 255, B: 255, A: 255})
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
 	}
-	return os.WriteFile(path, data, 0o644)
+	file, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	return png.Encode(file, img)
 }
