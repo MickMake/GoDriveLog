@@ -23,8 +23,3 @@ value_map:
   start_angle: -135
   end_angle: 135
   clamp: true
-
-labels:
-  major_step: 1000
-  minor_step: 500
-  unit: rpm
