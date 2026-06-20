@@ -1,6 +1,6 @@
 # GoDriveLog v3.2 open decisions
 
-Status: planning
+Status: active; v3.2.4 is next
 
 This file records decisions that are open, decided, deferred, or explicitly rejected for v3.2.
 
