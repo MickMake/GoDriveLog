@@ -18,7 +18,7 @@ sensors:
     unit: "C"
     poll: 5000
     min: 0
-    max: 140
+    max: 99
 
   speed:
     type: obd
@@ -63,22 +63,22 @@ dashboards:
         type: gauge
         gauge: assets/gauges/7Seg/green/2_digit_temp
         position: [40, 40]
-        scale: 1.0
+        scale: 0.5
 
       - id: speed_3_digit
         type: gauge
         gauge: assets/gauges/7Seg/amber/3_digit_speed
         position: [360, 40]
-        scale: 1.0
+        scale: 0.5
 
       - id: rpm_4_digit
         type: gauge
         gauge: assets/gauges/7Seg/amber/4_digit_rpm
         position: [780, 40]
-        scale: 1.0
+        scale: 0.5
 
       - id: odometer_5_digit
         type: gauge
         gauge: assets/gauges/7Seg/green/5_digit_trip
-        position: [1280, 40]
-        scale: 1.0
+        position: [580, 250]
+        scale: 0.5
