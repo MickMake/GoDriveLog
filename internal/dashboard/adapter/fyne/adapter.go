@@ -4,12 +4,15 @@ import (
 	"bytes"
 	"fmt"
 	"image"
+	"image/color"
 	_ "image/gif"
 	_ "image/jpeg"
-	_ "image/png"
+	"image/png"
+	"math"
 	"os"
 	"path"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	fyneui "fyne.io/fyne/v2"
@@ -25,17 +28,31 @@ const sceneGap = 12
 // only dashboard scene data and resolved asset paths; it does not read sensors,
 // poll OBD endpoints, or own dashboard state.
 type Adapter struct {
-	repoRoot     string
-	root         *fyneui.Container
-	assets       map[string]cachedAsset
-	images       map[string]*canvas.Image
-	refreshRoot  func(*fyneui.Container)
-	refreshImage func(*canvas.Image)
+	repoRoot       string
+	root           *fyneui.Container
+	assets         map[string]cachedAsset
+	rotatedNeedles map[string]rotatedNeedleAsset
+	images         map[string]*canvas.Image
+	refreshRoot    func(*fyneui.Container)
+	refreshImage   func(*canvas.Image)
 }
 
 type cachedAsset struct {
 	resource fyneui.Resource
 	size     fyneui.Size
+	data     []byte
+}
+
+type rotatedNeedleAsset struct {
+	asset  cachedAsset
+	pivotX float32
+	pivotY float32
+}
+
+type loadedPart struct {
+	index int
+	part  v3dashboard.Part
+	asset cachedAsset
 }
 
 type renderedPart struct {
@@ -53,10 +70,11 @@ func New(repoRoot string) (*Adapter, error) {
 		return nil, err
 	}
 	return &Adapter{
-		repoRoot: root,
-		root:     container.NewWithoutLayout(),
-		assets:   map[string]cachedAsset{},
-		images:   map[string]*canvas.Image{},
+		repoRoot:       root,
+		root:           container.NewWithoutLayout(),
+		assets:         map[string]cachedAsset{},
+		rotatedNeedles: map[string]rotatedNeedleAsset{},
+		images:         map[string]*canvas.Image{},
 		refreshRoot: func(root *fyneui.Container) {
 			root.Refresh()
 		},
@@ -142,7 +160,18 @@ func (a *Adapter) renderSceneParts(scene v3dashboard.Scene, yOffset float32) ([]
 }
 
 func (a *Adapter) renderWidgetParts(dashboardID string, widget v3dashboard.Widget, yOffset float32) ([]renderedPart, error) {
-	parts := make([]renderedPart, 0, len(widget.Parts))
+	loaded := make([]loadedPart, 0, len(widget.Parts))
+	gaugeSize := fyneui.Size{}
+	for index, part := range widget.Parts {
+		asset, err := a.loadAsset(part.AssetPath)
+		if err != nil {
+			return nil, fmt.Errorf("part %d %q asset %q: %w", index, part.Kind, part.AssetPath, err)
+		}
+		loaded = append(loaded, loadedPart{index: index, part: part, asset: asset})
+		gaugeSize = radialGaugeSize(gaugeSize, part, asset.size)
+	}
+
+	parts := make([]renderedPart, 0, len(loaded))
 	baseX, baseY := widgetPosition(widget)
 	baseY += yOffset
 	widgetScale := widget.Scale
@@ -150,16 +179,39 @@ func (a *Adapter) renderWidgetParts(dashboardID string, widget v3dashboard.Widge
 		widgetScale = 1
 	}
 
-	for index, part := range widget.Parts {
-		asset, err := a.loadAsset(part.AssetPath)
-		if err != nil {
-			return nil, fmt.Errorf("part %d %q asset %q: %w", index, part.Kind, part.AssetPath, err)
+	for _, loadedPart := range loaded {
+		part := loadedPart.part
+		asset := loadedPart.asset
+		if part.Kind == v3dashboard.PartKindNeedle {
+			rendered, err := a.renderNeedlePart(dashboardID, widget.ID, loadedPart.index, part, asset, gaugeSize, baseX, baseY, widgetScale)
+			if err != nil {
+				return nil, err
+			}
+			parts = append(parts, rendered)
+			continue
 		}
 		size := scaledSize(asset.size, widgetScale)
 		x, y := partPosition(baseX, baseY, size, widgetScale, part)
-		parts = append(parts, renderedPart{key: renderedPartKey(dashboardID, widget.ID, index, part), asset: asset, size: size, x: x, y: y})
+		parts = append(parts, renderedPart{key: renderedPartKey(dashboardID, widget.ID, loadedPart.index, part), asset: asset, size: size, x: x, y: y})
 	}
 	return parts, nil
+}
+
+func (a *Adapter) renderNeedlePart(dashboardID string, widgetID string, index int, part v3dashboard.Part, asset cachedAsset, gaugeSize fyneui.Size, baseX float32, baseY float32, widgetScale float64) (renderedPart, error) {
+	if gaugeSize.Width <= 0 || gaugeSize.Height <= 0 {
+		gaugeSize = asset.size
+	}
+	rotated, err := a.rotatedNeedleAsset(asset, part.Angle, part.NeedlePivot.X, part.NeedlePivot.Y)
+	if err != nil {
+		return renderedPart{}, err
+	}
+	scale := float32(widgetScale)
+	faceX := baseX + float32(part.FacePivot.X)*gaugeSize.Width*scale
+	faceY := baseY + float32(part.FacePivot.Y)*gaugeSize.Height*scale
+	size := scaledSize(rotated.asset.size, widgetScale)
+	x := faceX - rotated.pivotX*scale
+	y := faceY - rotated.pivotY*scale
+	return renderedPart{key: renderedPartKey(dashboardID, widgetID, index, part), asset: rotated.asset, size: size, x: x, y: y}, nil
 }
 
 func (a *Adapter) syncImages(parts []renderedPart) bool {
@@ -235,7 +287,7 @@ func renderedPartKey(dashboardID string, widgetID string, index int, part v3dash
 		return fmt.Sprintf("%s/%s/%s/%d", dashboardID, widgetID, part.Kind, part.Slot)
 	case v3dashboard.PartKindState:
 		return fmt.Sprintf("%s/%s/%s/%s", dashboardID, widgetID, part.Kind, part.State)
-	case v3dashboard.PartKindFrame:
+	case v3dashboard.PartKindFrame, v3dashboard.PartKindNeedle:
 		return fmt.Sprintf("%s/%s/%s", dashboardID, widgetID, part.Kind)
 	default:
 		return fmt.Sprintf("%s/%s/%s/%d", dashboardID, widgetID, part.Kind, index)
@@ -262,9 +314,111 @@ func (a *Adapter) loadAsset(assetPath string) (cachedAsset, error) {
 	cached := cachedAsset{
 		resource: fyneui.NewStaticResource(cacheKey, data),
 		size:     fyneui.NewSize(float32(config.Width), float32(config.Height)),
+		data:     data,
 	}
 	a.assets[cacheKey] = cached
 	return cached, nil
+}
+
+func (a *Adapter) rotatedNeedleAsset(asset cachedAsset, angle float64, pivotX float64, pivotY float64) (rotatedNeedleAsset, error) {
+	key := strings.Join([]string{
+		asset.resource.Name(),
+		strconv.FormatFloat(angle, 'f', -1, 64),
+		strconv.FormatFloat(pivotX, 'f', -1, 64),
+		strconv.FormatFloat(pivotY, 'f', -1, 64),
+	}, "|")
+	if cached, ok := a.rotatedNeedles[key]; ok {
+		return cached, nil
+	}
+	if a.rotatedNeedles == nil {
+		a.rotatedNeedles = map[string]rotatedNeedleAsset{}
+	}
+
+	width := float64(asset.size.Width)
+	height := float64(asset.size.Height)
+	pivotPX := pivotX * width
+	pivotPY := pivotY * height
+	if math.Abs(angle) < 0.000001 {
+		rotated := rotatedNeedleAsset{asset: asset, pivotX: float32(pivotPX), pivotY: float32(pivotPY)}
+		a.rotatedNeedles[key] = rotated
+		return rotated, nil
+	}
+
+	decoded, _, err := image.Decode(bytes.NewReader(asset.data))
+	if err != nil {
+		return rotatedNeedleAsset{}, err
+	}
+	rotatedImage, rotatedPivotX, rotatedPivotY := rotateImageAroundPivot(decoded, angle, pivotPX, pivotPY)
+	var buf bytes.Buffer
+	if err := png.Encode(&buf, rotatedImage); err != nil {
+		return rotatedNeedleAsset{}, err
+	}
+	data := buf.Bytes()
+	rotatedAsset := cachedAsset{
+		resource: fyneui.NewStaticResource(asset.resource.Name()+"@radial-needle|"+key, data),
+		size:     fyneui.NewSize(float32(rotatedImage.Bounds().Dx()), float32(rotatedImage.Bounds().Dy())),
+		data:     data,
+	}
+	rotated := rotatedNeedleAsset{asset: rotatedAsset, pivotX: rotatedPivotX, pivotY: rotatedPivotY}
+	a.rotatedNeedles[key] = rotated
+	return rotated, nil
+}
+
+func rotateImageAroundPivot(source image.Image, angle float64, pivotX float64, pivotY float64) (*image.NRGBA, float32, float32) {
+	bounds := source.Bounds()
+	width := float64(bounds.Dx())
+	height := float64(bounds.Dy())
+	radians := angle * math.Pi / 180
+	cosAngle := math.Cos(radians)
+	sinAngle := math.Sin(radians)
+	corners := [][2]float64{{0, 0}, {width, 0}, {0, height}, {width, height}}
+	minX, minY := math.Inf(1), math.Inf(1)
+	maxX, maxY := math.Inf(-1), math.Inf(-1)
+	for _, corner := range corners {
+		x, y := rotatePoint(corner[0]-pivotX, corner[1]-pivotY, cosAngle, sinAngle)
+		if x < minX {
+			minX = x
+		}
+		if y < minY {
+			minY = y
+		}
+		if x > maxX {
+			maxX = x
+		}
+		if y > maxY {
+			maxY = y
+		}
+	}
+
+	rotatedWidth := int(math.Ceil(maxX - minX))
+	rotatedHeight := int(math.Ceil(maxY - minY))
+	if rotatedWidth < 1 {
+		rotatedWidth = 1
+	}
+	if rotatedHeight < 1 {
+		rotatedHeight = 1
+	}
+	rotated := image.NewNRGBA(image.Rect(0, 0, rotatedWidth, rotatedHeight))
+	for y := 0; y < rotatedHeight; y++ {
+		for x := 0; x < rotatedWidth; x++ {
+			rotatedX := float64(x) + minX
+			rotatedY := float64(y) + minY
+			sourceX := rotatedX*cosAngle + rotatedY*sinAngle + pivotX
+			sourceY := -rotatedX*sinAngle + rotatedY*cosAngle + pivotY
+			sampleX := int(math.Floor(sourceX + 0.5))
+			sampleY := int(math.Floor(sourceY + 0.5))
+			if sampleX < 0 || sampleY < 0 || sampleX >= bounds.Dx() || sampleY >= bounds.Dy() {
+				continue
+			}
+			c := color.NRGBAModel.Convert(source.At(bounds.Min.X+sampleX, bounds.Min.Y+sampleY)).(color.NRGBA)
+			rotated.SetNRGBA(x, y, c)
+		}
+	}
+	return rotated, float32(-minX), float32(-minY)
+}
+
+func rotatePoint(x float64, y float64, cosAngle float64, sinAngle float64) (float64, float64) {
+	return x*cosAngle - y*sinAngle, x*sinAngle + y*cosAngle
 }
 
 func (a *Adapter) resolveAssetPath(assetPath string) (string, string, error) {
@@ -337,6 +491,22 @@ func partPosition(baseX, baseY float32, size fyneui.Size, scale float64, part v3
 		x += float32(part.Slot) * size.Width
 	}
 	return x, y
+}
+
+func radialGaugeSize(current fyneui.Size, part v3dashboard.Part, size fyneui.Size) fyneui.Size {
+	if part.Kind == v3dashboard.PartKindNeedle {
+		return current
+	}
+	if part.Kind == v3dashboard.PartKindLayer && part.Layer == "face" {
+		return size
+	}
+	if current.Width <= 0 || current.Height <= 0 {
+		return size
+	}
+	if part.Kind == v3dashboard.PartKindLayer && current.Width*current.Height < size.Width*size.Height {
+		return size
+	}
+	return current
 }
 
 func partsWidth(parts []renderedPart) float32 {
