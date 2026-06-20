@@ -9,6 +9,7 @@ import (
 
 	v3assets "github.com/MickMake/GoDriveLog/internal/assets"
 	"github.com/MickMake/GoDriveLog/internal/config/v3config"
+	v3gauges "github.com/MickMake/GoDriveLog/internal/dashboard/gauges"
 	"github.com/MickMake/GoDriveLog/internal/sensors"
 )
 
@@ -21,6 +22,7 @@ const (
 	PartKindCell         = "cell"
 	PartKindFrame        = "frame"
 	PartKindForeground   = "foreground"
+	PartKindLayer        = "layer"
 )
 
 // Runtime owns selected v3 dashboard scene state. It consumes sensor state/events
@@ -45,22 +47,28 @@ type Scene struct {
 }
 
 type Widget struct {
-	ID       string
-	Type     string
-	SensorID string
-	AssetID  string
-	Position []int
-	Status   string
-	Text     string
-	Parts    []Part
-	Error    string
+	ID                  string
+	Type                string
+	SensorID            string
+	AssetID             string
+	GaugeID             string
+	GaugePath           string
+	GaugeDigitPositions [][]int
+	Scale               float64
+	Position            []int
+	Status              string
+	Text                string
+	Parts               []Part
+	Error               string
 }
 
 type Part struct {
 	Kind      string
+	Layer     string
 	AssetPath string
 	Slot      int
 	Character string
+	Position  []int
 	State     string
 	Cell      string
 	Frame     int
@@ -245,6 +253,28 @@ func (d Dashboard) renderWidget(configWidget v3config.WidgetConfig, states map[s
 		}
 		indicatorState := indicatorStateFor(state)
 		widget.Parts = appendIndicatorParts(widget.Parts, set, indicatorState)
+	case v3config.WidgetTypeGauge:
+		pkg, err := v3gauges.LoadPackage(configWidget.Gauge)
+		if err != nil {
+			return Widget{}, fmt.Errorf("dashboard %q widget %q gauge %q could not load package: %w", d.ID, configWidget.ID, configWidget.Gauge, err)
+		}
+		if pkg.Type != v3gauges.TypeSevenSegment {
+			return Widget{}, fmt.Errorf("dashboard %q widget %q gauge package type %q is not supported by dashboard scene runtime", d.ID, configWidget.ID, pkg.Type)
+		}
+		state := stateForSensor(pkg.Sensor, states)
+		gaugeScene, err := v3gauges.SevenSegmentScene(pkg, v3gauges.Placement{Position: configWidget.Position, Scale: configWidget.Scale}, state)
+		if err != nil {
+			return Widget{}, fmt.Errorf("dashboard %q widget %q: %w", d.ID, configWidget.ID, err)
+		}
+		widget.SensorID = gaugeScene.SensorID
+		widget.GaugeID = gaugeScene.PackageID
+		widget.GaugePath = gaugeScene.PackagePath
+		widget.GaugeDigitPositions = cloneIntSlices(gaugeScene.DigitPositions)
+		widget.Scale = gaugeScene.Scale
+		widget.Status = gaugeScene.Status
+		widget.Error = gaugeScene.Error
+		widget.Text = gaugeScene.Text
+		widget.Parts = gaugeSceneParts(gaugeScene)
 	default:
 		return Widget{}, fmt.Errorf("dashboard %q widget %q type %q is not supported", d.ID, configWidget.ID, configWidget.Type)
 	}
@@ -253,12 +283,16 @@ func (d Dashboard) renderWidget(configWidget v3config.WidgetConfig, states map[s
 }
 
 func stateForWidget(widget v3config.WidgetConfig, states map[string]sensors.SensorState) sensors.SensorState {
-	state, ok := states[widget.Sensor]
+	return stateForSensor(widget.Sensor, states)
+}
+
+func stateForSensor(sensorID string, states map[string]sensors.SensorState) sensors.SensorState {
+	state, ok := states[sensorID]
 	if !ok {
-		return sensors.SensorState{ID: widget.Sensor, Status: sensors.StatusMissingUnsupported}
+		return sensors.SensorState{ID: sensorID, Status: sensors.StatusMissingUnsupported}
 	}
 	if state.ID == "" {
-		state.ID = widget.Sensor
+		state.ID = sensorID
 	}
 	if state.Status == "" {
 		state.Status = sensors.StatusUnknown
@@ -355,6 +389,21 @@ func appendDigitLayerParts(parts []Part, set v3assets.DigitSet, slots int) []Par
 		if set.Foreground != nil {
 			parts = append(parts, Part{Kind: PartKindForeground, AssetPath: set.Foreground.Path, Slot: slot})
 		}
+	}
+	return parts
+}
+
+func gaugeSceneParts(scene v3gauges.Scene) []Part {
+	parts := make([]Part, 0, len(scene.Parts))
+	for _, scenePart := range scene.Parts {
+		parts = append(parts, Part{
+			Kind:      scenePart.Kind,
+			Layer:     scenePart.Layer,
+			AssetPath: scenePart.AssetPath,
+			Slot:      scenePart.Slot,
+			Character: scenePart.Character,
+			Position:  append([]int(nil), scenePart.Position...),
+		})
 	}
 	return parts
 }
@@ -570,6 +619,14 @@ func sceneSignature(scene Scene) string {
 		b.WriteString(":")
 		b.WriteString(widget.Type)
 		b.WriteString(":")
+		b.WriteString(widget.GaugeID)
+		b.WriteString(":")
+		b.WriteString(widget.GaugePath)
+		b.WriteString(":")
+		b.WriteString(formatPartPositions(widget.GaugeDigitPositions))
+		b.WriteString(":")
+		b.WriteString(strconv.FormatFloat(widget.Scale, 'f', -1, 64))
+		b.WriteString(":")
 		b.WriteString(widget.Status)
 		b.WriteString(":")
 		b.WriteString(widget.Text)
@@ -577,6 +634,8 @@ func sceneSignature(scene Scene) string {
 		for _, part := range widget.Parts {
 			b.WriteString(part.Kind)
 			b.WriteString("@")
+			b.WriteString(part.Layer)
+			b.WriteString("#")
 			b.WriteString(strconv.Itoa(part.Slot))
 			b.WriteString("=")
 			b.WriteString(part.AssetPath)
@@ -588,11 +647,46 @@ func sceneSignature(scene Scene) string {
 			b.WriteString(part.Cell)
 			b.WriteString("#")
 			b.WriteString(strconv.Itoa(part.Frame))
+			b.WriteString("#")
+			b.WriteString(formatPartPosition(part.Position))
 			b.WriteString(";")
 		}
 		b.WriteString("|")
 	}
 	return b.String()
+}
+
+func formatPartPosition(position []int) string {
+	if len(position) == 0 {
+		return ""
+	}
+	parts := make([]string, len(position))
+	for index, value := range position {
+		parts[index] = strconv.Itoa(value)
+	}
+	return strings.Join(parts, ",")
+}
+
+func formatPartPositions(positions [][]int) string {
+	if len(positions) == 0 {
+		return ""
+	}
+	parts := make([]string, len(positions))
+	for index, position := range positions {
+		parts[index] = formatPartPosition(position)
+	}
+	return strings.Join(parts, ";")
+}
+
+func cloneIntSlices(values [][]int) [][]int {
+	if values == nil {
+		return nil
+	}
+	cloned := make([][]int, len(values))
+	for index, value := range values {
+		cloned[index] = append([]int(nil), value...)
+	}
+	return cloned
 }
 
 func sortedWidgetIDs(widgets []Widget) []string {

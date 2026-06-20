@@ -193,6 +193,30 @@ Use simple generated/placeholder PNG assets for first example gauge packages.
 
 The assets only need to prove package layout, layer order, digit positions, relative paths, and renderer behaviour. They can be replaced later.
 
+### Seven-segment scene and dashboard runtime structure
+
+State: Decided
+
+The v3.2.3 seven-segment path is generated from:
+
+- a dashboard `type: gauge` widget;
+- the widget's `gauge` package path;
+- the already-loaded `seven_segment` gauge package;
+- dashboard placement (`position`, `scale`);
+- the current sensor state for the package-owned sensor.
+
+Dashboard runtime loads the configured gauge package and emits ordinary dashboard scene widgets/parts that the adapter can consume.
+
+Scene data records package identity, package path, gauge type, sensor id, widget placement, scale, package size, status/error, formatted text, static layers, digit parts, digit slots, digit characters, asset paths, and digit positions.
+
+Static package layers are emitted for all sensor states so the mounted instrument can remain visible.
+
+Live digit parts are emitted only for `ok` sensor states. Non-`ok` states must not emit fake numeric characters, digit backgrounds, decimal-point overlays, or foreground digit parts that look like a live value.
+
+Scene signatures include package, placement, size, status, text, layer, asset, character, slot, and digit-position data so output and layout changes are detectable.
+
+The Fyne adapter honours package-owned part coordinates and widget scale. Broader visual polish, examples, and harness work remain later slices.
+
 ## Deferred
 
 ### Gauge inheritance
@@ -228,14 +252,6 @@ No generated ticks, labels, arcs, zones, or procedural gauge drawing in the firs
 The first version is image-layer based.
 
 ## Open
-
-### Exact scene structure for seven-segment gauges
-
-State: Open
-
-Need to decide the cleanest scene representation for complete seven-segment gauge packages without breaking existing digit display widgets.
-
-Target slice: v3.2.3
 
 ### Exact scene part structure for radial gauges
 
