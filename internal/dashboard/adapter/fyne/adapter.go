@@ -25,10 +25,12 @@ const sceneGap = 12
 // only dashboard scene data and resolved asset paths; it does not read sensors,
 // poll OBD endpoints, or own dashboard state.
 type Adapter struct {
-	repoRoot string
-	root     *fyneui.Container
-	assets   map[string]cachedAsset
-	images   map[string]*canvas.Image
+	repoRoot     string
+	root         *fyneui.Container
+	assets       map[string]cachedAsset
+	images       map[string]*canvas.Image
+	refreshRoot  func(*fyneui.Container)
+	refreshImage func(*canvas.Image)
 }
 
 type cachedAsset struct {
@@ -55,6 +57,12 @@ func New(repoRoot string) (*Adapter, error) {
 		root:     container.NewWithoutLayout(),
 		assets:   map[string]cachedAsset{},
 		images:   map[string]*canvas.Image{},
+		refreshRoot: func(root *fyneui.Container) {
+			root.Refresh()
+		},
+		refreshImage: func(image *canvas.Image) {
+			image.Refresh()
+		},
 	}, nil
 }
 
@@ -87,8 +95,8 @@ func (a *Adapter) Update(scenes []v3dashboard.Scene) error {
 		a.root.Resize(size)
 		changed = true
 	}
-	if changed && fyneui.CurrentApp() != nil {
-		a.root.Refresh()
+	if changed && a.refreshRoot != nil {
+		a.refreshRoot(a.root)
 	}
 	return nil
 }
@@ -168,7 +176,7 @@ func (a *Adapter) syncImages(parts []renderedPart) bool {
 			object.FillMode = canvas.ImageFillStretch
 			changed = true
 		}
-		if applyImagePart(object, part) {
+		if a.applyImagePart(object, part) {
 			changed = true
 		}
 		nextImages[part.key] = object
@@ -185,11 +193,13 @@ func (a *Adapter) syncImages(parts []renderedPart) bool {
 	return changed
 }
 
-func applyImagePart(object *canvas.Image, part renderedPart) bool {
+func (a *Adapter) applyImagePart(object *canvas.Image, part renderedPart) bool {
 	changed := false
 	if object.Resource != part.asset.resource {
 		object.Resource = part.asset.resource
-		object.Refresh()
+		if a.refreshImage != nil {
+			a.refreshImage(object)
+		}
 		changed = true
 	}
 	position := fyneui.NewPos(part.x, part.y)
