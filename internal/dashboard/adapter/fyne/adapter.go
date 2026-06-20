@@ -22,7 +22,11 @@ import (
 	"github.com/MickMake/GoDriveLog/internal/dashboard/v3dashboard"
 )
 
-const sceneGap = 12
+const (
+	sceneGap                     = 12
+	rotatedNeedleAngleStep      = 0.5
+	maxRotatedNeedleCacheEntries = 720
+)
 
 // Adapter renders v3 dashboard scene output with Fyne. It deliberately consumes
 // only dashboard scene data and resolved asset paths; it does not read sensors,
@@ -321,9 +325,10 @@ func (a *Adapter) loadAsset(assetPath string) (cachedAsset, error) {
 }
 
 func (a *Adapter) rotatedNeedleAsset(asset cachedAsset, angle float64, pivotX float64, pivotY float64) (rotatedNeedleAsset, error) {
+	cachedAngle := quantizedNeedleAngle(angle)
 	key := strings.Join([]string{
 		asset.resource.Name(),
-		strconv.FormatFloat(angle, 'f', -1, 64),
+		strconv.FormatFloat(cachedAngle, 'f', -1, 64),
 		strconv.FormatFloat(pivotX, 'f', -1, 64),
 		strconv.FormatFloat(pivotY, 'f', -1, 64),
 	}, "|")
@@ -338,9 +343,9 @@ func (a *Adapter) rotatedNeedleAsset(asset cachedAsset, angle float64, pivotX fl
 	height := float64(asset.size.Height)
 	pivotPX := pivotX * width
 	pivotPY := pivotY * height
-	if math.Abs(angle) < 0.000001 {
+	if math.Abs(cachedAngle) < 0.000001 {
 		rotated := rotatedNeedleAsset{asset: asset, pivotX: float32(pivotPX), pivotY: float32(pivotPY)}
-		a.rotatedNeedles[key] = rotated
+		a.rememberRotatedNeedleAsset(key, rotated)
 		return rotated, nil
 	}
 
@@ -348,7 +353,7 @@ func (a *Adapter) rotatedNeedleAsset(asset cachedAsset, angle float64, pivotX fl
 	if err != nil {
 		return rotatedNeedleAsset{}, err
 	}
-	rotatedImage, rotatedPivotX, rotatedPivotY := rotateImageAroundPivot(decoded, angle, pivotPX, pivotPY)
+	rotatedImage, rotatedPivotX, rotatedPivotY := rotateImageAroundPivot(decoded, cachedAngle, pivotPX, pivotPY)
 	var buf bytes.Buffer
 	if err := png.Encode(&buf, rotatedImage); err != nil {
 		return rotatedNeedleAsset{}, err
@@ -360,8 +365,22 @@ func (a *Adapter) rotatedNeedleAsset(asset cachedAsset, angle float64, pivotX fl
 		data:     data,
 	}
 	rotated := rotatedNeedleAsset{asset: rotatedAsset, pivotX: rotatedPivotX, pivotY: rotatedPivotY}
-	a.rotatedNeedles[key] = rotated
+	a.rememberRotatedNeedleAsset(key, rotated)
 	return rotated, nil
+}
+
+func (a *Adapter) rememberRotatedNeedleAsset(key string, rotated rotatedNeedleAsset) {
+	if a.rotatedNeedles == nil {
+		a.rotatedNeedles = map[string]rotatedNeedleAsset{}
+	}
+	if len(a.rotatedNeedles) >= maxRotatedNeedleCacheEntries {
+		a.rotatedNeedles = map[string]rotatedNeedleAsset{}
+	}
+	a.rotatedNeedles[key] = rotated
+}
+
+func quantizedNeedleAngle(angle float64) float64 {
+	return math.Round(angle/rotatedNeedleAngleStep) * rotatedNeedleAngleStep
 }
 
 func rotateImageAroundPivot(source image.Image, angle float64, pivotX float64, pivotY float64) (*image.NRGBA, float32, float32) {
