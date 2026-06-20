@@ -1,8 +1,8 @@
 # GoDriveLog v3.2 implementation state
 
-Status: v3.2.3 seven-segment gauge dashboard path implemented, pending review
+Status: v3.2.3 seven-segment gauge dashboard path merged
 Current target: v3.2.4 Fyne seven-segment renderer hardening and visual verification
-Current branch: v3.2.3-seven-segment-gauge-scene-model
+Current branch: main
 
 ## Purpose
 
@@ -192,7 +192,7 @@ value_map:
 | v3.2.0 | completed | Planning docs, prompts, repo hygiene, active example/assets normalisation, and v3.0 doc archiving. |
 | v3.2.1 | completed | Gauge package loader and tests for `assets/gauges/**/gauge.yaml`. |
 | v3.2.2 | completed | Dashboard gauge widget config fields and validation. |
-| v3.2.3 | implemented, pending review | Seven-segment gauge scene model, dashboard runtime package loading, and adapter positioning. |
+| v3.2.3 | completed | Seven-segment gauge scene model, dashboard runtime package loading, and adapter positioning. |
 
 ## Pending slices
 
@@ -218,6 +218,5 @@ Every v3.2 implementation PR must update this file with:
 
 - completed version;
 - current branch;
-- current state;
 - next target;
-- any important implementation notes;
+- any changed decisions or deferrals.
