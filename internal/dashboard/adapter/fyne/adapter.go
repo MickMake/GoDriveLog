@@ -25,10 +25,12 @@ const sceneGap = 12
 // only dashboard scene data and resolved asset paths; it does not read sensors,
 // poll OBD endpoints, or own dashboard state.
 type Adapter struct {
-	repoRoot string
-	root     *fyneui.Container
-	assets   map[string]cachedAsset
-	images   []*canvas.Image
+	repoRoot     string
+	root         *fyneui.Container
+	assets       map[string]cachedAsset
+	images       map[string]*canvas.Image
+	refreshRoot  func(*fyneui.Container)
+	refreshImage func(*canvas.Image)
 }
 
 type cachedAsset struct {
@@ -37,6 +39,7 @@ type cachedAsset struct {
 }
 
 type renderedPart struct {
+	key   string
 	asset cachedAsset
 	size  fyneui.Size
 	x     float32
@@ -53,6 +56,13 @@ func New(repoRoot string) (*Adapter, error) {
 		repoRoot: root,
 		root:     container.NewWithoutLayout(),
 		assets:   map[string]cachedAsset{},
+		images:   map[string]*canvas.Image{},
+		refreshRoot: func(root *fyneui.Container) {
+			root.Refresh()
+		},
+		refreshImage: func(image *canvas.Image) {
+			image.Refresh()
+		},
 	}, nil
 }
 
@@ -61,9 +71,9 @@ func (a *Adapter) CanvasObject() fyneui.CanvasObject {
 	return a.root
 }
 
-// Update renders the latest v3 dashboard scenes. It reuses existing Fyne image
-// objects when the rendered part count is unchanged so fast dashboard updates do
-// not build native canvas/image object churn.
+// Update renders the latest v3 dashboard scenes. It reuses Fyne image objects by
+// stable scene/widget/part identity so fast dashboard updates do not rebuild the
+// native canvas object tree when digit resources change.
 func (a *Adapter) Update(scenes []v3dashboard.Scene) error {
 	if a == nil {
 		return fmt.Errorf("v3 Fyne adapter is nil")
@@ -74,20 +84,19 @@ func (a *Adapter) Update(scenes []v3dashboard.Scene) error {
 		return err
 	}
 
-	if len(a.images) != len(parts) {
-		a.rebuildImages(parts)
-	} else {
-		a.updateImages(parts)
-	}
+	changed := a.syncImages(parts)
 	if size.Width <= 0 {
 		size.Width = 1
 	}
 	if size.Height <= 0 {
 		size.Height = 1
 	}
-	a.root.Resize(size)
-	if fyneui.CurrentApp() != nil {
-		a.root.Refresh()
+	if a.root.Size() != size {
+		a.root.Resize(size)
+		changed = true
+	}
+	if changed && a.refreshRoot != nil {
+		a.refreshRoot(a.root)
 	}
 	return nil
 }
@@ -116,7 +125,7 @@ func (a *Adapter) renderParts(scenes []v3dashboard.Scene) ([]renderedPart, fyneu
 func (a *Adapter) renderSceneParts(scene v3dashboard.Scene, yOffset float32) ([]renderedPart, fyneui.Size, error) {
 	parts := []renderedPart{}
 	for _, widget := range scene.Widgets {
-		widgetParts, err := a.renderWidgetParts(widget, yOffset)
+		widgetParts, err := a.renderWidgetParts(scene.DashboardID, widget, yOffset)
 		if err != nil {
 			return nil, fyneui.Size{}, fmt.Errorf("dashboard %q widget %q: %w", scene.DashboardID, widget.ID, err)
 		}
@@ -132,7 +141,7 @@ func (a *Adapter) renderSceneParts(scene v3dashboard.Scene, yOffset float32) ([]
 	return parts, size, nil
 }
 
-func (a *Adapter) renderWidgetParts(widget v3dashboard.Widget, yOffset float32) ([]renderedPart, error) {
+func (a *Adapter) renderWidgetParts(dashboardID string, widget v3dashboard.Widget, yOffset float32) ([]renderedPart, error) {
 	parts := make([]renderedPart, 0, len(widget.Parts))
 	baseX, baseY := widgetPosition(widget)
 	baseY += yOffset
@@ -148,34 +157,88 @@ func (a *Adapter) renderWidgetParts(widget v3dashboard.Widget, yOffset float32) 
 		}
 		size := scaledSize(asset.size, widgetScale)
 		x, y := partPosition(baseX, baseY, size, widgetScale, part)
-		parts = append(parts, renderedPart{asset: asset, size: size, x: x, y: y})
+		parts = append(parts, renderedPart{key: renderedPartKey(dashboardID, widget.ID, index, part), asset: asset, size: size, x: x, y: y})
 	}
 	return parts, nil
 }
 
-func (a *Adapter) rebuildImages(parts []renderedPart) {
+func (a *Adapter) syncImages(parts []renderedPart) bool {
+	if a.images == nil {
+		a.images = map[string]*canvas.Image{}
+	}
+	changed := false
 	objects := make([]fyneui.CanvasObject, 0, len(parts))
-	a.images = make([]*canvas.Image, 0, len(parts))
+	nextImages := make(map[string]*canvas.Image, len(parts))
 	for _, part := range parts {
-		object := canvas.NewImageFromResource(part.asset.resource)
-		object.FillMode = canvas.ImageFillStretch
-		object.Move(fyneui.NewPos(part.x, part.y))
-		object.Resize(part.size)
-		a.images = append(a.images, object)
+		object, ok := a.images[part.key]
+		if !ok {
+			object = canvas.NewImageFromResource(part.asset.resource)
+			object.FillMode = canvas.ImageFillStretch
+			changed = true
+		}
+		if a.applyImagePart(object, part) {
+			changed = true
+		}
+		nextImages[part.key] = object
 		objects = append(objects, object)
 	}
-	a.root.Objects = objects
+	if len(a.images) != len(nextImages) {
+		changed = true
+	}
+	if !sameObjects(a.root.Objects, objects) {
+		a.root.Objects = objects
+		changed = true
+	}
+	a.images = nextImages
+	return changed
 }
 
-func (a *Adapter) updateImages(parts []renderedPart) {
-	for index, part := range parts {
-		object := a.images[index]
-		if object.Resource != part.asset.resource {
-			object.Resource = part.asset.resource
-			object.Refresh()
+func (a *Adapter) applyImagePart(object *canvas.Image, part renderedPart) bool {
+	changed := false
+	if object.Resource != part.asset.resource {
+		object.Resource = part.asset.resource
+		if a.refreshImage != nil {
+			a.refreshImage(object)
 		}
-		object.Move(fyneui.NewPos(part.x, part.y))
+		changed = true
+	}
+	position := fyneui.NewPos(part.x, part.y)
+	if object.Position() != position {
+		object.Move(position)
+		changed = true
+	}
+	if object.Size() != part.size {
 		object.Resize(part.size)
+		changed = true
+	}
+	return changed
+}
+
+func sameObjects(current []fyneui.CanvasObject, next []fyneui.CanvasObject) bool {
+	if len(current) != len(next) {
+		return false
+	}
+	for index := range current {
+		if current[index] != next[index] {
+			return false
+		}
+	}
+	return true
+}
+
+func renderedPartKey(dashboardID string, widgetID string, index int, part v3dashboard.Part) string {
+	if part.Kind == v3dashboard.PartKindLayer && part.Layer != "" {
+		return fmt.Sprintf("%s/%s/layer/%s", dashboardID, widgetID, part.Layer)
+	}
+	switch part.Kind {
+	case v3dashboard.PartKindBackground, v3dashboard.PartKindCharacter, v3dashboard.PartKindDecimalPoint, v3dashboard.PartKindForeground, v3dashboard.PartKindCell:
+		return fmt.Sprintf("%s/%s/%s/%d", dashboardID, widgetID, part.Kind, part.Slot)
+	case v3dashboard.PartKindState:
+		return fmt.Sprintf("%s/%s/%s/%s", dashboardID, widgetID, part.Kind, part.State)
+	case v3dashboard.PartKindFrame:
+		return fmt.Sprintf("%s/%s/%s", dashboardID, widgetID, part.Kind)
+	default:
+		return fmt.Sprintf("%s/%s/%s/%d", dashboardID, widgetID, part.Kind, index)
 	}
 }
 

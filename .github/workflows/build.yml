@@ -41,5 +41,11 @@ jobs:
       - name: Test Code
         run: go test ./...
 
+      - name: Seven-segment benchmark report
+        env:
+          LANG: C.UTF-8
+          LC_ALL: C.UTF-8
+        run: go test -bench SevenSegment -benchmem -run '^$' ./internal/dashboard/adapter/fyne
+
       - name: Build
         run: go build ./cmd/GoDriveLog

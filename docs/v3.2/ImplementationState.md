@@ -1,8 +1,8 @@
 # GoDriveLog v3.2 implementation state
 
-Status: v3.2.3 seven-segment gauge dashboard path merged
-Current target: v3.2.4 Fyne seven-segment renderer hardening and visual verification
-Current branch: main
+Status: v3.2.4 Fyne seven-segment rendering hardening in progress
+Current target: v3.2.4 glass overlay verification and deterministic speed-quality checks
+Current branch: v3.2.4-fyne-seven-segment-rendering
 
 ## Purpose
 
@@ -185,6 +185,14 @@ value_map:
 - Scene signatures include package, placement, size, status, text, layer, asset, character, slot, and digit-position data so formatted-output and layout changes are detectable.
 - This slice intentionally does not add radial gauge scene model, example assets, inheritance, cluster, or sensor override behaviour.
 
+## v3.2.4 implementation notes
+
+- Hardened the Fyne seven-segment rendering path rather than replacing the existing scene work from v3.2.3.
+- Reused Fyne image objects by stable scene/widget/part keys so digit-only resource changes do not rebuild the canvas object tree.
+- Kept glass/overlay rendering as an ordered scene part and added coverage that glass remains the last rendered object over live digits.
+- Added deterministic speed-quality coverage through `BenchmarkSevenSegmentAdapterUpdate`, which measures repeated seven-segment digit updates with allocations.
+- The benchmark is intentionally comparative rather than a hard time threshold because CI and Raspberry Pi hardware vary.
+
 ## Completed slices
 
 | Version | Status | Notes |
@@ -193,12 +201,12 @@ value_map:
 | v3.2.1 | completed | Gauge package loader and tests for `assets/gauges/**/gauge.yaml`. |
 | v3.2.2 | completed | Dashboard gauge widget config fields and validation. |
 | v3.2.3 | completed | Seven-segment gauge scene model, dashboard runtime package loading, and adapter positioning. |
+| v3.2.4 | in progress | Fyne seven-segment glass overlay verification, keyed object reuse, and deterministic benchmark coverage. |
 
 ## Pending slices
 
 | Version | Status | Next action |
 |---|---|---|
-| v3.2.4 | not started | Add visual verification and harden Fyne seven-segment rendering. |
 | v3.2.5 | not started | Add radial gauge scene model. |
 | v3.2.6 | not started | Add Fyne radial renderer. |
 | v3.2.7 | not started | Add example gauge packages. |

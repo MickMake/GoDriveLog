@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added `v3.2.4` Fyne seven-segment rendering hardening: stable keyed canvas object reuse, glass overlay ordering coverage, and a deterministic adapter benchmark for repeated digit updates.
 - Added `v3.2.3` seven-segment gauge support through the dashboard scene path, including `type: gauge` package loading, package-owned sensor state, static layers, digit positions, package-owned formatting, non-ok suppression, Fyne adapter positioning, and scene signatures.
 - Removed the redundant post-`Validate` gauge widget ownership pass now that ownership validation lives inside `Validate`.
 - Added `v3.2.2` dashboard config support for `type: gauge` widgets with package-owned gauge paths, placement, and scale.

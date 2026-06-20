@@ -177,6 +177,7 @@ func runV3Command(configPath, vehicleID string) error {
 	window := application.NewWindow("GoDriveLog v3")
 	window.Resize(initialSize)
 	window.SetContent(adapter.CanvasObject())
+	shutdown := newFyneShutdown(stop, fyne.Do, application.Quit)
 
 	displaySink, err := newFyneSceneSink(func(scenes []v3runtime.Scene) error {
 		return adapter.Update(scenes)
@@ -202,14 +203,16 @@ func runV3Command(configPath, vehicleID string) error {
 			log.Printf("v3 runtime stopped with error: %v", err)
 		}
 		errCh <- err
+		shutdown.Quit()
+	}()
+	go func() {
+		<-ctx.Done()
+		shutdown.Quit()
 	}()
 
-	window.SetCloseIntercept(func() {
-		stop()
-		application.Quit()
-	})
+	window.SetCloseIntercept(shutdown.CancelAndQuit)
 	window.ShowAndRun()
-	stop()
+	shutdown.Cancel()
 	return <-errCh
 }
 
@@ -230,6 +233,7 @@ func runV3HarnessCommand(configPath, vehicleID, pattern string, interval time.Du
 	window := application.NewWindow("GoDriveLog v3 harness")
 	window.Resize(initialSize)
 	window.SetContent(adapter.CanvasObject())
+	shutdown := newFyneShutdown(stop, fyne.Do, application.Quit)
 
 	displaySink, err := newFyneSceneSink(func(scenes []v3harness.Scene) error {
 		return adapter.Update(scenes)
@@ -257,14 +261,16 @@ func runV3HarnessCommand(configPath, vehicleID, pattern string, interval time.Du
 			log.Printf("v3 dashboard harness stopped with error: %v", err)
 		}
 		errCh <- err
+		shutdown.Quit()
+	}()
+	go func() {
+		<-ctx.Done()
+		shutdown.Quit()
 	}()
 
-	window.SetCloseIntercept(func() {
-		stop()
-		application.Quit()
-	})
+	window.SetCloseIntercept(shutdown.CancelAndQuit)
 	window.ShowAndRun()
-	stop()
+	shutdown.Cancel()
 	return <-errCh
 }
 
@@ -279,6 +285,45 @@ func newFyneSceneSink(update scenesink.Sink, label string) (*scenesink.LatestSin
 		}
 		return updateErr
 	})
+}
+
+type fyneShutdown struct {
+	cancel     func()
+	schedule   func(func())
+	quit       func()
+	cancelOnce sync.Once
+	quitOnce   sync.Once
+}
+
+func newFyneShutdown(cancel func(), schedule func(func()), quit func()) *fyneShutdown {
+	return &fyneShutdown{cancel: cancel, schedule: schedule, quit: quit}
+}
+
+func (s *fyneShutdown) Cancel() {
+	if s == nil {
+		return
+	}
+	s.cancelOnce.Do(func() {
+		if s.cancel != nil {
+			s.cancel()
+		}
+	})
+}
+
+func (s *fyneShutdown) Quit() {
+	if s == nil {
+		return
+	}
+	s.quitOnce.Do(func() {
+		if s.schedule != nil && s.quit != nil {
+			s.schedule(s.quit)
+		}
+	})
+}
+
+func (s *fyneShutdown) CancelAndQuit() {
+	s.Cancel()
+	s.Quit()
 }
 
 func initialV3WindowSize(configPath, vehicleID string) (fyne.Size, error) {
