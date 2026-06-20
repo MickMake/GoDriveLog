@@ -173,6 +173,25 @@ func TestAdapterReusesRadialNeedleObjectAcrossAngleChanges(t *testing.T) {
 	}
 }
 
+func TestAdapterBoundsRadialNeedleCache(t *testing.T) {
+	dir := t.TempDir()
+	writeRadialAssets(t, dir)
+	adapter := newNoRefreshAdapter(t, dir)
+	asset, err := adapter.loadAsset("assets/needle.png")
+	if err != nil {
+		t.Fatalf("loadAsset returned error: %v", err)
+	}
+
+	for i := 0; i < maxRotatedNeedleCacheEntries+250; i++ {
+		if _, err := adapter.rotatedNeedleAsset(asset, float64(i), 0.5, 1); err != nil {
+			t.Fatalf("rotatedNeedleAsset(%d) returned error: %v", i, err)
+		}
+	}
+	if got := len(adapter.rotatedNeedles); got > maxRotatedNeedleCacheEntries {
+		t.Fatalf("rotated needle cache grew to %d entries, want <= %d", got, maxRotatedNeedleCacheEntries)
+	}
+}
+
 func newNoRefreshAdapter(t *testing.T, repoRoot string) *Adapter {
 	t.Helper()
 	adapter, err := New(repoRoot)
