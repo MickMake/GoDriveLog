@@ -1,8 +1,8 @@
 # GoDriveLog v3.2 implementation state
 
-Status: v3.2.6 Fyne radial rendering in progress
-Current target: v3.2.6 radial layer rendering, prepared-frame performance fix, and non-blocking display scene submission
-Current branch: v3.2.6-fyne-radial-rendering
+Status: v3.2.8 dashboard baseline verification completed
+Current target: v3.2.9 renderer checkpoint
+Current branch: v3.2.8-dashboard-baseline-verification
 
 ## Purpose
 
@@ -224,6 +224,22 @@ value_map:
 - Added scene-sink coverage for non-blocking latest-only submission, error visibility, render timing stats, and no-backpressure producer benchmarks.
 - This slice intentionally does not add gauge package loading changes, dashboard config changes, example gauge packages, sensor overrides, inheritance, clusters, animation, or procedural drawing.
 
+## v3.2.7 implementation notes
+
+- Skipped as a standalone slice because example gauge packages already exist under `docs/v3.2/assets/gauges/`.
+- The v3.2.8 baseline reuses the existing speed, RPM, and radial examples instead of creating a separate example-package pass.
+- The only added package is a tiny three-digit temperature gauge YAML wrapper over existing green seven-segment artwork so the baseline can verify `-10..40` and minus-symbol rendering.
+
+## v3.2.8 implementation notes
+
+- Added `docs/v3.2/baseline-dashboard.yaml` for the baseline harness workload.
+- The baseline uses three selected sensors: `coolant_temperature`, `speed`, and `rpm`.
+- The dashboard exercises a three-digit temperature seven-segment gauge, three-digit speed seven-segment gauge, four-digit RPM seven-segment gauge, and radial RPM gauge using the same `rpm` sensor.
+- Added `docs/v3.2/BaselineDashboardVerification.md` with fixed, sweep, heartbeat, and non-ok/missing-state verification notes.
+- Documented expected summary stats from the existing harness output: `events`, `display_submitted`, `display_rendered`, `display_superseded`, and `display_last_render`.
+- Documented that the current CLI harness emits `ok` sensor states only, so non-ok/missing-state verification remains lower-level test coverage rather than a CLI baseline run.
+- This slice intentionally does not start Ebiten work and does not change Fyne rendering.
+
 ## Completed slices
 
 | Version | Status | Notes |
@@ -234,15 +250,15 @@ value_map:
 | v3.2.3 | completed | Seven-segment gauge scene model, dashboard runtime package loading, and adapter positioning. |
 | v3.2.4 | completed | Fyne seven-segment glass overlay verification, keyed object reuse, and deterministic benchmark coverage. |
 | v3.2.5 | completed | Radial gauge scene model, dashboard runtime routing, angle/pivot preservation, and runtime coverage. |
-| v3.2.6 | in progress | Fyne radial layer rendering, prepared 1-degree needle frames, non-blocking display scene submission, pivot placement, object reuse, and benchmark coverage. |
+| v3.2.6 | completed | Fyne radial layer rendering, prepared 1-degree needle frames, non-blocking display scene submission, pivot placement, object reuse, and benchmark coverage. |
+| v3.2.7 | skipped / absorbed | Example gauge packages already existed; v3.2.8 reuses them and adds only the missing three-digit temperature wrapper. |
+| v3.2.8 | completed | Baseline dashboard config and verification documentation for fixed, sweep, heartbeat, and harness summary stats. |
 
 ## Pending slices
 
 | Version | Status | Next action |
 |---|---|---|
-| v3.2.7 | not started | Add example gauge packages. |
-| v3.2.8 | not started | Add harness verification. |
-| v3.2.9 | not started | Checkpoint next direction. |
+| v3.2.9 | not started | Renderer checkpoint and next-direction decision. |
 
 ## Deferred v3.1 work
 
