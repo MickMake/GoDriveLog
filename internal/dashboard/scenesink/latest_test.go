@@ -121,8 +121,8 @@ func TestLatestSinkSubmitLatestDoesNotWaitForRender(t *testing.T) {
 	if stats.Submitted != 21 {
 		t.Fatalf("submitted stats = %d, want 21", stats.Submitted)
 	}
-	if stats.Rendered != 1 {
-		t.Fatalf("rendered stats while first render is blocked = %d, want 1", stats.Rendered)
+	if stats.Rendered != 0 {
+		t.Fatalf("rendered stats while first render is blocked = %d, want 0", stats.Rendered)
 	}
 	if stats.Superseded == 0 {
 		t.Fatal("expected at least one superseded pending frame")
