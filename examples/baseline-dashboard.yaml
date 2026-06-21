@@ -61,24 +61,24 @@ dashboards:
     widgets:
       - id: temp_3_digit
         type: gauge
-        gauge: examples/assets/gauges/7Seg/green/3_digit_temp
+        gauge: assets/gauges/7Seg/green/3_digit_temp
         position: [40, 40]
         scale: 0.5
 
       - id: speed_3_digit
         type: gauge
-        gauge: examples/assets/gauges/7Seg/amber/3_digit_speed
+        gauge: assets/gauges/7Seg/amber/3_digit_speed
         position: [430, 40]
         scale: 0.5
 
       - id: rpm_4_digit
         type: gauge
-        gauge: examples/assets/gauges/7Seg/amber/4_digit_rpm
+        gauge: assets/gauges/7Seg/amber/4_digit_rpm
         position: [820, 40]
         scale: 0.5
 
       - id: radial_rpm
         type: gauge
-        gauge: examples/assets/gauges/radial/simple_rpm
+        gauge: assets/gauges/radial/simple_rpm
         position: [1220, 80]
         scale: 0.9
