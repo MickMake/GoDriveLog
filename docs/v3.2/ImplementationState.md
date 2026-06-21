@@ -1,7 +1,7 @@
 # GoDriveLog v3.2 implementation state
 
 Status: v3.2.6 Fyne radial rendering in progress
-Current target: v3.2.6 radial layer rendering and needle rotation/placement
+Current target: v3.2.6 radial layer rendering, needle placement, and prepared-frame performance fix
 Current branch: v3.2.6-fyne-radial-rendering
 
 ## Purpose
@@ -121,7 +121,9 @@ digits:
 
 ## Radial package direction
 
-Radial gauges are routed through the dashboard scene runtime. Fyne radial rendering rotates the needle image around the package-owned normalised `pivot.needle` and places that rotated pivot at the package-owned normalised `pivot.face`.
+Radial gauges are routed through the dashboard scene runtime. Fyne radial rendering uses package-owned normalised `pivot.face` and `pivot.needle` coordinates to align a rotated needle frame to the face pivot.
+
+The v3.2.6 Fyne adapter prepares a deterministic 1-degree needle frame set for each unique needle asset and pivot pair. Live updates then select an already-prepared frame and update the existing keyed `canvas.Image` resource instead of decoding, rotating, PNG-encoding, and creating a new resource during normal sweep updates.
 
 Example `gauge.yaml`:
 
@@ -142,8 +144,8 @@ layers:
   overlay: ../shared/radial/simple_rpm/glass.png
 
 pivot:
-  face: { x: 0.5, y: 0.55 }
-  needle: { x: 0.5, y: 0.9 }
+  face: { x: 0.5, y: 0.5 }
+  needle: { x: 0.5, y: 0.5 }
 
 value_map:
   min: 0
@@ -210,10 +212,11 @@ value_map:
 
 - Added Fyne adapter support for radial gauge scene parts.
 - Static radial layer parts render through the existing ordered dashboard scene part list.
-- Needle PNGs are rotated inside the Fyne adapter using the radial scene angle.
-- Needle placement aligns the rotated needle pivot with the gauge face pivot using normalised package-owned pivots.
-- Rotated needle resources are cached and keyed separately from canvas object identity, so angle changes can update the image resource without rebuilding the canvas object tree.
+- Needle PNG frames are prepared as deterministic 1-degree rotated frame sets keyed by source asset and normalised needle pivot.
+- Normal live radial updates select an already-prepared frame and update the existing keyed `canvas.Image` resource.
+- Needle placement aligns the selected frame pivot with the gauge face pivot using normalised package-owned pivots.
 - Existing seven-segment and non-gauge widget rendering paths are preserved.
+- Added adapter coverage for radial layer ordering, live needle rendering, omitted non-ok needle behaviour, keyed object reuse, prepared frame-set reuse, and radial needle update benchmarks.
 - This slice intentionally does not add gauge package loading changes, dashboard config changes, example gauge packages, sensor overrides, inheritance, clusters, animation, or procedural drawing.
 
 ## Completed slices
@@ -226,7 +229,7 @@ value_map:
 | v3.2.3 | completed | Seven-segment gauge scene model, dashboard runtime package loading, and adapter positioning. |
 | v3.2.4 | completed | Fyne seven-segment glass overlay verification, keyed object reuse, and deterministic benchmark coverage. |
 | v3.2.5 | completed | Radial gauge scene model, dashboard runtime routing, angle/pivot preservation, and runtime coverage. |
-| v3.2.6 | in progress | Fyne radial layer rendering, image-space needle rotation, pivot placement, and adapter coverage. |
+| v3.2.6 | in progress | Fyne radial layer rendering, prepared 1-degree needle frames, pivot placement, object reuse, and adapter benchmark coverage. |
 
 ## Pending slices
 
