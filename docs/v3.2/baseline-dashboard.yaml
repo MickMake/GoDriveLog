@@ -1,0 +1,83 @@
+# GoDriveLog v3.2 dashboard baseline verification config
+#
+# Purpose:
+#   Exercise the realistic v3.2 gauge workload through the normal dashboard
+#   harness path without adding renderer-specific behaviour.
+#
+# Usage:
+#   go run ./cmd/GoDriveLog --harness --config ./docs/v3.2/baseline-dashboard.yaml --vehicle vw_caddy --pattern sweep --interval 50ms
+
+vehicles:
+  vw_caddy:
+    name: "VW Caddy"
+    obd:
+      address: "serial:///dev/ttyUSB0"
+      timeout: 1000
+    logs:
+      - jsonl
+    dashboards:
+      - v3_2_baseline
+
+sensors:
+  coolant_temperature:
+    type: obd
+    pid: "0105"
+    unit: "C"
+    poll: 5000
+    min: -10
+    max: 40
+
+  speed:
+    type: obd
+    pid: "010D"
+    unit: "km/h"
+    poll: 250
+    min: 0
+    max: 220
+
+  rpm:
+    type: obd
+    pid: "010C"
+    unit: "rpm"
+    poll: 250
+    min: 0
+    max: 7000
+
+logs:
+  jsonl:
+    path: "logs/godrivelog-v3.2-baseline.jsonl"
+    sensors:
+      - coolant_temperature
+      - speed
+      - rpm
+
+dashboards:
+  v3_2_baseline:
+    display: "HDMI-1"
+    size:
+      width: 1920
+      height: 720
+    widgets:
+      - id: temp_3_digit
+        type: gauge
+        gauge: assets/gauges/7Seg/green/3_digit_temp
+        position: [40, 40]
+        scale: 0.5
+
+      - id: speed_3_digit
+        type: gauge
+        gauge: assets/gauges/7Seg/amber/3_digit_speed
+        position: [430, 40]
+        scale: 0.5
+
+      - id: rpm_4_digit
+        type: gauge
+        gauge: assets/gauges/7Seg/amber/4_digit_rpm
+        position: [820, 40]
+        scale: 0.5
+
+      - id: radial_rpm
+        type: gauge
+        gauge: assets/gauges/radial/simple_rpm
+        position: [1220, 80]
+        scale: 0.9
