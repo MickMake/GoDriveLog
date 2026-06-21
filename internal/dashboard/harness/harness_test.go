@@ -121,30 +121,7 @@ func TestRunFeedsFakeEventsThroughDashboardScenePath(t *testing.T) {
 }
 
 func TestBaselineDashboardConfigRunsHarnessPatterns(t *testing.T) {
-	repoRoot, err := filepath.Abs(filepath.Join("..", "..", ".."))
-	if err != nil {
-		t.Fatal(err)
-	}
-	previousWorkingDirectory, err := os.Getwd()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := os.Chdir(repoRoot); err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() {
-		if err := os.Chdir(previousWorkingDirectory); err != nil {
-			t.Fatalf("restore working directory: %v", err)
-		}
-	})
-
-	configPath := filepath.Join(repoRoot, "docs", "v3.2", "baseline-dashboard.yaml")
-	previousArgs := append([]string(nil), os.Args...)
-	os.Args = []string{"GoDriveLog.test", "--harness", "--config", configPath, "--vehicle", "vw_caddy"}
-	t.Cleanup(func() {
-		os.Args = previousArgs
-	})
-
+	configPath := setupBaselineHarnessEnvironment(t)
 	patterns := []string{PatternFixed, PatternSweep, PatternHeartbeat}
 
 	for _, pattern := range patterns {
@@ -205,6 +182,65 @@ func TestBaselineDashboardConfigRunsHarnessPatterns(t *testing.T) {
 			}
 		})
 	}
+}
+
+func BenchmarkBaselineDashboardHarnessPatterns(b *testing.B) {
+	configPath := setupBaselineHarnessEnvironment(b)
+	patterns := []string{PatternFixed, PatternSweep, PatternHeartbeat}
+
+	for _, pattern := range patterns {
+		pattern := pattern
+		b.Run(pattern, func(b *testing.B) {
+			b.ReportAllocs()
+			b.ResetTimer()
+			for i := 0; i < b.N; i++ {
+				_, err := Run(context.Background(), Options{
+					ConfigPath: configPath,
+					VehicleID:  "vw_caddy",
+					Pattern:    pattern,
+					MaxEvents:  3,
+					Now: func() time.Time {
+						return time.Unix(0, 0)
+					},
+					Sink: func([]v3dashboard.Scene) error {
+						return nil
+					},
+				})
+				if err != nil {
+					b.Fatal(err)
+				}
+			}
+		})
+	}
+}
+
+func setupBaselineHarnessEnvironment(tb testing.TB) string {
+	tb.Helper()
+	repoRoot, err := filepath.Abs(filepath.Join("..", "..", ".."))
+	if err != nil {
+		tb.Fatal(err)
+	}
+	previousWorkingDirectory, err := os.Getwd()
+	if err != nil {
+		tb.Fatal(err)
+	}
+	if err := os.Chdir(repoRoot); err != nil {
+		tb.Fatal(err)
+	}
+	tb.Cleanup(func() {
+		if err := os.Chdir(previousWorkingDirectory); err != nil {
+			tb.Fatalf("restore working directory: %v", err)
+		}
+	})
+
+	configPath := filepath.Join(repoRoot, "docs", "v3.2", "baseline-dashboard.yaml")
+	previousArgs := append([]string(nil), os.Args...)
+	os.Args = []string{"GoDriveLog.test", "--harness", "--config", configPath, "--vehicle", "vw_caddy"}
+	tb.Cleanup(func() {
+		os.Args = previousArgs
+	})
+
+	return configPath
 }
 
 func writeHarnessConfig(t *testing.T) string {
