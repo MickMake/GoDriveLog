@@ -15,6 +15,8 @@ import (
 	v3runtime "github.com/MickMake/GoDriveLog/internal/runtime/v3runtime"
 )
 
+const v3SceneGap = 12
+
 type ebitenWindowSize struct {
 	Width  int
 	Height int
