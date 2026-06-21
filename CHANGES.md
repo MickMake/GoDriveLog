@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Added `v3.3.0` renderer planning docs under `docs/v3.3/`, including release plan, implementation state, baseline verification notes, and intent-named prompts for `v3.3.0` through `v3.3.3`.
+- Added reusable `examples/baseline-dashboard.yaml` for the renderer comparison workload, with Fyne and Ebiten command examples using the same full dashboard path and fixed-duration runs.
+- Updated `examples/README.md` to identify reusable dashboard examples and the intended `examples/assets/` home for example assets.
+- Added a `docs/v3.3/baseline-dashboard.yaml` pointer so v3.3 mirrors the v3.2 root filenames while keeping the runnable config canonical under `examples/`.
 - Added a CI-visible `v3.2 baseline harness verification` workflow step that runs the baseline harness pattern test headlessly without launching Fyne.
 - Added CI-safe harness coverage for the v3.2 baseline dashboard config across `fixed`, `sweep`, and `heartbeat` patterns, asserting the selected vehicle, three sensors, one dashboard, four baseline gauge widgets, and deterministic event completion.
 - Added `v3.2.8` baseline dashboard harness configuration at `docs/v3.2/baseline-dashboard.yaml`, exercising three-digit temperature, three-digit speed, four-digit RPM, and radial RPM gauge widgets through the existing harness/display path.
