@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Added `v3.2.8` baseline dashboard harness configuration at `docs/v3.2/baseline-dashboard.yaml`, exercising three-digit temperature, three-digit speed, four-digit RPM, and radial RPM gauge widgets through the existing harness/display path.
+- Added `docs/v3.2/BaselineDashboardVerification.md` documenting fixed, sweep, heartbeat, and current non-ok/missing-state harness verification expectations, including `events`, `display_submitted`, `display_rendered`, `display_superseded`, and `display_last_render` summary fields.
+- Added a small `docs/v3.2/assets/gauges/7Seg/green/3_digit_temp` gauge package that reuses existing green seven-segment artwork to verify `-10..40` temperature output and minus-symbol rendering.
+- Updated the v3.2 implementation state to mark `v3.2.6` completed, `v3.2.7` skipped/absorbed by existing examples, `v3.2.8` completed, and `v3.2.9` as the next renderer checkpoint.
 - Updated the v3 Fyne display scene sink path to use non-blocking latest-only submissions for live dashboard and harness updates, preventing display rendering from throttling sensor/harness event cadence while preserving latest-frame coalescing and render error visibility.
 - Updated `v3.2.6` Fyne radial rendering to prepare 1-degree radial needle frame sets outside normal live update sweeps, keeping live updates to keyed image resource swaps and preserving keyed canvas object reuse.
 - Added `v3.2.6` Fyne radial gauge rendering, including ordered radial layer rendering, image-space needle rotation, normalised pivot placement, rotated-needle resource caching, and adapter coverage.
