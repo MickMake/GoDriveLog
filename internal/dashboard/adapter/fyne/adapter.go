@@ -23,28 +23,33 @@ import (
 )
 
 const (
-	sceneGap                     = 12
-	rotatedNeedleAngleStep      = 0.5
-	maxRotatedNeedleCacheEntries = 720
+	sceneGap                = 12
+	needleFrameAngleStep    = 1.0
+	needleFrameCount        = int(360 / needleFrameAngleStep)
+	needleFrameZeroIndex    = needleFrameCount / 2
 )
 
 // Adapter renders v3 dashboard scene output with Fyne. It deliberately consumes
 // only dashboard scene data and resolved asset paths; it does not read sensors,
 // poll OBD endpoints, or own dashboard state.
 type Adapter struct {
-	repoRoot       string
-	root           *fyneui.Container
-	assets         map[string]cachedAsset
-	rotatedNeedles map[string]rotatedNeedleAsset
-	images         map[string]*canvas.Image
-	refreshRoot    func(*fyneui.Container)
-	refreshImage   func(*canvas.Image)
+	repoRoot        string
+	root            *fyneui.Container
+	assets          map[string]cachedAsset
+	needleFrameSets map[string]needleFrameSet
+	images          map[string]*canvas.Image
+	refreshRoot     func(*fyneui.Container)
+	refreshImage    func(*canvas.Image)
 }
 
 type cachedAsset struct {
 	resource fyneui.Resource
 	size     fyneui.Size
 	data     []byte
+}
+
+type needleFrameSet struct {
+	frames []rotatedNeedleAsset
 }
 
 type rotatedNeedleAsset struct {
@@ -74,11 +79,11 @@ func New(repoRoot string) (*Adapter, error) {
 		return nil, err
 	}
 	return &Adapter{
-		repoRoot:       root,
-		root:           container.NewWithoutLayout(),
-		assets:         map[string]cachedAsset{},
-		rotatedNeedles: map[string]rotatedNeedleAsset{},
-		images:         map[string]*canvas.Image{},
+		repoRoot:        root,
+		root:            container.NewWithoutLayout(),
+		assets:          map[string]cachedAsset{},
+		needleFrameSets: map[string]needleFrameSet{},
+		images:          map[string]*canvas.Image{},
 		refreshRoot: func(root *fyneui.Container) {
 			root.Refresh()
 		},
@@ -205,7 +210,7 @@ func (a *Adapter) renderNeedlePart(dashboardID string, widgetID string, index in
 	if gaugeSize.Width <= 0 || gaugeSize.Height <= 0 {
 		gaugeSize = asset.size
 	}
-	rotated, err := a.rotatedNeedleAsset(asset, part.Angle, part.NeedlePivot.X, part.NeedlePivot.Y)
+	rotated, err := a.preparedNeedleFrame(asset, part.Angle, part.NeedlePivot.X, part.NeedlePivot.Y)
 	if err != nil {
 		return renderedPart{}, err
 	}
@@ -324,63 +329,75 @@ func (a *Adapter) loadAsset(assetPath string) (cachedAsset, error) {
 	return cached, nil
 }
 
-func (a *Adapter) rotatedNeedleAsset(asset cachedAsset, angle float64, pivotX float64, pivotY float64) (rotatedNeedleAsset, error) {
-	cachedAngle := quantizedNeedleAngle(angle)
-	key := strings.Join([]string{
+func (a *Adapter) preparedNeedleFrame(asset cachedAsset, angle float64, pivotX float64, pivotY float64) (rotatedNeedleAsset, error) {
+	key := needleFrameSetKey(asset, pivotX, pivotY)
+	if a.needleFrameSets == nil {
+		a.needleFrameSets = map[string]needleFrameSet{}
+	}
+	set, ok := a.needleFrameSets[key]
+	if !ok {
+		prepared, err := prepareNeedleFrameSet(asset, pivotX, pivotY, key)
+		if err != nil {
+			return rotatedNeedleAsset{}, err
+		}
+		a.needleFrameSets[key] = prepared
+		set = prepared
+	}
+	index := needleFrameIndex(angle)
+	if index < 0 || index >= len(set.frames) {
+		return rotatedNeedleAsset{}, fmt.Errorf("radial needle frame index %d out of range", index)
+	}
+	return set.frames[index], nil
+}
+
+func needleFrameSetKey(asset cachedAsset, pivotX float64, pivotY float64) string {
+	return strings.Join([]string{
 		asset.resource.Name(),
-		strconv.FormatFloat(cachedAngle, 'f', -1, 64),
 		strconv.FormatFloat(pivotX, 'f', -1, 64),
 		strconv.FormatFloat(pivotY, 'f', -1, 64),
 	}, "|")
-	if cached, ok := a.rotatedNeedles[key]; ok {
-		return cached, nil
-	}
-	if a.rotatedNeedles == nil {
-		a.rotatedNeedles = map[string]rotatedNeedleAsset{}
-	}
+}
 
+func prepareNeedleFrameSet(asset cachedAsset, pivotX float64, pivotY float64, key string) (needleFrameSet, error) {
 	width := float64(asset.size.Width)
 	height := float64(asset.size.Height)
 	pivotPX := pivotX * width
 	pivotPY := pivotY * height
-	if math.Abs(cachedAngle) < 0.000001 {
-		rotated := rotatedNeedleAsset{asset: asset, pivotX: float32(pivotPX), pivotY: float32(pivotPY)}
-		a.rememberRotatedNeedleAsset(key, rotated)
-		return rotated, nil
-	}
-
 	decoded, _, err := image.Decode(bytes.NewReader(asset.data))
 	if err != nil {
-		return rotatedNeedleAsset{}, err
+		return needleFrameSet{}, err
 	}
-	rotatedImage, rotatedPivotX, rotatedPivotY := rotateImageAroundPivot(decoded, cachedAngle, pivotPX, pivotPY)
-	var buf bytes.Buffer
-	if err := png.Encode(&buf, rotatedImage); err != nil {
-		return rotatedNeedleAsset{}, err
+	frames := make([]rotatedNeedleAsset, needleFrameCount)
+	for index := 0; index < needleFrameCount; index++ {
+		angle := needleFrameAngle(index)
+		if math.Abs(angle) < 0.000001 {
+			frames[index] = rotatedNeedleAsset{asset: asset, pivotX: float32(pivotPX), pivotY: float32(pivotPY)}
+			continue
+		}
+		rotatedImage, rotatedPivotX, rotatedPivotY := rotateImageAroundPivot(decoded, angle, pivotPX, pivotPY)
+		var buf bytes.Buffer
+		if err := png.Encode(&buf, rotatedImage); err != nil {
+			return needleFrameSet{}, err
+		}
+		data := buf.Bytes()
+		rotatedAsset := cachedAsset{
+			resource: fyneui.NewStaticResource(fmt.Sprintf("%s@radial-needle|%s|%03d", asset.resource.Name(), key, index), data),
+			size:     fyneui.NewSize(float32(rotatedImage.Bounds().Dx()), float32(rotatedImage.Bounds().Dy())),
+			data:     data,
+		}
+		frames[index] = rotatedNeedleAsset{asset: rotatedAsset, pivotX: rotatedPivotX, pivotY: rotatedPivotY}
 	}
-	data := buf.Bytes()
-	rotatedAsset := cachedAsset{
-		resource: fyneui.NewStaticResource(asset.resource.Name()+"@radial-needle|"+key, data),
-		size:     fyneui.NewSize(float32(rotatedImage.Bounds().Dx()), float32(rotatedImage.Bounds().Dy())),
-		data:     data,
-	}
-	rotated := rotatedNeedleAsset{asset: rotatedAsset, pivotX: rotatedPivotX, pivotY: rotatedPivotY}
-	a.rememberRotatedNeedleAsset(key, rotated)
-	return rotated, nil
+	return needleFrameSet{frames: frames}, nil
 }
 
-func (a *Adapter) rememberRotatedNeedleAsset(key string, rotated rotatedNeedleAsset) {
-	if a.rotatedNeedles == nil {
-		a.rotatedNeedles = map[string]rotatedNeedleAsset{}
-	}
-	if len(a.rotatedNeedles) >= maxRotatedNeedleCacheEntries {
-		a.rotatedNeedles = map[string]rotatedNeedleAsset{}
-	}
-	a.rotatedNeedles[key] = rotated
+func needleFrameIndex(angle float64) int {
+	step := int(math.Round(angle / needleFrameAngleStep))
+	step = ((step + needleFrameZeroIndex) % needleFrameCount + needleFrameCount) % needleFrameCount
+	return step
 }
 
-func quantizedNeedleAngle(angle float64) float64 {
-	return math.Round(angle/rotatedNeedleAngleStep) * rotatedNeedleAngleStep
+func needleFrameAngle(index int) float64 {
+	return float64(index-needleFrameZeroIndex) * needleFrameAngleStep
 }
 
 func rotateImageAroundPivot(source image.Image, angle float64, pivotX float64, pivotY float64) (*image.NRGBA, float32, float32) {
