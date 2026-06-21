@@ -13,13 +13,9 @@ Asset paths are repository-root relative.
 
 ## Reusable assets
 
-The intended reusable example asset home is:
+Reusable active assets live under the repository-root `assets/` tree.
 
-```text
-examples/assets/
-```
-
-Versioned docs should reference examples instead of carrying active runnable copies. Docs explain a slice; examples are the fixtures. This keeps the project from repeatedly moving the same cheese while the mouse files a complaint.
+Versioned docs should reference examples and shared assets instead of carrying active runnable copies. Docs explain a slice; examples are the fixtures. This keeps the project from repeatedly moving the same cheese while the mouse files a complaint.
 
 ## Notes
 
