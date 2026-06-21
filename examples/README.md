@@ -1,37 +1,25 @@
 # GoDriveLog dashboard examples
 
-These are draft GoDriveLog v3 dashboard configuration examples for sleeping on, arguing with tomorrow, and hopefully not summoning a YAML demon.
+These are active GoDriveLog dashboard examples, not versioned planning confetti. Every runnable fixture in this directory should validate against the current v3 config/runtime path.
 
-They are active v3 examples, not decorative confetti. Every file in this directory should validate against the same v3 schema rules as `config.example.yaml` and `config.full.yaml`.
-
-Asset paths are repository-root relative. Use `assets/dashboard/...` paths in active v3 examples.
-
-The key model used here is:
-
-```text
-asset background
-+ value/state-driven dynamic layer
-+ optional foreground/glass/bezel overlay
-= photoreal widget
-```
-
-The examples assume the v3 direction:
-
-```text
-vehicles
-sensors
-assets
-logs
-dashboards
-```
-
-Sensors own polling. Logs and dashboards subscribe to sensor events.
+Asset paths are repository-root relative.
 
 ## Files
 
-- `simple_speed_warning.yaml` — deliberately small first-slice example: image + digit displays + indicator
-- `nissan_300zx_z31_inspired.yaml` — retro-inspired richer example using digit, bar, frame, indicator, and image assets
-- `honda_s2000_inspired.yaml` — retro-inspired richer example using digit, bar, frame, indicator, and image assets
+- `baseline-dashboard.yaml` - reusable baseline dashboard used for renderer comparison.
+- `simple_speed_warning.yaml` - deliberately small first-slice example: image + digit displays + indicator.
+- `nissan_300zx_z31_inspired.yaml` - retro-inspired richer example using digit, bar, frame, indicator, and image assets.
+- `honda_s2000_inspired.yaml` - retro-inspired richer example using digit, bar, frame, indicator, and image assets.
+
+## Reusable assets
+
+The intended reusable example asset home is:
+
+```text
+examples/assets/
+```
+
+Versioned docs should reference examples instead of carrying active runnable copies. Docs explain a slice; examples are the fixtures. This keeps the project from repeatedly moving the same cheese while the mouse files a complaint.
 
 ## Notes
 
@@ -39,7 +27,8 @@ Sensors own polling. Logs and dashboards subscribe to sensor events.
 - `foreground` is optional and intended for glass, bezel, scratches, reflections, or lens effects.
 - Widgets use `position`, not `rect`, for native-size image assets.
 - Asset packs own visual geometry such as spacing and frame counts.
-- Widget config owns binding: sensor, position, format, min/max mapping, and asset reference.
+- Widget config owns binding for classic widgets.
+- Gauge packages own sensor binding for `type: gauge` widgets.
 - Use `characters`, not `digits`, for digit set character maps.
-- Keep sensor examples to documented sensor types. First-slice v3 starts with `type: obd`.
+- Keep sensor examples to documented sensor types.
 - No dashboard scripting, formulas, inheritance, or clever little config goblins.
