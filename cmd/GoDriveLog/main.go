@@ -192,13 +192,14 @@ func runV3Command(configPath, vehicleID string) error {
 			ConfigPath:    configPath,
 			VehicleID:     vehicleID,
 			Logger:        log.Default(),
-			DashboardSink: displaySink.Submit,
+			DashboardSink: displaySink.SubmitLatest,
 		})
 		if closeErr := displaySink.Close(); err == nil {
 			err = closeErr
 		}
+		stats := displaySink.Stats()
 		if err == nil {
-			log.Printf("v3 runtime summary: vehicle=%s endpoint=%s sensors=%d logs=%d dashboards=%d", summary.VehicleID, summary.Endpoint, summary.SensorCount, summary.LogCount, summary.DashboardCount)
+			log.Printf("v3 runtime summary: vehicle=%s endpoint=%s sensors=%d logs=%d dashboards=%d display_submitted=%d display_rendered=%d display_superseded=%d display_last_render=%s", summary.VehicleID, summary.Endpoint, summary.SensorCount, summary.LogCount, summary.DashboardCount, stats.Submitted, stats.Rendered, stats.Superseded, stats.LastRenderDuration)
 		} else {
 			log.Printf("v3 runtime stopped with error: %v", err)
 		}
@@ -250,13 +251,14 @@ func runV3HarnessCommand(configPath, vehicleID, pattern string, interval time.Du
 			Pattern:    pattern,
 			Interval:   interval,
 			Logger:     log.Default(),
-			Sink:       displaySink.Submit,
+			Sink:       displaySink.SubmitLatest,
 		})
 		if closeErr := displaySink.Close(); err == nil {
 			err = closeErr
 		}
+		stats := displaySink.Stats()
 		if err == nil {
-			log.Printf("v3 dashboard harness summary: vehicle=%s sensors=%d dashboards=%d pattern=%s interval=%s events=%d", summary.VehicleID, summary.SensorCount, summary.DashboardCount, summary.Pattern, summary.Interval, summary.Events)
+			log.Printf("v3 dashboard harness summary: vehicle=%s sensors=%d dashboards=%d pattern=%s interval=%s events=%d display_submitted=%d display_rendered=%d display_superseded=%d display_last_render=%s", summary.VehicleID, summary.SensorCount, summary.DashboardCount, summary.Pattern, summary.Interval, summary.Events, stats.Submitted, stats.Rendered, stats.Superseded, stats.LastRenderDuration)
 		} else {
 			log.Printf("v3 dashboard harness stopped with error: %v", err)
 		}
@@ -357,18 +359,4 @@ func selectedDashboardsSize(dashboards []v3config.ResolvedDashboard) fyne.Size {
 		height = 480
 	}
 	return fyne.NewSize(width, height)
-}
-
-func newReader(cfg config.Config) (sensors.Reader, error) {
-	if cfg.OBD.MockMode {
-		return sensors.NewMockReader(), nil
-	}
-	return sensors.NewELMOBDReader(cfg.OBD.Address, cfg.OBD.Debug)
-}
-
-func sourceName(mock bool) string {
-	if mock {
-		return "mock"
-	}
-	return "obd"
 }
