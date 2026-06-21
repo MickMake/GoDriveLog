@@ -1,0 +1,7 @@
+# Canonical baseline dashboard config moved to:
+#
+#   examples/baseline-dashboard.yaml
+#
+# Keep this file as a pointer only so docs/v3.3 mirrors the v3.2 root filenames
+# without creating a second runnable config that can drift like a shopping trolley
+# with one heroic wheel.
