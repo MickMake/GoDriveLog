@@ -289,6 +289,20 @@ func newFyneSceneSink(update scenesink.Sink, label string) (*scenesink.LatestSin
 	})
 }
 
+func newReader(cfg config.Config) (sensors.Reader, error) {
+	if !cfg.OBD.MockMode {
+		return nil, fmt.Errorf("non-mock OBD reader is not available in this command path: %s", cfg.OBD.Address)
+	}
+	return sensors.NewMockReader(), nil
+}
+
+func sourceName(mockMode bool) string {
+	if mockMode {
+		return "mock"
+	}
+	return "obd"
+}
+
 type fyneShutdown struct {
 	cancel     func()
 	schedule   func(func())
