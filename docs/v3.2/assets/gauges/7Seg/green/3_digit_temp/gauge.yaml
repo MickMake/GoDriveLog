@@ -1,0 +1,39 @@
+id: green_3_digit_temp
+# Three slots are intentional so the v3.2 baseline can exercise -10..40
+# temperature values and verify minus-symbol rendering through the packaged
+# seven-segment gauge path.
+type: seven_segment
+sensor: coolant_temperature
+format: "%03.0f"
+
+size:
+  width: 316
+  height: 150
+
+layers:
+  panel: ../../7Seg3Digits.png
+  glass: ../../7Seg3DigitsGlass.png
+
+digit_set:
+  background: ../../7SegBack.png
+  characters:
+    "0": ../7Seg0.png
+    "1": ../7Seg1.png
+    "2": ../7Seg2.png
+    "3": ../7Seg3.png
+    "4": ../7Seg4.png
+    "5": ../7Seg5.png
+    "6": ../7Seg6.png
+    "7": ../7Seg7.png
+    "8": ../7Seg8.png
+    "9": ../7Seg9.png
+    "-": ../7SegMinus.png
+  decimal_point: ../7SegDP.png
+  spacing: 4
+
+digits:
+  count: 3
+  positions:
+    - [35, 35]
+    - [272, 35]
+    - [504, 35]

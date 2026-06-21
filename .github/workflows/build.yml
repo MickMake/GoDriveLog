@@ -38,6 +38,9 @@ jobs:
       - name: Tidy modules
         run: go mod tidy
 
+      - name: v3.2 baseline harness verification
+        run: go test -run '^TestBaselineDashboardConfigRunsHarnessPatterns$' ./internal/dashboard/harness
+
       - name: Test Code
         run: go test ./...
 
