@@ -120,6 +120,70 @@ func TestRunFeedsFakeEventsThroughDashboardScenePath(t *testing.T) {
 	}
 }
 
+func TestBaselineDashboardConfigRunsHarnessPatterns(t *testing.T) {
+	configPath := filepath.Join("..", "..", "..", "docs", "v3.2", "baseline-dashboard.yaml")
+	patterns := []string{PatternFixed, PatternSweep, PatternHeartbeat}
+
+	for _, pattern := range patterns {
+		pattern := pattern
+		t.Run(pattern, func(t *testing.T) {
+			var sceneUpdates int
+			summary, err := Run(context.Background(), Options{
+				ConfigPath: configPath,
+				VehicleID:  "vw_caddy",
+				Pattern:    pattern,
+				MaxEvents:  3,
+				Now: func() time.Time {
+					return time.Unix(0, 0)
+				},
+				Sink: func(scenes []v3dashboard.Scene) error {
+					sceneUpdates++
+					if len(scenes) != 1 {
+						t.Fatalf("scene count = %d, want 1", len(scenes))
+					}
+					if scenes[0].DashboardID != "v3_2_baseline" {
+						t.Fatalf("DashboardID = %q, want v3_2_baseline", scenes[0].DashboardID)
+					}
+					if len(scenes[0].Widgets) != 4 {
+						t.Fatalf("widget count = %d, want 4", len(scenes[0].Widgets))
+					}
+					widgetIDs := map[string]bool{}
+					for _, widget := range scenes[0].Widgets {
+						widgetIDs[widget.ID] = true
+					}
+					for _, id := range []string{"temp_3_digit", "speed_3_digit", "rpm_4_digit", "radial_rpm"} {
+						if !widgetIDs[id] {
+							t.Fatalf("missing widget %q in baseline scene", id)
+						}
+					}
+					return nil
+				},
+			})
+			if err != nil {
+				t.Fatalf("Run returned error: %v", err)
+			}
+			if summary.VehicleID != "vw_caddy" {
+				t.Fatalf("summary.VehicleID = %q, want vw_caddy", summary.VehicleID)
+			}
+			if summary.Pattern != pattern {
+				t.Fatalf("summary.Pattern = %q, want %q", summary.Pattern, pattern)
+			}
+			if summary.SensorCount != 3 {
+				t.Fatalf("summary.SensorCount = %d, want 3", summary.SensorCount)
+			}
+			if summary.DashboardCount != 1 {
+				t.Fatalf("summary.DashboardCount = %d, want 1", summary.DashboardCount)
+			}
+			if summary.Events != 3 {
+				t.Fatalf("summary.Events = %d, want 3", summary.Events)
+			}
+			if sceneUpdates != 1 {
+				t.Fatalf("scene updates = %d, want 1", sceneUpdates)
+			}
+		})
+	}
+}
+
 func writeHarnessConfig(t *testing.T) string {
 	t.Helper()
 	dir := t.TempDir()
