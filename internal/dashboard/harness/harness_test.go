@@ -139,6 +139,12 @@ func TestBaselineDashboardConfigRunsHarnessPatterns(t *testing.T) {
 	})
 
 	configPath := filepath.Join(repoRoot, "docs", "v3.2", "baseline-dashboard.yaml")
+	previousArgs := append([]string(nil), os.Args...)
+	os.Args = []string{"GoDriveLog.test", "--harness", "--config", configPath, "--vehicle", "vw_caddy"}
+	t.Cleanup(func() {
+		os.Args = previousArgs
+	})
+
 	patterns := []string{PatternFixed, PatternSweep, PatternHeartbeat}
 
 	for _, pattern := range patterns {
