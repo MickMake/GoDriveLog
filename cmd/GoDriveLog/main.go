@@ -1,3 +1,5 @@
+//go:build !ebiten
+
 package main
 
 import (
@@ -171,7 +173,7 @@ func main() {
 
 func runV3Command(configPath, vehicleID string) error {
 	if selectedV3Renderer == v3RendererEbiten {
-		return runV3EbitenCommand(configPath, vehicleID, selectedV3Duration)
+		return fmt.Errorf("--renderer ebiten requires an Ebiten build: go run -tags ebiten ./cmd/GoDriveLog --renderer ebiten")
 	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
@@ -237,7 +239,7 @@ func runV3Command(configPath, vehicleID string) error {
 
 func runV3HarnessCommand(configPath, vehicleID, pattern string, interval time.Duration) error {
 	if selectedV3Renderer == v3RendererEbiten {
-		return runV3EbitenHarnessCommand(configPath, vehicleID, pattern, interval, selectedV3Duration)
+		return fmt.Errorf("--renderer ebiten requires an Ebiten build: go run -tags ebiten ./cmd/GoDriveLog --harness --renderer ebiten")
 	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
