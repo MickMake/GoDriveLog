@@ -121,7 +121,24 @@ func TestRunFeedsFakeEventsThroughDashboardScenePath(t *testing.T) {
 }
 
 func TestBaselineDashboardConfigRunsHarnessPatterns(t *testing.T) {
-	configPath := filepath.Join("..", "..", "..", "docs", "v3.2", "baseline-dashboard.yaml")
+	repoRoot, err := filepath.Abs(filepath.Join("..", "..", ".."))
+	if err != nil {
+		t.Fatal(err)
+	}
+	previousWorkingDirectory, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chdir(repoRoot); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		if err := os.Chdir(previousWorkingDirectory); err != nil {
+			t.Fatalf("restore working directory: %v", err)
+		}
+	})
+
+	configPath := filepath.Join(repoRoot, "docs", "v3.2", "baseline-dashboard.yaml")
 	patterns := []string{PatternFixed, PatternSweep, PatternHeartbeat}
 
 	for _, pattern := range patterns {
