@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Added a CI-visible `v3.2 baseline harness verification` workflow step that runs the baseline harness pattern test headlessly without launching Fyne.
+- Added CI-safe harness coverage for the v3.2 baseline dashboard config across `fixed`, `sweep`, and `heartbeat` patterns, asserting the selected vehicle, three sensors, one dashboard, four baseline gauge widgets, and deterministic event completion.
 - Added `v3.2.8` baseline dashboard harness configuration at `docs/v3.2/baseline-dashboard.yaml`, exercising three-digit temperature, three-digit speed, four-digit RPM, and radial RPM gauge widgets through the existing harness/display path.
 - Added `docs/v3.2/BaselineDashboardVerification.md` documenting fixed, sweep, heartbeat, and current non-ok/missing-state harness verification expectations, including `events`, `display_submitted`, `display_rendered`, `display_superseded`, and `display_last_render` summary fields.
 - Added a small `docs/v3.2/assets/gauges/7Seg/green/3_digit_temp` gauge package that reuses existing green seven-segment artwork to verify `-10..40` temperature output and minus-symbol rendering.
