@@ -14,8 +14,8 @@ layers:
   overlay: glass.png
 
 pivot:
-  face: { x: 0.5, y: 0.55 }
-  needle: { x: 0.5, y: 0.9 }
+  face: { x: 0.5, y: 0.5 }
+  needle: { x: 0.5, y: 0.5 }
 
 value_map:
   min: 0
