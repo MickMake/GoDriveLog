@@ -12,6 +12,7 @@ import (
 	"fyne.io/fyne/v2/canvas"
 
 	"github.com/MickMake/GoDriveLog/internal/config/v3config"
+	"github.com/MickMake/GoDriveLog/internal/dashboard/gauges"
 	"github.com/MickMake/GoDriveLog/internal/dashboard/v3dashboard"
 )
 
@@ -127,7 +128,179 @@ func TestAdapterKeepsGlassOverlayLastAndReusesGaugeObjects(t *testing.T) {
 	assertLastResourceName(t, adapter, "assets/glass.png")
 }
 
-func newNoRefreshAdapter(t *testing.T, repoRoot string) *Adapter {
+func TestAdapterRendersRadialStaticLayersInOrder(t *testing.T) {
+	dir := t.TempDir()
+	writeRadialAssets(t, dir)
+	adapter := newNoRefreshAdapter(t, dir)
+
+	if err := adapter.Update([]v3dashboard.Scene{radialSceneWithNeedle(0)}); err != nil {
+		t.Fatalf("radial Update returned error: %v", err)
+	}
+	if got := adapter.RenderedObjectCount(); got != 5 {
+		t.Fatalf("RenderedObjectCount = %d, want 5", got)
+	}
+	want := []string{"assets/background.png", "assets/face.png", "assets/ticks.png", "assets/overlay.png"}
+	for _, check := range []struct {
+		index int
+		want  string
+	}{
+		{index: 0, want: want[0]},
+		{index: 1, want: want[1]},
+		{index: 2, want: want[2]},
+		{index: 4, want: want[3]},
+	} {
+		image, ok := adapter.root.Objects[check.index].(*canvas.Image)
+		if !ok {
+			t.Fatalf("object %d type = %T, want *canvas.Image", check.index, adapter.root.Objects[check.index])
+		}
+		if image.Resource.Name() != check.want {
+			t.Fatalf("object %d resource = %q, want %q", check.index, image.Resource.Name(), check.want)
+		}
+	}
+}
+
+func TestAdapterRendersRadialNeedleAroundPivots(t *testing.T) {
+	dir := t.TempDir()
+	writeRadialAssets(t, dir)
+	adapter := newNoRefreshAdapter(t, dir)
+
+	parts, err := adapter.renderWidgetParts("primary", radialWidgetWithNeedle(90), 0)
+	if err != nil {
+		t.Fatalf("renderWidgetParts returned error: %v", err)
+	}
+	if len(parts) != 5 {
+		t.Fatalf("rendered radial part count = %d, want 5", len(parts))
+	}
+	needle := parts[3]
+	if needle.size != fyneui.NewSize(40, 20) {
+		t.Fatalf("rotated/scaled needle size = %v, want 40x20", needle.size)
+	}
+	if needle.x != 110 || needle.y != 110 {
+		t.Fatalf("rotated needle position = (%v,%v), want (110,110)", needle.x, needle.y)
+	}
+}
+
+func TestAdapterRendersLiveRadialNeedle(t *testing.T) {
+	dir := t.TempDir()
+	writeRadialAssets(t, dir)
+	adapter := newNoRefreshAdapter(t, dir)
+
+	if err := adapter.Update([]v3dashboard.Scene{radialSceneWithNeedle(0)}); err != nil {
+		t.Fatalf("radial Update returned error: %v", err)
+	}
+	if got := adapter.RenderedObjectCount(); got != 5 {
+		t.Fatalf("RenderedObjectCount = %d, want 5 with live needle", got)
+	}
+	image, ok := adapter.root.Objects[3].(*canvas.Image)
+	if !ok {
+		t.Fatalf("needle object type = %T, want *canvas.Image", adapter.root.Objects[3])
+	}
+	if image.Resource == nil {
+		t.Fatal("needle image has nil resource")
+	}
+}
+
+func TestAdapterDoesNotRenderFakeRadialNeedleWhenSceneOmitsNeedle(t *testing.T) {
+	dir := t.TempDir()
+	writeRadialAssets(t, dir)
+	adapter := newNoRefreshAdapter(t, dir)
+
+	if err := adapter.Update([]v3dashboard.Scene{radialSceneWithoutNeedle()}); err != nil {
+		t.Fatalf("radial Update without needle returned error: %v", err)
+	}
+	if got := adapter.RenderedObjectCount(); got != 4 {
+		t.Fatalf("RenderedObjectCount = %d, want 4 static layers and no fake needle", got)
+	}
+	for index, object := range adapter.root.Objects {
+		image, ok := object.(*canvas.Image)
+		if !ok {
+			t.Fatalf("object %d type = %T, want *canvas.Image", index, object)
+		}
+		if image.Resource.Name() == "assets/needle.png" {
+			t.Fatalf("object %d rendered a fake needle resource", index)
+		}
+	}
+}
+
+func TestAdapterReusesRadialNeedleObjectAcrossAngleChanges(t *testing.T) {
+	dir := t.TempDir()
+	writeRadialAssets(t, dir)
+	adapter := newNoRefreshAdapter(t, dir)
+
+	if err := adapter.Update([]v3dashboard.Scene{radialSceneWithNeedle(0)}); err != nil {
+		t.Fatalf("first radial Update returned error: %v", err)
+	}
+	if got := adapter.RenderedObjectCount(); got != 5 {
+		t.Fatalf("RenderedObjectCount = %d, want 5", got)
+	}
+	firstNeedle := adapter.root.Objects[3]
+
+	if err := adapter.Update([]v3dashboard.Scene{radialSceneWithNeedle(90)}); err != nil {
+		t.Fatalf("second radial Update returned error: %v", err)
+	}
+	if got := adapter.RenderedObjectCount(); got != 5 {
+		t.Fatalf("RenderedObjectCount after angle change = %d, want 5", got)
+	}
+	if adapter.root.Objects[3] != firstNeedle {
+		t.Fatalf("radial needle object was rebuilt across an angle-only change")
+	}
+}
+
+func TestAdapterPreparesRadialNeedleFrameSetOnce(t *testing.T) {
+	dir := t.TempDir()
+	writeRadialAssets(t, dir)
+	adapter := newNoRefreshAdapter(t, dir)
+	asset, err := adapter.loadAsset("assets/needle.png")
+	if err != nil {
+		t.Fatalf("loadAsset returned error: %v", err)
+	}
+
+	for i := -720; i <= 720; i += 17 {
+		if _, err := adapter.preparedNeedleFrame(asset, float64(i), 0.5, 1); err != nil {
+			t.Fatalf("preparedNeedleFrame(%d) returned error: %v", i, err)
+		}
+	}
+	if got := len(adapter.needleFrameSets); got != 1 {
+		t.Fatalf("prepared frame set count = %d, want 1", got)
+	}
+	for _, set := range adapter.needleFrameSets {
+		if got := len(set.frames); got != needleFrameCount {
+			t.Fatalf("prepared frame count = %d, want %d", got, needleFrameCount)
+		}
+	}
+}
+
+func BenchmarkAdapterRadialNeedleWarmCacheUpdate(b *testing.B) {
+	dir := b.TempDir()
+	writeRadialAssets(b, dir)
+	adapter := newNoRefreshAdapter(b, dir)
+	if err := adapter.Update([]v3dashboard.Scene{radialSceneWithNeedle(0)}); err != nil {
+		b.Fatalf("warm-up radial Update returned error: %v", err)
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		angle := float64((i % 271) - 135)
+		if err := adapter.Update([]v3dashboard.Scene{radialSceneWithNeedle(angle)}); err != nil {
+			b.Fatalf("radial Update returned error: %v", err)
+		}
+	}
+}
+
+func BenchmarkAdapterRadialNeedleFirstFrameSetPrepare(b *testing.B) {
+	dir := b.TempDir()
+	writeRadialAssets(b, dir)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		adapter := newNoRefreshAdapter(b, dir)
+		if err := adapter.Update([]v3dashboard.Scene{radialSceneWithNeedle(float64(i))}); err != nil {
+			b.Fatalf("radial Update returned error: %v", err)
+		}
+	}
+}
+
+func newNoRefreshAdapter(t testing.TB, repoRoot string) *Adapter {
 	t.Helper()
 	adapter, err := New(repoRoot)
 	if err != nil {
@@ -169,6 +342,61 @@ func gaugeSceneWithDigit(digitAsset string) v3dashboard.Scene {
 	}
 }
 
+func radialSceneWithNeedle(angle float64) v3dashboard.Scene {
+	return v3dashboard.Scene{
+		DashboardID: "primary",
+		Size:        v3config.SizeConfig{Width: 240, Height: 240},
+		Widgets:    []v3dashboard.Widget{radialWidgetWithNeedle(angle)},
+	}
+}
+
+func radialSceneWithoutNeedle() v3dashboard.Scene {
+	return v3dashboard.Scene{
+		DashboardID: "primary",
+		Size:        v3config.SizeConfig{Width: 240, Height: 240},
+		Widgets:    []v3dashboard.Widget{radialWidgetWithoutNeedle()},
+	}
+}
+
+func radialWidgetWithNeedle(angle float64) v3dashboard.Widget {
+	widget := radialWidgetWithoutNeedle()
+	widget.Parts = append(widget.Parts[:3], append([]v3dashboard.Part{{
+		Kind:        v3dashboard.PartKindNeedle,
+		Layer:       "needle",
+		AssetPath:   "assets/needle.png",
+		Angle:       angle,
+		FacePivot:   gauges.Point{X: 0.5, Y: 0.5},
+		NeedlePivot: gauges.Point{X: 0.5, Y: 1},
+	}}, widget.Parts[3:]...)...)
+	return widget
+}
+
+func radialWidgetWithoutNeedle() v3dashboard.Widget {
+	return v3dashboard.Widget{
+		ID:       "rpm",
+		Type:     "gauge",
+		Position: []int{10, 20},
+		Scale:    2,
+		Parts: []v3dashboard.Part{{
+			Kind:      v3dashboard.PartKindLayer,
+			Layer:     "background",
+			AssetPath: "assets/background.png",
+		}, {
+			Kind:      v3dashboard.PartKindLayer,
+			Layer:     "face",
+			AssetPath: "assets/face.png",
+		}, {
+			Kind:      v3dashboard.PartKindLayer,
+			Layer:     "ticks",
+			AssetPath: "assets/ticks.png",
+		}, {
+			Kind:      v3dashboard.PartKindLayer,
+			Layer:     "overlay",
+			AssetPath: "assets/overlay.png",
+		}},
+	}
+}
+
 func assertLastResourceName(t *testing.T, adapter *Adapter, want string) {
 	t.Helper()
 	if len(adapter.root.Objects) == 0 {
@@ -183,9 +411,36 @@ func assertLastResourceName(t *testing.T, adapter *Adapter, want string) {
 	}
 }
 
+func writeRadialAssets(t testing.TB, dir string) {
+	t.Helper()
+	for _, asset := range []struct {
+		path   string
+		width  int
+		height int
+	}{
+		{path: "assets/background.png", width: 100, height: 100},
+		{path: "assets/face.png", width: 100, height: 100},
+		{path: "assets/ticks.png", width: 100, height: 100},
+		{path: "assets/needle.png", width: 10, height: 20},
+		{path: "assets/overlay.png", width: 100, height: 100},
+	} {
+		if err := writeSizedTestPNG(filepath.Join(dir, asset.path), asset.width, asset.height); err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
 func writeTestPNG(path string) error {
-	img := image.NewRGBA(image.Rect(0, 0, 1, 1))
-	img.Set(0, 0, color.RGBA{R: 255, G: 255, B: 255, A: 255})
+	return writeSizedTestPNG(path, 1, 1)
+}
+
+func writeSizedTestPNG(path string, width int, height int) error {
+	img := image.NewRGBA(image.Rect(0, 0, width, height))
+	for y := 0; y < height; y++ {
+		for x := 0; x < width; x++ {
+			img.Set(x, y, color.RGBA{R: 255, G: 255, B: 255, A: 255})
+		}
+	}
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
 	}

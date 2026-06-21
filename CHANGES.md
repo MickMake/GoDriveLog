@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Updated the v3 Fyne display scene sink path to use non-blocking latest-only submissions for live dashboard and harness updates, preventing display rendering from throttling sensor/harness event cadence while preserving latest-frame coalescing and render error visibility.
+- Updated `v3.2.6` Fyne radial rendering to prepare 1-degree radial needle frame sets outside normal live update sweeps, keeping live updates to keyed image resource swaps and preserving keyed canvas object reuse.
+- Added `v3.2.6` Fyne radial gauge rendering, including ordered radial layer rendering, image-space needle rotation, normalised pivot placement, rotated-needle resource caching, and adapter coverage.
 - Added `v3.2.5` radial gauge scene model support, including dashboard runtime routing, package-owned pivots, value-map angle calculation, needle scene part data, non-ok needle suppression, and radial scene signatures.
 - Added `v3.2.4` Fyne seven-segment rendering hardening: stable keyed canvas object reuse, glass overlay ordering coverage, and a deterministic adapter benchmark for repeated digit updates.
 - Added `v3.2.3` seven-segment gauge support through the dashboard scene path, including `type: gauge` package loading, package-owned sensor state, static layers, digit positions, package-owned formatting, non-ok suppression, Fyne adapter positioning, and scene signatures.

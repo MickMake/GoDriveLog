@@ -14,8 +14,8 @@ layers:
   overlay: glass.png
 
 pivot:
-  face: { x: 0.5, y: 0.55 }
-  needle: { x: 0.5, y: 0.9 }
+  face: { x: 0.5, y: 0.5 }
+  needle: { x: 0.5, y: 0.5 }
 
 value_map:
   min: 0
@@ -23,8 +23,3 @@ value_map:
   start_angle: -135
   end_angle: 135
   clamp: true
-
-labels:
-  major_step: 1000
-  minor_step: 500
-  unit: rpm

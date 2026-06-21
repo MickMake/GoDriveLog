@@ -1,6 +1,6 @@
 # GoDriveLog v3.2 open decisions
 
-Status: active; v3.2.4 is next
+Status: active; v3.2.6 is in progress
 
 This file records decisions that are open, decided, deferred, or explicitly rejected for v3.2.
 
@@ -175,6 +175,16 @@ Radial gauges use two normalised pivots:
 
 The renderer rotates the needle around `pivot.needle` and places that rotated pivot at `pivot.face`.
 
+### Fyne radial rotation implementation details
+
+State: Decided
+
+The v3.2.6 Fyne adapter prepares deterministic 1-degree rotated needle frame sets for each unique source needle asset and normalised needle pivot pair.
+
+Normal live radial updates must not decode, rotate, PNG-encode, or allocate new rotated resources for every frame. They should select an already-prepared frame and update the existing keyed `canvas.Image` resource only when the quantised frame changes.
+
+The prepared-frame strategy preserves the v3.2.4 keyed canvas object reuse model and avoids returning to full Fyne canvas tree rebuilds.
+
 ### Non-ok sensor states
 
 State: Decided
@@ -217,6 +227,14 @@ Scene signatures include package, placement, size, status, text, layer, asset, c
 
 The Fyne adapter honours package-owned part coordinates and widget scale. Broader visual polish, examples, and harness work remain later slices.
 
+### Exact scene part structure for radial gauges
+
+State: Decided
+
+Radial gauge scene support extends the existing generic `Part` and `Widget` scene structures with radial-specific optional fields instead of introducing a separate radial scene representation.
+
+The added radial data is limited to package-owned face pivot, needle pivot, and calculated angle. Static layers still use ordinary layer parts. Live needle parts are emitted only for `ok` sensor states.
+
 ## Deferred
 
 ### Gauge inheritance
@@ -253,23 +271,4 @@ The first version is image-layer based.
 
 ## Open
 
-### Exact scene part structure for radial gauges
-
-State: Open
-
-Need to decide whether radial gauge scene data should:
-
-1. extend the existing generic `Part` structure with radial-specific optional fields; or
-2. introduce a more explicit radial gauge scene part representation.
-
-Guidance: prefer the smallest clean change that does not turn `Part` into a junk drawer.
-
-Target slice: v3.2.5
-
-### Fyne rotation implementation details
-
-State: Open
-
-Need to confirm the exact Fyne implementation for rotating and placing a needle image around a normalised pivot.
-
-Target slice: v3.2.6
+No open decisions currently block the v3.2.6 Fyne radial renderer slice.
