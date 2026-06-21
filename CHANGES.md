@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Added `v3.3.1` experimental Ebiten renderer spike behind `--renderer ebiten`, keeping `--renderer fyne` as the default and feeding both renderers from the same v3 runtime/harness dashboard scene path.
+- Added `--duration` for v3 runtime and harness runs so baseline renderer comparison commands can stop automatically after fixed intervals.
+- Added a narrow `internal/dashboard/adapter/ebiten` scene adapter that caches decoded image assets, renders static seven-segment/gauge layers, and rotates radial needles at draw time for measurement before deciding whether prepared frames are needed.
 - Added `v3.3.0` renderer planning docs under `docs/v3.3/`, including release plan, implementation state, baseline verification notes, and intent-named prompts for `v3.3.0` through `v3.3.3`.
 - Added reusable `examples/baseline-dashboard.yaml` for the renderer comparison workload, with Fyne and Ebiten command examples using the same full dashboard path and fixed-duration runs.
 - Updated `examples/README.md` to identify reusable dashboard examples and the shared repository-root `assets/` tree for active assets.
