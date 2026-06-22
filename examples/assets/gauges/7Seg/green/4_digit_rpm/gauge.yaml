@@ -1,0 +1,37 @@
+id: green_4_digit_rpm
+type: seven_segment
+sensor: rpm
+format: "%04.0f"
+
+size:
+  width: 398
+  height: 150
+
+layers:
+  panel: ../../7Seg4Digits.png
+  glass: ../../7Seg4DigitsGlass.png
+
+digit_set:
+  background: ../../7SegBack.png
+  characters:
+    "0": ../7Seg0.png
+    "1": ../7Seg1.png
+    "2": ../7Seg2.png
+    "3": ../7Seg3.png
+    "4": ../7Seg4.png
+    "5": ../7Seg5.png
+    "6": ../7Seg6.png
+    "7": ../7Seg7.png
+    "8": ../7Seg8.png
+    "9": ../7Seg9.png
+    "-": ../7SegMinus.png
+  decimal_point: ../7SegDP.png
+  spacing: 4
+
+digits:
+  count: 4
+  positions:
+    - [35, 35]
+    - [272, 35]
+    - [505, 35]
+    - [738, 35]

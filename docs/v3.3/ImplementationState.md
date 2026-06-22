@@ -1,8 +1,8 @@
 # GoDriveLog v3.3 implementation state
 
-Status: v3.3.0 planning setup in progress
-Current target: v3.3.0 renderer checkpoint planning
-Current branch: v3.3.0-docs-renderer-plan-and-examples
+Status: v3.3.1 Ebiten renderer spike implemented for review
+Current target: v3.3.2 renderer A/B comparison
+Current branch: v3.3.1-ebiten-renderer-spike
 
 ## Purpose
 
@@ -24,7 +24,7 @@ runtime / harness
   -> renderer adapter
 ```
 
-v3.3 should swap only the renderer adapter when using `--renderer fyne|ebiten`.
+v3.3 swaps only the renderer adapter when using `--renderer fyne|ebiten`.
 
 ## Full-path requirement
 
@@ -64,7 +64,7 @@ The baseline workload is:
 
 ## Renderer spike rule
 
-v3.3.1 should start with Ebiten runtime radial needle rotation.
+v3.3.1 starts with Ebiten runtime radial needle rotation.
 
 If runtime rotation is too costly on the Pi, switch to prepared/cached radial needle frames, matching the successful Fyne prepared-frame strategy.
 
@@ -96,14 +96,14 @@ go run ./cmd/GoDriveLog \
 
 | Version | Status | Notes |
 |---|---|---|
-| v3.3.0 | in progress | Planning docs, prompts, reusable examples path, and renderer-spike checkpoint setup. |
+| v3.3.0 | complete | Planning docs, prompts, reusable examples path, and renderer-spike checkpoint setup. |
+| v3.3.1 | implemented for review | Added `--renderer fyne|ebiten`, accepted `--duration`, kept Fyne as default, added a narrow Ebiten adapter using the real v3 dashboard scene path, and retained comparable display-sink stats in summaries. |
 
 ## Pending slices
 
 | Version | Status | Next action |
 |---|---|---|
-| v3.3.1 | not started | Add experimental Ebiten renderer backend beside Fyne using the real dashboard path. |
-| v3.3.2 | not started | Run fixed-duration A/B comparison between Fyne and Ebiten. |
+| v3.3.2 | not started | Run fixed-duration A/B comparison between Fyne and Ebiten on the baseline dashboard, especially Raspberry Pi measurements. |
 | v3.3.3 | not started | Decide whether to continue, promote, pause, or abandon Ebiten. |
 | v3.3.4 | conditional | Act only if the v3.3.3 decision identifies a clear follow-up. |
 

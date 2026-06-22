@@ -1,3 +1,5 @@
+//go:build !ebiten
+
 package main
 
 import (
@@ -35,7 +37,16 @@ func main() {
 	vehicleID := flag.String("vehicle", "", "v3 vehicle id; required when the v3 config contains multiple vehicles")
 	harnessPattern := flag.String("pattern", v3harness.PatternSweep, "v3 dashboard harness pattern: sweep, heartbeat, or fixed")
 	harnessInterval := flag.Duration("interval", 100*time.Millisecond, "v3 dashboard harness update interval, such as 50ms or 100ms")
+	duration := flag.Duration("duration", 0, "optional v3 runtime or harness duration, such as 60s; zero runs until interrupted")
+	renderer := flag.String("renderer", v3RendererFyne, "v3 renderer backend: fyne or ebiten")
 	flag.Parse()
+
+	normalizedRenderer, err := normalizeV3Renderer(*renderer)
+	if err != nil {
+		log.Fatal(err)
+	}
+	selectedV3Renderer = normalizedRenderer
+	selectedV3Duration = *duration
 
 	if *useHarness && !*useV3 {
 		log.Fatal("--harness requires --v3")
@@ -161,8 +172,17 @@ func main() {
 }
 
 func runV3Command(configPath, vehicleID string) error {
+	if selectedV3Renderer == v3RendererEbiten {
+		return fmt.Errorf("--renderer ebiten requires an Ebiten build: go run -tags ebiten ./cmd/GoDriveLog --renderer ebiten")
+	}
+
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
+	if selectedV3Duration > 0 {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, selectedV3Duration)
+		defer cancel()
+	}
 
 	initialSize, err := initialV3WindowSize(configPath, vehicleID)
 	if err != nil {
@@ -198,8 +218,8 @@ func runV3Command(configPath, vehicleID string) error {
 			err = closeErr
 		}
 		stats := displaySink.Stats()
-		if err == nil {
-			log.Printf("v3 runtime summary: vehicle=%s endpoint=%s sensors=%d logs=%d dashboards=%d display_submitted=%d display_rendered=%d display_superseded=%d display_last_render=%s", summary.VehicleID, summary.Endpoint, summary.SensorCount, summary.LogCount, summary.DashboardCount, stats.Submitted, stats.Rendered, stats.Superseded, stats.LastRenderDuration)
+		if err == nil || isContextStop(err) {
+			log.Printf("v3 runtime summary: vehicle=%s endpoint=%s sensors=%d logs=%d dashboards=%d renderer=%s display_submitted=%d display_rendered=%d display_superseded=%d display_last_render=%s", summary.VehicleID, summary.Endpoint, summary.SensorCount, summary.LogCount, summary.DashboardCount, v3RendererFyne, stats.Submitted, stats.Rendered, stats.Superseded, stats.LastRenderDuration)
 		} else {
 			log.Printf("v3 runtime stopped with error: %v", err)
 		}
@@ -214,12 +234,21 @@ func runV3Command(configPath, vehicleID string) error {
 	window.SetCloseIntercept(shutdown.CancelAndQuit)
 	window.ShowAndRun()
 	shutdown.Cancel()
-	return <-errCh
+	return ignoreContextStop(<-errCh)
 }
 
 func runV3HarnessCommand(configPath, vehicleID, pattern string, interval time.Duration) error {
+	if selectedV3Renderer == v3RendererEbiten {
+		return fmt.Errorf("--renderer ebiten requires an Ebiten build: go run -tags ebiten ./cmd/GoDriveLog --harness --renderer ebiten")
+	}
+
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
+	if selectedV3Duration > 0 {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, selectedV3Duration)
+		defer cancel()
+	}
 
 	initialSize, err := initialV3WindowSize(configPath, vehicleID)
 	if err != nil {
@@ -257,8 +286,8 @@ func runV3HarnessCommand(configPath, vehicleID, pattern string, interval time.Du
 			err = closeErr
 		}
 		stats := displaySink.Stats()
-		if err == nil {
-			log.Printf("v3 dashboard harness summary: vehicle=%s sensors=%d dashboards=%d pattern=%s interval=%s events=%d display_submitted=%d display_rendered=%d display_superseded=%d display_last_render=%s", summary.VehicleID, summary.SensorCount, summary.DashboardCount, summary.Pattern, summary.Interval, summary.Events, stats.Submitted, stats.Rendered, stats.Superseded, stats.LastRenderDuration)
+		if err == nil || isContextStop(err) {
+			log.Printf("v3 dashboard harness summary: vehicle=%s sensors=%d dashboards=%d pattern=%s interval=%s renderer=%s events=%d display_submitted=%d display_rendered=%d display_superseded=%d display_last_render=%s", summary.VehicleID, summary.SensorCount, summary.DashboardCount, summary.Pattern, summary.Interval, v3RendererFyne, summary.Events, stats.Submitted, stats.Rendered, stats.Superseded, stats.LastRenderDuration)
 		} else {
 			log.Printf("v3 dashboard harness stopped with error: %v", err)
 		}
@@ -273,7 +302,7 @@ func runV3HarnessCommand(configPath, vehicleID, pattern string, interval time.Du
 	window.SetCloseIntercept(shutdown.CancelAndQuit)
 	window.ShowAndRun()
 	shutdown.Cancel()
-	return <-errCh
+	return ignoreContextStop(<-errCh)
 }
 
 func newFyneSceneSink(update scenesink.Sink, label string) (*scenesink.LatestSink, error) {
