@@ -1,4 +1,3 @@
-
 name: build
 
 on:
@@ -21,7 +20,7 @@ jobs:
           go-version-file: go.mod
           cache: true
 
-      - name: Install Fyne build dependencies
+      - name: Install build dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -38,7 +37,7 @@ jobs:
       - name: Tidy modules
         run: go mod tidy
 
-      - name: v3.2 baseline harness verification and benchmark report
+      - name: Baseline harness verification and benchmark report
         env:
           LANG: C.UTF-8
           LC_ALL: C.UTF-8
@@ -48,12 +47,6 @@ jobs:
 
       - name: Test Code
         run: go test ./...
-
-      - name: Seven-segment benchmark report
-        env:
-          LANG: C.UTF-8
-          LC_ALL: C.UTF-8
-        run: go test -bench SevenSegment -benchmem -run '^$' ./internal/dashboard/adapter/fyne
 
       - name: Build
         run: go build ./cmd/GoDriveLog
