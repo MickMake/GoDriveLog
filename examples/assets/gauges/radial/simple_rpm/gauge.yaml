@@ -7,11 +7,11 @@ size:
   height: 512
 
 layers:
-  background: bezel.png
-  face: face.png
-  ticks: ticks.png
-  needle: needle.png
-  overlay: glass.png
+  background: ../bezel.png
+  face: ../face.png
+  ticks: ../ticks.png
+  needle: ../needle.png
+  overlay: ../glass.png
 
 pivot:
   face: { x: 0.5, y: 0.5 }
