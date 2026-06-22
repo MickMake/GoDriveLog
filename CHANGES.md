@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Added v3.3.4 post-Fyne renderer housekeeping notes: active Go/module audit, renderer-boundary wording, baseline example geometry notes, Raspberry Pi Ebiten performance evidence, and v3.2 closure.
+- Recorded that no active Go package should import `fyne.io`; remaining Fyne references are historical docs, v3.2 docs, changelog entries, or the `fyne_legacy` notice only.
+- Documented that seven-segment digit positions in the example gauge packages are manually aligned source-artwork coordinates and may exceed the declared logical package size.
+- Marked the planned v3.2.9 renderer checkpoint as superseded by the completed v3.3 renderer decision.
 - Removed legacy Fyne dashboard code packages and Fyne module dependencies from the active v3.3 branch; v3.2.x remains the final supported Fyne dashboard line.
 - Simplified v3 renderer selection so the active command path accepts only Ebiten.
 - Updated README and v3.3 docs to describe the Ebiten-first active dashboard path.

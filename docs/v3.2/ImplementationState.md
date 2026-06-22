@@ -1,12 +1,14 @@
 # GoDriveLog v3.2 implementation state
 
-Status: v3.2.8 dashboard baseline verification completed
-Current target: v3.2.9 renderer checkpoint
-Current branch: v3.2.8-dashboard-baseline-verification
+Status: v3.2 closed as final supported Fyne dashboard line
+Current target: superseded by v3.3 renderer decision
+Current branch: v334-housekeeping
 
 ## Purpose
 
-This file records the current implementation state for v3.2. Update it in every v3.2 slice PR.
+This file records the final implementation state for v3.2.
+
+v3.2 is closed. Do not start a separate v3.2.9 implementation branch unless a historical maintenance fix is explicitly required.
 
 ## Current direction
 
@@ -49,6 +51,16 @@ For v3.2:
 - no widget-level sensor override is planned;
 - no code inheritance is planned;
 - no cluster layer is planned.
+
+## Renderer checkpoint closure
+
+v3.2.9 was originally planned as a renderer checkpoint and next-direction decision.
+
+That checkpoint was completed by the v3.3 renderer work instead. v3.3 tested the Ebiten path through the real dashboard scene model, promoted Ebiten as the active renderer implementation, and removed Fyne code/dependencies from the active v3.3 branch.
+
+No separate v3.2.9 implementation branch is required.
+
+v3.2.x remains the final supported Fyne dashboard line. Use a v3.2.x tag or branch for supported Fyne dashboard behaviour.
 
 ## Seven-segment package direction
 
@@ -253,25 +265,17 @@ value_map:
 | v3.2.6 | completed | Fyne radial layer rendering, prepared 1-degree needle frames, non-blocking display scene submission, pivot placement, object reuse, and benchmark coverage. |
 | v3.2.7 | skipped / absorbed | Example gauge packages already existed; v3.2.8 reuses them and adds only the missing three-digit temperature wrapper. |
 | v3.2.8 | completed | Baseline dashboard config and verification documentation for fixed, sweep, heartbeat, and harness summary stats. |
+| v3.2.9 | superseded | Renderer checkpoint and next-direction decision completed by v3.3; no separate v3.2.9 branch is required. |
 
 ## Pending slices
 
-| Version | Status | Next action |
-|---|---|---|
-| v3.2.9 | not started | Renderer checkpoint and next-direction decision. |
+None. v3.2 is closed except for explicit historical maintenance fixes.
 
 ## Deferred v3.1 work
 
-- v3.1.7 dashboard event efficiency is deferred.
-- v3.1.8 retirement readiness is deferred.
-
-They are not cancelled. They should be reconsidered at the v3.2.9 checkpoint.
+- v3.1.7 dashboard event efficiency is superseded by the v3.2/v3.3 display-sink and renderer work.
+- v3.1.8 retirement readiness is superseded by the v3.3 Fyne removal and renderer decision.
 
 ## Update rule
 
-Every v3.2 implementation PR must update this file with:
-
-- completed version;
-- current branch;
-- next target;
-- any changed decisions or deferrals.
+Historical note only: v3.2 is closed. Future active dashboard work should start from the v3.3/v3.4 state documents.

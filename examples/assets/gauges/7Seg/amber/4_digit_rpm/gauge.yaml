@@ -30,6 +30,10 @@ digit_set:
 
 digits:
   count: 4
+  # Positions are visually tuned source-artwork coordinates, not simple
+  # logical-width subdivisions. They may exceed the declared package width
+  # because the panel/glass art and dashboard fit box use different working
+  # coordinate assumptions.
   positions:
     - [35, 35]
     - [272, 35]

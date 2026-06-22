@@ -1,13 +1,13 @@
 # GoDriveLog v3.3 release plan
 
-Status: complete for renderer decision and cleanup
+Status: final housekeeping slice in progress
 Owner: migration implementor
 
 ## Purpose
 
 v3.3 planned, tested, and completed the renderer migration decision for the active v3 dashboard path.
 
-The result is clear: Ebiten is the primary v3.3 dashboard renderer. Fyne support remains available only from the v3.2.x line.
+The result is clear: Ebiten is the default and only active v3.3 dashboard renderer implementation. Fyne support remains available only from the v3.2.x line.
 
 ## Release goal
 
@@ -28,15 +28,18 @@ examples/baseline-dashboard.yaml
 
 ## Final release principles
 
-- Ebiten is the active v3.3 renderer.
+- Ebiten is the active v3.3 renderer implementation.
+- The renderer remains a boundary; runtime, sensors, logs, dashboard scenes, and display sinks stay renderer-independent.
 - Fyne support ends with v3.2.x.
+- v3.2.9 is superseded by the v3.3 renderer decision; do not create a separate v3.2.9 branch.
 - Reuse the existing v3 dashboard scene model.
 - Do not redesign gauge packages.
 - Do not add widget-level sensor overrides.
 - Do not add inheritance or clusters.
 - Do not use renderer-local fake data for renderer validation.
-- Test through the full path: OBD or harness source, prepared vehicle/sensor data, runtime events, dashboard scene generation, display sink, Ebiten renderer, screen.
+- Test through the full path: OBD or harness source, prepared vehicle/sensor data, runtime events, dashboard scene generation, display sink, renderer adapter, screen.
 - Prefer Raspberry Pi measurements over desktop impressions.
+- Keep v3.4/v4.0 planning out of the v3.3.4 housekeeping slice.
 
 ## Branch-chat workflow
 
@@ -46,7 +49,7 @@ Each implementation chat should:
 2. Read `docs/v3.3/ImplementationState.md`.
 3. Confirm the previous relevant PR is merged into `main`.
 4. Confirm there are no blocking open PRs.
-5. Create a branch from latest `main` using the full target version prefix.
+5. Create a branch from latest `main` using the full target version prefix where the connector allows it.
 6. Implement only that version slice.
 7. Update `CHANGES.md` and `docs/v3.3/ImplementationState.md`.
 8. Open a PR.
@@ -60,6 +63,7 @@ Each implementation chat should:
 | v3.3.1 | Ebiten renderer spike | Added an Ebiten backend using the real dashboard path. |
 | v3.3.2 | renderer decision | Promoted Ebiten to the primary v3.3 renderer and retired Fyne from the active runtime path. |
 | v3.3.3 | dependency cleanup | Removed legacy Fyne code packages and Fyne module dependencies from the active branch. |
+| v3.3.4 | post-Fyne renderer housekeeping | Audits Fyne removal, preserves renderer-boundary wording, records Pi performance evidence, documents example geometry, and closes v3.2.9 as superseded. |
 
 ## v3.3.0 checkpoints
 
@@ -84,7 +88,7 @@ Each implementation chat should:
 - Promote Ebiten when real workload results justify it.
 - Keep Fyne support in the v3.2.x line only.
 - Keep the dashboard scene model intact.
-- Keep mobile/platform packaging as a v3.4 follow-up.
+- Keep mobile/platform packaging as a later follow-up, not part of v3.3.
 
 ## v3.3.3 checkpoints
 
@@ -92,6 +96,16 @@ Each implementation chat should:
 - Remove Fyne module dependencies from `go.mod` and `go.sum`.
 - Simplify active renderer selection to Ebiten.
 - Update README, `CHANGES.md`, and v3.3 implementation state.
+
+## v3.3.4 checkpoints
+
+- Audit active code and module files for Fyne removal.
+- Keep Ebiten as the default and only active v3.3 renderer implementation.
+- Preserve the renderer boundary in documentation and wording.
+- Record Raspberry Pi performance evidence in `docs/v3.3/PerformanceRuns.md`.
+- Update baseline verification docs with the Fyne usability note and Ebiten run numbers.
+- Document that example seven-segment digit positions are source-artwork alignment coordinates, not simple logical-width coordinates.
+- Mark v3.2.9 as superseded by the v3.3 renderer decision.
 
 ## Things not to do
 
@@ -102,4 +116,5 @@ Each implementation chat should:
 - Do not add clusters.
 - Do not add procedural gauge artwork.
 - Do not rebuild the dashboard model around Ebiten.
-- Do not chase perfect visual polish before measuring performance.
+- Do not add v3.4 feature work in v3.3.4.
+- Do not start v4.0 product/platform hardening here.
