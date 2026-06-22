@@ -27,7 +27,7 @@ func main() {
 		log.Fatal(err)
 	}
 	if normalizedRenderer != v3RendererEbiten {
-		log.Fatal("Fyne is no longer supported in the v3.3 active dashboard path; use a v3.2.x tag or branch for the last supported Fyne dashboard")
+		log.Fatal("unsupported v3 renderer")
 	}
 	if !*useV3 {
 		log.Fatal("the Ebiten command supports only the v3 dashboard path")
