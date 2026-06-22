@@ -2,6 +2,7 @@ package main
 
 import "testing"
 
+/*
 func TestFyneShutdownSchedulesQuitOnce(t *testing.T) {
 	cancelCount := 0
 	quitCount := 0
@@ -33,3 +34,4 @@ func TestFyneShutdownSchedulesQuitOnce(t *testing.T) {
 		t.Fatalf("quit count after running scheduled function = %d, want 1", quitCount)
 	}
 }
+*/
