@@ -1,5 +1,5 @@
 id: green_3_digit_temp
-# Three slots are intentional so the v3.2 baseline can exercise -10..40
+# Three slots are intentional so the v3.2/v3.3 baseline can exercise -10..40
 # temperature values and verify minus-symbol rendering through the packaged
 # seven-segment gauge path.
 type: seven_segment
@@ -33,6 +33,10 @@ digit_set:
 
 digits:
   count: 3
+  # Positions are visually tuned source-artwork coordinates, not simple
+  # logical-width subdivisions. They may exceed the declared package width
+  # because the panel/glass art and dashboard fit box use different working
+  # coordinate assumptions.
   positions:
     - [35, 35]
     - [272, 35]
