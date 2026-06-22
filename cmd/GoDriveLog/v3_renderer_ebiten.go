@@ -1,4 +1,4 @@
-//go:build ebiten
+//go:build !fyne_legacy
 
 package main
 
@@ -60,7 +60,7 @@ func runV3EbitenCommand(configPath, vehicleID string, duration time.Duration) er
 		stop()
 	}()
 
-	runErr := adapter.Run(ctx, "GoDriveLog v3 (Ebiten experimental)")
+	runErr := adapter.Run(ctx, "GoDriveLog v3")
 	stop()
 	runtimeErr := <-errCh
 	if err := ignoreContextStop(runErr); err != nil {
@@ -109,7 +109,7 @@ func runV3EbitenHarnessCommand(configPath, vehicleID, pattern string, interval t
 		stop()
 	}()
 
-	runErr := adapter.Run(ctx, "GoDriveLog v3 harness (Ebiten experimental)")
+	runErr := adapter.Run(ctx, "GoDriveLog v3 harness")
 	stop()
 	runtimeErr := <-errCh
 	if err := ignoreContextStop(runErr); err != nil {
