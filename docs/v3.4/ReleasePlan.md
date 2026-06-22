@@ -18,11 +18,11 @@ The planned gauge types are:
 | Type | Purpose |
 |---|---|
 | `numeric` | Formatted value rendered through image assets per character slot. Replaces `seven_segment`. |
-| `radial` | Needle/arc gauge using value-to-angle mapping. Already exists. |
-| `odometer` | Rolling wheel gauge with mechanical-style digit movement. |
-| `indicator` | Two-state gauge: off/on. |
-| `bar` | Continuous value display: fill, reveal, or pointer movement. |
-| `segmented` | Discrete stepped value display using pre-rendered percent-threshold images. |
+| `radial` | Transform gauge using value-to-angle mapping for a needle or arc. Already exists. |
+| `odometer` | Transform gauge using rolling digit/wheel strip movement. |
+| `indicator` | Two-state image-selection gauge: off/on. |
+| `bar` | Transform gauge where normalized value clips, reveals, fills, or moves an asset layer. |
+| `segmented` | Discrete stepped image-selection gauge using sparse percent-threshold images. |
 
 ## Final release principles
 
@@ -30,7 +30,10 @@ The planned gauge types are:
 - Visual style is asset-only.
 - Do not add a `style` field.
 - Rename `seven_segment` to `numeric` with no compatibility alias.
+- Active code, examples, package YAML, and validation must use `numeric`; historical docs and changelog entries may still mention `seven_segment`.
 - Keep `radial` as the existing radial gauge type.
+- Treat `radial`, `odometer`, and `bar` as transform gauges.
+- Treat `numeric`, `indicator`, and `segmented` as image-selection/composition gauges.
 - Keep `bar` and `segmented` separate.
 - Keep each implementation slice small.
 - Do not add all future gauge families in one monster PR. That beast would need feeding and possibly a small helmet.
@@ -41,10 +44,28 @@ The planned gauge types are:
 |---|---|
 | `numeric` | Format value, split into character slots, draw matching character assets. |
 | `radial` | Normalize value and rotate a needle around a pivot. |
-| `odometer` | Convert value into rolling wheel strip positions. |
+| `odometer` | Convert value into rolling wheel strip offsets and draw clipped strip assets. |
 | `indicator` | Select one of two state layers. |
-| `bar` | Continuously reveal, clip, fill, or move an active layer. |
-| `segmented` | Select the highest discovered percent-threshold image reached by the current value. |
+| `bar` | Continuously reveal, clip, fill, or move an active layer from normalized value. |
+| `segmented` | Select the highest discovered percent-threshold image reached by the current value, with threshold-gap hysteresis. |
+
+## Odometer movement rule
+
+`odometer` supports two movement modes:
+
+```yaml
+odometer:
+  movement: smooth
+```
+
+`movement` defaults to `smooth`.
+
+```text
+smooth = continuous strip offset between digit positions
+click  = stepped mechanical movement that snaps to digit positions
+```
+
+Do not add easing, inertia, gear backlash, curved depth, or rear-wheel wraparound in the first odometer slice. Keep the tiny clockwork goblin unemployed.
 
 ## Segmented percent layer rule
 
@@ -65,9 +86,31 @@ levels/rpm_040.png
 levels/rpm_100.png
 ```
 
-The renderer discovers matching files, extracts percent thresholds, sorts them, and draws the highest threshold less than or equal to the current normalized percent.
+The renderer discovers matching files, extracts percent thresholds, sorts them, and draws the highest threshold reached by the current normalized percent.
+
+Runtime values are always normalized and clamped to `0..100`; this is not configurable.
 
 Discovery must count filenames only. It must not decode every image. Runtime should lazy-load selected images and cache recent images.
+
+Segmented threshold rules:
+
+- Sparse thresholds are valid.
+- Missing `000` is valid.
+- If no `000` image exists, values below the first discovered threshold display no segmented value layer.
+- A single valid threshold file acts as a value-driven overlay: nothing below the threshold, the image at or above the threshold.
+- Files that do not match the `{percent}` pattern are ignored.
+- Files above `100` are ignored with a warning.
+- Hysteresis defaults to `25`.
+- `hysteresis` is a percentage of the adjacent threshold gap, not an absolute percentage of the full `0..100` range.
+
+Example:
+
+```yaml
+segmented:
+  hysteresis: 25
+```
+
+With thresholds `25` and `50`, the downward hysteresis gap from `50` is `(50 - 25) * 25% = 6.25`. The selected `050` image remains active until the value drops below `43.75`.
 
 ## Planned implementation slices
 
@@ -75,10 +118,10 @@ Discovery must count filenames only. It must not decode every image. Runtime sho
 |---|---|---|
 | v3.4.0 | gauge type cleanup docs and naming | Create v3.4 docs, rename plan, and prompt set. |
 | v3.4.1 | numeric rename | Replace `seven_segment` with `numeric` in code/examples, no compatibility alias. |
-| v3.4.2 | odometer planning/scene model | Add odometer config and scene model without overbuilding wheel depth. |
+| v3.4.2 | odometer planning/scene model | Add odometer config and flat strip scene model with `smooth` and `click` movement modes. |
 | v3.4.3 | indicator gauge | Add off/on state rendering. |
-| v3.4.4 | bar gauge | Add first continuous level/reveal behaviour. |
-| v3.4.5 | segmented gauge | Add `{percent}` discovery and percent-threshold image selection. |
+| v3.4.4 | bar gauge | Add first continuous transform behaviour for level/reveal. |
+| v3.4.5 | segmented gauge | Add `{percent}` discovery, threshold-gap hysteresis, and percent-threshold image selection. |
 
 ## Branch-chat workflow
 
