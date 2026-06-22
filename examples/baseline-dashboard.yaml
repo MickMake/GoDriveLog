@@ -80,4 +80,4 @@ dashboards:
         type: gauge
         gauge: assets/gauges/radial/simple_rpm
         position: [1220, 80]
-        scale: 0.9
+        scale: 0.5
