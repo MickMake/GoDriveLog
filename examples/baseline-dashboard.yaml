@@ -5,7 +5,6 @@
 #   runtime/harness path without renderer-specific demo data.
 #
 # Usage:
-#   go run ./cmd/GoDriveLog --harness --config ./examples/baseline-dashboard.yaml --vehicle vw_caddy --pattern sweep --interval 50ms --duration 60s --renderer fyne
 #   go run ./cmd/GoDriveLog --harness --config ./examples/baseline-dashboard.yaml --vehicle vw_caddy --pattern sweep --interval 50ms --duration 60s --renderer ebiten
 
 vehicles:

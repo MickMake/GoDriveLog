@@ -141,8 +141,8 @@ func TestBaselineDashboardConfigRunsHarnessPatterns(t *testing.T) {
 					if len(scenes) != 1 {
 						t.Fatalf("scene count = %d, want 1", len(scenes))
 					}
-					if scenes[0].DashboardID != "v3_2_baseline" {
-						t.Fatalf("DashboardID = %q, want v3_2_baseline", scenes[0].DashboardID)
+					if scenes[0].DashboardID != "baseline" {
+						t.Fatalf("DashboardID = %q, want baseline", scenes[0].DashboardID)
 					}
 					if len(scenes[0].Widgets) != 4 {
 						t.Fatalf("widget count = %d, want 4", len(scenes[0].Widgets))
@@ -233,7 +233,7 @@ func setupBaselineHarnessEnvironment(tb testing.TB) string {
 		}
 	})
 
-	configPath := filepath.Join(repoRoot, "docs", "v3.2", "baseline-dashboard.yaml")
+	configPath := filepath.Join(repoRoot, "examples", "baseline-dashboard.yaml")
 	previousArgs := append([]string(nil), os.Args...)
 	os.Args = []string{"GoDriveLog.test", "--harness", "--config", configPath, "--vehicle", "vw_caddy"}
 	tb.Cleanup(func() {

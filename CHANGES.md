@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Removed legacy Fyne dashboard code packages and Fyne module dependencies from the active v3.3 branch; v3.2.x remains the final supported Fyne dashboard line.
+- Simplified v3 renderer selection so the active command path accepts only Ebiten.
+- Updated README and v3.3 docs to describe the Ebiten-first active dashboard path.
 - Promoted Ebiten to the primary v3.3 dashboard renderer; the normal `go run ./cmd/GoDriveLog ...` command now uses the Ebiten command path.
 - Retired Fyne from the active v3.3 dashboard runtime path. The v3.2.x line is now the final supported Fyne dashboard line.
 - Added a `fyne_legacy` build-tag notice so accidental Fyne runs in v3.3.x fail loudly and point users back to the v3.2.x line.

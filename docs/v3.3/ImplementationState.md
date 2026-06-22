@@ -1,8 +1,8 @@
 # GoDriveLog v3.3 implementation state
 
-Status: v3.3.2 Ebiten promoted to primary renderer
+Status: v3.3.3 Fyne dependencies removed from active branch
 Current target: v3.4 mobile/platform packaging preparation
-Current branch: v3.3.2-ebiten-primary-renderer
+Current branch: v3.3.3-remove-fyne-dependencies
 
 ## Purpose
 
@@ -10,7 +10,7 @@ This file records the current implementation state for v3.3. Update it in every 
 
 ## Renderer decision
 
-The renderer decision is now made:
+The renderer decision is made:
 
 ```text
 v3.2.x = final supported Fyne dashboard line
@@ -18,9 +18,7 @@ v3.3.x = Ebiten migration and primary renderer line
 v3.4.x = Ebiten-first platform packaging line
 ```
 
-Ebiten is now the primary v3 dashboard renderer. Fyne is no longer an active v3.3 dashboard runtime target.
-
-The decision is based on real dashboard workload feedback: Fyne was visibly jerky/noisy, while Ebiten was smooth on the same path. Ebiten also gives the project a strategic path toward Android and iOS packaging.
+Ebiten is now the primary v3 dashboard renderer. Fyne is no longer an active v3.3 dashboard runtime target, and its legacy code/dependencies have been removed from the active branch.
 
 The active renderer boundary remains:
 
@@ -38,7 +36,7 @@ Fyne support ends with the v3.2.x line.
 
 Use a v3.2.x tag or branch for supported Fyne dashboard builds. v3.3.x and later should not add new Fyne dashboard features or maintain feature parity with Fyne.
 
-The v3.3 command path keeps only a `fyne_legacy` build-tag notice so accidental Fyne runs fail loudly and point users back to v3.2.x.
+The v3.3 command path keeps only a `fyne_legacy` build-tag notice that points users back to v3.2.x. That notice does not import or depend on Fyne.
 
 ## Full-path requirement
 
@@ -55,8 +53,6 @@ OBD / harness source
 -> Ebiten renderer adapter
 -> screen
 ```
-
-A fake renderer-local RPM counter is not an acceptable benchmark. Cardboard dashboards have excellent frame rates and terrible evidentiary value.
 
 ## Baseline dashboard
 
@@ -100,19 +96,14 @@ go run -tags fyne_legacy ./cmd/GoDriveLog
 
 For supported Fyne dashboard behaviour, use the v3.2.x line instead.
 
-## Renderer implementation rule
-
-Ebiten runtime radial needle rotation remains acceptable until Raspberry Pi measurements prove it too expensive.
-
-If runtime rotation becomes too costly on the Pi, switch to prepared/cached radial needle frames, matching the successful Fyne prepared-frame strategy from v3.2.x.
-
 ## Completed slices
 
 | Version | Status | Notes |
 |---|---|---|
 | v3.3.0 | complete | Planning docs, prompts, reusable examples path, and renderer-spike checkpoint setup. |
 | v3.3.1 | complete | Added the first Ebiten adapter through the real v3 dashboard scene path, fixed Linux GLFW symbol collisions by separating renderer builds, accepted `--duration`, and retained comparable display-sink stats. |
-| v3.3.2 | implemented for review | Promoted Ebiten to the primary v3.3 renderer, retired Fyne from the active v3 dashboard runtime path, documented v3.2.x as the final supported Fyne line, and kept mobile packaging as a v3.4 strategic follow-up. |
+| v3.3.2 | complete | Promoted Ebiten to the primary v3.3 renderer, retired Fyne from the active v3 dashboard runtime path, documented v3.2.x as the final supported Fyne line, and kept mobile packaging as a v3.4 strategic follow-up. |
+| v3.3.3 | implemented for review | Removed legacy Fyne dashboard code packages and Fyne module dependencies from the active v3.3 branch, leaving only the `fyne_legacy` notice. |
 
 ## Pending slices
 

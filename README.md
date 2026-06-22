@@ -1,23 +1,24 @@
 # GoDriveLog
 
-GoDriveLog is a deliberately small Go/Fyne in-vehicle telemetry dashboard for Raspberry Pi-style installs.
+GoDriveLog is a deliberately small Go/Ebiten in-vehicle telemetry dashboard for Raspberry Pi-style installs.
 
-The project is being reshaped toward a cleaner v3 runtime:
+The project is being reshaped around the active v3 runtime:
 
 ```text
 vehicle endpoint
 -> sensor polling runtime
 -> sensor events
 -> logs and dashboards as subscribers
+-> Ebiten dashboard renderer
 ```
 
 The goal is simple: read vehicle telemetry, keep the runtime boring, log useful data, and render a dashboard that can look convincingly like real retro hardware instead of a web page wearing driving gloves.
 
 ## Current status
 
-GoDriveLog currently contains working dashboard/runtime pieces from earlier versions, including Fyne rendering, OBD reader plumbing, JSONL logging, and dashboard asset experiments.
+GoDriveLog now uses Ebiten for the active v3 dashboard command path. Earlier Fyne dashboard code lives in the v3.2.x line only; v3.3.x and later are Ebiten-first.
 
-The v3 direction is documented under `docs/v3/` and is the target for cleanup and future implementation work. Some older config/runtime documents may still describe legacy concepts while the repo is being migrated.
+The current v3.3 implementation state is documented under `docs/v3.3/`. Some older config/runtime documents may still describe legacy concepts while the repo is being migrated.
 
 ## v3 direction
 
@@ -121,12 +122,12 @@ A blank slot should normally mean: draw the digit background only. Decimal point
 Useful docs live under:
 
 ```text
-docs/v3/
-docs/v3/examples/
+docs/v3.3/
+docs/v3.2/
 docs/archive/
 ```
 
-The examples under `docs/v3/examples/` are design examples, not final implementation contracts. They are there to argue with productively before code calcifies around the wrong idea like a fossilised ferret.
+The v3.2 docs describe the final supported Fyne dashboard line. The active v3.3 docs describe the Ebiten migration and current renderer path.
 
 ## Build
 
@@ -141,14 +142,7 @@ The binary will be written to the current directory as `GoDriveLog` unless you p
 
 ## Raspberry Pi notes
 
-Fyne uses Go modules. The usual setup is:
-
-```bash
-go get fyne.io/fyne/v2@latest
-go install fyne.io/tools/cmd/fyne@latest
-```
-
-On Raspberry Pi OS you may also need desktop/OpenGL build dependencies such as gcc, pkg-config, GL/X11 headers, xcursor, xrandr, xinerama, xi, and xxf86vm development packages.
+The active v3.3 dashboard renderer is Ebiten. Raspberry Pi builds should focus on Go, graphics/display dependencies needed by Ebiten, and the selected kiosk/display setup.
 
 ## OBD transport
 
@@ -158,66 +152,4 @@ The intended v3 model is that GoDriveLog connects to an OBD-like endpoint:
 vehicles:
   vw_caddy:
     name: "VW Caddy"
-    obd:
-      address: "serial:///dev/ttyUSB0"
-      timeout: 1000
 ```
-
-For bench/simulator work, use the same connection path with a TCP endpoint:
-
-```yaml
-vehicles:
-  bench:
-    name: "Bench Simulator"
-    obd:
-      address: "tcp://127.0.0.1:35000"
-      timeout: 1000
-```
-
-GoDriveLog should not need to know whether the endpoint is real hardware or a simulator. That is the point. The less the runtime knows, the less it can invent.
-
-## Logging
-
-The intended logging model is subscriber-based:
-
-```yaml
-logs:
-  jsonl:
-    path: "logs/godrivelog.jsonl"
-    sensors:
-      - speed
-      - rpm
-      - coolant_temperature
-```
-
-Current agreed/simple behaviour:
-
-```text
-first reading logs
-value changes log
-status changes log
-unchanged duplicate readings do not spam logs
-```
-
-No log refresh. No per-sensor log refresh. No override knobs unless reality turns up with a receipt.
-
-## Non-goals
-
-Avoid these until proven necessary:
-
-- plugin systems
-- source orchestration
-- live config reload
-- dashboard scripting
-- config inheritance
-- generic event buses
-- enable/disable flags everywhere
-- endpoint-type branching leaking through the core runtime
-
-The preferred architecture is still:
-
-```text
-clean boundaries, boring implementation
-```
-
-Boring is not an insult. Boring code is code that lets you sleep.
