@@ -1,4 +1,4 @@
-//go:build ebiten
+//go:build !fyne_legacy
 
 package main
 
@@ -19,7 +19,7 @@ func main() {
 	harnessPattern := flag.String("pattern", v3harness.PatternSweep, "v3 dashboard harness pattern: sweep, heartbeat, or fixed")
 	harnessInterval := flag.Duration("interval", 100*time.Millisecond, "v3 dashboard harness update interval, such as 50ms or 100ms")
 	duration := flag.Duration("duration", 0, "optional v3 runtime or harness duration, such as 60s; zero runs until interrupted")
-	renderer := flag.String("renderer", v3RendererEbiten, "v3 renderer backend: ebiten in this build")
+	renderer := flag.String("renderer", v3RendererEbiten, "v3 renderer backend: ebiten")
 	flag.Parse()
 
 	normalizedRenderer, err := normalizeV3Renderer(*renderer)
@@ -27,10 +27,10 @@ func main() {
 		log.Fatal(err)
 	}
 	if normalizedRenderer != v3RendererEbiten {
-		log.Fatal("the ebiten build does not include Fyne; use the default build for --renderer fyne")
+		log.Fatal("Fyne is no longer supported in the v3.3 active dashboard path; use a v3.2.x tag or branch for the last supported Fyne dashboard")
 	}
 	if !*useV3 {
-		log.Fatal("the ebiten build supports only the v3 dashboard path")
+		log.Fatal("the Ebiten command supports only the v3 dashboard path")
 	}
 	if *useHarness && !*useV3 {
 		log.Fatal("--harness requires --v3")
