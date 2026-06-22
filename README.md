@@ -9,8 +9,11 @@ vehicle endpoint
 -> sensor polling runtime
 -> sensor events
 -> logs and dashboards as subscribers
--> Ebiten dashboard renderer
+-> dashboard scene model
+-> renderer adapter
 ```
+
+Ebiten is the default and only active renderer implementation in the v3.3 branch. The renderer remains a boundary: runtime, sensors, logging, and dashboard scene generation should not become Ebiten-owned.
 
 The goal is simple: read vehicle telemetry, keep the runtime boring, log useful data, and render a dashboard that can look convincingly like real retro hardware instead of a web page wearing driving gloves.
 
@@ -88,34 +91,9 @@ asset background
 = rendered widget
 ```
 
-The intended asset families are:
+The active example dashboard uses self-contained gauge packages under `examples/assets/gauges/**/gauge.yaml`. Gauge widgets place packages; gauge packages own their sensor binding, value formatting/mapping, visual layers, and package-local geometry.
 
-```yaml
-assets:
-  digit_sets: {}
-  bar_sets: {}
-  frame_sets: {}
-  indicator_sets: {}
-  image_sets: {}
-```
-
-Typical widget types are expected to be:
-
-```yaml
-- type: digit_display
-- type: bar_display
-- type: frame_gauge
-- type: indicator
-- type: image
-```
-
-For PNG digit displays, formatted output should resolve characters rather than only numeric digits. A digit asset set should be able to provide characters such as:
-
-```text
-0 1 2 3 4 5 6 7 8 9 -
-```
-
-A blank slot should normally mean: draw the digit background only. Decimal points are overlays.
+For seven-segment gauge packages, digit positions are artwork-alignment coordinates. They may look larger than the declared logical package size because the source artwork and the dashboard fit box are not always the same coordinate system. The rendered result and package comments are the authority.
 
 ## Documentation
 
@@ -127,7 +105,7 @@ docs/v3.2/
 docs/archive/
 ```
 
-The v3.2 docs describe the final supported Fyne dashboard line. The active v3.3 docs describe the Ebiten migration and current renderer path.
+The v3.2 docs describe the final supported Fyne dashboard line. The active v3.3 docs describe the Ebiten-first renderer path and the active renderer boundary.
 
 ## Build
 
@@ -140,16 +118,38 @@ go build ./cmd/GoDriveLog
 
 The binary will be written to the current directory as `GoDriveLog` unless you pass `-o`.
 
+## Baseline dashboard harness
+
+From the repository root:
+
+```bash
+go run ./cmd/GoDriveLog \
+  --harness \
+  --config ./examples/baseline-dashboard.yaml \
+  --vehicle vw_caddy \
+  --pattern sweep \
+  --interval 50ms \
+  --duration 60s \
+  --renderer ebiten
+```
+
+`--renderer ebiten` is explicit for readability. Ebiten is already the default renderer in the active v3.3 command path.
+
 ## Raspberry Pi notes
 
 The active v3.3 dashboard renderer is Ebiten. Raspberry Pi builds should focus on Go, graphics/display dependencies needed by Ebiten, and the selected kiosk/display setup.
 
 ## OBD transport
 
-The intended v3 model is that GoDriveLog connects to an OBD-like endpoint:
+The intended v3 model is that GoDriveLog connects to an OBD-like endpoint declared by the selected vehicle:
 
 ```yaml
 vehicles:
   vw_caddy:
     name: "VW Caddy"
+    obd:
+      address: "serial:///dev/ttyUSB0"
+      timeout: 1000
 ```
+
+For bench or harness work, use `--harness` and the reusable baseline config instead of requiring live OBD hardware.
