@@ -73,7 +73,7 @@ func TestHeartbeatPatternUsesTwoPeaksAndNegativeDip(t *testing.T) {
 		t.Fatalf("negative dip = %v, want below baseline %v", negative, baseline)
 	}
 	if firstPeak <= baseline || firstPeak >= secondPeak {
-		t.Fatalf("first peak = %v, want between baseline %v and second peak %v", firstPeak)
+		t.Fatalf("first peak = %v, want between baseline %v and second peak %v", firstPeak, baseline, secondPeak)
 	}
 	if secondPeak != 100 {
 		t.Fatalf("second peak = %v, want max", secondPeak)
