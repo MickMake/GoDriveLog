@@ -105,8 +105,10 @@ func generateDigits(themeRoot string) error {
 	background.FillRect(6, 6, 60, 96, color.NRGBA{R: 6, G: 8, B: 11, A: 255})
 	background.StrokeRect(0, 0, 72, 108, 2, color.NRGBA{R: 72, G: 88, B: 105, A: 255})
 	background.StrokeRect(6, 6, 60, 96, 1, color.NRGBA{R: 34, G: 42, B: 52, A: 255})
+	cellWidth := background.Image.Bounds().Dx()
+	cellHeight := background.Image.Bounds().Dy()
 
-	glass := examplegen.NewCanvas(72, 108, color.NRGBA{})
+	glass := examplegen.NewCanvas(cellWidth, cellHeight, color.NRGBA{})
 	glass.FillRect(4, 4, 64, 24, color.NRGBA{R: 255, G: 255, B: 255, A: 18})
 	glass.StrokeRect(1, 1, 70, 106, 1, color.NRGBA{R: 255, G: 255, B: 255, A: 26})
 
@@ -131,7 +133,7 @@ func generateDigits(themeRoot string) error {
 		"-": {"g"},
 	}
 	for id, segments := range characters {
-		canvas := examplegen.NewCanvas(72, 108, color.NRGBA{})
+		canvas := examplegen.NewCanvas(cellWidth, cellHeight, color.NRGBA{})
 		drawDigitSegments(canvas, segments, color.NRGBA{R: 255, G: 168, B: 64, A: 255})
 		canvas.AddGrain(examplegen.HashSeed(frameworkSmokeTheme+":"+id), 4)
 		filename := "digit_" + id + ".png"
@@ -143,8 +145,8 @@ func generateDigits(themeRoot string) error {
 		}
 	}
 
-	decimalPoint := examplegen.NewCanvas(28, 108, color.NRGBA{})
-	decimalPoint.FillCircle(14, 86, 8, color.NRGBA{R: 255, G: 168, B: 64, A: 255})
+	decimalPoint := examplegen.NewCanvas(cellWidth, cellHeight, color.NRGBA{})
+	decimalPoint.FillCircle(cellWidth-14, cellHeight-22, 8, color.NRGBA{R: 255, G: 168, B: 64, A: 255})
 	decimalPoint.AddGrain(examplegen.HashSeed(frameworkSmokeTheme+":dp"), 4)
 	if err := decimalPoint.WritePNG(filepath.Join(digitsRoot, "digit_dp.png")); err != nil {
 		return fmt.Errorf("write decimal point: %w", err)

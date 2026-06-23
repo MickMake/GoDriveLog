@@ -176,6 +176,11 @@ Example dashboard rules:
 - Do not use remote image generation.
 - Do not download stock art.
 - Do not hand-edit opaque generated PNGs as the source of truth.
+- Treat source asset dimensions as authoritative.
+- Use dashboard/widget config `scale` when a rendered display needs to fit a smaller or larger window.
+- Generated digit sets may choose their own cell size, but slot-positioned assets within that set must share it.
+- Decimal points are overlays on the current or preceding digit cell and do not consume a separate slot.
+- Do not infer one digit set's dimensions from another digit set.
 - Do not add runtime `style` fields.
 - Keep visual identity in generated assets and dashboard/package layout.
 - Keep decorative timber, glow, pipes, rivets, wires, screws, and panels as assets, not renderer features.

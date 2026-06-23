@@ -35,6 +35,16 @@ Generated dashboard assets must be reproducible from committed scripts and stabl
 - Do not hand-edit generated PNGs as the source of truth.
 - Keep outputs deterministic enough for review.
 
+## Dimension rules
+
+Source asset dimensions are authoritative.
+
+- Do not reinterpret, normalize, or infer one digit set's source dimensions from another digit set.
+- If a dashboard needs a smaller or larger rendered display, use dashboard/widget config `scale`.
+- Generated example assets may choose their own dimensions, but each generated digit set must stay internally consistent across its slot-positioned assets.
+- Decimal points are overlays on the current or preceding digit cell; they do not consume their own digit slot.
+- Decimal-point artwork may keep a small visible dot in the lower-right area, but the canvas must align with that digit set's own cell dimensions.
+
 ## Planned themes
 
 | Version | Theme | Directory name | Summary |

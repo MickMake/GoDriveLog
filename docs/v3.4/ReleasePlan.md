@@ -132,6 +132,10 @@ Example dashboard rules:
 - Runtime gauge config still uses behaviour types only: `numeric`, `radial`, `odometer`, `indicator`, `bar`, and `segmented`.
 - Visual identity belongs in generated image assets and dashboard/package layout.
 - Generator-internal theme settings are allowed, but they must not create runtime `style` fields.
+- Source asset dimensions are authoritative; if a display needs to fit a different window size, use dashboard/widget config `scale`.
+- Generated digit sets may choose their own cell dimensions, but slot-positioned assets within a set must stay internally consistent.
+- Decimal points are overlays on the current or preceding digit cell and do not consume separate slots.
+- Do not infer one digit set's dimensions from another digit set.
 - Decorative elements such as timber panels, pipes, grid lines, screw heads, or wires are background/overlay assets, not new renderer behaviour.
 - Generated PNGs should be reproducible from scripts with stable seed/config values.
 - Each themed dashboard should cover as many completed gauge types as practical.
