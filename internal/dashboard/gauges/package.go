@@ -14,6 +14,7 @@ const (
 	TypeNumeric      = "numeric"
 	TypeRadial       = "radial"
 	TypeOdometer     = "odometer"
+	TypeIndicator    = "indicator"
 	MovementSmooth   = "smooth"
 	MovementClick    = "click"
 	WheelRoleDigit   = "digit"
@@ -243,7 +244,7 @@ func validatePackage(pkg Package) error {
 		return fmt.Errorf("type must not be empty")
 	}
 	switch pkg.Type {
-	case TypeNumeric, TypeRadial, TypeOdometer:
+	case TypeNumeric, TypeRadial, TypeOdometer, TypeIndicator:
 	default:
 		return fmt.Errorf("type %q is not supported", pkg.Type)
 	}
@@ -255,6 +256,11 @@ func validatePackage(pkg Package) error {
 	}
 	if pkg.Type == TypeOdometer {
 		if err := validateOdometer(pkg.Odometer); err != nil {
+			return err
+		}
+	}
+	if pkg.Type == TypeIndicator {
+		if err := validateIndicatorLayers(pkg.Layers); err != nil {
 			return err
 		}
 	}
@@ -294,6 +300,13 @@ func validateOdometer(odometer Odometer) error {
 		default:
 			return fmt.Errorf("odometer wheel %d role %q is not supported", index, wheel.Role)
 		}
+	}
+	return nil
+}
+
+func validateIndicatorLayers(layers map[string]string) error {
+	if strings.TrimSpace(layers["on"]) == "" {
+		return fmt.Errorf("indicator layer on must not be empty")
 	}
 	return nil
 }

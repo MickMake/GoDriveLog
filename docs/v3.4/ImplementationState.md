@@ -1,8 +1,8 @@
 # GoDriveLog v3.4 implementation state
 
-Status: v3.4.2 odometer planning/scene model implemented
-Current target: v3.4 gauge/display package cleanup and expansion
-Current branch: codex/v3.4.2-odometer-gauge
+Status: v3.4.3 indicator gauge implemented
+Current target: v3.4.4 bar gauge
+Current branch: codex/v3.4.3-indicator-gauge
 
 ## Purpose
 
@@ -65,6 +65,32 @@ The v3.4.2 implementation adds a flat strip scene model:
 - `role: sub_unit` maps a wheel to tenths without adding arbitrary decimal formatting.
 - Ebiten renders each wheel as a clipped strip subimage through the normal dashboard scene path.
 
+## Indicator state model
+
+`indicator` uses simple image selection with a required `on` package layer and an optional `off` package layer:
+
+```yaml
+layers:
+  on: on.png
+```
+
+Packages may also define an explicit off image:
+
+```yaml
+layers:
+  off: off.png
+  on: on.png
+```
+
+The first truth rule is handled from sensor state: a sensor must be `ok` to render `on`. Boolean typed values use their boolean value; otherwise a non-zero numeric value renders `on`. Off and non-ok states render `off` when the optional layer exists; otherwise they draw no state layer between underlay and overlay layers.
+
+The v3.4.3 implementation adds:
+
+- `type: indicator` package validation.
+- Required `layers.on` asset validation with optional `layers.off`.
+- Scene support that draws underlay layers, the selected state layer when present, then overlay layers.
+- Dashboard `type: gauge` routing for indicator packages through the active Ebiten scene path.
+
 ## Segmented percent model
 
 `segmented` value layers use `{percent}`:
@@ -115,12 +141,12 @@ The current baseline workload remains useful because it exercises numeric displa
 | v3.4.0 | completed | Planning docs and prompt set for gauge type cleanup and expansion. |
 | v3.4.1 | completed | Hard-renamed active `seven_segment` package type to `numeric` in code, validation, dashboard routing, tests, and runnable example package YAML. No compatibility alias was added. |
 | v3.4.2 | completed | Added `odometer` package validation, flat wheel-strip scene parts, `smooth` and `click` movement modes, sub-unit wheel support, dashboard routing, Ebiten clipped strip rendering, and focused tests. |
+| v3.4.3 | completed | Added `indicator` package validation, required `on` layer with optional `off` layer, two-state scene selection, dashboard gauge routing, and focused tests. |
 
 ## Pending slices
 
 | Version | Status | Next action |
 |---|---|---|
-| v3.4.3 | not started | Add indicator gauge behaviour. |
 | v3.4.4 | not started | Add first bar gauge transform behaviour. |
 | v3.4.5 | not started | Add segmented percent-threshold image discovery, threshold-gap hysteresis, and rendering. |
 
