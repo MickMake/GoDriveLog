@@ -206,6 +206,43 @@ layers:
 	}
 }
 
+func TestLoadPackageLoadsBarGauge(t *testing.T) {
+	root := makeGaugeFixtures(t)
+	packageDir := filepath.Join(root, "assets", "gauges", "bar", "coolant")
+	writeGaugeYAML(t, packageDir, `id: coolant_bar
+type: bar
+sensor: coolant_temperature
+size:
+  width: 120
+  height: 220
+layers:
+  panel: panel.png
+  level: level.png
+  glass: glass.png
+bar:
+  mode: level
+  axis: vertical
+  origin: bottom
+  bounds: [40, 20, 24, 180]
+`)
+
+	pkg, err := LoadPackage(packageDir)
+	if err != nil {
+		t.Fatalf("LoadPackage returned error: %v", err)
+	}
+
+	if pkg.ID != "coolant_bar" || pkg.Type != TypeBar || pkg.Sensor != "coolant_temperature" {
+		t.Fatalf("package identity = %#v", pkg)
+	}
+	if pkg.Bar.Mode != "level" || pkg.Bar.Axis != "vertical" || pkg.Bar.Origin != "bottom" {
+		t.Fatalf("bar config = %#v", pkg.Bar)
+	}
+	if len(pkg.Bar.Bounds) != 4 || pkg.Bar.Bounds[0] != 40 || pkg.Bar.Bounds[3] != 180 {
+		t.Fatalf("bar bounds = %#v", pkg.Bar.Bounds)
+	}
+	assertPath(t, pkg.Layers["level"], filepath.Join(root, "assets", "gauges", "bar", "coolant", "level.png"))
+}
+
 func TestLoadPackageRejectsIndicatorMissingStateLayer(t *testing.T) {
 	root := makeGaugeFixtures(t)
 	packageDir := filepath.Join(root, "assets", "gauges", "indicator", "bad")
@@ -248,6 +285,31 @@ odometer:
 		t.Fatal("LoadPackage returned nil error, want error")
 	}
 	assertErrorContains(t, err, "movement")
+}
+
+func TestLoadPackageRejectsMissingBarLevelLayer(t *testing.T) {
+	root := makeGaugeFixtures(t)
+	packageDir := filepath.Join(root, "assets", "gauges", "bar", "bad")
+	writeGaugeYAML(t, packageDir, `id: bad_bar
+type: bar
+sensor: coolant_temperature
+size:
+  width: 100
+  height: 100
+layers:
+  panel: panel.png
+bar:
+  mode: level
+  axis: vertical
+  origin: bottom
+  bounds: [10, 10, 20, 60]
+`)
+
+	_, err := LoadPackage(packageDir)
+	if err == nil {
+		t.Fatal("LoadPackage returned nil error, want error")
+	}
+	assertErrorContains(t, err, "bar layer level")
 }
 
 func TestLoadPackageRejectsMissingGaugeYAML(t *testing.T) {
@@ -330,6 +392,9 @@ func makeGaugeFixtures(t *testing.T) string {
 		"assets/gauges/7Seg/amber/7Seg0.png",
 		"assets/gauges/7Seg/amber/7Seg1.png",
 		"assets/gauges/7Seg/amber/7SegDP.png",
+		"assets/gauges/bar/coolant/panel.png",
+		"assets/gauges/bar/coolant/level.png",
+		"assets/gauges/bar/coolant/glass.png",
 		"assets/gauges/shared/radial/simple_rpm/bezel.png",
 		"assets/gauges/shared/radial/simple_rpm/face.png",
 		"assets/gauges/shared/radial/simple_rpm/ticks.png",

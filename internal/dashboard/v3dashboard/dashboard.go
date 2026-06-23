@@ -24,6 +24,7 @@ const (
 	PartKindForeground   = "foreground"
 	PartKindLayer        = "layer"
 	PartKindNeedle       = "needle"
+	PartKindBar          = "bar"
 	PartKindWheelStrip   = "wheel_strip"
 )
 
@@ -60,6 +61,10 @@ type Widget struct {
 	GaugeNeedlePivot    v3gauges.Point
 	GaugeAngle          float64
 	GaugeMovement       string
+	GaugeBarMode        string
+	GaugeBarAxis        string
+	GaugeBarOrigin      string
+	GaugeBarBounds      []int
 	Scale               float64
 	Position            []int
 	Status              string
@@ -282,6 +287,8 @@ func (d Dashboard) renderWidget(configWidget v3config.WidgetConfig, states map[s
 			gaugeScene, err = v3gauges.OdometerScene(pkg, v3gauges.Placement{Position: configWidget.Position, Scale: configWidget.Scale}, state)
 		case v3gauges.TypeIndicator:
 			gaugeScene, err = v3gauges.IndicatorScene(pkg, v3gauges.Placement{Position: configWidget.Position, Scale: configWidget.Scale}, state)
+		case v3gauges.TypeBar:
+			gaugeScene, err = v3gauges.BarScene(pkg, v3gauges.Placement{Position: configWidget.Position, Scale: configWidget.Scale}, state)
 		default:
 			return Widget{}, fmt.Errorf("dashboard %q widget %q gauge package type %q is not supported by dashboard scene runtime", d.ID, configWidget.ID, pkg.Type)
 		}
@@ -305,6 +312,10 @@ func applyGaugeScene(widget *Widget, scene v3gauges.Scene) {
 	widget.GaugeNeedlePivot = scene.NeedlePivot
 	widget.GaugeAngle = scene.Angle
 	widget.GaugeMovement = scene.Movement
+	widget.GaugeBarMode = scene.BarMode
+	widget.GaugeBarAxis = scene.BarAxis
+	widget.GaugeBarOrigin = scene.BarOrigin
+	widget.GaugeBarBounds = append([]int(nil), scene.BarBounds...)
 	widget.Scale = scene.Scale
 	widget.Status = scene.Status
 	widget.Error = scene.Error
@@ -669,6 +680,14 @@ func sceneSignature(scene Scene) string {
 		b.WriteString(strconv.FormatFloat(widget.GaugeAngle, 'f', -1, 64))
 		b.WriteString(":")
 		b.WriteString(widget.GaugeMovement)
+		b.WriteString(":")
+		b.WriteString(widget.GaugeBarMode)
+		b.WriteString(":")
+		b.WriteString(widget.GaugeBarAxis)
+		b.WriteString(":")
+		b.WriteString(widget.GaugeBarOrigin)
+		b.WriteString(":")
+		b.WriteString(formatPartPosition(widget.GaugeBarBounds))
 		b.WriteString(":")
 		b.WriteString(strconv.FormatFloat(widget.Scale, 'f', -1, 64))
 		b.WriteString(":")

@@ -1,8 +1,8 @@
 # GoDriveLog v3.4 implementation state
 
-Status: v3.4.3 indicator gauge implemented
-Current target: v3.4.4 bar gauge
-Current branch: codex/v3.4.3-indicator-gauge
+Status: v3.4.4 bar gauge implemented
+Current target: v3.4.5 segmented gauge
+Current branch: codex/v3.4.4-bar-gauge
 
 ## Purpose
 
@@ -91,6 +91,28 @@ The v3.4.3 implementation adds:
 - Scene support that draws underlay layers, the selected state layer when present, then overlay layers.
 - Dashboard `type: gauge` routing for indicator packages through the active Ebiten scene path.
 
+## Bar transform model
+
+`bar` uses a normalized value to reveal a level layer from a fixed rectangle:
+
+```yaml
+bar:
+  mode: level
+  axis: vertical
+  origin: bottom
+  bounds: [40, 20, 24, 180]
+```
+
+The first slice keeps the bar shape deliberately narrow:
+
+- `type: bar` package validation is active.
+- `layers.level` is required.
+- `mode`, `axis`, and `origin` are fixed to the first level-reveal configuration.
+- `bounds` defines the reveal rectangle within the package artwork.
+- The scene and Ebiten path clip the level layer from the bottom up as value increases.
+
+Do not add extra bar modes, horizontal fills, or style knobs in this slice.
+
 ## Segmented percent model
 
 `segmented` value layers use `{percent}`:
@@ -132,7 +154,7 @@ The v3.4 baseline remains conceptually based on the reusable baseline config:
 examples/baseline-dashboard.yaml
 ```
 
-The current baseline workload remains useful because it exercises numeric displays and radial RPM through the active Ebiten path.
+The current baseline workload remains useful because it exercises numeric displays, radial RPM, and the new bar transform through the active Ebiten path.
 
 ## Completed slices
 
@@ -142,12 +164,12 @@ The current baseline workload remains useful because it exercises numeric displa
 | v3.4.1 | completed | Hard-renamed active `seven_segment` package type to `numeric` in code, validation, dashboard routing, tests, and runnable example package YAML. No compatibility alias was added. |
 | v3.4.2 | completed | Added `odometer` package validation, flat wheel-strip scene parts, `smooth` and `click` movement modes, sub-unit wheel support, dashboard routing, Ebiten clipped strip rendering, and focused tests. |
 | v3.4.3 | completed | Added `indicator` package validation, required `on` layer with optional `off` layer, two-state scene selection, dashboard gauge routing, and focused tests. |
+| v3.4.4 | completed | Added `bar` package validation, fixed `level` reveal geometry, bottom-up clipping, dashboard routing, Ebiten source-rect clipping, and focused tests. |
 
 ## Pending slices
 
 | Version | Status | Next action |
 |---|---|---|
-| v3.4.4 | not started | Add first bar gauge transform behaviour. |
 | v3.4.5 | not started | Add segmented percent-threshold image discovery, threshold-gap hysteresis, and rendering. |
 
 ## Update rule

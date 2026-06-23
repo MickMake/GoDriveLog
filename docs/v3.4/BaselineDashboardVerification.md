@@ -1,6 +1,6 @@
 # GoDriveLog v3.4 baseline dashboard verification
 
-Status: v3.4.1 numeric package rename applied
+Status: v3.4.4 bar gauge implemented
 
 ## Purpose
 
@@ -56,7 +56,6 @@ Add explicit examples and checks as slices land:
 | v3.4.1 numeric rename | Active baseline package YAML now uses `type: numeric`; run the baseline dashboard through the normal Go command path where Go tooling is available. |
 | v3.4.2 odometer | Add a harness-driven odometer example covering default `smooth` movement and optional `click` movement. |
 | v3.4.3 indicator | Add off/on state example. |
-| v3.4.4 bar | Add continuous transform example such as clipping/revealing a level layer. |
 | v3.4.5 segmented | Add sparse percent-threshold image example, including missing-`000` no-layer behaviour and threshold-gap hysteresis. |
 
 ## Notes

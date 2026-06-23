@@ -419,6 +419,75 @@ func TestIndicatorSceneWithOnlyOnLayerDrawsNoStateLayerForNonOKState(t *testing.
 	}
 }
 
+func TestBarSceneUsesPackageBoundsAndRevealHeight(t *testing.T) {
+	pkg := loadBarScenePackage(t)
+
+	scene, err := BarScene(pkg, Placement{Position: []int{50, 20}, Scale: 1.25}, okGaugeState("coolant_temperature", 50))
+	if err != nil {
+		t.Fatalf("BarScene returned error: %v", err)
+	}
+
+	if scene.PackageID != "test_coolant_bar" || scene.SensorID != "coolant_temperature" || scene.Type != TypeBar {
+		t.Fatalf("scene identity = %#v", scene)
+	}
+	if scene.BarMode != "level" || scene.BarAxis != "vertical" || scene.BarOrigin != "bottom" {
+		t.Fatalf("bar config = %#v", scene)
+	}
+	if len(scene.BarBounds) != 4 || scene.BarBounds[0] != 40 || scene.BarBounds[3] != 180 {
+		t.Fatalf("bar bounds = %#v", scene.BarBounds)
+	}
+	if got := partLayerSequence(scene); got != "layer:panel,bar:level,layer:glass" {
+		t.Fatalf("bar part sequence = %q", got)
+	}
+	bar := firstPart(scene, ScenePartKindBar)
+	if bar.Layer != "level" || bar.AssetPath == "" {
+		t.Fatalf("bar part = %#v", bar)
+	}
+	if len(bar.Position) != 2 || bar.Position[0] != 40 || bar.Position[1] != 110 {
+		t.Fatalf("bar position = %#v, want [40 110]", bar.Position)
+	}
+	if len(bar.Source) != 2 || bar.Source[0] != 0 || bar.Source[1] != 90 {
+		t.Fatalf("bar source = %#v, want [0 90]", bar.Source)
+	}
+	if bar.Window.Width != 24 || bar.Window.Height != 90 {
+		t.Fatalf("bar window = %#v, want 24x90", bar.Window)
+	}
+}
+
+func TestBarSceneDoesNotRenderLevelForNonOKState(t *testing.T) {
+	pkg := loadBarScenePackage(t)
+
+	scene, err := BarScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, sensors.SensorState{ID: "coolant_temperature", Status: sensors.StatusTimeout, Error: "not live"})
+	if err != nil {
+		t.Fatalf("BarScene returned error: %v", err)
+	}
+	if scene.Status != sensors.StatusTimeout || scene.Error != "not live" {
+		t.Fatalf("scene status/error = %q/%q", scene.Status, scene.Error)
+	}
+	if got := countSceneParts(scene, ScenePartKindBar); got != 0 {
+		t.Fatalf("expected no live bar part for non-ok state, got %d", got)
+	}
+	if got := partLayerSequence(scene); got != "layer:panel,layer:glass" {
+		t.Fatalf("expected static bar layers in draw order, got %q", got)
+	}
+}
+
+func TestBarSceneSignatureChangesWithRevealHeight(t *testing.T) {
+	pkg := loadBarScenePackage(t)
+
+	first, err := BarScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("coolant_temperature", 50))
+	if err != nil {
+		t.Fatalf("BarScene returned error: %v", err)
+	}
+	changed, err := BarScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("coolant_temperature", 51))
+	if err != nil {
+		t.Fatalf("BarScene returned error: %v", err)
+	}
+	if first.Signature() == changed.Signature() {
+		t.Fatal("expected different reveal height to change signature")
+	}
+}
+
 func loadNumericScenePackage(t *testing.T, count int, format string) Package {
 	t.Helper()
 	root := makeGaugeFixtures(t)
@@ -472,6 +541,18 @@ func loadIndicatorScenePackageWithOnlyOnLayer(t *testing.T) Package {
 	root := makeGaugeFixtures(t)
 	packageDir := filepath.Join(root, "assets", "gauges", "indicator", "check_engine")
 	writeGaugeYAML(t, packageDir, indicatorOnOnlyGaugeYAML())
+	pkg, err := LoadPackage(packageDir)
+	if err != nil {
+		t.Fatalf("LoadPackage returned error: %v", err)
+	}
+	return pkg
+}
+
+func loadBarScenePackage(t *testing.T) Package {
+	t.Helper()
+	root := makeGaugeFixtures(t)
+	packageDir := filepath.Join(root, "assets", "gauges", "bar", "coolant")
+	writeGaugeYAML(t, packageDir, barGaugeYAML())
 	pkg, err := LoadPackage(packageDir)
 	if err != nil {
 		t.Fatalf("LoadPackage returned error: %v", err)
@@ -600,6 +681,25 @@ layers:
 `
 }
 
+func barGaugeYAML() string {
+	return `id: test_coolant_bar
+type: bar
+sensor: coolant_temperature
+size:
+  width: 120
+  height: 220
+layers:
+  panel: panel.png
+  level: level.png
+  glass: glass.png
+bar:
+  mode: level
+  axis: vertical
+  origin: bottom
+  bounds: [40, 20, 24, 180]
+`
+}
+
 func okGaugeState(id string, value float64) sensors.SensorState {
 	return sensors.SensorState{ID: id, Value: value, Status: sensors.StatusOK}
 }
@@ -634,6 +734,8 @@ func partLayerSequence(scene Scene) string {
 			parts = append(parts, "character:"+part.Character)
 		case ScenePartKindNeedle:
 			parts = append(parts, fmt.Sprintf("needle:%.0f", part.Angle))
+		case ScenePartKindBar:
+			parts = append(parts, "bar:"+part.Layer)
 		case ScenePartKindWheelStrip:
 			parts = append(parts, fmt.Sprintf("wheel_strip:%d", part.Slot))
 		default:
