@@ -11,6 +11,7 @@ Asset paths are repository-root relative.
 - `nissan_300zx_z31_inspired.yaml` - retro-inspired richer example using digit, bar, frame, indicator, and image assets.
 - `honda_s2000_inspired.yaml` - retro-inspired richer example using digit, bar, frame, indicator, and image assets.
 - `dashboards/framework-smoke.yaml` - generated v3.4 smoke-test dashboard proving the deterministic example-asset pipeline.
+- `dashboards/ornate-timber.yaml` - generated v3.4 ornate timber dashboard covering the completed gauge families through theme-specific gauge packages.
 
 ## Reusable assets
 

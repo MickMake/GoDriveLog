@@ -12,11 +12,12 @@ import (
 )
 
 const frameworkSmokeTheme = "framework-smoke"
+const ornateTimberTheme = "ornate-timber"
 
 func main() {
 	var (
 		repoRoot = flag.String("repo-root", ".", "repository root")
-		theme    = flag.String("theme", frameworkSmokeTheme, "theme to generate: framework-smoke or all")
+		theme    = flag.String("theme", frameworkSmokeTheme, "theme to generate: framework-smoke, ornate-timber, or all")
 	)
 	flag.Parse()
 
@@ -34,10 +35,15 @@ func run(repoRoot, theme string) error {
 	switch strings.TrimSpace(theme) {
 	case "", frameworkSmokeTheme:
 		return generateFrameworkSmoke(root)
+	case ornateTimberTheme:
+		return generateOrnateTimber(root)
 	case "all":
-		return generateFrameworkSmoke(root)
+		if err := generateFrameworkSmoke(root); err != nil {
+			return err
+		}
+		return generateOrnateTimber(root)
 	default:
-		return fmt.Errorf("unsupported theme %q; supported themes: %s, all", theme, frameworkSmokeTheme)
+		return fmt.Errorf("unsupported theme %q; supported themes: %s, %s, all", theme, frameworkSmokeTheme, ornateTimberTheme)
 	}
 }
 
