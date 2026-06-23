@@ -184,6 +184,64 @@ func TestBaselineDashboardConfigRunsHarnessPatterns(t *testing.T) {
 	}
 }
 
+func TestFrameworkSmokeDashboardConfigRunsHarness(t *testing.T) {
+	configPath := setupExampleHarnessEnvironment(t, filepath.Join("examples", "dashboards", "framework-smoke.yaml"), "demo")
+
+	var sceneUpdates int
+	summary, err := Run(context.Background(), Options{
+		ConfigPath: configPath,
+		VehicleID:  "demo",
+		Pattern:    PatternSweep,
+		MaxEvents:  3,
+		Now: func() time.Time {
+			return time.Unix(0, 0)
+		},
+		Sink: func(scenes []v3dashboard.Scene) error {
+			sceneUpdates++
+			if len(scenes) != 1 {
+				t.Fatalf("scene count = %d, want 1", len(scenes))
+			}
+			if scenes[0].DashboardID != "framework_smoke" {
+				t.Fatalf("DashboardID = %q, want framework_smoke", scenes[0].DashboardID)
+			}
+			if len(scenes[0].Widgets) != 4 {
+				t.Fatalf("widget count = %d, want 4", len(scenes[0].Widgets))
+			}
+			widgetIDs := map[string]bool{}
+			for _, widget := range scenes[0].Widgets {
+				widgetIDs[widget.ID] = true
+			}
+			for _, id := range []string{"panel_backplate", "speed_digits", "rpm_digits", "engine_warning"} {
+				if !widgetIDs[id] {
+					t.Fatalf("missing widget %q in framework smoke scene", id)
+				}
+			}
+			return nil
+		},
+	})
+	if err != nil {
+		t.Fatalf("Run returned error: %v", err)
+	}
+	if summary.VehicleID != "demo" {
+		t.Fatalf("summary.VehicleID = %q, want demo", summary.VehicleID)
+	}
+	if summary.Pattern != PatternSweep {
+		t.Fatalf("summary.Pattern = %q, want %q", summary.Pattern, PatternSweep)
+	}
+	if summary.SensorCount != 3 {
+		t.Fatalf("summary.SensorCount = %d, want 3", summary.SensorCount)
+	}
+	if summary.DashboardCount != 1 {
+		t.Fatalf("summary.DashboardCount = %d, want 1", summary.DashboardCount)
+	}
+	if summary.Events != 3 {
+		t.Fatalf("summary.Events = %d, want 3", summary.Events)
+	}
+	if sceneUpdates != 1 {
+		t.Fatalf("scene updates = %d, want 1", sceneUpdates)
+	}
+}
+
 func BenchmarkBaselineDashboardHarnessPatterns(b *testing.B) {
 	configPath := setupBaselineHarnessEnvironment(b)
 	patterns := []string{PatternFixed, PatternSweep, PatternHeartbeat}
@@ -215,6 +273,10 @@ func BenchmarkBaselineDashboardHarnessPatterns(b *testing.B) {
 }
 
 func setupBaselineHarnessEnvironment(tb testing.TB) string {
+	return setupExampleHarnessEnvironment(tb, filepath.Join("examples", "baseline-dashboard.yaml"), "vw_caddy")
+}
+
+func setupExampleHarnessEnvironment(tb testing.TB, relativeConfigPath, vehicleID string) string {
 	tb.Helper()
 	repoRoot, err := filepath.Abs(filepath.Join("..", "..", ".."))
 	if err != nil {
@@ -233,9 +295,9 @@ func setupBaselineHarnessEnvironment(tb testing.TB) string {
 		}
 	})
 
-	configPath := filepath.Join(repoRoot, "examples", "baseline-dashboard.yaml")
+	configPath := filepath.Join(repoRoot, relativeConfigPath)
 	previousArgs := append([]string(nil), os.Args...)
-	os.Args = []string{"GoDriveLog.test", "--harness", "--config", configPath, "--vehicle", "vw_caddy"}
+	os.Args = []string{"GoDriveLog.test", "--harness", "--config", configPath, "--vehicle", vehicleID}
 	tb.Cleanup(func() {
 		os.Args = previousArgs
 	})

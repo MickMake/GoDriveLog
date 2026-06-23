@@ -1,8 +1,8 @@
 # GoDriveLog v3.4 implementation state
 
-Status: v3.4.6 example dashboard prompt planning in progress
-Current target: v3.4.6 example asset generation framework
-Current branch: v3.4.6-example-dashboard-prompts
+Status: v3.4.6 example asset generation framework implemented
+Current target: v3.4.7 ornate timber dashboard
+Current branch: v3.4.6-example-asset-framework
 
 ## Purpose
 
@@ -162,12 +162,25 @@ The example tail is documentation/example work, not a new renderer model:
 - v3.4.8 adds the neon-grid / Tron-style dashboard.
 - v3.4.9 adds the steam-scrap / steampunk dashboard.
 
+The v3.4.6 implementation adds:
+
+- `go run ./scripts/generate-example-assets -theme framework-smoke` as the deterministic asset-generation entry point;
+- a small reusable drawing helper package under `internal/assets/examplegen` using only the Go standard library;
+- committed `framework-smoke` assets under `examples/assets/v3.4/framework-smoke/`;
+- a runnable smoke dashboard config at `examples/dashboards/framework-smoke.yaml`;
+- harness coverage proving the generated asset path loads through the active dashboard runtime.
+
 Example dashboard rules:
 
 - Use local deterministic scripts and stable seed/config values.
 - Do not use remote image generation.
 - Do not download stock art.
 - Do not hand-edit opaque generated PNGs as the source of truth.
+- Treat source asset dimensions as authoritative.
+- Use dashboard/widget config `scale` when a rendered display needs to fit a smaller or larger window.
+- Generated digit sets may choose their own cell size, but slot-positioned assets within that set must share it.
+- Decimal points are overlays on the current or preceding digit cell and do not consume a separate slot.
+- Do not infer one digit set's dimensions from another digit set.
 - Do not add runtime `style` fields.
 - Keep visual identity in generated assets and dashboard/package layout.
 - Keep decorative timber, glow, pipes, rivets, wires, screws, and panels as assets, not renderer features.
@@ -195,12 +208,12 @@ The generated example dashboard tail should add richer example coverage for the 
 | v3.4.3 | completed | Added `indicator` package validation, required `on` layer with optional `off` layer, two-state scene selection, dashboard gauge routing, and focused tests. |
 | v3.4.4 | completed | Added `bar` package validation, required `value_map` normalization, package-space bottom-up clipping, dashboard routing, Ebiten source-rect clipping, and focused tests. |
 | v3.4.5 | completed | Added segmented percent-threshold discovery, raw-value normalization before selection, threshold-gap hysteresis, dashboard routing, and focused package/runtime tests. |
+| v3.4.6 | completed | Added the deterministic example-asset generation entry point, standard-library drawing helpers, committed `framework-smoke` output under `examples/assets/v3.4/`, a runnable smoke dashboard config, and harness coverage for the generated example path. |
 
 ## Pending slices
 
 | Version | Target | Notes |
 |---|---|---|
-| v3.4.6 | example asset generation framework | Docs, scripts, conventions, and minimal smoke-test output for deterministic generated examples. |
 | v3.4.7 | ornate timber dashboard | Master-carpenter timber dashboard using multiple timber treatments, timber needles, timber ticks, and carved/inlaid visual language. |
 | v3.4.8 | neon-grid dashboard | Dark retro-tech dashboard with neon blue glow, grid/circuit accents, and luminous gauge assets. |
 | v3.4.9 | steam-scrap dashboard | Steampunk/scrapyard dashboard with brass/copper/iron plates, pipes, wires, rivets, lamps, and deliberately overbuilt decoration. |
