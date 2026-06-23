@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Added v3.4.4 bar gauge support with validated `type: bar` packages, vertical bottom-up level reveal geometry, dashboard routing, and focused package/runtime tests.
+- Added v3.4.4 bar gauge support with validated `type: bar` packages, required `value_map` normalization, package-space vertical bottom-up level reveal clipping, dashboard routing, and focused package/runtime tests.
 - Added `type: indicator` gauge package support with required `on` layer, optional `off` layer, scene state selection, dashboard gauge routing, and focused package/runtime tests.
 - Added `type: odometer` gauge package support with validated wheel strip config, default `smooth` movement, `click` snapping, sub-unit wheel roles, scene strip offsets, dashboard routing, and Ebiten clipped strip rendering.
 - Hard-renamed active gauge packages from `type: seven_segment` to `type: numeric`, including validation, dashboard routing, tests, and runnable example package YAML, with no compatibility alias.

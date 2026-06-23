@@ -277,6 +277,9 @@ func validatePackage(pkg Package) error {
 		if err := validateBar(pkg.Bar, pkg.Layers); err != nil {
 			return err
 		}
+		if err := validateBarValueMap(pkg.ValueMap); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -349,6 +352,13 @@ func validateBar(bar BarConfig, layers map[string]string) error {
 	}
 	if strings.TrimSpace(layers["level"]) == "" {
 		return fmt.Errorf("bar layer level must not be empty")
+	}
+	return nil
+}
+
+func validateBarValueMap(valueMap ValueMap) error {
+	if valueMap.Max <= valueMap.Min {
+		return fmt.Errorf("bar value_map max must be greater than min")
 	}
 	return nil
 }

@@ -422,7 +422,7 @@ func TestIndicatorSceneWithOnlyOnLayerDrawsNoStateLayerForNonOKState(t *testing.
 func TestBarSceneUsesPackageBoundsAndRevealHeight(t *testing.T) {
 	pkg := loadBarScenePackage(t)
 
-	scene, err := BarScene(pkg, Placement{Position: []int{50, 20}, Scale: 1.25}, okGaugeState("coolant_temperature", 50))
+	scene, err := BarScene(pkg, Placement{Position: []int{50, 20}, Scale: 1.25}, okGaugeState("coolant_temperature", 80))
 	if err != nil {
 		t.Fatalf("BarScene returned error: %v", err)
 	}
@@ -446,11 +446,38 @@ func TestBarSceneUsesPackageBoundsAndRevealHeight(t *testing.T) {
 	if len(bar.Position) != 2 || bar.Position[0] != 40 || bar.Position[1] != 110 {
 		t.Fatalf("bar position = %#v, want [40 110]", bar.Position)
 	}
-	if len(bar.Source) != 2 || bar.Source[0] != 0 || bar.Source[1] != 90 {
-		t.Fatalf("bar source = %#v, want [0 90]", bar.Source)
+	if len(bar.Source) != 2 || bar.Source[0] != 40 || bar.Source[1] != 110 {
+		t.Fatalf("bar source = %#v, want [40 110]", bar.Source)
 	}
 	if bar.Window.Width != 24 || bar.Window.Height != 90 {
 		t.Fatalf("bar window = %#v, want 24x90", bar.Window)
+	}
+}
+
+func TestBarSceneClampBehaviourUsesValueMapAndDrawableGeometry(t *testing.T) {
+	pkg := loadBarScenePackage(t)
+
+	belowMin, err := BarScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("coolant_temperature", 20))
+	if err != nil {
+		t.Fatalf("BarScene returned error: %v", err)
+	}
+	if got := countSceneParts(belowMin, ScenePartKindBar); got != 0 {
+		t.Fatalf("expected no bar part below min, got %d", got)
+	}
+
+	aboveMax, err := BarScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("coolant_temperature", 130))
+	if err != nil {
+		t.Fatalf("BarScene returned error: %v", err)
+	}
+	bar := firstPart(aboveMax, ScenePartKindBar)
+	if len(bar.Source) != 2 || bar.Source[0] != 40 || bar.Source[1] != 20 {
+		t.Fatalf("full bar source = %#v, want [40 20]", bar.Source)
+	}
+	if len(bar.Position) != 2 || bar.Position[0] != 40 || bar.Position[1] != 20 {
+		t.Fatalf("full bar position = %#v, want [40 20]", bar.Position)
+	}
+	if bar.Window.Width != 24 || bar.Window.Height != 180 {
+		t.Fatalf("full bar window = %#v, want 24x180", bar.Window)
 	}
 }
 
@@ -475,11 +502,11 @@ func TestBarSceneDoesNotRenderLevelForNonOKState(t *testing.T) {
 func TestBarSceneSignatureChangesWithRevealHeight(t *testing.T) {
 	pkg := loadBarScenePackage(t)
 
-	first, err := BarScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("coolant_temperature", 50))
+	first, err := BarScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("coolant_temperature", 80))
 	if err != nil {
 		t.Fatalf("BarScene returned error: %v", err)
 	}
-	changed, err := BarScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("coolant_temperature", 51))
+	changed, err := BarScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("coolant_temperature", 81))
 	if err != nil {
 		t.Fatalf("BarScene returned error: %v", err)
 	}
@@ -692,6 +719,10 @@ layers:
   panel: panel.png
   level: level.png
   glass: glass.png
+value_map:
+  min: 40
+  max: 120
+  clamp: true
 bar:
   mode: level
   axis: vertical

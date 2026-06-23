@@ -93,7 +93,7 @@ The v3.4.3 implementation adds:
 
 ## Bar transform model
 
-`bar` uses a normalized value to reveal a level layer from a fixed rectangle:
+`bar` uses `value_map` normalization to reveal a level layer from a fixed rectangle:
 
 ```yaml
 bar:
@@ -106,9 +106,11 @@ bar:
 The first slice keeps the bar shape deliberately narrow:
 
 - `type: bar` package validation is active.
+- `value_map.max` must be greater than `value_map.min`.
 - `layers.level` is required.
 - `mode`, `axis`, and `origin` are fixed to the first level-reveal configuration.
-- `bounds` defines the reveal rectangle within the package artwork.
+- `bounds` defines the reveal rectangle within the package artwork using package-space coordinates `[x, y, width, height]`.
+- Raw sensor values are normalized through `value_map`; `clamp: true` clamps before normalization, while rendered geometry is always clipped to drawable bounds.
 - The scene and Ebiten path clip the level layer from the bottom up as value increases.
 
 Do not add extra bar modes, horizontal fills, or style knobs in this slice.
@@ -154,7 +156,7 @@ The v3.4 baseline remains conceptually based on the reusable baseline config:
 examples/baseline-dashboard.yaml
 ```
 
-The current baseline workload remains useful because it exercises numeric displays, radial RPM, and the new bar transform through the active Ebiten path.
+The current baseline workload remains useful because it exercises numeric displays and radial RPM through the active Ebiten path.
 
 ## Completed slices
 
@@ -164,7 +166,7 @@ The current baseline workload remains useful because it exercises numeric displa
 | v3.4.1 | completed | Hard-renamed active `seven_segment` package type to `numeric` in code, validation, dashboard routing, tests, and runnable example package YAML. No compatibility alias was added. |
 | v3.4.2 | completed | Added `odometer` package validation, flat wheel-strip scene parts, `smooth` and `click` movement modes, sub-unit wheel support, dashboard routing, Ebiten clipped strip rendering, and focused tests. |
 | v3.4.3 | completed | Added `indicator` package validation, required `on` layer with optional `off` layer, two-state scene selection, dashboard gauge routing, and focused tests. |
-| v3.4.4 | completed | Added `bar` package validation, fixed `level` reveal geometry, bottom-up clipping, dashboard routing, Ebiten source-rect clipping, and focused tests. |
+| v3.4.4 | completed | Added `bar` package validation, required `value_map` normalization, package-space bottom-up clipping, dashboard routing, Ebiten source-rect clipping, and focused tests. |
 
 ## Pending slices
 

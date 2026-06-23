@@ -288,6 +288,9 @@ func BarScene(pkg Package, placement Placement, state sensors.SensorState) (Scen
 	if len(pkg.Bar.Bounds) != 4 {
 		return Scene{}, fmt.Errorf("gauge package %q bar bounds must contain x, y, width, and height", pkg.ID)
 	}
+	if pkg.ValueMap.Max <= pkg.ValueMap.Min {
+		return Scene{}, fmt.Errorf("gauge package %q bar value_map max must be greater than min", pkg.ID)
+	}
 
 	state = stateForPackage(pkg.Sensor, state)
 	scene := Scene{
@@ -312,24 +315,31 @@ func BarScene(pkg Package, placement Placement, state sensors.SensorState) (Scen
 		return scene, nil
 	}
 
-	pct := state.Value
-	if pct < 0 {
-		pct = 0
-	}
-	if pct > 100 {
-		pct = 100
+	normalizedPercent, err := barNormalizedPercent(pkg.ValueMap, state.Value)
+	if err != nil {
+		return Scene{}, fmt.Errorf("gauge package %q: %w", pkg.ID, err)
 	}
 	windowHeight := pkg.Bar.Bounds[3]
-	revealHeight := int(math.Round((pct / 100) * float64(windowHeight)))
+	revealPercent := normalizedPercent
+	if revealPercent < 0 {
+		revealPercent = 0
+	}
+	if revealPercent > 100 {
+		revealPercent = 100
+	}
+	revealHeight := int(math.Round((revealPercent / 100) * float64(windowHeight)))
 	if revealHeight > 0 {
-		sourceY := windowHeight - revealHeight
+		boundsX := pkg.Bar.Bounds[0]
+		boundsY := pkg.Bar.Bounds[1]
+		boundsWidth := pkg.Bar.Bounds[2]
+		sourceY := boundsY + (windowHeight - revealHeight)
 		scene.Parts = append(scene.Parts, ScenePart{
 			Kind:      ScenePartKindBar,
 			Layer:     "level",
 			AssetPath: levelPath,
-			Position:  []int{pkg.Bar.Bounds[0], pkg.Bar.Bounds[1] + sourceY},
-			Source:    []int{0, sourceY},
-			Window:    Size{Width: pkg.Bar.Bounds[2], Height: revealHeight},
+			Position:  []int{boundsX, sourceY},
+			Source:    []int{boundsX, sourceY},
+			Window:    Size{Width: boundsWidth, Height: revealHeight},
 		})
 	}
 	scene.Parts = append(scene.Parts, barOverlayLayerParts(pkg.Layers)...)
@@ -351,6 +361,22 @@ func radialAngle(valueMap ValueMap, value float64) (float64, error) {
 	}
 	ratio := (mappedValue - valueMap.Min) / (valueMap.Max - valueMap.Min)
 	return valueMap.StartAngle + ratio*(valueMap.EndAngle-valueMap.StartAngle), nil
+}
+
+func barNormalizedPercent(valueMap ValueMap, value float64) (float64, error) {
+	if valueMap.Max <= valueMap.Min {
+		return 0, fmt.Errorf("bar value_map max must be greater than min")
+	}
+	mappedValue := value
+	if valueMap.Clamp {
+		if mappedValue < valueMap.Min {
+			mappedValue = valueMap.Min
+		}
+		if mappedValue > valueMap.Max {
+			mappedValue = valueMap.Max
+		}
+	}
+	return ((mappedValue - valueMap.Min) / (valueMap.Max - valueMap.Min)) * 100, nil
 }
 
 func (s Scene) Signature() string {

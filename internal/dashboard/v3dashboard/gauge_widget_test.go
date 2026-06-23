@@ -316,7 +316,7 @@ func TestRuntimeLoadsBarGaugeWidgetPackageAndRendersLevelReveal(t *testing.T) {
 		t.Fatalf("NewRuntime failed: %v", err)
 	}
 
-	runtime.SetState(okState("coolant_temperature", 50, "c"))
+	runtime.SetState(okState("coolant_temperature", 80, "c"))
 	scenes, err := runtime.Snapshot()
 	if err != nil {
 		t.Fatalf("Snapshot failed: %v", err)
@@ -338,6 +338,12 @@ func TestRuntimeLoadsBarGaugeWidgetPackageAndRendersLevelReveal(t *testing.T) {
 	if bar.AssetPath == "" || len(bar.Position) != 2 || len(bar.Source) != 2 || bar.Window.Width != 24 || bar.Window.Height != 90 {
 		t.Fatalf("bar part = %#v", bar)
 	}
+	if bar.Position[0] != 40 || bar.Position[1] != 110 {
+		t.Fatalf("bar position = %#v, want [40 110]", bar.Position)
+	}
+	if bar.Source[0] != 40 || bar.Source[1] != 110 {
+		t.Fatalf("bar source = %#v, want [40 110]", bar.Source)
+	}
 }
 
 func TestRuntimeBarGaugeWidgetSceneSignatureChangesWithRevealHeight(t *testing.T) {
@@ -348,14 +354,14 @@ func TestRuntimeBarGaugeWidgetSceneSignatureChangesWithRevealHeight(t *testing.T
 		t.Fatalf("NewRuntime failed: %v", err)
 	}
 
-	_, changed, err := runtime.ApplyEvent(sensorEvent("coolant_temperature", okState("coolant_temperature", 50, "c")))
+	_, changed, err := runtime.ApplyEvent(sensorEvent("coolant_temperature", okState("coolant_temperature", 80, "c")))
 	if err != nil {
 		t.Fatalf("ApplyEvent failed: %v", err)
 	}
 	if !changed {
 		t.Fatalf("expected first bar event to change rendered output")
 	}
-	_, changed, err = runtime.ApplyEvent(sensorEvent("coolant_temperature", okState("coolant_temperature", 51, "c")))
+	_, changed, err = runtime.ApplyEvent(sensorEvent("coolant_temperature", okState("coolant_temperature", 81, "c")))
 	if err != nil {
 		t.Fatalf("ApplyEvent failed: %v", err)
 	}
@@ -621,6 +627,10 @@ layers:
   panel: panel.png
   level: level.png
   glass: glass.png
+value_map:
+  min: 40
+  max: 120
+  clamp: true
 bar:
   mode: level
   axis: vertical
