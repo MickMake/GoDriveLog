@@ -103,6 +103,75 @@ value_map:
 	}
 }
 
+func TestLoadPackageLoadsOdometerGauge(t *testing.T) {
+	root := makeGaugeFixtures(t)
+	packageDir := filepath.Join(root, "assets", "gauges", "odometer", "trip")
+	writeGaugeYAML(t, packageDir, `id: trip_odometer
+type: odometer
+sensor: trip_distance
+size:
+  width: 240
+  height: 80
+layers:
+  panel: panel.png
+  glass: glass.png
+odometer:
+  wheels:
+    - strip: digits.png
+      position: [10, 12]
+      window: { width: 24, height: 36 }
+    - strip: red_digits.png
+      position: [40, 12]
+      window: { width: 24, height: 36 }
+      offset: [2, 4]
+      role: sub_unit
+`)
+
+	pkg, err := LoadPackage(packageDir)
+	if err != nil {
+		t.Fatalf("LoadPackage returned error: %v", err)
+	}
+
+	if pkg.ID != "trip_odometer" || pkg.Type != TypeOdometer || pkg.Sensor != "trip_distance" {
+		t.Fatalf("package identity = %#v", pkg)
+	}
+	if pkg.Odometer.Movement != MovementSmooth {
+		t.Fatalf("movement = %q, want default smooth", pkg.Odometer.Movement)
+	}
+	if len(pkg.Odometer.Wheels) != 2 {
+		t.Fatalf("wheels = %#v, want 2", pkg.Odometer.Wheels)
+	}
+	assertPath(t, pkg.Odometer.Wheels[0].Strip, filepath.Join(root, "assets", "gauges", "odometer", "trip", "digits.png"))
+	assertPath(t, pkg.Odometer.Wheels[1].Strip, filepath.Join(root, "assets", "gauges", "odometer", "trip", "red_digits.png"))
+	if pkg.Odometer.Wheels[1].Role != WheelRoleSubUnit || pkg.Odometer.Wheels[1].Offset[0] != 2 {
+		t.Fatalf("sub-unit wheel = %#v", pkg.Odometer.Wheels[1])
+	}
+}
+
+func TestLoadPackageRejectsBadOdometerMovement(t *testing.T) {
+	root := makeGaugeFixtures(t)
+	packageDir := filepath.Join(root, "assets", "gauges", "odometer", "bad")
+	writeGaugeYAML(t, packageDir, `id: bad_odometer
+type: odometer
+sensor: trip_distance
+size:
+  width: 100
+  height: 50
+odometer:
+  movement: elastic
+  wheels:
+    - strip: digits.png
+      position: [0, 0]
+      window: { width: 10, height: 20 }
+`)
+
+	_, err := LoadPackage(packageDir)
+	if err == nil {
+		t.Fatal("LoadPackage returned nil error, want error")
+	}
+	assertErrorContains(t, err, "movement")
+}
+
 func TestLoadPackageRejectsMissingGaugeYAML(t *testing.T) {
 	root := makeGaugeFixtures(t)
 	packageDir := filepath.Join(root, "assets", "gauges", "missing_yaml")
@@ -188,6 +257,11 @@ func makeGaugeFixtures(t *testing.T) string {
 		"assets/gauges/shared/radial/simple_rpm/ticks.png",
 		"assets/gauges/shared/radial/simple_rpm/needle.png",
 		"assets/gauges/shared/radial/simple_rpm/glass.png",
+		"assets/gauges/odometer/trip/panel.png",
+		"assets/gauges/odometer/trip/glass.png",
+		"assets/gauges/odometer/trip/digits.png",
+		"assets/gauges/odometer/trip/red_digits.png",
+		"assets/gauges/odometer/bad/digits.png",
 	}
 	for _, path := range files {
 		fullPath := filepath.Join(root, path)

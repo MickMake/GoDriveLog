@@ -24,6 +24,7 @@ const (
 	PartKindForeground   = "foreground"
 	PartKindLayer        = "layer"
 	PartKindNeedle       = "needle"
+	PartKindWheelStrip   = "wheel_strip"
 )
 
 // Runtime owns selected v3 dashboard scene state. It consumes sensor state/events
@@ -58,6 +59,7 @@ type Widget struct {
 	GaugeFacePivot      v3gauges.Point
 	GaugeNeedlePivot    v3gauges.Point
 	GaugeAngle          float64
+	GaugeMovement       string
 	Scale               float64
 	Position            []int
 	Status              string
@@ -79,6 +81,10 @@ type Part struct {
 	Angle       float64
 	FacePivot   v3gauges.Point
 	NeedlePivot v3gauges.Point
+	Source      []int
+	Window      v3gauges.Size
+	StripOffset float64
+	Role        string
 }
 
 // NewRuntime builds the selected-dashboard runtime from an already resolved
@@ -272,6 +278,8 @@ func (d Dashboard) renderWidget(configWidget v3config.WidgetConfig, states map[s
 			gaugeScene, err = v3gauges.NumericScene(pkg, v3gauges.Placement{Position: configWidget.Position, Scale: configWidget.Scale}, state)
 		case v3gauges.TypeRadial:
 			gaugeScene, err = v3gauges.RadialScene(pkg, v3gauges.Placement{Position: configWidget.Position, Scale: configWidget.Scale}, state)
+		case v3gauges.TypeOdometer:
+			gaugeScene, err = v3gauges.OdometerScene(pkg, v3gauges.Placement{Position: configWidget.Position, Scale: configWidget.Scale}, state)
 		default:
 			return Widget{}, fmt.Errorf("dashboard %q widget %q gauge package type %q is not supported by dashboard scene runtime", d.ID, configWidget.ID, pkg.Type)
 		}
@@ -294,6 +302,7 @@ func applyGaugeScene(widget *Widget, scene v3gauges.Scene) {
 	widget.GaugeFacePivot = scene.FacePivot
 	widget.GaugeNeedlePivot = scene.NeedlePivot
 	widget.GaugeAngle = scene.Angle
+	widget.GaugeMovement = scene.Movement
 	widget.Scale = scene.Scale
 	widget.Status = scene.Status
 	widget.Error = scene.Error
@@ -425,6 +434,10 @@ func gaugeSceneParts(scene v3gauges.Scene) []Part {
 			Angle:       scenePart.Angle,
 			FacePivot:   scenePart.FacePivot,
 			NeedlePivot: scenePart.NeedlePivot,
+			Source:      append([]int(nil), scenePart.Source...),
+			Window:      scenePart.Window,
+			StripOffset: scenePart.StripOffset,
+			Role:        scenePart.Role,
 		})
 	}
 	return parts
@@ -653,6 +666,8 @@ func sceneSignature(scene Scene) string {
 		b.WriteString(":")
 		b.WriteString(strconv.FormatFloat(widget.GaugeAngle, 'f', -1, 64))
 		b.WriteString(":")
+		b.WriteString(widget.GaugeMovement)
+		b.WriteString(":")
 		b.WriteString(strconv.FormatFloat(widget.Scale, 'f', -1, 64))
 		b.WriteString(":")
 		b.WriteString(widget.Status)
@@ -683,6 +698,16 @@ func sceneSignature(scene Scene) string {
 			b.WriteString(formatGaugePoint(part.FacePivot))
 			b.WriteString("#")
 			b.WriteString(formatGaugePoint(part.NeedlePivot))
+			b.WriteString("#")
+			b.WriteString(formatPartPosition(part.Source))
+			b.WriteString("#")
+			b.WriteString(strconv.Itoa(part.Window.Width))
+			b.WriteString("x")
+			b.WriteString(strconv.Itoa(part.Window.Height))
+			b.WriteString("#")
+			b.WriteString(strconv.FormatFloat(part.StripOffset, 'f', -1, 64))
+			b.WriteString("#")
+			b.WriteString(part.Role)
 			b.WriteString(";")
 		}
 		b.WriteString("|")

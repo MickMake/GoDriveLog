@@ -58,6 +58,8 @@ type renderedPart struct {
 	angle  float64
 	pivotX float64
 	pivotY float64
+
+	source image.Rectangle
 }
 
 // New creates an Ebiten adapter for v3 dashboard scene output.
@@ -76,7 +78,7 @@ func New(repoRoot string, width int, height int) (*Adapter, error) {
 		repoRoot: root,
 		width:    width,
 		height:   height,
-		assets:  map[string]cachedAsset{},
+		assets:   map[string]cachedAsset{},
 	}, nil
 }
 
@@ -143,8 +145,18 @@ func (a *Adapter) Draw(screen *ebitenui.Image) {
 	parts := append([]renderedPart(nil), a.parts...)
 	a.mu.RUnlock()
 	for _, part := range parts {
-		if part.asset.image == nil {
+		drawImage := part.asset.image
+		if drawImage == nil {
 			continue
+		}
+		if !part.source.Empty() {
+			source := clampSourceRect(part.source, part.asset)
+			if source.Empty() {
+				continue
+			}
+			if subImage, ok := drawImage.SubImage(source).(*ebitenui.Image); ok {
+				drawImage = subImage
+			}
 		}
 		options := &ebitenui.DrawImageOptions{}
 		if part.needle {
@@ -156,7 +168,7 @@ func (a *Adapter) Draw(screen *ebitenui.Image) {
 			options.GeoM.Scale(part.scale, part.scale)
 			options.GeoM.Translate(part.x, part.y)
 		}
-		screen.DrawImage(part.asset.image, options)
+		screen.DrawImage(drawImage, options)
 	}
 }
 
@@ -268,7 +280,7 @@ func (a *Adapter) renderWidgetParts(dashboardID string, widget v3dashboard.Widge
 			continue
 		}
 		x, y := partPosition(baseX, baseY, asset, widgetScale, part)
-		parts = append(parts, renderedPart{asset: asset, x: x, y: y, scale: widgetScale})
+		parts = append(parts, renderedPart{asset: asset, x: x, y: y, scale: widgetScale, source: partSourceRect(part)})
 	}
 	return parts, nil
 }
@@ -362,6 +374,50 @@ func partPosition(baseX, baseY float64, asset cachedAsset, scale float64, part v
 		x += float64(part.Slot) * float64(asset.width) * scale
 	}
 	return x, y
+}
+
+func partSourceRect(part v3dashboard.Part) image.Rectangle {
+	if part.Kind != v3dashboard.PartKindWheelStrip || part.Window.Width <= 0 || part.Window.Height <= 0 {
+		return image.Rectangle{}
+	}
+	x, y := 0, 0
+	if len(part.Source) >= 2 {
+		x = part.Source[0]
+		y = part.Source[1]
+	}
+	return image.Rect(x, y, x+part.Window.Width, y+part.Window.Height)
+}
+
+func clampSourceRect(rect image.Rectangle, asset cachedAsset) image.Rectangle {
+	if asset.width <= 0 || asset.height <= 0 {
+		return image.Rectangle{}
+	}
+	if rect.Min.X < 0 {
+		rect.Min.X = 0
+	}
+	if rect.Min.Y < 0 {
+		rect.Min.Y = 0
+	}
+	width := rect.Dx()
+	height := rect.Dy()
+	if width <= 0 || height <= 0 {
+		return image.Rectangle{}
+	}
+	if width > asset.width {
+		width = asset.width
+	}
+	if height > asset.height {
+		height = asset.height
+	}
+	if rect.Min.X+width > asset.width {
+		rect.Min.X = asset.width - width
+	}
+	if rect.Min.Y+height > asset.height {
+		rect.Min.Y = asset.height - height
+	}
+	rect.Max.X = rect.Min.X + width
+	rect.Max.Y = rect.Min.Y + height
+	return rect
 }
 
 func radialGaugeSize(currentWidth float64, currentHeight float64, part v3dashboard.Part, asset cachedAsset) (float64, float64) {

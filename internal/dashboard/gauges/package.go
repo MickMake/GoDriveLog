@@ -11,8 +11,13 @@ import (
 )
 
 const (
-	TypeNumeric = "numeric"
-	TypeRadial  = "radial"
+	TypeNumeric      = "numeric"
+	TypeRadial       = "radial"
+	TypeOdometer     = "odometer"
+	MovementSmooth   = "smooth"
+	MovementClick    = "click"
+	WheelRoleDigit   = "digit"
+	WheelRoleSubUnit = "sub_unit"
 )
 
 type Package struct {
@@ -26,6 +31,7 @@ type Package struct {
 	Digits    Digits            `yaml:"digits,omitempty"`
 	Pivot     Pivot             `yaml:"pivot,omitempty"`
 	ValueMap  ValueMap          `yaml:"value_map,omitempty"`
+	Odometer  Odometer          `yaml:"odometer,omitempty"`
 	Path      string            `yaml:"-"`
 	YAMLPath  string            `yaml:"-"`
 	AssetRoot string            `yaml:"-"`
@@ -67,6 +73,19 @@ type ValueMap struct {
 	Clamp      bool    `yaml:"clamp"`
 }
 
+type Odometer struct {
+	Movement string          `yaml:"movement,omitempty"`
+	Wheels   []OdometerWheel `yaml:"wheels,omitempty"`
+}
+
+type OdometerWheel struct {
+	Strip    string `yaml:"strip"`
+	Position []int  `yaml:"position"`
+	Window   Size   `yaml:"window"`
+	Offset   []int  `yaml:"offset,omitempty"`
+	Role     string `yaml:"role,omitempty"`
+}
+
 func LoadPackage(packageDir string) (Package, error) {
 	if packageDir == "" {
 		return Package{}, fmt.Errorf("gauge package path must not be empty")
@@ -101,6 +120,7 @@ func LoadPackage(packageDir string) (Package, error) {
 	if err != nil {
 		return Package{}, fmt.Errorf("gauge package %q could not parse gauge.yaml: %w", resolvedPackageDir, err)
 	}
+	normalizePackage(&pkg)
 	pkg.Path = resolvedPackageDir
 	pkg.YAMLPath = yamlPath
 	pkg.AssetRoot = assetRoot
@@ -223,7 +243,7 @@ func validatePackage(pkg Package) error {
 		return fmt.Errorf("type must not be empty")
 	}
 	switch pkg.Type {
-	case TypeNumeric, TypeRadial:
+	case TypeNumeric, TypeRadial, TypeOdometer:
 	default:
 		return fmt.Errorf("type %q is not supported", pkg.Type)
 	}
@@ -232,6 +252,48 @@ func validatePackage(pkg Package) error {
 	}
 	if pkg.Size.Width <= 0 || pkg.Size.Height <= 0 {
 		return fmt.Errorf("size width and height must be positive")
+	}
+	if pkg.Type == TypeOdometer {
+		if err := validateOdometer(pkg.Odometer); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func normalizePackage(pkg *Package) {
+	if pkg.Type == TypeOdometer && strings.TrimSpace(pkg.Odometer.Movement) == "" {
+		pkg.Odometer.Movement = MovementSmooth
+	}
+}
+
+func validateOdometer(odometer Odometer) error {
+	switch odometer.Movement {
+	case MovementSmooth, MovementClick:
+	default:
+		return fmt.Errorf("odometer movement %q is not supported", odometer.Movement)
+	}
+	if len(odometer.Wheels) == 0 {
+		return fmt.Errorf("odometer wheels must not be empty")
+	}
+	for index, wheel := range odometer.Wheels {
+		if strings.TrimSpace(wheel.Strip) == "" {
+			return fmt.Errorf("odometer wheel %d strip must not be empty", index)
+		}
+		if len(wheel.Position) < 2 {
+			return fmt.Errorf("odometer wheel %d position must contain x and y", index)
+		}
+		if wheel.Window.Width <= 0 || wheel.Window.Height <= 0 {
+			return fmt.Errorf("odometer wheel %d window width and height must be positive", index)
+		}
+		if len(wheel.Offset) != 0 && len(wheel.Offset) < 2 {
+			return fmt.Errorf("odometer wheel %d offset must contain x and y", index)
+		}
+		switch wheel.Role {
+		case "", WheelRoleDigit, WheelRoleSubUnit:
+		default:
+			return fmt.Errorf("odometer wheel %d role %q is not supported", index, wheel.Role)
+		}
 	}
 	return nil
 }
@@ -258,6 +320,12 @@ func resolvePackagePaths(pkg *Package, yamlDir string) error {
 	pkg.DigitSet.Characters, err = resolvePathMap(pkg.AssetRoot, yamlDir, pkg.DigitSet.Characters, "digit_set character")
 	if err != nil {
 		return err
+	}
+	for index := range pkg.Odometer.Wheels {
+		pkg.Odometer.Wheels[index].Strip, err = resolveOptionalPath(pkg.AssetRoot, yamlDir, pkg.Odometer.Wheels[index].Strip, fmt.Sprintf("odometer wheel %d strip", index))
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
