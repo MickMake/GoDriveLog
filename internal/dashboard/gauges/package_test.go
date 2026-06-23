@@ -250,6 +250,59 @@ bar:
 	assertPath(t, pkg.Layers["level"], filepath.Join(root, "assets", "gauges", "bar", "coolant", "level.png"))
 }
 
+func TestLoadPackageLoadsSegmentedGauge(t *testing.T) {
+	root := makeGaugeFixtures(t)
+	packageDir := filepath.Join(root, "assets", "gauges", "segmented", "rpm")
+	files := []string{
+		"levels/rpm_000.png",
+		"levels/rpm_025.png",
+		"levels/rpm_050.png",
+		"levels/rpm_150.png",
+		"panel.png",
+		"glass.png",
+	}
+	for _, path := range files {
+		fullPath := filepath.Join(packageDir, path)
+		if err := os.MkdirAll(filepath.Dir(fullPath), 0o755); err != nil {
+			t.Fatalf("MkdirAll: %v", err)
+		}
+		if err := os.WriteFile(fullPath, []byte(path), 0o600); err != nil {
+			t.Fatalf("WriteFile: %v", err)
+		}
+	}
+	writeGaugeYAML(t, packageDir, `id: rpm_segmented
+type: segmented
+sensor: rpm
+size:
+  width: 120
+  height: 120
+layers:
+  panel: panel.png
+  segments: levels/rpm_{percent:03}.png
+  glass: glass.png
+`)
+
+	pkg, err := LoadPackage(packageDir)
+	if err != nil {
+		t.Fatalf("LoadPackage returned error: %v", err)
+	}
+
+	if pkg.ID != "rpm_segmented" || pkg.Type != TypeSegmented || pkg.Sensor != "rpm" {
+		t.Fatalf("package identity = %#v", pkg)
+	}
+	if pkg.Segmented.Hysteresis == nil || *pkg.Segmented.Hysteresis != 25 {
+		t.Fatalf("hysteresis = %#v, want default 25", pkg.Segmented.Hysteresis)
+	}
+	if len(pkg.Segmented.Images) != 3 {
+		t.Fatalf("segmented images = %#v, want 3 valid thresholds", pkg.Segmented.Images)
+	}
+	if pkg.Segmented.Images[0].Threshold != 0 || pkg.Segmented.Images[1].Threshold != 25 || pkg.Segmented.Images[2].Threshold != 50 {
+		t.Fatalf("segmented thresholds = %#v", pkg.Segmented.Images)
+	}
+	assertPath(t, pkg.Segmented.Images[0].Path, filepath.Join(packageDir, "levels", "rpm_000.png"))
+	assertPath(t, pkg.Segmented.Images[2].Path, filepath.Join(packageDir, "levels", "rpm_050.png"))
+}
+
 func TestLoadPackageRejectsIndicatorMissingStateLayer(t *testing.T) {
 	root := makeGaugeFixtures(t)
 	packageDir := filepath.Join(root, "assets", "gauges", "indicator", "bad")
@@ -350,6 +403,26 @@ bar:
 		t.Fatal("LoadPackage returned nil error, want error")
 	}
 	assertErrorContains(t, err, "bar value_map max must be greater than min")
+}
+
+func TestLoadPackageRejectsSegmentedLayerWithoutPercentPlaceholder(t *testing.T) {
+	root := makeGaugeFixtures(t)
+	packageDir := filepath.Join(root, "assets", "gauges", "segmented", "bad")
+	writeGaugeYAML(t, packageDir, `id: bad_segmented
+type: segmented
+sensor: rpm
+size:
+  width: 100
+  height: 100
+layers:
+  segments: levels/rpm.png
+`)
+
+	_, err := LoadPackage(packageDir)
+	if err == nil {
+		t.Fatal("LoadPackage returned nil error, want error")
+	}
+	assertErrorContains(t, err, "{percent}")
 }
 
 func TestLoadPackageRejectsMissingBarValueMap(t *testing.T) {

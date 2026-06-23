@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added v3.4.5 segmented gauge support with sparse `{percent}` discovery, raw-value normalization to percent before threshold selection, threshold-gap hysteresis, dashboard routing, and focused package/runtime tests.
 - Added v3.4.4 bar gauge support with validated `type: bar` packages, required `value_map` normalization, package-space vertical bottom-up level reveal clipping, dashboard routing, and focused package/runtime tests.
 - Added `type: indicator` gauge package support with required `on` layer, optional `off` layer, scene state selection, dashboard gauge routing, and focused package/runtime tests.
 - Added `type: odometer` gauge package support with validated wheel strip config, default `smooth` movement, `click` snapping, sub-unit wheel roles, scene strip offsets, dashboard routing, and Ebiten clipped strip rendering.

@@ -370,6 +370,76 @@ func TestRuntimeBarGaugeWidgetSceneSignatureChangesWithRevealHeight(t *testing.T
 	}
 }
 
+func TestRuntimeLoadsSegmentedGaugeWidgetPackageAndPersistsHysteresis(t *testing.T) {
+	packageDir := makeDashboardSegmentedGaugePackage(t)
+	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 1024, Height: 600}, Widgets: []v3config.WidgetConfig{{ID: "rpm", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{120, 80}, Scale: 1.5}}}}}}
+	runtime, err := NewRuntime(plan, testAssetRegistry())
+	if err != nil {
+		t.Fatalf("NewRuntime failed: %v", err)
+	}
+
+	state := okState("rpm", 3500, "rpm")
+	state.Min = 0
+	state.Max = 7000
+	_, changed, err := runtime.ApplyEvent(sensorEvent("rpm", state))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected first segmented event to change rendered output")
+	}
+	scenes, err := runtime.Snapshot()
+	if err != nil {
+		t.Fatalf("Snapshot failed: %v", err)
+	}
+	widget := requireWidget(t, scenes[0], "rpm")
+	if widget.Type != v3config.WidgetTypeGauge || widget.SensorID != "rpm" || widget.GaugeID != "dashboard_rpm_segmented" {
+		t.Fatalf("segmented widget identity = %#v", widget)
+	}
+	if got := gaugePartSequence(widget); got != "layer:panel,layer:segments,layer:glass" {
+		t.Fatalf("segmented part sequence = %q", got)
+	}
+	if selected := firstGaugeLayerPart(widget, "segments"); selected.AssetPath == "" || !strings.HasSuffix(selected.AssetPath, "rpm_050.png") {
+		t.Fatalf("first selected segment = %#v", selected)
+	}
+
+	state = okState("rpm", 3080, "rpm")
+	state.Min = 0
+	state.Max = 7000
+	_, changed, err = runtime.ApplyEvent(sensorEvent("rpm", state))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if changed {
+		t.Fatalf("expected hysteresis to keep the 050 segment active")
+	}
+	scenes, err = runtime.Snapshot()
+	if err != nil {
+		t.Fatalf("Snapshot failed: %v", err)
+	}
+	if selected := firstGaugeLayerPart(requireWidget(t, scenes[0], "rpm"), "segments"); selected.AssetPath == "" || !strings.HasSuffix(selected.AssetPath, "rpm_050.png") {
+		t.Fatalf("held segment = %#v", selected)
+	}
+
+	state = okState("rpm", 3000, "rpm")
+	state.Min = 0
+	state.Max = 7000
+	_, changed, err = runtime.ApplyEvent(sensorEvent("rpm", state))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected 3000 to fall back to the 025 segment")
+	}
+	scenes, err = runtime.Snapshot()
+	if err != nil {
+		t.Fatalf("Snapshot failed: %v", err)
+	}
+	if selected := firstGaugeLayerPart(requireWidget(t, scenes[0], "rpm"), "segments"); selected.AssetPath == "" || !strings.HasSuffix(selected.AssetPath, "rpm_025.png") {
+		t.Fatalf("dropped segment = %#v", selected)
+	}
+}
+
 func makeDashboardGaugePackage(t *testing.T, count int, format string) string {
 	t.Helper()
 	root := t.TempDir()
@@ -512,6 +582,33 @@ func makeDashboardBarGaugePackage(t *testing.T) string {
 	return packageDir
 }
 
+func makeDashboardSegmentedGaugePackage(t *testing.T) string {
+	t.Helper()
+	root := t.TempDir()
+	files := []string{
+		"assets/gauges/segmented/rpm/panel.png",
+		"assets/gauges/segmented/rpm/glass.png",
+		"assets/gauges/segmented/rpm/levels/rpm_025.png",
+		"assets/gauges/segmented/rpm/levels/rpm_050.png",
+		"assets/gauges/segmented/rpm/levels/rpm_100.png",
+		"assets/gauges/segmented/rpm/levels/rpm_150.png",
+	}
+	for _, path := range files {
+		fullPath := filepath.Join(root, path)
+		if err := os.MkdirAll(filepath.Dir(fullPath), 0o755); err != nil {
+			t.Fatalf("MkdirAll: %v", err)
+		}
+		if err := os.WriteFile(fullPath, []byte(path), 0o600); err != nil {
+			t.Fatalf("WriteFile: %v", err)
+		}
+	}
+	packageDir := filepath.Join(root, "assets", "gauges", "segmented", "rpm")
+	if err := os.WriteFile(filepath.Join(packageDir, "gauge.yaml"), []byte(dashboardSegmentedGaugeYAML()), 0o600); err != nil {
+		t.Fatalf("WriteFile: %v", err)
+	}
+	return packageDir
+}
+
 func dashboardGaugeYAML(count int, format string) string {
 	return dashboardGaugeYAMLWithOffset(count, format, 2)
 }
@@ -639,6 +736,20 @@ bar:
 `
 }
 
+func dashboardSegmentedGaugeYAML() string {
+	return `id: dashboard_rpm_segmented
+type: segmented
+sensor: rpm
+size:
+  width: 120
+  height: 120
+layers:
+  panel: panel.png
+  segments: levels/rpm_{percent:03}.png
+  glass: glass.png
+`
+}
+
 func firstPartCharacter(widget Widget, character string) Part {
 	for _, part := range widget.Parts {
 		if part.Kind == PartKindCharacter && part.Character == character {
@@ -651,6 +762,15 @@ func firstPartCharacter(widget Widget, character string) Part {
 func firstPartKind(widget Widget, kind string) Part {
 	for _, part := range widget.Parts {
 		if part.Kind == kind {
+			return part
+		}
+	}
+	return Part{}
+}
+
+func firstGaugeLayerPart(widget Widget, layer string) Part {
+	for _, part := range widget.Parts {
+		if part.Kind == PartKindLayer && part.Layer == layer {
 			return part
 		}
 	}

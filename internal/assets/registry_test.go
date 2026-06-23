@@ -36,16 +36,24 @@ func TestDefaultSearchPathsUsesExpectedOrder(t *testing.T) {
 	if err := os.Chdir(pwdDir); err != nil {
 		t.Fatal(err)
 	}
+	currentPwd, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	configRoot, err := filepath.Abs(configDir)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	got, err := DefaultSearchPaths(filepath.Join(configDir, "config.v3.yaml"), "test_vehicle")
 	if err != nil {
 		t.Fatal(err)
 	}
 	want := []string{
-		filepath.Join(configDir, "test_vehicle"),
-		filepath.Join(pwdDir, "test_vehicle"),
-		configDir,
-		pwdDir,
+		filepath.Join(configRoot, "test_vehicle"),
+		filepath.Join(currentPwd, "test_vehicle"),
+		configRoot,
+		currentPwd,
 	}
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("DefaultSearchPaths order = %#v, want %#v", got, want)

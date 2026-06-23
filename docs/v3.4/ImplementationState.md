@@ -1,8 +1,8 @@
 # GoDriveLog v3.4 implementation state
 
-Status: v3.4.4 bar gauge implemented
-Current target: v3.4.5 segmented gauge
-Current branch: codex/v3.4.4-bar-gauge
+Status: v3.4.5 segmented gauge implemented
+Current target: complete
+Current branch: v3.4.5-segmented-gauge
 
 ## Purpose
 
@@ -148,6 +148,8 @@ Segmented rules:
 - `hysteresis` defaults to `25`.
 - `hysteresis` is a percentage of the adjacent threshold gap, not a percentage of the full `0..100` value range.
 
+The v3.4.5 implementation discovers sparse threshold files from the filename pattern, normalizes raw sensor values to percent before selection, keeps the selected image stable through threshold-gap hysteresis, and routes the result through the v3 dashboard runtime without adding a compatibility alias or a generalized transform mode.
+
 ## Baseline dashboard
 
 The v3.4 baseline remains conceptually based on the reusable baseline config:
@@ -167,12 +169,11 @@ The current baseline workload remains useful because it exercises numeric displa
 | v3.4.2 | completed | Added `odometer` package validation, flat wheel-strip scene parts, `smooth` and `click` movement modes, sub-unit wheel support, dashboard routing, Ebiten clipped strip rendering, and focused tests. |
 | v3.4.3 | completed | Added `indicator` package validation, required `on` layer with optional `off` layer, two-state scene selection, dashboard gauge routing, and focused tests. |
 | v3.4.4 | completed | Added `bar` package validation, required `value_map` normalization, package-space bottom-up clipping, dashboard routing, Ebiten source-rect clipping, and focused tests. |
+| v3.4.5 | completed | Added segmented percent-threshold discovery, raw-value normalization before selection, threshold-gap hysteresis, dashboard routing, and focused package/runtime tests. |
 
 ## Pending slices
 
-| Version | Status | Next action |
-|---|---|---|
-| v3.4.5 | not started | Add segmented percent-threshold image discovery, threshold-gap hysteresis, and rendering. |
+None. v3.4 implementation work is complete.
 
 ## Update rule
 
