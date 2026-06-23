@@ -242,9 +242,6 @@ func IndicatorScene(pkg Package, placement Placement, state sensors.SensorState)
 	}
 	offPath := strings.TrimSpace(pkg.Layers["off"])
 	onPath := strings.TrimSpace(pkg.Layers["on"])
-	if offPath == "" {
-		return Scene{}, fmt.Errorf("gauge package %q indicator layer off must not be empty", pkg.ID)
-	}
 	if onPath == "" {
 		return Scene{}, fmt.Errorf("gauge package %q indicator layer on must not be empty", pkg.ID)
 	}
@@ -263,13 +260,11 @@ func IndicatorScene(pkg Package, placement Placement, state sensors.SensorState)
 		Parts:       indicatorUnderlayLayerParts(pkg.Layers),
 	}
 
-	stateLayer := "off"
-	statePath := offPath
 	if indicatorStateOn(state) {
-		stateLayer = "on"
-		statePath = onPath
+		scene.Parts = append(scene.Parts, ScenePart{Kind: ScenePartKindLayer, Layer: "on", AssetPath: onPath})
+	} else if offPath != "" {
+		scene.Parts = append(scene.Parts, ScenePart{Kind: ScenePartKindLayer, Layer: "off", AssetPath: offPath})
 	}
-	scene.Parts = append(scene.Parts, ScenePart{Kind: ScenePartKindLayer, Layer: stateLayer, AssetPath: statePath})
 	scene.Parts = append(scene.Parts, indicatorOverlayLayerParts(pkg.Layers)...)
 	return scene, nil
 }

@@ -67,7 +67,14 @@ The v3.4.2 implementation adds a flat strip scene model:
 
 ## Indicator state model
 
-`indicator` uses simple image selection between required package layers:
+`indicator` uses simple image selection with a required `on` package layer and an optional `off` package layer:
+
+```yaml
+layers:
+  on: on.png
+```
+
+Packages may also define an explicit off image:
 
 ```yaml
 layers:
@@ -75,13 +82,13 @@ layers:
   on: on.png
 ```
 
-The first truth rule is handled from sensor state: a sensor must be `ok` to render `on`. Boolean typed values use their boolean value; otherwise a non-zero numeric value renders `on`. Non-ok states render `off` because this slice only defines two state assets.
+The first truth rule is handled from sensor state: a sensor must be `ok` to render `on`. Boolean typed values use their boolean value; otherwise a non-zero numeric value renders `on`. Off and non-ok states render `off` when the optional layer exists; otherwise they draw no state layer between underlay and overlay layers.
 
 The v3.4.3 implementation adds:
 
 - `type: indicator` package validation.
-- Required `layers.off` and `layers.on` asset validation.
-- Scene support that draws underlay layers, exactly one `off`/`on` state layer, then overlay layers.
+- Required `layers.on` asset validation with optional `layers.off`.
+- Scene support that draws underlay layers, the selected state layer when present, then overlay layers.
 - Dashboard `type: gauge` routing for indicator packages through the active Ebiten scene path.
 
 ## Segmented percent model
@@ -134,7 +141,7 @@ The current baseline workload remains useful because it exercises numeric displa
 | v3.4.0 | completed | Planning docs and prompt set for gauge type cleanup and expansion. |
 | v3.4.1 | completed | Hard-renamed active `seven_segment` package type to `numeric` in code, validation, dashboard routing, tests, and runnable example package YAML. No compatibility alias was added. |
 | v3.4.2 | completed | Added `odometer` package validation, flat wheel-strip scene parts, `smooth` and `click` movement modes, sub-unit wheel support, dashboard routing, Ebiten clipped strip rendering, and focused tests. |
-| v3.4.3 | completed | Added `indicator` package validation, required `off`/`on` layers, two-state scene selection, dashboard gauge routing, and focused tests. |
+| v3.4.3 | completed | Added `indicator` package validation, required `on` layer with optional `off` layer, two-state scene selection, dashboard gauge routing, and focused tests. |
 
 ## Pending slices
 

@@ -392,6 +392,33 @@ func TestIndicatorSceneRendersOffForNonOKState(t *testing.T) {
 	}
 }
 
+func TestIndicatorSceneWithOnlyOnLayerDrawsNoOffStateLayer(t *testing.T) {
+	pkg := loadIndicatorScenePackageWithOnlyOnLayer(t)
+
+	scene, err := IndicatorScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("check_engine", 0))
+	if err != nil {
+		t.Fatalf("IndicatorScene returned error: %v", err)
+	}
+	if got := partLayerSequence(scene); got != "layer:bezel,layer:glass" {
+		t.Fatalf("off sequence without off layer = %q", got)
+	}
+}
+
+func TestIndicatorSceneWithOnlyOnLayerDrawsNoStateLayerForNonOKState(t *testing.T) {
+	pkg := loadIndicatorScenePackageWithOnlyOnLayer(t)
+
+	scene, err := IndicatorScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, sensors.SensorState{ID: "check_engine", Value: 1, Status: sensors.StatusTimeout, Error: "not live"})
+	if err != nil {
+		t.Fatalf("IndicatorScene returned error: %v", err)
+	}
+	if scene.Status != sensors.StatusTimeout || scene.Error != "not live" {
+		t.Fatalf("scene status/error = %q/%q", scene.Status, scene.Error)
+	}
+	if got := partLayerSequence(scene); got != "layer:bezel,layer:glass" {
+		t.Fatalf("non-ok sequence without off layer = %q", got)
+	}
+}
+
 func loadNumericScenePackage(t *testing.T, count int, format string) Package {
 	t.Helper()
 	root := makeGaugeFixtures(t)
@@ -433,6 +460,18 @@ func loadIndicatorScenePackage(t *testing.T) Package {
 	root := makeGaugeFixtures(t)
 	packageDir := filepath.Join(root, "assets", "gauges", "indicator", "check_engine")
 	writeGaugeYAML(t, packageDir, indicatorGaugeYAML())
+	pkg, err := LoadPackage(packageDir)
+	if err != nil {
+		t.Fatalf("LoadPackage returned error: %v", err)
+	}
+	return pkg
+}
+
+func loadIndicatorScenePackageWithOnlyOnLayer(t *testing.T) Package {
+	t.Helper()
+	root := makeGaugeFixtures(t)
+	packageDir := filepath.Join(root, "assets", "gauges", "indicator", "check_engine")
+	writeGaugeYAML(t, packageDir, indicatorOnOnlyGaugeYAML())
 	pkg, err := LoadPackage(packageDir)
 	if err != nil {
 		t.Fatalf("LoadPackage returned error: %v", err)
@@ -542,6 +581,20 @@ layers:
   bezel: bezel.png
   face: face.png
   off: off.png
+  on: on.png
+  glass: glass.png
+`
+}
+
+func indicatorOnOnlyGaugeYAML() string {
+	return `id: test_check_engine_indicator
+type: indicator
+sensor: check_engine
+size:
+  width: 48
+  height: 48
+layers:
+  bezel: bezel.png
   on: on.png
   glass: glass.png
 `

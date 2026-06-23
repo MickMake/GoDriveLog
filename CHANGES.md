@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Added `type: indicator` gauge package support with required `off` and `on` layers, scene state selection, dashboard gauge routing, and focused package/runtime tests.
+- Added `type: indicator` gauge package support with required `on` layer, optional `off` layer, scene state selection, dashboard gauge routing, and focused package/runtime tests.
 - Added `type: odometer` gauge package support with validated wheel strip config, default `smooth` movement, `click` snapping, sub-unit wheel roles, scene strip offsets, dashboard routing, and Ebiten clipped strip rendering.
 - Hard-renamed active gauge packages from `type: seven_segment` to `type: numeric`, including validation, dashboard routing, tests, and runnable example package YAML, with no compatibility alias.
 - Added v3.3.4 post-Fyne renderer housekeeping notes: active Go/module audit, renderer-boundary wording, baseline example geometry notes, Raspberry Pi Ebiten performance evidence, and v3.2 closure.

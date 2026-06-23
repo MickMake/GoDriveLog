@@ -177,6 +177,35 @@ layers:
 	assertPath(t, pkg.Layers["on"], filepath.Join(root, "assets", "gauges", "indicator", "check_engine", "on.png"))
 }
 
+func TestLoadPackageLoadsIndicatorGaugeWithOnlyOnLayer(t *testing.T) {
+	root := makeGaugeFixtures(t)
+	packageDir := filepath.Join(root, "assets", "gauges", "indicator", "check_engine")
+	writeGaugeYAML(t, packageDir, `id: check_engine_indicator
+type: indicator
+sensor: check_engine
+size:
+  width: 48
+  height: 48
+layers:
+  bezel: bezel.png
+  on: on.png
+  glass: glass.png
+`)
+
+	pkg, err := LoadPackage(packageDir)
+	if err != nil {
+		t.Fatalf("LoadPackage returned error: %v", err)
+	}
+
+	if pkg.Type != TypeIndicator || pkg.Sensor != "check_engine" {
+		t.Fatalf("package identity = %#v", pkg)
+	}
+	assertPath(t, pkg.Layers["on"], filepath.Join(root, "assets", "gauges", "indicator", "check_engine", "on.png"))
+	if _, ok := pkg.Layers["off"]; ok {
+		t.Fatalf("off layer should be absent, got %#v", pkg.Layers["off"])
+	}
+}
+
 func TestLoadPackageRejectsIndicatorMissingStateLayer(t *testing.T) {
 	root := makeGaugeFixtures(t)
 	packageDir := filepath.Join(root, "assets", "gauges", "indicator", "bad")

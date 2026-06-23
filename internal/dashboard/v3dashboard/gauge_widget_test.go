@@ -303,7 +303,7 @@ func TestRuntimeLoadsIndicatorGaugeWidgetPackage(t *testing.T) {
 	if widget.Status != sensors.StatusOK || widget.Scale != 1.5 {
 		t.Fatalf("indicator widget status/scale = %#v", widget)
 	}
-	if got := gaugePartSequence(widget); got != "layer:bezel,layer:face,layer:on,layer:glass" {
+	if got := gaugePartSequence(widget); got != "layer:bezel,layer:on,layer:glass" {
 		t.Fatalf("indicator part sequence = %q", got)
 	}
 }
@@ -401,8 +401,6 @@ func makeDashboardIndicatorGaugePackage(t *testing.T) string {
 	root := t.TempDir()
 	files := []string{
 		"assets/gauges/indicator/check_engine/bezel.png",
-		"assets/gauges/indicator/check_engine/face.png",
-		"assets/gauges/indicator/check_engine/off.png",
 		"assets/gauges/indicator/check_engine/on.png",
 		"assets/gauges/indicator/check_engine/glass.png",
 	}
@@ -524,8 +522,6 @@ size:
   height: 48
 layers:
   bezel: bezel.png
-  face: face.png
-  off: off.png
   on: on.png
   glass: glass.png
 `

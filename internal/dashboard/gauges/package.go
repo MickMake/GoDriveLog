@@ -305,9 +305,6 @@ func validateOdometer(odometer Odometer) error {
 }
 
 func validateIndicatorLayers(layers map[string]string) error {
-	if strings.TrimSpace(layers["off"]) == "" {
-		return fmt.Errorf("indicator layer off must not be empty")
-	}
 	if strings.TrimSpace(layers["on"]) == "" {
 		return fmt.Errorf("indicator layer on must not be empty")
 	}
