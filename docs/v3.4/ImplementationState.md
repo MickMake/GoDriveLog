@@ -1,8 +1,8 @@
 # GoDriveLog v3.4 implementation state
 
-Status: v3.4.5 segmented gauge implemented
-Current target: complete
-Current branch: v3.4.5-segmented-gauge
+Status: v3.4.6 example dashboard prompt planning in progress
+Current target: v3.4.6 example asset generation framework
+Current branch: v3.4.6-example-dashboard-prompts
 
 ## Purpose
 
@@ -34,6 +34,7 @@ Image-selection/composition gauges currently mean `numeric`, `indicator`, and `s
 - No dot-matrix font/text renderer in this line.
 - No merged `bar`/`segmented` supertype.
 - No eager loading of all `segmented` percent images.
+- No remote image generation, stock-art downloads, or non-reproducible manual PNG editing for the generated example dashboard tail.
 
 ## Numeric rename
 
@@ -150,6 +151,28 @@ Segmented rules:
 
 The v3.4.5 implementation discovers sparse threshold files from the filename pattern, normalizes raw sensor values to percent before selection, keeps the selected image stable through threshold-gap hysteresis, and routes the result through the v3 dashboard runtime without adding a compatibility alias or a generalized transform mode.
 
+## Generated example dashboard tail
+
+v3.4.6 through v3.4.9 extend v3.4 with generated example dashboards after the gauge behaviour slices are complete.
+
+The example tail is documentation/example work, not a new renderer model:
+
+- v3.4.6 establishes the deterministic procedural asset generation framework.
+- v3.4.7 adds the ornate timber / master carpenter dashboard.
+- v3.4.8 adds the neon-grid / Tron-style dashboard.
+- v3.4.9 adds the steam-scrap / steampunk dashboard.
+
+Example dashboard rules:
+
+- Use local deterministic scripts and stable seed/config values.
+- Do not use remote image generation.
+- Do not download stock art.
+- Do not hand-edit opaque generated PNGs as the source of truth.
+- Do not add runtime `style` fields.
+- Keep visual identity in generated assets and dashboard/package layout.
+- Keep decorative timber, glow, pipes, rivets, wires, screws, and panels as assets, not renderer features.
+- Prefer small, reviewable slices over one giant asset PR with a top hat and a boiler whistle.
+
 ## Baseline dashboard
 
 The v3.4 baseline remains conceptually based on the reusable baseline config:
@@ -159,6 +182,8 @@ examples/baseline-dashboard.yaml
 ```
 
 The current baseline workload remains useful because it exercises numeric displays and radial RPM through the active Ebiten path.
+
+The generated example dashboard tail should add richer example coverage for the completed gauge types without replacing the baseline dashboard as the simple renderer verification workload.
 
 ## Completed slices
 
@@ -173,7 +198,12 @@ The current baseline workload remains useful because it exercises numeric displa
 
 ## Pending slices
 
-None. v3.4 implementation work is complete.
+| Version | Target | Notes |
+|---|---|---|
+| v3.4.6 | example asset generation framework | Docs, scripts, conventions, and minimal smoke-test output for deterministic generated examples. |
+| v3.4.7 | ornate timber dashboard | Master-carpenter timber dashboard using multiple timber treatments, timber needles, timber ticks, and carved/inlaid visual language. |
+| v3.4.8 | neon-grid dashboard | Dark retro-tech dashboard with neon blue glow, grid/circuit accents, and luminous gauge assets. |
+| v3.4.9 | steam-scrap dashboard | Steampunk/scrapyard dashboard with brass/copper/iron plates, pipes, wires, rivets, lamps, and deliberately overbuilt decoration. |
 
 ## Update rule
 
