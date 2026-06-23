@@ -308,6 +308,68 @@ func TestRuntimeLoadsIndicatorGaugeWidgetPackage(t *testing.T) {
 	}
 }
 
+func TestRuntimeLoadsBarGaugeWidgetPackageAndRendersLevelReveal(t *testing.T) {
+	packageDir := makeDashboardBarGaugePackage(t)
+	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 1024, Height: 600}, Widgets: []v3config.WidgetConfig{{ID: "coolant", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{120, 80}, Scale: 1.5}}}}}}
+	runtime, err := NewRuntime(plan, testAssetRegistry())
+	if err != nil {
+		t.Fatalf("NewRuntime failed: %v", err)
+	}
+
+	runtime.SetState(okState("coolant_temperature", 80, "c"))
+	scenes, err := runtime.Snapshot()
+	if err != nil {
+		t.Fatalf("Snapshot failed: %v", err)
+	}
+	widget := requireWidget(t, scenes[0], "coolant")
+	if widget.Type != v3config.WidgetTypeGauge || widget.SensorID != "coolant_temperature" || widget.GaugeID != "dashboard_coolant_bar" {
+		t.Fatalf("bar widget identity = %#v", widget)
+	}
+	if widget.Status != sensors.StatusOK || widget.Scale != 1.5 || widget.GaugeBarMode != "level" || widget.GaugeBarAxis != "vertical" || widget.GaugeBarOrigin != "bottom" {
+		t.Fatalf("bar widget status/scale/config = %#v", widget)
+	}
+	if len(widget.GaugeBarBounds) != 4 || widget.GaugeBarBounds[0] != 40 || widget.GaugeBarBounds[3] != 180 {
+		t.Fatalf("bar widget bounds = %#v", widget.GaugeBarBounds)
+	}
+	if got := gaugePartSequence(widget); got != "layer:panel,bar:level,layer:glass" {
+		t.Fatalf("bar part sequence = %q", got)
+	}
+	bar := firstPartKind(widget, PartKindBar)
+	if bar.AssetPath == "" || len(bar.Position) != 2 || len(bar.Source) != 2 || bar.Window.Width != 24 || bar.Window.Height != 90 {
+		t.Fatalf("bar part = %#v", bar)
+	}
+	if bar.Position[0] != 40 || bar.Position[1] != 110 {
+		t.Fatalf("bar position = %#v, want [40 110]", bar.Position)
+	}
+	if bar.Source[0] != 40 || bar.Source[1] != 110 {
+		t.Fatalf("bar source = %#v, want [40 110]", bar.Source)
+	}
+}
+
+func TestRuntimeBarGaugeWidgetSceneSignatureChangesWithRevealHeight(t *testing.T) {
+	packageDir := makeDashboardBarGaugePackage(t)
+	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 1024, Height: 600}, Widgets: []v3config.WidgetConfig{{ID: "coolant", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{120, 80}, Scale: 1}}}}}}
+	runtime, err := NewRuntime(plan, testAssetRegistry())
+	if err != nil {
+		t.Fatalf("NewRuntime failed: %v", err)
+	}
+
+	_, changed, err := runtime.ApplyEvent(sensorEvent("coolant_temperature", okState("coolant_temperature", 80, "c")))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected first bar event to change rendered output")
+	}
+	_, changed, err = runtime.ApplyEvent(sensorEvent("coolant_temperature", okState("coolant_temperature", 81, "c")))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected changed bar reveal to redraw")
+	}
+}
+
 func makeDashboardGaugePackage(t *testing.T, count int, format string) string {
 	t.Helper()
 	root := t.TempDir()
@@ -423,6 +485,33 @@ func makeDashboardIndicatorGaugePackage(t *testing.T) string {
 	return packageDir
 }
 
+func makeDashboardBarGaugePackage(t *testing.T) string {
+	t.Helper()
+	root := t.TempDir()
+	files := []string{
+		"assets/gauges/bar/coolant/panel.png",
+		"assets/gauges/bar/coolant/level.png",
+		"assets/gauges/bar/coolant/glass.png",
+	}
+	for _, path := range files {
+		fullPath := filepath.Join(root, path)
+		if err := os.MkdirAll(filepath.Dir(fullPath), 0o755); err != nil {
+			t.Fatalf("MkdirAll: %v", err)
+		}
+		if err := os.WriteFile(fullPath, []byte(path), 0o600); err != nil {
+			t.Fatalf("WriteFile: %v", err)
+		}
+	}
+	packageDir := filepath.Join(root, "assets", "gauges", "bar", "coolant")
+	if err := os.MkdirAll(packageDir, 0o755); err != nil {
+		t.Fatalf("MkdirAll: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(packageDir, "gauge.yaml"), []byte(dashboardBarGaugeYAML()), 0o600); err != nil {
+		t.Fatalf("WriteFile: %v", err)
+	}
+	return packageDir
+}
+
 func dashboardGaugeYAML(count int, format string) string {
 	return dashboardGaugeYAMLWithOffset(count, format, 2)
 }
@@ -527,6 +616,29 @@ layers:
 `
 }
 
+func dashboardBarGaugeYAML() string {
+	return `id: dashboard_coolant_bar
+type: bar
+sensor: coolant_temperature
+size:
+  width: 120
+  height: 220
+layers:
+  panel: panel.png
+  level: level.png
+  glass: glass.png
+value_map:
+  min: 40
+  max: 120
+  clamp: true
+bar:
+  mode: level
+  axis: vertical
+  origin: bottom
+  bounds: [40, 20, 24, 180]
+`
+}
+
 func firstPartCharacter(widget Widget, character string) Part {
 	for _, part := range widget.Parts {
 		if part.Kind == PartKindCharacter && part.Character == character {
@@ -555,6 +667,8 @@ func gaugePartSequence(widget Widget) string {
 			parts = append(parts, "character:"+part.Character)
 		case PartKindNeedle:
 			parts = append(parts, fmt.Sprintf("needle:%.0f", part.Angle))
+		case PartKindBar:
+			parts = append(parts, "bar:"+part.Layer)
 		case PartKindWheelStrip:
 			parts = append(parts, fmt.Sprintf("wheel_strip:%d", part.Slot))
 		default:

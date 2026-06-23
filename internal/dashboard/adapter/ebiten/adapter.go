@@ -377,7 +377,7 @@ func partPosition(baseX, baseY float64, asset cachedAsset, scale float64, part v
 }
 
 func partSourceRect(part v3dashboard.Part) image.Rectangle {
-	if part.Kind != v3dashboard.PartKindWheelStrip || part.Window.Width <= 0 || part.Window.Height <= 0 {
+	if (part.Kind != v3dashboard.PartKindWheelStrip && part.Kind != v3dashboard.PartKindBar) || part.Window.Width <= 0 || part.Window.Height <= 0 {
 		return image.Rectangle{}
 	}
 	x, y := 0, 0

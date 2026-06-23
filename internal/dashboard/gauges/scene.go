@@ -16,6 +16,7 @@ const (
 	ScenePartKindDecimalPoint = "decimal_point"
 	ScenePartKindForeground   = "foreground"
 	ScenePartKindNeedle       = "needle"
+	ScenePartKindBar          = "bar"
 	ScenePartKindWheelStrip   = "wheel_strip"
 )
 
@@ -40,6 +41,10 @@ type Scene struct {
 	NeedlePivot    Point
 	Angle          float64
 	Movement       string
+	BarMode        string
+	BarAxis        string
+	BarOrigin      string
+	BarBounds      []int
 	Parts          []ScenePart
 }
 
@@ -269,6 +274,78 @@ func IndicatorScene(pkg Package, placement Placement, state sensors.SensorState)
 	return scene, nil
 }
 
+func BarScene(pkg Package, placement Placement, state sensors.SensorState) (Scene, error) {
+	if pkg.Type != TypeBar {
+		return Scene{}, fmt.Errorf("gauge package %q type %q is not bar", pkg.ID, pkg.Type)
+	}
+	if placement.Scale <= 0 {
+		return Scene{}, fmt.Errorf("gauge package %q placement scale must be greater than zero", pkg.ID)
+	}
+	levelPath := strings.TrimSpace(pkg.Layers["level"])
+	if levelPath == "" {
+		return Scene{}, fmt.Errorf("gauge package %q bar layer level must not be empty", pkg.ID)
+	}
+	if len(pkg.Bar.Bounds) != 4 {
+		return Scene{}, fmt.Errorf("gauge package %q bar bounds must contain x, y, width, and height", pkg.ID)
+	}
+	if pkg.ValueMap.Max <= pkg.ValueMap.Min {
+		return Scene{}, fmt.Errorf("gauge package %q bar value_map max must be greater than min", pkg.ID)
+	}
+
+	state = stateForPackage(pkg.Sensor, state)
+	scene := Scene{
+		PackageID:   pkg.ID,
+		PackagePath: pkg.Path,
+		Type:        pkg.Type,
+		SensorID:    pkg.Sensor,
+		Position:    cloneInts(placement.Position),
+		Scale:       placement.Scale,
+		Size:        pkg.Size,
+		Status:      state.Status,
+		Error:       state.Error,
+		BarMode:     pkg.Bar.Mode,
+		BarAxis:     pkg.Bar.Axis,
+		BarOrigin:   pkg.Bar.Origin,
+		BarBounds:   cloneInts(pkg.Bar.Bounds),
+		Parts:       barUnderlayLayerParts(pkg.Layers),
+	}
+
+	if state.Status != sensors.StatusOK {
+		scene.Parts = append(scene.Parts, barOverlayLayerParts(pkg.Layers)...)
+		return scene, nil
+	}
+
+	normalizedPercent, err := barNormalizedPercent(pkg.ValueMap, state.Value)
+	if err != nil {
+		return Scene{}, fmt.Errorf("gauge package %q: %w", pkg.ID, err)
+	}
+	windowHeight := pkg.Bar.Bounds[3]
+	revealPercent := normalizedPercent
+	if revealPercent < 0 {
+		revealPercent = 0
+	}
+	if revealPercent > 100 {
+		revealPercent = 100
+	}
+	revealHeight := int(math.Round((revealPercent / 100) * float64(windowHeight)))
+	if revealHeight > 0 {
+		boundsX := pkg.Bar.Bounds[0]
+		boundsY := pkg.Bar.Bounds[1]
+		boundsWidth := pkg.Bar.Bounds[2]
+		sourceY := boundsY + (windowHeight - revealHeight)
+		scene.Parts = append(scene.Parts, ScenePart{
+			Kind:      ScenePartKindBar,
+			Layer:     "level",
+			AssetPath: levelPath,
+			Position:  []int{boundsX, sourceY},
+			Source:    []int{boundsX, sourceY},
+			Window:    Size{Width: boundsWidth, Height: revealHeight},
+		})
+	}
+	scene.Parts = append(scene.Parts, barOverlayLayerParts(pkg.Layers)...)
+	return scene, nil
+}
+
 func radialAngle(valueMap ValueMap, value float64) (float64, error) {
 	if valueMap.Max <= valueMap.Min {
 		return 0, fmt.Errorf("value_map max must be greater than min")
@@ -284,6 +361,22 @@ func radialAngle(valueMap ValueMap, value float64) (float64, error) {
 	}
 	ratio := (mappedValue - valueMap.Min) / (valueMap.Max - valueMap.Min)
 	return valueMap.StartAngle + ratio*(valueMap.EndAngle-valueMap.StartAngle), nil
+}
+
+func barNormalizedPercent(valueMap ValueMap, value float64) (float64, error) {
+	if valueMap.Max <= valueMap.Min {
+		return 0, fmt.Errorf("bar value_map max must be greater than min")
+	}
+	mappedValue := value
+	if valueMap.Clamp {
+		if mappedValue < valueMap.Min {
+			mappedValue = valueMap.Min
+		}
+		if mappedValue > valueMap.Max {
+			mappedValue = valueMap.Max
+		}
+	}
+	return ((mappedValue - valueMap.Min) / (valueMap.Max - valueMap.Min)) * 100, nil
 }
 
 func (s Scene) Signature() string {
@@ -317,6 +410,14 @@ func (s Scene) Signature() string {
 	b.WriteString(formatPoint(s.NeedlePivot))
 	b.WriteString("|angle=")
 	b.WriteString(strconv.FormatFloat(s.Angle, 'f', -1, 64))
+	b.WriteString("|bar=")
+	b.WriteString(s.BarMode)
+	b.WriteString(",")
+	b.WriteString(s.BarAxis)
+	b.WriteString(",")
+	b.WriteString(s.BarOrigin)
+	b.WriteString(",")
+	b.WriteString(formatIntSlice(s.BarBounds))
 	b.WriteString("|movement=")
 	b.WriteString(s.Movement)
 	b.WriteString("|")
@@ -392,6 +493,14 @@ func indicatorUnderlayLayerParts(layers map[string]string) []ScenePart {
 }
 
 func indicatorOverlayLayerParts(layers map[string]string) []ScenePart {
+	return namedLayerParts(layers, []string{"glass", "overlay", "foreground"})
+}
+
+func barUnderlayLayerParts(layers map[string]string) []ScenePart {
+	return namedLayerParts(layers, []string{"background", "panel", "bezel", "face", "ticks"})
+}
+
+func barOverlayLayerParts(layers map[string]string) []ScenePart {
 	return namedLayerParts(layers, []string{"glass", "overlay", "foreground"})
 }
 

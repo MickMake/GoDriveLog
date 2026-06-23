@@ -15,6 +15,7 @@ const (
 	TypeRadial       = "radial"
 	TypeOdometer     = "odometer"
 	TypeIndicator    = "indicator"
+	TypeBar          = "bar"
 	MovementSmooth   = "smooth"
 	MovementClick    = "click"
 	WheelRoleDigit   = "digit"
@@ -33,6 +34,7 @@ type Package struct {
 	Pivot     Pivot             `yaml:"pivot,omitempty"`
 	ValueMap  ValueMap          `yaml:"value_map,omitempty"`
 	Odometer  Odometer          `yaml:"odometer,omitempty"`
+	Bar       BarConfig         `yaml:"bar,omitempty"`
 	Path      string            `yaml:"-"`
 	YAMLPath  string            `yaml:"-"`
 	AssetRoot string            `yaml:"-"`
@@ -77,6 +79,13 @@ type ValueMap struct {
 type Odometer struct {
 	Movement string          `yaml:"movement,omitempty"`
 	Wheels   []OdometerWheel `yaml:"wheels,omitempty"`
+}
+
+type BarConfig struct {
+	Mode   string `yaml:"mode,omitempty"`
+	Axis   string `yaml:"axis,omitempty"`
+	Origin string `yaml:"origin,omitempty"`
+	Bounds []int  `yaml:"bounds,omitempty"`
 }
 
 type OdometerWheel struct {
@@ -244,7 +253,7 @@ func validatePackage(pkg Package) error {
 		return fmt.Errorf("type must not be empty")
 	}
 	switch pkg.Type {
-	case TypeNumeric, TypeRadial, TypeOdometer, TypeIndicator:
+	case TypeNumeric, TypeRadial, TypeOdometer, TypeIndicator, TypeBar:
 	default:
 		return fmt.Errorf("type %q is not supported", pkg.Type)
 	}
@@ -261,6 +270,14 @@ func validatePackage(pkg Package) error {
 	}
 	if pkg.Type == TypeIndicator {
 		if err := validateIndicatorLayers(pkg.Layers); err != nil {
+			return err
+		}
+	}
+	if pkg.Type == TypeBar {
+		if err := validateBar(pkg.Bar, pkg.Layers); err != nil {
+			return err
+		}
+		if err := validateBarValueMap(pkg.ValueMap); err != nil {
 			return err
 		}
 	}
@@ -307,6 +324,41 @@ func validateOdometer(odometer Odometer) error {
 func validateIndicatorLayers(layers map[string]string) error {
 	if strings.TrimSpace(layers["on"]) == "" {
 		return fmt.Errorf("indicator layer on must not be empty")
+	}
+	return nil
+}
+
+func validateBar(bar BarConfig, layers map[string]string) error {
+	switch bar.Mode {
+	case "level":
+	default:
+		return fmt.Errorf("bar mode %q is not supported", bar.Mode)
+	}
+	switch bar.Axis {
+	case "vertical":
+	default:
+		return fmt.Errorf("bar axis %q is not supported", bar.Axis)
+	}
+	switch bar.Origin {
+	case "bottom":
+	default:
+		return fmt.Errorf("bar origin %q is not supported", bar.Origin)
+	}
+	if len(bar.Bounds) != 4 {
+		return fmt.Errorf("bar bounds must contain x, y, width, and height")
+	}
+	if bar.Bounds[0] < 0 || bar.Bounds[1] < 0 || bar.Bounds[2] <= 0 || bar.Bounds[3] <= 0 {
+		return fmt.Errorf("bar bounds x and y must be non-negative and width and height must be positive")
+	}
+	if strings.TrimSpace(layers["level"]) == "" {
+		return fmt.Errorf("bar layer level must not be empty")
+	}
+	return nil
+}
+
+func validateBarValueMap(valueMap ValueMap) error {
+	if valueMap.Max <= valueMap.Min {
+		return fmt.Errorf("bar value_map max must be greater than min")
 	}
 	return nil
 }
