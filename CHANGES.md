@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added v3.4 generated example dashboard planning docs and prompts for v3.4.6 through v3.4.9, covering the deterministic asset framework, ornate timber, neon-grid, and steam-scrap dashboard slices.
 - Added v3.4.5 segmented gauge support with sparse `{percent}` discovery, raw-value normalization to percent before threshold selection, threshold-gap hysteresis, dashboard routing, and focused package/runtime tests.
 - Added v3.4.4 bar gauge support with validated `type: bar` packages, required `value_map` normalization, package-space vertical bottom-up level reveal clipping, dashboard routing, and focused package/runtime tests.
 - Added `type: indicator` gauge package support with required `on` layer, optional `off` layer, scene state selection, dashboard gauge routing, and focused package/runtime tests.
