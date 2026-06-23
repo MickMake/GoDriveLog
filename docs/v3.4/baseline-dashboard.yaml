@@ -1,0 +1,13 @@
+# GoDriveLog v3.4 baseline dashboard pointer
+#
+# Purpose:
+#   Keep the v3.4 docs filename set aligned with v3.3 while avoiding a
+#   duplicated runnable dashboard config.
+#
+# Canonical runnable baseline:
+#   examples/baseline-dashboard.yaml
+#
+# V3.4 expectation:
+#   Existing seven-segment gauge packages will be renamed to numeric packages
+#   during the v3.4.1 implementation slice. Until that slice lands, use the
+#   reusable baseline in examples/ as the source of truth.

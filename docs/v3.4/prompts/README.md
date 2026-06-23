@@ -1,0 +1,32 @@
+# GoDriveLog v3.4 prompts
+
+This directory contains one prompt per planned v3.4 implementation slice.
+
+Each prompt should be used in a fresh implementation chat after reading:
+
+1. `docs/v3.4/ReleasePlan.md`
+2. `docs/v3.4/ImplementationState.md`
+3. the relevant prompt file
+
+## Prompt list
+
+| Slice | Prompt |
+|---|---|
+| v3.4.0 | `v3.4.0-gauge-type-docs.md` |
+| v3.4.1 | `v3.4.1-numeric-rename.md` |
+| v3.4.2 | `v3.4.2-odometer-gauge.md` |
+| v3.4.3 | `v3.4.3-indicator-gauge.md` |
+| v3.4.4 | `v3.4.4-bar-gauge.md` |
+| v3.4.5 | `v3.4.5-segmented-gauge.md` |
+
+## Standard workflow
+
+1. Confirm previous relevant PR is merged into `main`.
+2. Confirm no blocking open PRs exist.
+3. Branch from latest `main`.
+4. Implement only the named slice.
+5. Update `CHANGES.md` and `docs/v3.4/ImplementationState.md`.
+6. Open a PR.
+7. Stop.
+
+No wandering into the shed and accidentally building a font engine. That way lie tiny demons with measuring tapes.
