@@ -378,7 +378,10 @@ func TestRuntimeLoadsSegmentedGaugeWidgetPackageAndPersistsHysteresis(t *testing
 		t.Fatalf("NewRuntime failed: %v", err)
 	}
 
-	_, changed, err := runtime.ApplyEvent(sensorEvent("rpm", okState("rpm", 60, "rpm")))
+	state := okState("rpm", 3500, "rpm")
+	state.Min = 0
+	state.Max = 7000
+	_, changed, err := runtime.ApplyEvent(sensorEvent("rpm", state))
 	if err != nil {
 		t.Fatalf("ApplyEvent failed: %v", err)
 	}
@@ -400,7 +403,10 @@ func TestRuntimeLoadsSegmentedGaugeWidgetPackageAndPersistsHysteresis(t *testing
 		t.Fatalf("first selected segment = %#v", selected)
 	}
 
-	_, changed, err = runtime.ApplyEvent(sensorEvent("rpm", okState("rpm", 44, "rpm")))
+	state = okState("rpm", 3080, "rpm")
+	state.Min = 0
+	state.Max = 7000
+	_, changed, err = runtime.ApplyEvent(sensorEvent("rpm", state))
 	if err != nil {
 		t.Fatalf("ApplyEvent failed: %v", err)
 	}
@@ -415,12 +421,15 @@ func TestRuntimeLoadsSegmentedGaugeWidgetPackageAndPersistsHysteresis(t *testing
 		t.Fatalf("held segment = %#v", selected)
 	}
 
-	_, changed, err = runtime.ApplyEvent(sensorEvent("rpm", okState("rpm", 43, "rpm")))
+	state = okState("rpm", 3000, "rpm")
+	state.Min = 0
+	state.Max = 7000
+	_, changed, err = runtime.ApplyEvent(sensorEvent("rpm", state))
 	if err != nil {
 		t.Fatalf("ApplyEvent failed: %v", err)
 	}
 	if !changed {
-		t.Fatalf("expected 043 to fall back to the 025 segment")
+		t.Fatalf("expected 3000 to fall back to the 025 segment")
 	}
 	scenes, err = runtime.Snapshot()
 	if err != nil {
@@ -581,6 +590,7 @@ func makeDashboardSegmentedGaugePackage(t *testing.T) string {
 		"assets/gauges/segmented/rpm/glass.png",
 		"assets/gauges/segmented/rpm/levels/rpm_025.png",
 		"assets/gauges/segmented/rpm/levels/rpm_050.png",
+		"assets/gauges/segmented/rpm/levels/rpm_100.png",
 		"assets/gauges/segmented/rpm/levels/rpm_150.png",
 	}
 	for _, path := range files {

@@ -380,14 +380,8 @@ func SegmentedScene(pkg Package, placement Placement, state sensors.SensorState,
 		return scene, nil, nil
 	}
 
-	value := state.Value
-	if value < 0 {
-		value = 0
-	}
-	if value > 100 {
-		value = 100
-	}
-	index := segmentedSelectionIndex(pkg.Segmented.Images, value, previous, segmentedHysteresis(pkg.Segmented))
+	percent := segmentedNormalizedPercent(state)
+	index := segmentedSelectionIndex(pkg.Segmented.Images, percent, previous, segmentedHysteresis(pkg.Segmented))
 	var nextSelection *SegmentedSelection
 	if index >= 0 {
 		selected := pkg.Segmented.Images[index]
@@ -434,6 +428,20 @@ func barNormalizedPercent(valueMap ValueMap, value float64) (float64, error) {
 		}
 	}
 	return ((mappedValue - valueMap.Min) / (valueMap.Max - valueMap.Min)) * 100, nil
+}
+
+func segmentedNormalizedPercent(state sensors.SensorState) float64 {
+	percent := state.Value
+	if state.Max > state.Min {
+		percent = ((state.Value - state.Min) / (state.Max - state.Min)) * 100
+	}
+	if percent < 0 {
+		percent = 0
+	}
+	if percent > 100 {
+		percent = 100
+	}
+	return percent
 }
 
 func (s Scene) Signature() string {

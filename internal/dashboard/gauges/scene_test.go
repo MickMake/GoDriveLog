@@ -519,7 +519,7 @@ func TestBarSceneSignatureChangesWithRevealHeight(t *testing.T) {
 func TestSegmentedSceneUsesSparseThresholdsAndHysteresis(t *testing.T) {
 	pkg := loadSegmentedScenePackage(t)
 
-	below, previous, err := SegmentedScene(pkg, Placement{Position: []int{10, 20}, Scale: 1.25}, okGaugeState("rpm", 20), nil)
+	below, _, err := SegmentedScene(pkg, Placement{Position: []int{10, 20}, Scale: 1.25}, okGaugeStateWithRange("rpm", -100, 0, 7000), nil)
 	if err != nil {
 		t.Fatalf("SegmentedScene returned error: %v", err)
 	}
@@ -527,7 +527,7 @@ func TestSegmentedSceneUsesSparseThresholdsAndHysteresis(t *testing.T) {
 		t.Fatalf("below-threshold sequence = %q", got)
 	}
 
-	first, previous, err := SegmentedScene(pkg, Placement{Position: []int{10, 20}, Scale: 1.25}, okGaugeState("rpm", 60), previous)
+	first, previous, err := SegmentedScene(pkg, Placement{Position: []int{10, 20}, Scale: 1.25}, okGaugeStateWithRange("rpm", 3500, 0, 7000), nil)
 	if err != nil {
 		t.Fatalf("SegmentedScene returned error: %v", err)
 	}
@@ -539,7 +539,31 @@ func TestSegmentedSceneUsesSparseThresholdsAndHysteresis(t *testing.T) {
 		t.Fatalf("selected segment = %#v", selected)
 	}
 
-	held, previous, err := SegmentedScene(pkg, Placement{Position: []int{10, 20}, Scale: 1.25}, okGaugeState("rpm", 44), previous)
+	highest, _, err := SegmentedScene(pkg, Placement{Position: []int{10, 20}, Scale: 1.25}, okGaugeStateWithRange("rpm", 7000, 0, 7000), nil)
+	if err != nil {
+		t.Fatalf("SegmentedScene returned error: %v", err)
+	}
+	if got := firstLayerPart(highest, "segments"); got.Layer != "segments" || !strings.HasSuffix(got.AssetPath, "rpm_100.png") {
+		t.Fatalf("highest segment = %#v", got)
+	}
+
+	aboveMax, _, err := SegmentedScene(pkg, Placement{Position: []int{10, 20}, Scale: 1.25}, okGaugeStateWithRange("rpm", 9000, 0, 7000), nil)
+	if err != nil {
+		t.Fatalf("SegmentedScene returned error: %v", err)
+	}
+	if got := firstLayerPart(aboveMax, "segments"); got.Layer != "segments" || !strings.HasSuffix(got.AssetPath, "rpm_100.png") {
+		t.Fatalf("above-max segment = %#v", got)
+	}
+
+	percent, _, err := SegmentedScene(pkg, Placement{Position: []int{10, 20}, Scale: 1.25}, sensors.SensorState{ID: "rpm", Value: 60, Min: 0, Max: 0, Status: sensors.StatusOK}, nil)
+	if err != nil {
+		t.Fatalf("SegmentedScene returned error: %v", err)
+	}
+	if got := firstLayerPart(percent, "segments"); got.Layer != "segments" || !strings.HasSuffix(got.AssetPath, "rpm_050.png") {
+		t.Fatalf("percent segment = %#v", got)
+	}
+
+	held, previous, err := SegmentedScene(pkg, Placement{Position: []int{10, 20}, Scale: 1.25}, okGaugeStateWithRange("rpm", 3080, 0, 7000), previous)
 	if err != nil {
 		t.Fatalf("SegmentedScene returned error: %v", err)
 	}
@@ -547,7 +571,7 @@ func TestSegmentedSceneUsesSparseThresholdsAndHysteresis(t *testing.T) {
 		t.Fatalf("held segment = %#v", got)
 	}
 
-	dropped, _, err := SegmentedScene(pkg, Placement{Position: []int{10, 20}, Scale: 1.25}, okGaugeState("rpm", 43), previous)
+	dropped, _, err := SegmentedScene(pkg, Placement{Position: []int{10, 20}, Scale: 1.25}, okGaugeStateWithRange("rpm", 3000, 0, 7000), previous)
 	if err != nil {
 		t.Fatalf("SegmentedScene returned error: %v", err)
 	}
@@ -637,6 +661,7 @@ func loadSegmentedScenePackage(t *testing.T) Package {
 		"glass.png",
 		"levels/rpm_025.png",
 		"levels/rpm_050.png",
+		"levels/rpm_100.png",
 		"levels/rpm_150.png",
 	}
 	for _, path := range files {
@@ -812,6 +837,10 @@ bar:
 
 func okGaugeState(id string, value float64) sensors.SensorState {
 	return sensors.SensorState{ID: id, Value: value, Status: sensors.StatusOK}
+}
+
+func okGaugeStateWithRange(id string, value, min, max float64) sensors.SensorState {
+	return sensors.SensorState{ID: id, Value: value, Min: min, Max: max, Status: sensors.StatusOK}
 }
 
 func countSceneParts(scene Scene, kind string) int {
