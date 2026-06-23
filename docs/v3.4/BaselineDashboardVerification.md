@@ -1,6 +1,6 @@
 # GoDriveLog v3.4 baseline dashboard verification
 
-Status: v3.4.4 bar gauge implemented
+Status: v3.4.5 segmented gauge implemented
 
 ## Purpose
 
@@ -58,7 +58,7 @@ Add explicit examples and checks as slices land:
 | v3.4.2 odometer | Add a harness-driven odometer example covering default `smooth` movement and optional `click` movement. |
 | v3.4.3 indicator | Add off/on state example. |
 | v3.4.4 bar | Add a runnable bar example package before claiming baseline coverage for `value_map` normalization and package-space reveal clipping. |
-| v3.4.5 segmented | Add sparse percent-threshold image example, including missing-`000` no-layer behaviour and threshold-gap hysteresis. |
+| v3.4.5 segmented | Covered by local segmented fixture tests for sparse threshold images, missing-`000` no-layer behaviour, and threshold-gap hysteresis; the reusable baseline dashboard still has no runnable segmented package. |
 
 ## Notes
 

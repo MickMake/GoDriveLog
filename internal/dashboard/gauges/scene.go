@@ -346,6 +346,63 @@ func BarScene(pkg Package, placement Placement, state sensors.SensorState) (Scen
 	return scene, nil
 }
 
+func SegmentedScene(pkg Package, placement Placement, state sensors.SensorState, previous *SegmentedSelection) (Scene, *SegmentedSelection, error) {
+	if pkg.Type != TypeSegmented {
+		return Scene{}, nil, fmt.Errorf("gauge package %q type %q is not segmented", pkg.ID, pkg.Type)
+	}
+	if placement.Scale <= 0 {
+		return Scene{}, nil, fmt.Errorf("gauge package %q placement scale must be greater than zero", pkg.ID)
+	}
+	segmentsPath := strings.TrimSpace(pkg.Layers["segments"])
+	if segmentsPath == "" {
+		return Scene{}, nil, fmt.Errorf("gauge package %q segmented layer segments must not be empty", pkg.ID)
+	}
+	if len(pkg.Segmented.Images) == 0 {
+		return Scene{}, nil, fmt.Errorf("gauge package %q segmented layer segments has no discovered images", pkg.ID)
+	}
+
+	state = stateForPackage(pkg.Sensor, state)
+	scene := Scene{
+		PackageID:   pkg.ID,
+		PackagePath: pkg.Path,
+		Type:        pkg.Type,
+		SensorID:    pkg.Sensor,
+		Position:    cloneInts(placement.Position),
+		Scale:       placement.Scale,
+		Size:        pkg.Size,
+		Status:      state.Status,
+		Error:       state.Error,
+		Parts:       underlayLayerParts(pkg.Layers),
+	}
+
+	if state.Status != sensors.StatusOK {
+		scene.Parts = append(scene.Parts, overlayLayerParts(pkg.Layers)...)
+		return scene, nil, nil
+	}
+
+	value := state.Value
+	if value < 0 {
+		value = 0
+	}
+	if value > 100 {
+		value = 100
+	}
+	index := segmentedSelectionIndex(pkg.Segmented.Images, value, previous, segmentedHysteresis(pkg.Segmented))
+	var nextSelection *SegmentedSelection
+	if index >= 0 {
+		selected := pkg.Segmented.Images[index]
+		scene.Parts = append(scene.Parts, ScenePart{
+			Kind:      ScenePartKindLayer,
+			Layer:     "segments",
+			AssetPath: selected.Path,
+		})
+		nextSelection = &SegmentedSelection{Threshold: selected.Threshold, Path: selected.Path}
+	}
+
+	scene.Parts = append(scene.Parts, overlayLayerParts(pkg.Layers)...)
+	return scene, nextSelection, nil
+}
+
 func radialAngle(valueMap ValueMap, value float64) (float64, error) {
 	if valueMap.Max <= valueMap.Min {
 		return 0, fmt.Errorf("value_map max must be greater than min")
@@ -682,4 +739,72 @@ func formatPoint(point Point) string {
 
 func almostEqual(a, b float64) bool {
 	return math.Abs(a-b) < 0.000001
+}
+
+func segmentedHysteresis(segmented Segmented) float64 {
+	if segmented.Hysteresis == nil {
+		return 25
+	}
+	return *segmented.Hysteresis
+}
+
+func segmentedSelectionIndex(images []SegmentedImage, value float64, previous *SegmentedSelection, hysteresis float64) int {
+	if len(images) == 0 {
+		return -1
+	}
+	candidate := segmentedHighestIndex(images, value)
+	if previous == nil {
+		return candidate
+	}
+
+	previousIndex := segmentedImageIndex(images, previous.Threshold)
+	if previousIndex < 0 {
+		return candidate
+	}
+	if candidate >= previousIndex {
+		return candidate
+	}
+
+	current := previousIndex
+	for current > 0 {
+		lower := current - 1
+		release := segmentedReleaseThreshold(images[current].Threshold, images[lower].Threshold, hysteresis)
+		if value >= release {
+			return current
+		}
+		current = lower
+	}
+
+	if value < float64(images[0].Threshold) {
+		return -1
+	}
+	return 0
+}
+
+func segmentedHighestIndex(images []SegmentedImage, value float64) int {
+	index := -1
+	for i, image := range images {
+		if value >= float64(image.Threshold) {
+			index = i
+			continue
+		}
+		break
+	}
+	return index
+}
+
+func segmentedImageIndex(images []SegmentedImage, threshold int) int {
+	for index, image := range images {
+		if image.Threshold == threshold {
+			return index
+		}
+	}
+	return -1
+}
+
+func segmentedReleaseThreshold(upper int, lower int, hysteresis float64) float64 {
+	if upper <= lower {
+		return float64(upper)
+	}
+	return float64(upper) - (float64(upper-lower) * hysteresis / 100)
 }

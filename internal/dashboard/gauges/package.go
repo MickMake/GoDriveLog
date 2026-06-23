@@ -3,8 +3,12 @@ package gauges
 import (
 	"bytes"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
+	"regexp"
+	"sort"
+	"strconv"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -16,6 +20,7 @@ const (
 	TypeOdometer     = "odometer"
 	TypeIndicator    = "indicator"
 	TypeBar          = "bar"
+	TypeSegmented    = "segmented"
 	MovementSmooth   = "smooth"
 	MovementClick    = "click"
 	WheelRoleDigit   = "digit"
@@ -35,6 +40,7 @@ type Package struct {
 	ValueMap  ValueMap          `yaml:"value_map,omitempty"`
 	Odometer  Odometer          `yaml:"odometer,omitempty"`
 	Bar       BarConfig         `yaml:"bar,omitempty"`
+	Segmented Segmented         `yaml:"segmented,omitempty"`
 	Path      string            `yaml:"-"`
 	YAMLPath  string            `yaml:"-"`
 	AssetRoot string            `yaml:"-"`
@@ -88,12 +94,27 @@ type BarConfig struct {
 	Bounds []int  `yaml:"bounds,omitempty"`
 }
 
+type Segmented struct {
+	Hysteresis *float64         `yaml:"hysteresis,omitempty"`
+	Images     []SegmentedImage `yaml:"-"`
+}
+
 type OdometerWheel struct {
 	Strip    string `yaml:"strip"`
 	Position []int  `yaml:"position"`
 	Window   Size   `yaml:"window"`
 	Offset   []int  `yaml:"offset,omitempty"`
 	Role     string `yaml:"role,omitempty"`
+}
+
+type SegmentedImage struct {
+	Threshold int
+	Path      string
+}
+
+type SegmentedSelection struct {
+	Threshold int
+	Path      string
 }
 
 func LoadPackage(packageDir string) (Package, error) {
@@ -140,6 +161,13 @@ func LoadPackage(packageDir string) (Package, error) {
 	}
 	if err := resolvePackagePaths(&pkg, filepath.Dir(yamlPath)); err != nil {
 		return Package{}, fmt.Errorf("gauge package %q is invalid: %w", resolvedPackageDir, err)
+	}
+	if pkg.Type == TypeSegmented {
+		images, err := discoverSegmentedImages(pkg.ID, pkg.Layers["segments"])
+		if err != nil {
+			return Package{}, fmt.Errorf("gauge package %q is invalid: %w", resolvedPackageDir, err)
+		}
+		pkg.Segmented.Images = images
 	}
 
 	return pkg, nil
@@ -253,7 +281,7 @@ func validatePackage(pkg Package) error {
 		return fmt.Errorf("type must not be empty")
 	}
 	switch pkg.Type {
-	case TypeNumeric, TypeRadial, TypeOdometer, TypeIndicator, TypeBar:
+	case TypeNumeric, TypeRadial, TypeOdometer, TypeIndicator, TypeBar, TypeSegmented:
 	default:
 		return fmt.Errorf("type %q is not supported", pkg.Type)
 	}
@@ -281,12 +309,21 @@ func validatePackage(pkg Package) error {
 			return err
 		}
 	}
+	if pkg.Type == TypeSegmented {
+		if err := validateSegmented(pkg.Segmented, pkg.Layers); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
 func normalizePackage(pkg *Package) {
 	if pkg.Type == TypeOdometer && strings.TrimSpace(pkg.Odometer.Movement) == "" {
 		pkg.Odometer.Movement = MovementSmooth
+	}
+	if pkg.Type == TypeSegmented && pkg.Segmented.Hysteresis == nil {
+		defaultHysteresis := 25.0
+		pkg.Segmented.Hysteresis = &defaultHysteresis
 	}
 }
 
@@ -359,6 +396,21 @@ func validateBar(bar BarConfig, layers map[string]string) error {
 func validateBarValueMap(valueMap ValueMap) error {
 	if valueMap.Max <= valueMap.Min {
 		return fmt.Errorf("bar value_map max must be greater than min")
+	}
+	return nil
+}
+
+func validateSegmented(segmented Segmented, layers map[string]string) error {
+	if strings.TrimSpace(layers["segments"]) == "" {
+		return fmt.Errorf("segmented layer segments must not be empty")
+	}
+	if segmented.Hysteresis != nil {
+		if *segmented.Hysteresis < 0 || *segmented.Hysteresis > 100 {
+			return fmt.Errorf("segmented hysteresis must be within 0..100")
+		}
+	}
+	if _, err := parseSegmentedPattern(strings.TrimSpace(layers["segments"])); err != nil {
+		return err
 	}
 	return nil
 }
@@ -471,4 +523,96 @@ func isInside(root string, path string) bool {
 
 func isRemotePath(path string) bool {
 	return strings.Contains(path, ":"+"//")
+}
+
+type segmentedPattern struct {
+	prefix string
+	suffix string
+	width  int
+}
+
+var segmentedPatternRe = regexp.MustCompile(`\{percent(?::(\d+))?\}`)
+
+func parseSegmentedPattern(path string) (segmentedPattern, error) {
+	trimmed := strings.TrimSpace(path)
+	if trimmed == "" {
+		return segmentedPattern{}, fmt.Errorf("segmented layer segments must not be empty")
+	}
+	loc := segmentedPatternRe.FindStringSubmatchIndex(trimmed)
+	if loc == nil {
+		return segmentedPattern{}, fmt.Errorf("segmented layer segments path %q must include {percent}", path)
+	}
+	match := segmentedPatternRe.FindStringSubmatch(trimmed)
+	width := 0
+	if len(match) > 1 && match[1] != "" {
+		parsedWidth, err := strconv.Atoi(match[1])
+		if err != nil || parsedWidth <= 0 {
+			return segmentedPattern{}, fmt.Errorf("segmented layer segments path %q has invalid percent width %q", path, match[1])
+		}
+		width = parsedWidth
+	}
+	return segmentedPattern{
+		prefix: trimmed[:loc[0]],
+		suffix: trimmed[loc[1]:],
+		width:  width,
+	}, nil
+}
+
+func discoverSegmentedImages(packageID string, segmentsPath string) ([]SegmentedImage, error) {
+	pattern, err := parseSegmentedPattern(filepath.Base(segmentsPath))
+	if err != nil {
+		return nil, err
+	}
+
+	segmentDir := filepath.Dir(segmentsPath)
+	entries, err := os.ReadDir(segmentDir)
+	if err != nil {
+		return nil, fmt.Errorf("segmented layer %q could not scan directory: %w", segmentsPath, err)
+	}
+
+	regexPattern := "^" + regexp.QuoteMeta(pattern.prefix) + `(\d+)` + regexp.QuoteMeta(pattern.suffix) + "$"
+	if pattern.width > 0 {
+		regexPattern = "^" + regexp.QuoteMeta(pattern.prefix) + fmt.Sprintf(`(\d{%d})`, pattern.width) + regexp.QuoteMeta(pattern.suffix) + "$"
+	}
+	matchPattern := regexp.MustCompile(regexPattern)
+
+	seen := map[int]bool{}
+	images := make([]SegmentedImage, 0, len(entries))
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+		matches := matchPattern.FindStringSubmatch(entry.Name())
+		if matches == nil {
+			continue
+		}
+		threshold, err := strconv.Atoi(matches[1])
+		if err != nil {
+			return nil, fmt.Errorf("segmented layer %q file %q has invalid percent threshold: %w", segmentsPath, entry.Name(), err)
+		}
+		if threshold > 100 {
+			log.Printf("gauge package %q segmented threshold %d in %q ignored: above 100", packageID, threshold, entry.Name())
+			continue
+		}
+		if seen[threshold] {
+			return nil, fmt.Errorf("segmented layer %q has duplicate percent threshold %d", segmentsPath, threshold)
+		}
+		seen[threshold] = true
+		images = append(images, SegmentedImage{
+			Threshold: threshold,
+			Path:      filepath.Join(segmentDir, entry.Name()),
+		})
+	}
+
+	if len(images) == 0 {
+		return nil, fmt.Errorf("segmented layer %q did not find any matching percent images", segmentsPath)
+	}
+
+	sort.Slice(images, func(i, j int) bool {
+		if images[i].Threshold == images[j].Threshold {
+			return images[i].Path < images[j].Path
+		}
+		return images[i].Threshold < images[j].Threshold
+	})
+	return images, nil
 }

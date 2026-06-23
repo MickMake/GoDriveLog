@@ -2,6 +2,7 @@ package gauges
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -515,6 +516,46 @@ func TestBarSceneSignatureChangesWithRevealHeight(t *testing.T) {
 	}
 }
 
+func TestSegmentedSceneUsesSparseThresholdsAndHysteresis(t *testing.T) {
+	pkg := loadSegmentedScenePackage(t)
+
+	below, previous, err := SegmentedScene(pkg, Placement{Position: []int{10, 20}, Scale: 1.25}, okGaugeState("rpm", 20), nil)
+	if err != nil {
+		t.Fatalf("SegmentedScene returned error: %v", err)
+	}
+	if got := partLayerSequence(below); got != "layer:panel,layer:glass" {
+		t.Fatalf("below-threshold sequence = %q", got)
+	}
+
+	first, previous, err := SegmentedScene(pkg, Placement{Position: []int{10, 20}, Scale: 1.25}, okGaugeState("rpm", 60), previous)
+	if err != nil {
+		t.Fatalf("SegmentedScene returned error: %v", err)
+	}
+	if got := partLayerSequence(first); got != "layer:panel,layer:segments,layer:glass" {
+		t.Fatalf("first threshold sequence = %q", got)
+	}
+	selected := firstLayerPart(first, "segments")
+	if selected.Layer != "segments" || !strings.HasSuffix(selected.AssetPath, "rpm_050.png") {
+		t.Fatalf("selected segment = %#v", selected)
+	}
+
+	held, previous, err := SegmentedScene(pkg, Placement{Position: []int{10, 20}, Scale: 1.25}, okGaugeState("rpm", 44), previous)
+	if err != nil {
+		t.Fatalf("SegmentedScene returned error: %v", err)
+	}
+	if got := firstLayerPart(held, "segments"); got.AssetPath == "" || !strings.HasSuffix(got.AssetPath, "rpm_050.png") {
+		t.Fatalf("held segment = %#v", got)
+	}
+
+	dropped, _, err := SegmentedScene(pkg, Placement{Position: []int{10, 20}, Scale: 1.25}, okGaugeState("rpm", 43), previous)
+	if err != nil {
+		t.Fatalf("SegmentedScene returned error: %v", err)
+	}
+	if got := firstLayerPart(dropped, "segments"); got.AssetPath == "" || !strings.HasSuffix(got.AssetPath, "rpm_025.png") {
+		t.Fatalf("dropped segment = %#v", got)
+	}
+}
+
 func loadNumericScenePackage(t *testing.T, count int, format string) Package {
 	t.Helper()
 	root := makeGaugeFixtures(t)
@@ -580,6 +621,44 @@ func loadBarScenePackage(t *testing.T) Package {
 	root := makeGaugeFixtures(t)
 	packageDir := filepath.Join(root, "assets", "gauges", "bar", "coolant")
 	writeGaugeYAML(t, packageDir, barGaugeYAML())
+	pkg, err := LoadPackage(packageDir)
+	if err != nil {
+		t.Fatalf("LoadPackage returned error: %v", err)
+	}
+	return pkg
+}
+
+func loadSegmentedScenePackage(t *testing.T) Package {
+	t.Helper()
+	root := makeGaugeFixtures(t)
+	packageDir := filepath.Join(root, "assets", "gauges", "segmented", "rpm")
+	files := []string{
+		"panel.png",
+		"glass.png",
+		"levels/rpm_025.png",
+		"levels/rpm_050.png",
+		"levels/rpm_150.png",
+	}
+	for _, path := range files {
+		fullPath := filepath.Join(packageDir, path)
+		if err := os.MkdirAll(filepath.Dir(fullPath), 0o755); err != nil {
+			t.Fatalf("MkdirAll: %v", err)
+		}
+		if err := os.WriteFile(fullPath, []byte(path), 0o600); err != nil {
+			t.Fatalf("WriteFile: %v", err)
+		}
+	}
+	writeGaugeYAML(t, packageDir, `id: test_rpm_segmented
+type: segmented
+sensor: rpm
+size:
+  width: 120
+  height: 120
+layers:
+  panel: panel.png
+  segments: levels/rpm_{percent:03}.png
+  glass: glass.png
+`)
 	pkg, err := LoadPackage(packageDir)
 	if err != nil {
 		t.Fatalf("LoadPackage returned error: %v", err)
@@ -808,6 +887,15 @@ func firstCharacterPart(scene Scene, character string) ScenePart {
 func firstPart(scene Scene, kind string) ScenePart {
 	for _, part := range scene.Parts {
 		if part.Kind == kind {
+			return part
+		}
+	}
+	return ScenePart{}
+}
+
+func firstLayerPart(scene Scene, layer string) ScenePart {
+	for _, part := range scene.Parts {
+		if part.Kind == ScenePartKindLayer && part.Layer == layer {
 			return part
 		}
 	}

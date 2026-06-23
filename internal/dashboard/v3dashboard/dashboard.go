@@ -34,6 +34,7 @@ type Runtime struct {
 	dashboards []Dashboard
 	states     map[string]sensors.SensorState
 	signatures map[string]string
+	segments   map[string]v3gauges.SegmentedSelection
 }
 
 type Dashboard struct {
@@ -110,6 +111,7 @@ func NewRuntime(plan v3config.RuntimePlan, registry *v3assets.Registry) (*Runtim
 		dashboards: dashboards,
 		states:     map[string]sensors.SensorState{},
 		signatures: map[string]string{},
+		segments:   map[string]v3gauges.SegmentedSelection{},
 	}, nil
 }
 
@@ -163,7 +165,7 @@ func (r *Runtime) Snapshot() ([]Scene, error) {
 	}
 	scenes := make([]Scene, 0, len(r.dashboards))
 	for _, dashboard := range r.dashboards {
-		scene, err := dashboard.Render(r.states)
+		scene, err := dashboard.render(r.states, r.segments)
 		if err != nil {
 			return nil, err
 		}
@@ -180,7 +182,7 @@ func (d Dashboard) Validate() error {
 		if strings.TrimSpace(widget.ID) == "" {
 			return fmt.Errorf("dashboard %q has widget with empty id", d.ID)
 		}
-		if _, err := d.renderWidget(widget, map[string]sensors.SensorState{}); err != nil && !isMissingSensorOnly(err) {
+		if _, err := d.renderWidget(widget, map[string]sensors.SensorState{}, nil); err != nil && !isMissingSensorOnly(err) {
 			return err
 		}
 	}
@@ -188,9 +190,13 @@ func (d Dashboard) Validate() error {
 }
 
 func (d Dashboard) Render(states map[string]sensors.SensorState) (Scene, error) {
+	return d.render(states, nil)
+}
+
+func (d Dashboard) render(states map[string]sensors.SensorState, segments map[string]v3gauges.SegmentedSelection) (Scene, error) {
 	scene := Scene{DashboardID: d.ID, Display: d.Config.Display, Size: d.Config.Size}
 	for _, configWidget := range d.Config.Widgets {
-		widget, err := d.renderWidget(configWidget, states)
+		widget, err := d.renderWidget(configWidget, states, segments)
 		if err != nil {
 			return Scene{}, err
 		}
@@ -199,7 +205,7 @@ func (d Dashboard) Render(states map[string]sensors.SensorState) (Scene, error) 
 	return scene, nil
 }
 
-func (d Dashboard) renderWidget(configWidget v3config.WidgetConfig, states map[string]sensors.SensorState) (Widget, error) {
+func (d Dashboard) renderWidget(configWidget v3config.WidgetConfig, states map[string]sensors.SensorState, segments map[string]v3gauges.SegmentedSelection) (Widget, error) {
 	widget := Widget{
 		ID:       configWidget.ID,
 		Type:     configWidget.Type,
@@ -289,6 +295,23 @@ func (d Dashboard) renderWidget(configWidget v3config.WidgetConfig, states map[s
 			gaugeScene, err = v3gauges.IndicatorScene(pkg, v3gauges.Placement{Position: configWidget.Position, Scale: configWidget.Scale}, state)
 		case v3gauges.TypeBar:
 			gaugeScene, err = v3gauges.BarScene(pkg, v3gauges.Placement{Position: configWidget.Position, Scale: configWidget.Scale}, state)
+		case v3gauges.TypeSegmented:
+			var previous *v3gauges.SegmentedSelection
+			selectionKey := segmentSelectionKey(d.ID, configWidget.ID, pkg.Path)
+			if segments != nil {
+				if selection, ok := segments[selectionKey]; ok {
+					previous = &selection
+				}
+			}
+			var nextSelection *v3gauges.SegmentedSelection
+			gaugeScene, nextSelection, err = v3gauges.SegmentedScene(pkg, v3gauges.Placement{Position: configWidget.Position, Scale: configWidget.Scale}, state, previous)
+			if err == nil && segments != nil {
+				if nextSelection == nil {
+					delete(segments, selectionKey)
+				} else {
+					segments[selectionKey] = *nextSelection
+				}
+			}
 		default:
 			return Widget{}, fmt.Errorf("dashboard %q widget %q gauge package type %q is not supported by dashboard scene runtime", d.ID, configWidget.ID, pkg.Type)
 		}
@@ -321,6 +344,10 @@ func applyGaugeScene(widget *Widget, scene v3gauges.Scene) {
 	widget.Error = scene.Error
 	widget.Text = scene.Text
 	widget.Parts = gaugeSceneParts(scene)
+}
+
+func segmentSelectionKey(dashboardID string, widgetID string, packagePath string) string {
+	return dashboardID + "|" + widgetID + "|" + packagePath
 }
 
 func stateForWidget(widget v3config.WidgetConfig, states map[string]sensors.SensorState) sensors.SensorState {
