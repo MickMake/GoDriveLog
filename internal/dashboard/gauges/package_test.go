@@ -148,6 +148,55 @@ odometer:
 	}
 }
 
+func TestLoadPackageLoadsIndicatorGauge(t *testing.T) {
+	root := makeGaugeFixtures(t)
+	packageDir := filepath.Join(root, "assets", "gauges", "indicator", "check_engine")
+	writeGaugeYAML(t, packageDir, `id: check_engine_indicator
+type: indicator
+sensor: check_engine
+size:
+  width: 48
+  height: 48
+layers:
+  bezel: bezel.png
+  face: face.png
+  off: off.png
+  on: on.png
+  glass: glass.png
+`)
+
+	pkg, err := LoadPackage(packageDir)
+	if err != nil {
+		t.Fatalf("LoadPackage returned error: %v", err)
+	}
+
+	if pkg.ID != "check_engine_indicator" || pkg.Type != TypeIndicator || pkg.Sensor != "check_engine" {
+		t.Fatalf("package identity = %#v", pkg)
+	}
+	assertPath(t, pkg.Layers["off"], filepath.Join(root, "assets", "gauges", "indicator", "check_engine", "off.png"))
+	assertPath(t, pkg.Layers["on"], filepath.Join(root, "assets", "gauges", "indicator", "check_engine", "on.png"))
+}
+
+func TestLoadPackageRejectsIndicatorMissingStateLayer(t *testing.T) {
+	root := makeGaugeFixtures(t)
+	packageDir := filepath.Join(root, "assets", "gauges", "indicator", "bad")
+	writeGaugeYAML(t, packageDir, `id: bad_indicator
+type: indicator
+sensor: check_engine
+size:
+  width: 48
+  height: 48
+layers:
+  off: off.png
+`)
+
+	_, err := LoadPackage(packageDir)
+	if err == nil {
+		t.Fatal("LoadPackage returned nil error, want error")
+	}
+	assertErrorContains(t, err, "indicator layer on")
+}
+
 func TestLoadPackageRejectsBadOdometerMovement(t *testing.T) {
 	root := makeGaugeFixtures(t)
 	packageDir := filepath.Join(root, "assets", "gauges", "odometer", "bad")
@@ -262,6 +311,12 @@ func makeGaugeFixtures(t *testing.T) string {
 		"assets/gauges/odometer/trip/digits.png",
 		"assets/gauges/odometer/trip/red_digits.png",
 		"assets/gauges/odometer/bad/digits.png",
+		"assets/gauges/indicator/check_engine/bezel.png",
+		"assets/gauges/indicator/check_engine/face.png",
+		"assets/gauges/indicator/check_engine/off.png",
+		"assets/gauges/indicator/check_engine/on.png",
+		"assets/gauges/indicator/check_engine/glass.png",
+		"assets/gauges/indicator/bad/off.png",
 	}
 	for _, path := range files {
 		fullPath := filepath.Join(root, path)

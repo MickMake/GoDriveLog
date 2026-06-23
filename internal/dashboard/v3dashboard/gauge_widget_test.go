@@ -283,6 +283,31 @@ func TestRuntimeOdometerGaugeWidgetSceneSignatureChangesWithSmoothOffset(t *test
 	}
 }
 
+func TestRuntimeLoadsIndicatorGaugeWidgetPackage(t *testing.T) {
+	packageDir := makeDashboardIndicatorGaugePackage(t)
+	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 1024, Height: 600}, Widgets: []v3config.WidgetConfig{{ID: "check_engine", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{40, 50}, Scale: 1.5}}}}}}
+	runtime, err := NewRuntime(plan, testAssetRegistry())
+	if err != nil {
+		t.Fatalf("NewRuntime failed: %v", err)
+	}
+
+	runtime.SetState(okState("check_engine", 1, ""))
+	scenes, err := runtime.Snapshot()
+	if err != nil {
+		t.Fatalf("Snapshot failed: %v", err)
+	}
+	widget := requireWidget(t, scenes[0], "check_engine")
+	if widget.Type != v3config.WidgetTypeGauge || widget.SensorID != "check_engine" || widget.GaugeID != "dashboard_check_engine_indicator" {
+		t.Fatalf("indicator widget identity = %#v", widget)
+	}
+	if widget.Status != sensors.StatusOK || widget.Scale != 1.5 {
+		t.Fatalf("indicator widget status/scale = %#v", widget)
+	}
+	if got := gaugePartSequence(widget); got != "layer:bezel,layer:face,layer:on,layer:glass" {
+		t.Fatalf("indicator part sequence = %q", got)
+	}
+}
+
 func makeDashboardGaugePackage(t *testing.T, count int, format string) string {
 	t.Helper()
 	root := t.TempDir()
@@ -366,6 +391,35 @@ func makeDashboardOdometerGaugePackage(t *testing.T) string {
 		t.Fatalf("MkdirAll: %v", err)
 	}
 	if err := os.WriteFile(filepath.Join(packageDir, "gauge.yaml"), []byte(dashboardOdometerGaugeYAML()), 0o600); err != nil {
+		t.Fatalf("WriteFile: %v", err)
+	}
+	return packageDir
+}
+
+func makeDashboardIndicatorGaugePackage(t *testing.T) string {
+	t.Helper()
+	root := t.TempDir()
+	files := []string{
+		"assets/gauges/indicator/check_engine/bezel.png",
+		"assets/gauges/indicator/check_engine/face.png",
+		"assets/gauges/indicator/check_engine/off.png",
+		"assets/gauges/indicator/check_engine/on.png",
+		"assets/gauges/indicator/check_engine/glass.png",
+	}
+	for _, path := range files {
+		fullPath := filepath.Join(root, path)
+		if err := os.MkdirAll(filepath.Dir(fullPath), 0o755); err != nil {
+			t.Fatalf("MkdirAll: %v", err)
+		}
+		if err := os.WriteFile(fullPath, []byte(path), 0o600); err != nil {
+			t.Fatalf("WriteFile: %v", err)
+		}
+	}
+	packageDir := filepath.Join(root, "assets", "gauges", "indicator", "check_engine")
+	if err := os.MkdirAll(packageDir, 0o755); err != nil {
+		t.Fatalf("MkdirAll: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(packageDir, "gauge.yaml"), []byte(dashboardIndicatorGaugeYAML()), 0o600); err != nil {
 		t.Fatalf("WriteFile: %v", err)
 	}
 	return packageDir
@@ -458,6 +512,22 @@ odometer:
       position: [42, 12]
       window: { width: 12, height: 20 }
       role: sub_unit
+`
+}
+
+func dashboardIndicatorGaugeYAML() string {
+	return `id: dashboard_check_engine_indicator
+type: indicator
+sensor: check_engine
+size:
+  width: 48
+  height: 48
+layers:
+  bezel: bezel.png
+  face: face.png
+  off: off.png
+  on: on.png
+  glass: glass.png
 `
 }
 

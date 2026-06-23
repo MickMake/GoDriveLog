@@ -335,6 +335,63 @@ func TestOdometerSceneSignatureChangesWithSmoothOffset(t *testing.T) {
 	}
 }
 
+func TestIndicatorSceneSelectsOffAndOnLayers(t *testing.T) {
+	pkg := loadIndicatorScenePackage(t)
+
+	offScene, err := IndicatorScene(pkg, Placement{Position: []int{16, 24}, Scale: 1.25}, okGaugeState("check_engine", 0))
+	if err != nil {
+		t.Fatalf("IndicatorScene returned error: %v", err)
+	}
+	onScene, err := IndicatorScene(pkg, Placement{Position: []int{16, 24}, Scale: 1.25}, okGaugeState("check_engine", 1))
+	if err != nil {
+		t.Fatalf("IndicatorScene returned error: %v", err)
+	}
+
+	if offScene.PackageID != "test_check_engine_indicator" || offScene.SensorID != "check_engine" || offScene.Type != TypeIndicator {
+		t.Fatalf("scene identity = %#v", offScene)
+	}
+	if offScene.Position[0] != 16 || offScene.Position[1] != 24 || offScene.Scale != 1.25 {
+		t.Fatalf("scene placement = %#v / %v", offScene.Position, offScene.Scale)
+	}
+	if got := partLayerSequence(offScene); got != "layer:bezel,layer:face,layer:off,layer:glass" {
+		t.Fatalf("off sequence = %q", got)
+	}
+	if got := partLayerSequence(onScene); got != "layer:bezel,layer:face,layer:on,layer:glass" {
+		t.Fatalf("on sequence = %q", got)
+	}
+	if offScene.Signature() == onScene.Signature() {
+		t.Fatal("expected indicator signature to change between off and on")
+	}
+}
+
+func TestIndicatorSceneUsesBoolTypedValueWhenPresent(t *testing.T) {
+	pkg := loadIndicatorScenePackage(t)
+	value := true
+
+	scene, err := IndicatorScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, sensors.SensorState{ID: "check_engine", Status: sensors.StatusOK, TypedValue: sensors.Value{Kind: sensors.ValueKindBool, Bool: &value}})
+	if err != nil {
+		t.Fatalf("IndicatorScene returned error: %v", err)
+	}
+	if got := partLayerSequence(scene); got != "layer:bezel,layer:face,layer:on,layer:glass" {
+		t.Fatalf("bool indicator sequence = %q", got)
+	}
+}
+
+func TestIndicatorSceneRendersOffForNonOKState(t *testing.T) {
+	pkg := loadIndicatorScenePackage(t)
+
+	scene, err := IndicatorScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, sensors.SensorState{ID: "check_engine", Value: 1, Status: sensors.StatusTimeout, Error: "not live"})
+	if err != nil {
+		t.Fatalf("IndicatorScene returned error: %v", err)
+	}
+	if scene.Status != sensors.StatusTimeout || scene.Error != "not live" {
+		t.Fatalf("scene status/error = %q/%q", scene.Status, scene.Error)
+	}
+	if got := partLayerSequence(scene); got != "layer:bezel,layer:face,layer:off,layer:glass" {
+		t.Fatalf("non-ok indicator sequence = %q", got)
+	}
+}
+
 func loadNumericScenePackage(t *testing.T, count int, format string) Package {
 	t.Helper()
 	root := makeGaugeFixtures(t)
@@ -364,6 +421,18 @@ func loadOdometerScenePackage(t *testing.T, movement string) Package {
 	root := makeGaugeFixtures(t)
 	packageDir := filepath.Join(root, "assets", "gauges", "odometer", "trip")
 	writeGaugeYAML(t, packageDir, odometerGaugeYAML(movement))
+	pkg, err := LoadPackage(packageDir)
+	if err != nil {
+		t.Fatalf("LoadPackage returned error: %v", err)
+	}
+	return pkg
+}
+
+func loadIndicatorScenePackage(t *testing.T) Package {
+	t.Helper()
+	root := makeGaugeFixtures(t)
+	packageDir := filepath.Join(root, "assets", "gauges", "indicator", "check_engine")
+	writeGaugeYAML(t, packageDir, indicatorGaugeYAML())
 	pkg, err := LoadPackage(packageDir)
 	if err != nil {
 		t.Fatalf("LoadPackage returned error: %v", err)
@@ -460,6 +529,22 @@ odometer:
       offset: [2, 4]
       role: sub_unit
 `, movementLine)
+}
+
+func indicatorGaugeYAML() string {
+	return `id: test_check_engine_indicator
+type: indicator
+sensor: check_engine
+size:
+  width: 48
+  height: 48
+layers:
+  bezel: bezel.png
+  face: face.png
+  off: off.png
+  on: on.png
+  glass: glass.png
+`
 }
 
 func okGaugeState(id string, value float64) sensors.SensorState {

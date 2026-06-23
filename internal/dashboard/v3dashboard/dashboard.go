@@ -280,6 +280,8 @@ func (d Dashboard) renderWidget(configWidget v3config.WidgetConfig, states map[s
 			gaugeScene, err = v3gauges.RadialScene(pkg, v3gauges.Placement{Position: configWidget.Position, Scale: configWidget.Scale}, state)
 		case v3gauges.TypeOdometer:
 			gaugeScene, err = v3gauges.OdometerScene(pkg, v3gauges.Placement{Position: configWidget.Position, Scale: configWidget.Scale}, state)
+		case v3gauges.TypeIndicator:
+			gaugeScene, err = v3gauges.IndicatorScene(pkg, v3gauges.Placement{Position: configWidget.Position, Scale: configWidget.Scale}, state)
 		default:
 			return Widget{}, fmt.Errorf("dashboard %q widget %q gauge package type %q is not supported by dashboard scene runtime", d.ID, configWidget.ID, pkg.Type)
 		}

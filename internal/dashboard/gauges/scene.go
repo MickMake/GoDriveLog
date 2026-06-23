@@ -233,6 +233,47 @@ func OdometerScene(pkg Package, placement Placement, state sensors.SensorState) 
 	return scene, nil
 }
 
+func IndicatorScene(pkg Package, placement Placement, state sensors.SensorState) (Scene, error) {
+	if pkg.Type != TypeIndicator {
+		return Scene{}, fmt.Errorf("gauge package %q type %q is not indicator", pkg.ID, pkg.Type)
+	}
+	if placement.Scale <= 0 {
+		return Scene{}, fmt.Errorf("gauge package %q placement scale must be greater than zero", pkg.ID)
+	}
+	offPath := strings.TrimSpace(pkg.Layers["off"])
+	onPath := strings.TrimSpace(pkg.Layers["on"])
+	if offPath == "" {
+		return Scene{}, fmt.Errorf("gauge package %q indicator layer off must not be empty", pkg.ID)
+	}
+	if onPath == "" {
+		return Scene{}, fmt.Errorf("gauge package %q indicator layer on must not be empty", pkg.ID)
+	}
+
+	state = stateForPackage(pkg.Sensor, state)
+	scene := Scene{
+		PackageID:   pkg.ID,
+		PackagePath: pkg.Path,
+		Type:        pkg.Type,
+		SensorID:    pkg.Sensor,
+		Position:    cloneInts(placement.Position),
+		Scale:       placement.Scale,
+		Size:        pkg.Size,
+		Status:      state.Status,
+		Error:       state.Error,
+		Parts:       indicatorUnderlayLayerParts(pkg.Layers),
+	}
+
+	stateLayer := "off"
+	statePath := offPath
+	if indicatorStateOn(state) {
+		stateLayer = "on"
+		statePath = onPath
+	}
+	scene.Parts = append(scene.Parts, ScenePart{Kind: ScenePartKindLayer, Layer: stateLayer, AssetPath: statePath})
+	scene.Parts = append(scene.Parts, indicatorOverlayLayerParts(pkg.Layers)...)
+	return scene, nil
+}
+
 func radialAngle(valueMap ValueMap, value float64) (float64, error) {
 	if valueMap.Max <= valueMap.Min {
 		return 0, fmt.Errorf("value_map max must be greater than min")
@@ -349,6 +390,24 @@ func odometerUnderlayLayerParts(layers map[string]string) []ScenePart {
 
 func odometerOverlayLayerParts(layers map[string]string) []ScenePart {
 	return namedLayerParts(layers, []string{"glass", "overlay", "foreground"})
+}
+
+func indicatorUnderlayLayerParts(layers map[string]string) []ScenePart {
+	return namedLayerParts(layers, []string{"background", "panel", "bezel", "face"})
+}
+
+func indicatorOverlayLayerParts(layers map[string]string) []ScenePart {
+	return namedLayerParts(layers, []string{"glass", "overlay", "foreground"})
+}
+
+func indicatorStateOn(state sensors.SensorState) bool {
+	if state.Status != sensors.StatusOK {
+		return false
+	}
+	if state.TypedValue.Kind == sensors.ValueKindBool && state.TypedValue.Bool != nil {
+		return *state.TypedValue.Bool
+	}
+	return state.Value != 0
 }
 
 func namedLayerParts(layers map[string]string, orderedNames []string) []ScenePart {
