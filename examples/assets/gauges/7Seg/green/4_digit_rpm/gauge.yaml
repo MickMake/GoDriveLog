@@ -1,5 +1,5 @@
 id: green_4_digit_rpm
-type: seven_segment
+type: numeric
 sensor: rpm
 format: "%04.0f"
 

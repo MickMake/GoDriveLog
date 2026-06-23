@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	TypeSevenSegment = "seven_segment"
-	TypeRadial       = "radial"
+	TypeNumeric = "numeric"
+	TypeRadial  = "radial"
 )
 
 type Package struct {
@@ -223,7 +223,7 @@ func validatePackage(pkg Package) error {
 		return fmt.Errorf("type must not be empty")
 	}
 	switch pkg.Type {
-	case TypeSevenSegment, TypeRadial:
+	case TypeNumeric, TypeRadial:
 	default:
 		return fmt.Errorf("type %q is not supported", pkg.Type)
 	}

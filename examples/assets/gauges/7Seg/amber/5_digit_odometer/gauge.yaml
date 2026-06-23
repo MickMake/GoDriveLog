@@ -1,5 +1,5 @@
 id: amber_5_digit_odometer
-type: seven_segment
+type: numeric
 sensor: odometer
 format: "%05.0f"
 

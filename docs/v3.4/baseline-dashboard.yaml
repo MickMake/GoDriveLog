@@ -8,6 +8,6 @@
 #   examples/baseline-dashboard.yaml
 #
 # V3.4 expectation:
-#   Existing seven-segment gauge packages will be renamed to numeric packages
-#   during the v3.4.1 implementation slice. Until that slice lands, use the
-#   reusable baseline in examples/ as the source of truth.
+#   Existing seven-segment artwork is used by numeric gauge packages as of the
+#   v3.4.1 implementation slice. Use the reusable baseline in examples/ as the
+#   source of truth.

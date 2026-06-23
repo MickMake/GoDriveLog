@@ -7,11 +7,11 @@ import (
 	"testing"
 )
 
-func TestLoadPackageLoadsSevenSegmentGauge(t *testing.T) {
+func TestLoadPackageLoadsNumericGauge(t *testing.T) {
 	root := makeGaugeFixtures(t)
 	packageDir := filepath.Join(root, "assets", "gauges", "7Seg", "amber", "4_digit_rpm")
 	writeGaugeYAML(t, packageDir, `id: amber_4_digit_rpm
-type: seven_segment
+type: numeric
 sensor: rpm
 format: "%04.0f"
 size:
@@ -41,7 +41,7 @@ digits:
 		t.Fatalf("LoadPackage returned error: %v", err)
 	}
 
-	if pkg.ID != "amber_4_digit_rpm" || pkg.Type != TypeSevenSegment || pkg.Sensor != "rpm" || pkg.Format != "%04.0f" {
+	if pkg.ID != "amber_4_digit_rpm" || pkg.Type != TypeNumeric || pkg.Sensor != "rpm" || pkg.Format != "%04.0f" {
 		t.Fatalf("package identity = %#v", pkg)
 	}
 	if pkg.Size.Width != 398 || pkg.Size.Height != 150 {
@@ -139,7 +139,7 @@ func TestLoadPackageRejectsPathsEscapingAssetTree(t *testing.T) {
 	root := makeGaugeFixtures(t)
 	packageDir := filepath.Join(root, "assets", "gauges", "evil")
 	writeGaugeYAML(t, packageDir, `id: escape
-type: seven_segment
+type: numeric
 sensor: rpm
 size:
   width: 100

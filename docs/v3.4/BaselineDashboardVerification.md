@@ -1,6 +1,6 @@
 # GoDriveLog v3.4 baseline dashboard verification
 
-Status: planning placeholder
+Status: v3.4.1 numeric package rename applied
 
 ## Purpose
 
@@ -23,6 +23,22 @@ The v3.4 docs should not duplicate active runnable config unless a slice specifi
 | RPM numeric | `numeric` | `rpm` | High-frequency digit changes. |
 | RPM radial | `radial` | `rpm` | Existing radial transform renderer remains valid. |
 
+## v3.4.1 numeric rename check
+
+The reusable baseline dashboard remains:
+
+```text
+examples/baseline-dashboard.yaml
+```
+
+Its numeric gauge packages now declare `type: numeric` in the active example package YAML:
+
+- `examples/assets/gauges/7Seg/green/3_digit_temp/gauge.yaml`
+- `examples/assets/gauges/7Seg/green/3_digit_speed/gauge.yaml`
+- `examples/assets/gauges/7Seg/green/4_digit_rpm/gauge.yaml`
+
+The radial RPM package remains `type: radial`.
+
 ## Verification goals
 
 - Existing numeric behaviour survives the hard rename from `seven_segment` to `numeric`.
@@ -37,7 +53,7 @@ Add explicit examples and checks as slices land:
 
 | Slice | Verification addition |
 |---|---|
-| v3.4.1 numeric rename | Run baseline dashboard with all numeric packages renamed. |
+| v3.4.1 numeric rename | Active baseline package YAML now uses `type: numeric`; run the baseline dashboard through the normal Go command path where Go tooling is available. |
 | v3.4.2 odometer | Add a harness-driven odometer example covering default `smooth` movement and optional `click` movement. |
 | v3.4.3 indicator | Add off/on state example. |
 | v3.4.4 bar | Add continuous transform example such as clipping/revealing a level layer. |

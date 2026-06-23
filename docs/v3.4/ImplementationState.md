@@ -1,8 +1,8 @@
 # GoDriveLog v3.4 implementation state
 
-Status: v3.4.0 planning docs branch in progress
+Status: v3.4.1 numeric rename implemented
 Current target: v3.4 gauge/display package cleanup and expansion
-Current branch: v3.4.0-gauge-type-docs
+Current branch: v3.4.1-numeric-rename
 
 ## Purpose
 
@@ -37,11 +37,13 @@ Image-selection/composition gauges currently mean `numeric`, `indicator`, and `s
 
 ## Numeric rename
 
-`seven_segment` is planned to become `numeric`.
+`seven_segment` has been hard-renamed to `numeric`.
 
 The rename is intentionally a hard rename. This project does not need a compatibility layer for old local gauge YAML. If something breaks, it is cheaper to fix the package than to keep a small museum of aliases.
 
 Active code, examples, package YAML, and validation must use `numeric`. Historical docs and changelog entries may still mention `seven_segment`.
+
+The active numeric renderer keeps the existing formatted-value behaviour: character slots, decimal point handling, digit backgrounds/foregrounds, non-ok suppression, and image asset composition.
 
 ## Odometer movement model
 
@@ -101,13 +103,13 @@ The current baseline workload remains useful because it exercises numeric displa
 
 | Version | Status | Notes |
 |---|---|---|
-| v3.4.0 | in progress | Planning docs and prompt set for gauge type cleanup and expansion. |
+| v3.4.0 | completed | Planning docs and prompt set for gauge type cleanup and expansion. |
+| v3.4.1 | completed | Hard-renamed active `seven_segment` package type to `numeric` in code, validation, dashboard routing, tests, and runnable example package YAML. No compatibility alias was added. |
 
 ## Pending slices
 
 | Version | Status | Next action |
 |---|---|---|
-| v3.4.1 | not started | Rename `seven_segment` to `numeric` in code and examples. |
 | v3.4.2 | not started | Add odometer config/scene model with `smooth` and `click` movement. |
 | v3.4.3 | not started | Add indicator gauge behaviour. |
 | v3.4.4 | not started | Add first bar gauge transform behaviour. |

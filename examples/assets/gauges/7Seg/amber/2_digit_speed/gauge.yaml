@@ -1,5 +1,5 @@
 id: amber_2_digit_speed
-type: seven_segment
+type: numeric
 sensor: speed
 format: "%02.0f"
 

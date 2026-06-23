@@ -93,7 +93,7 @@ asset background
 
 The active example dashboard uses self-contained gauge packages under `examples/assets/gauges/**/gauge.yaml`. Gauge widgets place packages; gauge packages own their sensor binding, value formatting/mapping, visual layers, and package-local geometry.
 
-For seven-segment gauge packages, digit positions are artwork-alignment coordinates. They may look larger than the declared logical package size because the source artwork and the dashboard fit box are not always the same coordinate system. The rendered result and package comments are the authority.
+For numeric gauge packages that use seven-segment artwork, digit positions are artwork-alignment coordinates. They may look larger than the declared logical package size because the source artwork and the dashboard fit box are not always the same coordinate system. The rendered result and package comments are the authority.
 
 ## Documentation
 
