@@ -68,6 +68,23 @@ scripts/example_assets/
 
 Keep the final shape simple. If a single script is enough for v3.4.6, use one script first and extract helpers only when the themed dashboards need them.
 
+## v3.4.6 framework output
+
+The framework slice now uses:
+
+```bash
+go run ./scripts/generate-example-assets -theme framework-smoke
+```
+
+Current committed smoke-test output:
+
+```text
+examples/assets/v3.4/framework-smoke/
+examples/dashboards/framework-smoke.yaml
+```
+
+The smoke dashboard proves the deterministic asset pipeline, path conventions, and active harness/runtime loading path. It is intentionally small and does not claim the final ornate timber, neon-grid, or steam-scrap art direction yet.
+
 ## Gauge coverage target
 
 Each complete themed dashboard should cover as much of the v3.4 gauge model as practical:

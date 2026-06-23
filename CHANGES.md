@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added the v3.4.6 deterministic example-asset generation framework with a standard-library Go generator, committed `framework-smoke` PNG output under `examples/assets/v3.4/`, a runnable smoke dashboard config under `examples/dashboards/`, and harness coverage for the generated example path.
 - Added v3.4 generated example dashboard planning docs and prompts for v3.4.6 through v3.4.9, covering the deterministic asset framework, ornate timber, neon-grid, and steam-scrap dashboard slices.
 - Added v3.4.5 segmented gauge support with sparse `{percent}` discovery, raw-value normalization to percent before threshold selection, threshold-gap hysteresis, dashboard routing, and focused package/runtime tests.
 - Added v3.4.4 bar gauge support with validated `type: bar` packages, required `value_map` normalization, package-space vertical bottom-up level reveal clipping, dashboard routing, and focused package/runtime tests.

@@ -1,0 +1,121 @@
+# GoDriveLog v3.4 generated example smoke dashboard
+#
+# Purpose:
+#   Prove the deterministic example-asset generation pipeline and file layout.
+#   This is intentionally a small workshop jig, not one of the final themed
+#   dashboards from later v3.4 slices.
+#
+# Regenerate assets from the repository root:
+#   go run ./scripts/generate-example-assets -theme framework-smoke
+#
+# Run through the harness path from the repository root:
+#   go run ./cmd/GoDriveLog --harness --config ./examples/dashboards/framework-smoke.yaml --vehicle demo --pattern sweep --interval 50ms --duration 30s --renderer ebiten
+
+vehicles:
+  demo:
+    name: "Framework Smoke"
+    obd:
+      address: "serial:///dev/null"
+      timeout: 1000
+    logs:
+      - smoke_jsonl
+    dashboards:
+      - framework_smoke
+
+sensors:
+  speed:
+    type: virtual
+    unit: "km/h"
+    poll: 250
+    min: 0
+    max: 220
+
+  rpm:
+    type: virtual
+    unit: "rpm"
+    poll: 250
+    min: 0
+    max: 8000
+
+  engine_warning:
+    type: virtual
+    unit: "bool"
+    poll: 1000
+    min: 0
+    max: 1
+
+assets:
+  digit_sets:
+    smoke_digits:
+      background: "examples/assets/v3.4/framework-smoke/digits/digit_back.png"
+      characters:
+        "0": "examples/assets/v3.4/framework-smoke/digits/digit_0.png"
+        "1": "examples/assets/v3.4/framework-smoke/digits/digit_1.png"
+        "2": "examples/assets/v3.4/framework-smoke/digits/digit_2.png"
+        "3": "examples/assets/v3.4/framework-smoke/digits/digit_3.png"
+        "4": "examples/assets/v3.4/framework-smoke/digits/digit_4.png"
+        "5": "examples/assets/v3.4/framework-smoke/digits/digit_5.png"
+        "6": "examples/assets/v3.4/framework-smoke/digits/digit_6.png"
+        "7": "examples/assets/v3.4/framework-smoke/digits/digit_7.png"
+        "8": "examples/assets/v3.4/framework-smoke/digits/digit_8.png"
+        "9": "examples/assets/v3.4/framework-smoke/digits/digit_9.png"
+        "-": "examples/assets/v3.4/framework-smoke/digits/digit_minus.png"
+      decimal_point: "examples/assets/v3.4/framework-smoke/digits/digit_dp.png"
+      foreground: "examples/assets/v3.4/framework-smoke/digits/digit_glass.png"
+      spacing: 6
+
+  indicator_sets:
+    warning_lamp:
+      background: "examples/assets/v3.4/framework-smoke/indicator/lamp_back.png"
+      states:
+        off: "examples/assets/v3.4/framework-smoke/indicator/lamp_off.png"
+        on: "examples/assets/v3.4/framework-smoke/indicator/lamp_on.png"
+        unknown: "examples/assets/v3.4/framework-smoke/indicator/lamp_unknown.png"
+      foreground: "examples/assets/v3.4/framework-smoke/indicator/lamp_glass.png"
+
+  image_sets:
+    framework_smoke_panel:
+      background: "examples/assets/v3.4/framework-smoke/panel/background.png"
+      foreground: "examples/assets/v3.4/framework-smoke/panel/foreground.png"
+
+logs:
+  smoke_jsonl:
+    path: "logs/framework-smoke.jsonl"
+    sensors:
+      - speed
+      - rpm
+      - engine_warning
+
+dashboards:
+  framework_smoke:
+    display: "HDMI-1"
+    size:
+      width: 1280
+      height: 720
+    widgets:
+      - id: panel_backplate
+        type: image
+        asset: framework_smoke_panel
+        position: [0, 0]
+
+      - id: speed_digits
+        type: digit_display
+        sensor: speed
+        asset: smoke_digits
+        position: [104, 230]
+        digits: 3
+        format: "%03.0f"
+
+      - id: rpm_digits
+        type: digit_display
+        sensor: rpm
+        asset: smoke_digits
+        position: [104, 460]
+        digits: 4
+        format: "%04.0f"
+
+      - id: engine_warning
+        type: indicator
+        sensor: engine_warning
+        asset: warning_lamp
+        position: [996, 496]
