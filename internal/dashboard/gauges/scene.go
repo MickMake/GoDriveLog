@@ -16,6 +16,7 @@ const (
 	ScenePartKindDecimalPoint = "decimal_point"
 	ScenePartKindForeground   = "foreground"
 	ScenePartKindNeedle       = "needle"
+	ScenePartKindWheelStrip   = "wheel_strip"
 )
 
 type Placement struct {
@@ -38,6 +39,7 @@ type Scene struct {
 	FacePivot      Point
 	NeedlePivot    Point
 	Angle          float64
+	Movement       string
 	Parts          []ScenePart
 }
 
@@ -51,6 +53,10 @@ type ScenePart struct {
 	Angle       float64
 	FacePivot   Point
 	NeedlePivot Point
+	Source      []int
+	Window      Size
+	StripOffset float64
+	Role        string
 }
 
 func NumericScene(pkg Package, placement Placement, state sensors.SensorState) (Scene, error) {
@@ -175,6 +181,58 @@ func RadialScene(pkg Package, placement Placement, state sensors.SensorState) (S
 	return scene, nil
 }
 
+func OdometerScene(pkg Package, placement Placement, state sensors.SensorState) (Scene, error) {
+	if pkg.Type != TypeOdometer {
+		return Scene{}, fmt.Errorf("gauge package %q type %q is not odometer", pkg.ID, pkg.Type)
+	}
+	if placement.Scale <= 0 {
+		return Scene{}, fmt.Errorf("gauge package %q placement scale must be greater than zero", pkg.ID)
+	}
+	if len(pkg.Odometer.Wheels) == 0 {
+		return Scene{}, fmt.Errorf("gauge package %q odometer wheels must not be empty", pkg.ID)
+	}
+
+	state = stateForPackage(pkg.Sensor, state)
+	scene := Scene{
+		PackageID:   pkg.ID,
+		PackagePath: pkg.Path,
+		Type:        pkg.Type,
+		SensorID:    pkg.Sensor,
+		Position:    cloneInts(placement.Position),
+		Scale:       placement.Scale,
+		Size:        pkg.Size,
+		Status:      state.Status,
+		Error:       state.Error,
+		Movement:    pkg.Odometer.Movement,
+		Parts:       odometerUnderlayLayerParts(pkg.Layers),
+	}
+
+	if state.Status == sensors.StatusOK {
+		scene.Text = formatValue("%.1f", state.Value)
+		digitPlaces := odometerDigitPlaces(pkg.Odometer.Wheels)
+		for index, wheel := range pkg.Odometer.Wheels {
+			offset, err := odometerWheelOffset(pkg.Odometer.Movement, wheel, digitPlaces[index], state.Value)
+			if err != nil {
+				return Scene{}, fmt.Errorf("gauge package %q: %w", pkg.ID, err)
+			}
+			sourceX, sourceY := odometerWheelSource(wheel, offset)
+			scene.Parts = append(scene.Parts, ScenePart{
+				Kind:        ScenePartKindWheelStrip,
+				AssetPath:   wheel.Strip,
+				Slot:        index,
+				Position:    cloneInts(wheel.Position),
+				Source:      []int{sourceX, sourceY},
+				Window:      wheel.Window,
+				StripOffset: offset,
+				Role:        odometerWheelRole(wheel),
+			})
+		}
+	}
+
+	scene.Parts = append(scene.Parts, odometerOverlayLayerParts(pkg.Layers)...)
+	return scene, nil
+}
+
 func radialAngle(valueMap ValueMap, value float64) (float64, error) {
 	if valueMap.Max <= valueMap.Min {
 		return 0, fmt.Errorf("value_map max must be greater than min")
@@ -223,6 +281,8 @@ func (s Scene) Signature() string {
 	b.WriteString(formatPoint(s.NeedlePivot))
 	b.WriteString("|angle=")
 	b.WriteString(strconv.FormatFloat(s.Angle, 'f', -1, 64))
+	b.WriteString("|movement=")
+	b.WriteString(s.Movement)
 	b.WriteString("|")
 	for _, part := range s.Parts {
 		b.WriteString(part.Kind)
@@ -242,6 +302,16 @@ func (s Scene) Signature() string {
 		b.WriteString(formatPoint(part.FacePivot))
 		b.WriteString("#")
 		b.WriteString(formatPoint(part.NeedlePivot))
+		b.WriteString("#")
+		b.WriteString(formatIntSlice(part.Source))
+		b.WriteString("#")
+		b.WriteString(strconv.Itoa(part.Window.Width))
+		b.WriteString("x")
+		b.WriteString(strconv.Itoa(part.Window.Height))
+		b.WriteString("#")
+		b.WriteString(strconv.FormatFloat(part.StripOffset, 'f', -1, 64))
+		b.WriteString("#")
+		b.WriteString(part.Role)
 		b.WriteString(";")
 	}
 	return b.String()
@@ -273,6 +343,14 @@ func radialOverlayLayerParts(layers map[string]string) []ScenePart {
 	return namedLayerParts(layers, []string{"glass", "overlay", "foreground"})
 }
 
+func odometerUnderlayLayerParts(layers map[string]string) []ScenePart {
+	return namedLayerParts(layers, []string{"background", "panel", "bezel", "face", "ticks"})
+}
+
+func odometerOverlayLayerParts(layers map[string]string) []ScenePart {
+	return namedLayerParts(layers, []string{"glass", "overlay", "foreground"})
+}
+
 func namedLayerParts(layers map[string]string, orderedNames []string) []ScenePart {
 	parts := []ScenePart{}
 	for _, name := range orderedNames {
@@ -297,6 +375,66 @@ func formatValue(format string, value float64) string {
 		return fmt.Sprintf("%.0f", value)
 	}
 	return fmt.Sprintf(format, value)
+}
+
+func odometerDigitPlaces(wheels []OdometerWheel) []int {
+	places := make([]int, len(wheels))
+	place := 0
+	for index := len(wheels) - 1; index >= 0; index-- {
+		if odometerWheelRole(wheels[index]) == WheelRoleSubUnit {
+			places[index] = -1
+			continue
+		}
+		places[index] = place
+		place++
+	}
+	return places
+}
+
+func odometerWheelOffset(movement string, wheel OdometerWheel, place int, value float64) (float64, error) {
+	position, err := odometerWheelPosition(wheel, place, value)
+	if err != nil {
+		return 0, err
+	}
+	if movement == MovementClick {
+		position = math.Floor(position)
+	}
+	if position < 0 {
+		position = 0
+	}
+	return position * float64(wheel.Window.Height), nil
+}
+
+func odometerWheelPosition(wheel OdometerWheel, place int, value float64) (float64, error) {
+	if wheel.Window.Height <= 0 {
+		return 0, fmt.Errorf("odometer wheel window height must be positive")
+	}
+	absolute := math.Abs(value)
+	if odometerWheelRole(wheel) == WheelRoleSubUnit {
+		return math.Mod(absolute*10, 10), nil
+	}
+	if place < 0 {
+		return 0, fmt.Errorf("odometer wheel place must not be negative")
+	}
+	divisor := math.Pow10(place)
+	return math.Mod(absolute/divisor, 10), nil
+}
+
+func odometerWheelSource(wheel OdometerWheel, stripOffset float64) (int, int) {
+	sourceX := 0
+	sourceY := int(math.Floor(stripOffset))
+	if len(wheel.Offset) >= 2 {
+		sourceX += wheel.Offset[0]
+		sourceY += wheel.Offset[1]
+	}
+	return sourceX, sourceY
+}
+
+func odometerWheelRole(wheel OdometerWheel) string {
+	if strings.TrimSpace(wheel.Role) == "" {
+		return WheelRoleDigit
+	}
+	return wheel.Role
 }
 
 func splitTextIntoSlots(text string, slots int) ([]string, []int, error) {

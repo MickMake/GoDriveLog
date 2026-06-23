@@ -1,8 +1,8 @@
 # GoDriveLog v3.4 implementation state
 
-Status: v3.4.1 numeric rename implemented
+Status: v3.4.2 odometer planning/scene model implemented
 Current target: v3.4 gauge/display package cleanup and expansion
-Current branch: v3.4.1-numeric-rename
+Current branch: codex/v3.4.2-odometer-gauge
 
 ## Purpose
 
@@ -56,6 +56,15 @@ click  = stepped movement that snaps to digit positions
 
 Do not expand the first odometer slice into easing, inertia, gear backlash, curved depth, or rear-wheel wraparound.
 
+The v3.4.2 implementation adds a flat strip scene model:
+
+- `type: odometer` package validation is active.
+- Package config uses `odometer.wheels`, where each wheel declares a strip asset, window position, window size, optional source alignment offset, and optional role.
+- `movement: smooth` keeps fractional strip offsets in scene data.
+- `movement: click` snaps strip offsets to digit positions.
+- `role: sub_unit` maps a wheel to tenths without adding arbitrary decimal formatting.
+- Ebiten renders each wheel as a clipped strip subimage through the normal dashboard scene path.
+
 ## Segmented percent model
 
 `segmented` value layers use `{percent}`:
@@ -105,12 +114,12 @@ The current baseline workload remains useful because it exercises numeric displa
 |---|---|---|
 | v3.4.0 | completed | Planning docs and prompt set for gauge type cleanup and expansion. |
 | v3.4.1 | completed | Hard-renamed active `seven_segment` package type to `numeric` in code, validation, dashboard routing, tests, and runnable example package YAML. No compatibility alias was added. |
+| v3.4.2 | completed | Added `odometer` package validation, flat wheel-strip scene parts, `smooth` and `click` movement modes, sub-unit wheel support, dashboard routing, Ebiten clipped strip rendering, and focused tests. |
 
 ## Pending slices
 
 | Version | Status | Next action |
 |---|---|---|
-| v3.4.2 | not started | Add odometer config/scene model with `smooth` and `click` movement. |
 | v3.4.3 | not started | Add indicator gauge behaviour. |
 | v3.4.4 | not started | Add first bar gauge transform behaviour. |
 | v3.4.5 | not started | Add segmented percent-threshold image discovery, threshold-gap hysteresis, and rendering. |

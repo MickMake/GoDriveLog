@@ -230,6 +230,59 @@ func TestRuntimeRadialGaugeWidgetSceneSignatureChangesWithAngle(t *testing.T) {
 	}
 }
 
+func TestRuntimeLoadsOdometerGaugeWidgetPackage(t *testing.T) {
+	packageDir := makeDashboardOdometerGaugePackage(t)
+	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 1024, Height: 600}, Widgets: []v3config.WidgetConfig{{ID: "trip", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{300, 40}, Scale: 1.5}}}}}}
+	runtime, err := NewRuntime(plan, testAssetRegistry())
+	if err != nil {
+		t.Fatalf("NewRuntime failed: %v", err)
+	}
+
+	runtime.SetState(okState("trip_distance", 12.3, "km"))
+	scenes, err := runtime.Snapshot()
+	if err != nil {
+		t.Fatalf("Snapshot failed: %v", err)
+	}
+	widget := requireWidget(t, scenes[0], "trip")
+	if widget.Type != v3config.WidgetTypeGauge || widget.SensorID != "trip_distance" || widget.GaugeID != "dashboard_trip_odometer" {
+		t.Fatalf("odometer widget identity = %#v", widget)
+	}
+	if widget.Status != sensors.StatusOK || widget.Scale != 1.5 || widget.GaugeMovement != "smooth" {
+		t.Fatalf("odometer widget status/scale/movement = %#v", widget)
+	}
+	if got := gaugePartSequence(widget); got != "layer:panel,wheel_strip:0,wheel_strip:1,wheel_strip:2,layer:glass" {
+		t.Fatalf("odometer part sequence = %q", got)
+	}
+	wheel := firstPartKind(widget, PartKindWheelStrip)
+	if wheel.AssetPath == "" || wheel.Window.Width != 12 || wheel.Window.Height != 20 || wheel.StripOffset == 0 {
+		t.Fatalf("wheel strip part = %#v", wheel)
+	}
+}
+
+func TestRuntimeOdometerGaugeWidgetSceneSignatureChangesWithSmoothOffset(t *testing.T) {
+	packageDir := makeDashboardOdometerGaugePackage(t)
+	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 1024, Height: 600}, Widgets: []v3config.WidgetConfig{{ID: "trip", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{0, 0}, Scale: 1}}}}}}
+	runtime, err := NewRuntime(plan, testAssetRegistry())
+	if err != nil {
+		t.Fatalf("NewRuntime failed: %v", err)
+	}
+
+	_, changed, err := runtime.ApplyEvent(sensorEvent("trip_distance", okState("trip_distance", 12.1, "km")))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected first odometer event to change rendered output")
+	}
+	_, changed, err = runtime.ApplyEvent(sensorEvent("trip_distance", okState("trip_distance", 12.2, "km")))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected changed smooth odometer offset to redraw")
+	}
+}
+
 func makeDashboardGaugePackage(t *testing.T, count int, format string) string {
 	t.Helper()
 	root := t.TempDir()
@@ -285,6 +338,34 @@ func makeDashboardRadialGaugePackage(t *testing.T) string {
 		t.Fatalf("MkdirAll: %v", err)
 	}
 	if err := os.WriteFile(filepath.Join(packageDir, "gauge.yaml"), []byte(dashboardRadialGaugeYAML()), 0o600); err != nil {
+		t.Fatalf("WriteFile: %v", err)
+	}
+	return packageDir
+}
+
+func makeDashboardOdometerGaugePackage(t *testing.T) string {
+	t.Helper()
+	root := t.TempDir()
+	files := []string{
+		"assets/gauges/odometer/trip/panel.png",
+		"assets/gauges/odometer/trip/glass.png",
+		"assets/gauges/odometer/trip/digits.png",
+		"assets/gauges/odometer/trip/red_digits.png",
+	}
+	for _, path := range files {
+		fullPath := filepath.Join(root, path)
+		if err := os.MkdirAll(filepath.Dir(fullPath), 0o755); err != nil {
+			t.Fatalf("MkdirAll: %v", err)
+		}
+		if err := os.WriteFile(fullPath, []byte(path), 0o600); err != nil {
+			t.Fatalf("WriteFile: %v", err)
+		}
+	}
+	packageDir := filepath.Join(root, "assets", "gauges", "odometer", "trip")
+	if err := os.MkdirAll(packageDir, 0o755); err != nil {
+		t.Fatalf("MkdirAll: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(packageDir, "gauge.yaml"), []byte(dashboardOdometerGaugeYAML()), 0o600); err != nil {
 		t.Fatalf("WriteFile: %v", err)
 	}
 	return packageDir
@@ -355,6 +436,31 @@ value_map:
 `
 }
 
+func dashboardOdometerGaugeYAML() string {
+	return `id: dashboard_trip_odometer
+type: odometer
+sensor: trip_distance
+size:
+  width: 150
+  height: 60
+layers:
+  panel: panel.png
+  glass: glass.png
+odometer:
+  wheels:
+    - strip: digits.png
+      position: [10, 12]
+      window: { width: 12, height: 20 }
+    - strip: digits.png
+      position: [24, 12]
+      window: { width: 12, height: 20 }
+    - strip: red_digits.png
+      position: [42, 12]
+      window: { width: 12, height: 20 }
+      role: sub_unit
+`
+}
+
 func firstPartCharacter(widget Widget, character string) Part {
 	for _, part := range widget.Parts {
 		if part.Kind == PartKindCharacter && part.Character == character {
@@ -383,6 +489,8 @@ func gaugePartSequence(widget Widget) string {
 			parts = append(parts, "character:"+part.Character)
 		case PartKindNeedle:
 			parts = append(parts, fmt.Sprintf("needle:%.0f", part.Angle))
+		case PartKindWheelStrip:
+			parts = append(parts, fmt.Sprintf("wheel_strip:%d", part.Slot))
 		default:
 			parts = append(parts, part.Kind)
 		}
