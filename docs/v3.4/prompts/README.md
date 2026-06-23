@@ -18,6 +18,10 @@ Each prompt should be used in a fresh implementation chat after reading:
 | v3.4.3 | `v3.4.3-indicator-gauge.md` |
 | v3.4.4 | `v3.4.4-bar-gauge.md` |
 | v3.4.5 | `v3.4.5-segmented-gauge.md` |
+| v3.4.6 | `v3.4.6-example-asset-framework.md` |
+| v3.4.7 | `v3.4.7-ornate-timber-dashboard.md` |
+| v3.4.8 | `v3.4.8-neon-grid-dashboard.md` |
+| v3.4.9 | `v3.4.9-steam-scrap-dashboard.md` |
 
 ## Standard workflow
 
@@ -29,4 +33,6 @@ Each prompt should be used in a fresh implementation chat after reading:
 6. Open a PR.
 7. Stop.
 
-No wandering into the shed and accidentally building a font engine. That way lie tiny demons with measuring tapes.
+For v3.4.6 through v3.4.9, keep the work deterministic and local. Do not use remote image generation, downloaded stock art, or hand-edited opaque PNGs as the source of truth.
+
+No wandering into the shed and accidentally building a font engine. That way lie tiny layout gremlins with measuring tapes.

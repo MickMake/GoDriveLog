@@ -1,6 +1,6 @@
 # GoDriveLog v3.4 release plan
 
-Status: planning docs in progress
+Status: example dashboard tail planned
 Owner: gauge package implementor
 
 ## Purpose
@@ -8,6 +8,8 @@ Owner: gauge package implementor
 v3.4 defines the next gauge package model for the active Ebiten dashboard path.
 
 The release direction is gauge/display package cleanup and expansion. It does not introduce a platform packaging track.
+
+The original behaviour implementation slices are complete through v3.4.5. The remaining v3.4 tail adds generated example dashboards that prove the completed gauge types with repeatable assets.
 
 ## Release goal
 
@@ -112,6 +114,28 @@ segmented:
 
 With thresholds `25` and `50`, the downward hysteresis gap from `50` is `(50 - 25) * 25% = 6.25`. The selected `050` image remains active until the value drops below `43.75`.
 
+## Generated example dashboard tail
+
+After the behaviour slices are complete, v3.4 adds generated example dashboards. These examples must use deterministic local scripts and committed source/config/docs only. They must not depend on remote image generation, downloaded art, or hand-edited opaque assets.
+
+The example dashboard tail has four slices:
+
+| Version | Slice | Result |
+|---|---|---|
+| v3.4.6 | example asset generation framework | Add deterministic procedural asset generation structure, conventions, docs, and a minimal smoke-test theme. |
+| v3.4.7 | ornate timber dashboard | Add a master-carpenter style dashboard using multiple timber treatments, timber needles, timber ticks, and carved/inlaid visual language. |
+| v3.4.8 | neon-grid dashboard | Add a dark retro-tech dashboard with Tron-like neon blue glow, grid/circuit accents, and luminous gauge assets. |
+| v3.4.9 | steam-scrap dashboard | Add a steampunk/scrapyard dashboard with brass/copper/iron plates, extra pipes, wires, rivets, lamps, and intentionally overbuilt decoration. |
+
+Example dashboard rules:
+
+- Runtime gauge config still uses behaviour types only: `numeric`, `radial`, `odometer`, `indicator`, `bar`, and `segmented`.
+- Visual identity belongs in generated image assets and dashboard/package layout.
+- Generator-internal theme settings are allowed, but they must not create runtime `style` fields.
+- Decorative elements such as timber panels, pipes, grid lines, screw heads, or wires are background/overlay assets, not new renderer behaviour.
+- Generated PNGs should be reproducible from scripts with stable seed/config values.
+- Each themed dashboard should cover as many completed gauge types as practical.
+
 ## Planned implementation slices
 
 | Version | Slice | Result |
@@ -122,6 +146,10 @@ With thresholds `25` and `50`, the downward hysteresis gap from `50` is `(50 - 2
 | v3.4.3 | indicator gauge | Add off/on state rendering. |
 | v3.4.4 | bar gauge | Add first continuous transform behaviour for level/reveal. |
 | v3.4.5 | segmented gauge | Add `{percent}` discovery, threshold-gap hysteresis, and percent-threshold image selection. |
+| v3.4.6 | example asset generation framework | Add deterministic procedural asset generation structure and smoke-test output. |
+| v3.4.7 | ornate timber dashboard | Add generated ornate timber dashboard assets/config. |
+| v3.4.8 | neon-grid dashboard | Add generated Tron-like dark neon dashboard assets/config. |
+| v3.4.9 | steam-scrap dashboard | Add generated steampunk/scrapyard dashboard assets/config. |
 
 ## Branch-chat workflow
 
@@ -146,3 +174,4 @@ Each implementation chat should:
 - Do not preload all percent images for `segmented`.
 - Do not chase curved odometer wheel depth before flat strip scrolling works.
 - Do not add unrelated platform/package work here.
+- Do not use image-generation services, downloaded stock art, or non-reproducible manual PNG editing for the v3.4 example dashboard tail.
