@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Hard-renamed active gauge packages from `type: seven_segment` to `type: numeric`, including validation, dashboard routing, tests, and runnable example package YAML, with no compatibility alias.
 - Added v3.3.4 post-Fyne renderer housekeeping notes: active Go/module audit, renderer-boundary wording, baseline example geometry notes, Raspberry Pi Ebiten performance evidence, and v3.2 closure.
 - Recorded that no active Go package should import `fyne.io`; remaining Fyne references are historical docs, v3.2 docs, changelog entries, or the `fyne_legacy` notice only.
 - Documented that seven-segment digit positions in the example gauge packages are manually aligned source-artwork coordinates and may exceed the declared logical package size.

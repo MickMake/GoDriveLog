@@ -268,8 +268,8 @@ func (d Dashboard) renderWidget(configWidget v3config.WidgetConfig, states map[s
 		state := stateForSensor(pkg.Sensor, states)
 		var gaugeScene v3gauges.Scene
 		switch pkg.Type {
-		case v3gauges.TypeSevenSegment:
-			gaugeScene, err = v3gauges.SevenSegmentScene(pkg, v3gauges.Placement{Position: configWidget.Position, Scale: configWidget.Scale}, state)
+		case v3gauges.TypeNumeric:
+			gaugeScene, err = v3gauges.NumericScene(pkg, v3gauges.Placement{Position: configWidget.Position, Scale: configWidget.Scale}, state)
 		case v3gauges.TypeRadial:
 			gaugeScene, err = v3gauges.RadialScene(pkg, v3gauges.Placement{Position: configWidget.Position, Scale: configWidget.Scale}, state)
 		default:

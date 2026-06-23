@@ -1,5 +1,5 @@
 id: green_3_digit_speed
-type: seven_segment
+type: numeric
 sensor: speed
 format: "%03.0f"
 

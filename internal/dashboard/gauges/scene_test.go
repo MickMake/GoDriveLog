@@ -9,15 +9,15 @@ import (
 	"github.com/MickMake/GoDriveLog/internal/sensors"
 )
 
-func TestSevenSegmentSceneUsesPackageOwnedFormatPositionsAndStaticLayers(t *testing.T) {
-	pkg := loadSevenSegmentScenePackage(t, 4, "%04.0f")
+func TestNumericSceneUsesPackageOwnedFormatPositionsAndStaticLayers(t *testing.T) {
+	pkg := loadNumericScenePackage(t, 4, "%04.0f")
 
-	scene, err := SevenSegmentScene(pkg, Placement{Position: []int{780, 40}, Scale: 1.5}, okGaugeState("rpm", 12))
+	scene, err := NumericScene(pkg, Placement{Position: []int{780, 40}, Scale: 1.5}, okGaugeState("rpm", 12))
 	if err != nil {
-		t.Fatalf("SevenSegmentScene returned error: %v", err)
+		t.Fatalf("NumericScene returned error: %v", err)
 	}
 
-	if scene.PackageID != "test_4_digit_rpm" || scene.SensorID != "rpm" || scene.Type != TypeSevenSegment {
+	if scene.PackageID != "test_4_digit_rpm" || scene.SensorID != "rpm" || scene.Type != TypeNumeric {
 		t.Fatalf("scene identity = %#v", scene)
 	}
 	if scene.Text != "0012" || scene.Status != sensors.StatusOK {
@@ -41,11 +41,11 @@ func TestSevenSegmentSceneUsesPackageOwnedFormatPositionsAndStaticLayers(t *test
 	}
 }
 
-func TestSevenSegmentSceneEmitsPanelUnderDigitsAndGlassOverDigits(t *testing.T) {
-	pkg := loadSevenSegmentScenePackage(t, 4, "%04.0f")
-	scene, err := SevenSegmentScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("rpm", 12))
+func TestNumericSceneEmitsPanelUnderDigitsAndGlassOverDigits(t *testing.T) {
+	pkg := loadNumericScenePackage(t, 4, "%04.0f")
+	scene, err := NumericScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("rpm", 12))
 	if err != nil {
-		t.Fatalf("SevenSegmentScene returned error: %v", err)
+		t.Fatalf("NumericScene returned error: %v", err)
 	}
 	sequence := partLayerSequence(scene)
 	if !strings.HasPrefix(sequence, "layer:panel,") {
@@ -59,14 +59,14 @@ func TestSevenSegmentSceneEmitsPanelUnderDigitsAndGlassOverDigits(t *testing.T) 
 	}
 }
 
-func TestSevenSegmentSceneSupportsTwoThreeFourAndFiveDigitShapes(t *testing.T) {
+func TestNumericSceneSupportsTwoThreeFourAndFiveDigitShapes(t *testing.T) {
 	for _, count := range []int{2, 3, 4, 5} {
 		t.Run(fmt.Sprintf("%d_digits", count), func(t *testing.T) {
 			format := fmt.Sprintf("%%0%d.0f", count)
-			pkg := loadSevenSegmentScenePackage(t, count, format)
-			scene, err := SevenSegmentScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("rpm", 12))
+			pkg := loadNumericScenePackage(t, count, format)
+			scene, err := NumericScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("rpm", 12))
 			if err != nil {
-				t.Fatalf("SevenSegmentScene returned error: %v", err)
+				t.Fatalf("NumericScene returned error: %v", err)
 			}
 			if got := countSceneParts(scene, ScenePartKindCharacter); got != count {
 				t.Fatalf("expected %d character parts, got %d from %#v", count, got, scene.Parts)
@@ -79,8 +79,8 @@ func TestSevenSegmentSceneSupportsTwoThreeFourAndFiveDigitShapes(t *testing.T) {
 	}
 }
 
-func TestSevenSegmentSceneDoesNotRenderLiveDigitsForNonOKStates(t *testing.T) {
-	pkg := loadSevenSegmentScenePackage(t, 4, "%04.0f")
+func TestNumericSceneDoesNotRenderLiveDigitsForNonOKStates(t *testing.T) {
+	pkg := loadNumericScenePackage(t, 4, "%04.0f")
 	statuses := []string{
 		sensors.StatusMissing,
 		sensors.StatusUnsupported,
@@ -93,9 +93,9 @@ func TestSevenSegmentSceneDoesNotRenderLiveDigitsForNonOKStates(t *testing.T) {
 
 	for _, status := range statuses {
 		t.Run(status, func(t *testing.T) {
-			scene, err := SevenSegmentScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, sensors.SensorState{ID: "rpm", Status: status, Error: "not live"})
+			scene, err := NumericScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, sensors.SensorState{ID: "rpm", Status: status, Error: "not live"})
 			if err != nil {
-				t.Fatalf("SevenSegmentScene returned error: %v", err)
+				t.Fatalf("NumericScene returned error: %v", err)
 			}
 			if scene.Status != status || scene.Error != "not live" {
 				t.Fatalf("scene status/error = %q/%q", scene.Status, scene.Error)
@@ -119,19 +119,19 @@ func TestSevenSegmentSceneDoesNotRenderLiveDigitsForNonOKStates(t *testing.T) {
 	}
 }
 
-func TestSevenSegmentSceneSignatureChangesWithFormattedOutput(t *testing.T) {
-	pkg := loadSevenSegmentScenePackage(t, 4, "%04.0f")
-	first, err := SevenSegmentScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("rpm", 42.1))
+func TestNumericSceneSignatureChangesWithFormattedOutput(t *testing.T) {
+	pkg := loadNumericScenePackage(t, 4, "%04.0f")
+	first, err := NumericScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("rpm", 42.1))
 	if err != nil {
-		t.Fatalf("SevenSegmentScene returned error: %v", err)
+		t.Fatalf("NumericScene returned error: %v", err)
 	}
-	unchanged, err := SevenSegmentScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("rpm", 42.2))
+	unchanged, err := NumericScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("rpm", 42.2))
 	if err != nil {
-		t.Fatalf("SevenSegmentScene returned error: %v", err)
+		t.Fatalf("NumericScene returned error: %v", err)
 	}
-	changed, err := SevenSegmentScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("rpm", 43))
+	changed, err := NumericScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("rpm", 43))
 	if err != nil {
-		t.Fatalf("SevenSegmentScene returned error: %v", err)
+		t.Fatalf("NumericScene returned error: %v", err)
 	}
 
 	if first.Signature() != unchanged.Signature() {
@@ -142,27 +142,27 @@ func TestSevenSegmentSceneSignatureChangesWithFormattedOutput(t *testing.T) {
 	}
 }
 
-func TestSevenSegmentSceneSignatureIncludesDigitPositionsForNonOKState(t *testing.T) {
-	pkg := loadSevenSegmentScenePackage(t, 4, "%04.0f")
-	first, err := SevenSegmentScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, sensors.SensorState{ID: "rpm", Status: sensors.StatusTimeout})
+func TestNumericSceneSignatureIncludesDigitPositionsForNonOKState(t *testing.T) {
+	pkg := loadNumericScenePackage(t, 4, "%04.0f")
+	first, err := NumericScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, sensors.SensorState{ID: "rpm", Status: sensors.StatusTimeout})
 	if err != nil {
-		t.Fatalf("SevenSegmentScene returned error: %v", err)
+		t.Fatalf("NumericScene returned error: %v", err)
 	}
 	pkg.Digits.Positions[2] = []int{999, 12}
-	changed, err := SevenSegmentScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, sensors.SensorState{ID: "rpm", Status: sensors.StatusTimeout})
+	changed, err := NumericScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, sensors.SensorState{ID: "rpm", Status: sensors.StatusTimeout})
 	if err != nil {
-		t.Fatalf("SevenSegmentScene returned error: %v", err)
+		t.Fatalf("NumericScene returned error: %v", err)
 	}
 	if first.Signature() == changed.Signature() {
 		t.Fatalf("expected non-ok signature to change when digit positions change")
 	}
 }
 
-func TestSevenSegmentSceneRejectsMissingDecimalPointWhenFormatNeedsIt(t *testing.T) {
-	pkg := loadSevenSegmentScenePackage(t, 4, "%.1f")
+func TestNumericSceneRejectsMissingDecimalPointWhenFormatNeedsIt(t *testing.T) {
+	pkg := loadNumericScenePackage(t, 4, "%.1f")
 	pkg.DigitSet.DecimalPoint = ""
 
-	_, err := SevenSegmentScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("rpm", 12.3))
+	_, err := NumericScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("rpm", 12.3))
 	if err == nil {
 		t.Fatal("expected missing decimal point to fail")
 	}
@@ -253,11 +253,11 @@ func TestRadialSceneRejectsMissingNeedleLayer(t *testing.T) {
 	assertErrorContains(t, err, "needle")
 }
 
-func loadSevenSegmentScenePackage(t *testing.T, count int, format string) Package {
+func loadNumericScenePackage(t *testing.T, count int, format string) Package {
 	t.Helper()
 	root := makeGaugeFixtures(t)
 	packageDir := filepath.Join(root, "assets", "gauges", "7Seg", "amber", fmt.Sprintf("%d_digit_rpm", count))
-	writeGaugeYAML(t, packageDir, sevenSegmentGaugeYAML(count, format))
+	writeGaugeYAML(t, packageDir, numericGaugeYAML(count, format))
 	pkg, err := LoadPackage(packageDir)
 	if err != nil {
 		t.Fatalf("LoadPackage returned error: %v", err)
@@ -277,13 +277,13 @@ func loadRadialScenePackage(t *testing.T) Package {
 	return pkg
 }
 
-func sevenSegmentGaugeYAML(count int, format string) string {
+func numericGaugeYAML(count int, format string) string {
 	var positions strings.Builder
 	for slot := 0; slot < count; slot++ {
 		positions.WriteString(fmt.Sprintf("    - [%d, 12]\n", slot*10+2))
 	}
 	return fmt.Sprintf(`id: test_%d_digit_rpm
-type: seven_segment
+type: numeric
 sensor: rpm
 format: %q
 size:

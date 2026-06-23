@@ -1,8 +1,8 @@
 id: green_3_digit_temp
 # Three slots are intentional so the v3.2/v3.3 baseline can exercise -10..40
 # temperature values and verify minus-symbol rendering through the packaged
-# seven-segment gauge path.
-type: seven_segment
+# numeric gauge path.
+type: numeric
 sensor: coolant_temperature
 format: "%03.0f"
 

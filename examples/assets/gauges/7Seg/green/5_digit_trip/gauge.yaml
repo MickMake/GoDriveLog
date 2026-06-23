@@ -1,5 +1,5 @@
 id: green_5_digit_trip
-type: seven_segment
+type: numeric
 sensor: trip_distance
 format: "%05.0f"
 

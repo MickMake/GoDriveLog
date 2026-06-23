@@ -1,5 +1,5 @@
 id: green_2_digit_temp
-type: seven_segment
+type: numeric
 sensor: coolant_temperature
 format: "%02.0f"
 

@@ -300,7 +300,7 @@ func dashboardGaugeYAMLWithOffset(count int, format string, xOffset int) string 
 		positions.WriteString(fmt.Sprintf("    - [%d, 12]\n", slot*10+xOffset))
 	}
 	return fmt.Sprintf(`id: dashboard_%d_digit_rpm
-type: seven_segment
+type: numeric
 sensor: rpm
 format: %q
 size:

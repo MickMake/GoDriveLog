@@ -53,9 +53,9 @@ type ScenePart struct {
 	NeedlePivot Point
 }
 
-func SevenSegmentScene(pkg Package, placement Placement, state sensors.SensorState) (Scene, error) {
-	if pkg.Type != TypeSevenSegment {
-		return Scene{}, fmt.Errorf("gauge package %q type %q is not seven_segment", pkg.ID, pkg.Type)
+func NumericScene(pkg Package, placement Placement, state sensors.SensorState) (Scene, error) {
+	if pkg.Type != TypeNumeric {
+		return Scene{}, fmt.Errorf("gauge package %q type %q is not numeric", pkg.ID, pkg.Type)
 	}
 	if placement.Scale <= 0 {
 		return Scene{}, fmt.Errorf("gauge package %q placement scale must be greater than zero", pkg.ID)
