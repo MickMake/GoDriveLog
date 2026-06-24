@@ -242,6 +242,72 @@ func TestFrameworkSmokeDashboardConfigRunsHarness(t *testing.T) {
 	}
 }
 
+func TestOrnateTimberDashboardConfigRunsHarness(t *testing.T) {
+	configPath := setupExampleHarnessEnvironment(t, filepath.Join("examples", "dashboards", "ornate-timber.yaml"), "demo")
+
+	var sceneUpdates int
+	summary, err := Run(context.Background(), Options{
+		ConfigPath: configPath,
+		VehicleID:  "demo",
+		Pattern:    PatternSweep,
+		MaxEvents:  3,
+		Now: func() time.Time {
+			return time.Unix(0, 0)
+		},
+		Sink: func(scenes []v3dashboard.Scene) error {
+			sceneUpdates++
+			if len(scenes) != 1 {
+				t.Fatalf("scene count = %d, want 1", len(scenes))
+			}
+			if scenes[0].DashboardID != "ornate_timber" {
+				t.Fatalf("DashboardID = %q, want ornate_timber", scenes[0].DashboardID)
+			}
+			if len(scenes[0].Widgets) != 7 {
+				t.Fatalf("widget count = %d, want 7", len(scenes[0].Widgets))
+			}
+			widgetIDs := map[string]bool{}
+			for _, widget := range scenes[0].Widgets {
+				widgetIDs[widget.ID] = true
+			}
+			for _, id := range []string{
+				"panel_backplate",
+				"speed_numeric",
+				"rpm_radial",
+				"trip_odometer",
+				"fuel_bar",
+				"rpm_segmented",
+				"check_engine_indicator",
+			} {
+				if !widgetIDs[id] {
+					t.Fatalf("missing widget %q in ornate timber scene", id)
+				}
+			}
+			return nil
+		},
+	})
+	if err != nil {
+		t.Fatalf("Run returned error: %v", err)
+	}
+	if summary.VehicleID != "demo" {
+		t.Fatalf("summary.VehicleID = %q, want demo", summary.VehicleID)
+	}
+	if summary.Pattern != PatternSweep {
+		t.Fatalf("summary.Pattern = %q, want %q", summary.Pattern, PatternSweep)
+	}
+	if summary.SensorCount != 6 {
+		t.Fatalf("summary.SensorCount = %d, want 6", summary.SensorCount)
+	}
+	if summary.DashboardCount != 1 {
+		t.Fatalf("summary.DashboardCount = %d, want 1", summary.DashboardCount)
+	}
+	if summary.Events != 3 {
+		t.Fatalf("summary.Events = %d, want 3", summary.Events)
+	}
+	if sceneUpdates != 1 {
+		t.Fatalf("scene updates = %d, want 1", sceneUpdates)
+	}
+}
+
 func BenchmarkBaselineDashboardHarnessPatterns(b *testing.B) {
 	configPath := setupBaselineHarnessEnvironment(b)
 	patterns := []string{PatternFixed, PatternSweep, PatternHeartbeat}

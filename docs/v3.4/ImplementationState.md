@@ -1,8 +1,8 @@
 # GoDriveLog v3.4 implementation state
 
-Status: v3.4.6 example asset generation framework implemented
-Current target: v3.4.7 ornate timber dashboard
-Current branch: v3.4.6-example-asset-framework
+Status: v3.4.7 ornate timber dashboard implemented
+Current target: v3.4.8 neon-grid dashboard
+Current branch: v3.4.7-ornate-timber-dashboard
 
 ## Purpose
 
@@ -170,6 +170,15 @@ The v3.4.6 implementation adds:
 - a runnable smoke dashboard config at `examples/dashboards/framework-smoke.yaml`;
 - harness coverage proving the generated asset path loads through the active dashboard runtime.
 
+The v3.4.7 implementation adds:
+
+- `go run ./scripts/generate-example-assets -theme ornate-timber` as the ornate timber regeneration command;
+- committed `ornate-timber` review PNG copies under `examples/assets/v3.4/ornate-timber/`;
+- runnable ornate timber gauge packages plus local runtime artwork under `assets/gauges/v3.4/ornate-timber/`;
+- a runnable ornate timber dashboard config at `examples/dashboards/ornate-timber.yaml`;
+- gauge-package example coverage for `numeric`, `radial`, `odometer`, `indicator`, `bar`, and `segmented` inside one themed dashboard;
+- harness coverage proving the ornate timber example loads through the active dashboard runtime without new renderer behaviour.
+
 Example dashboard rules:
 
 - Use local deterministic scripts and stable seed/config values.
@@ -209,12 +218,12 @@ The generated example dashboard tail should add richer example coverage for the 
 | v3.4.4 | completed | Added `bar` package validation, required `value_map` normalization, package-space bottom-up clipping, dashboard routing, Ebiten source-rect clipping, and focused tests. |
 | v3.4.5 | completed | Added segmented percent-threshold discovery, raw-value normalization before selection, threshold-gap hysteresis, dashboard routing, and focused package/runtime tests. |
 | v3.4.6 | completed | Added the deterministic example-asset generation entry point, standard-library drawing helpers, committed `framework-smoke` output under `examples/assets/v3.4/`, a runnable smoke dashboard config, and harness coverage for the generated example path. |
+| v3.4.7 | completed | Added the ornate timber generated dashboard, committed generated theme artwork under `examples/assets/v3.4/ornate-timber/`, runnable gauge packages under `assets/gauges/v3.4/ornate-timber/`, a runnable ornate dashboard config, and harness coverage for the themed example path. |
 
 ## Pending slices
 
 | Version | Target | Notes |
 |---|---|---|
-| v3.4.7 | ornate timber dashboard | Master-carpenter timber dashboard using multiple timber treatments, timber needles, timber ticks, and carved/inlaid visual language. |
 | v3.4.8 | neon-grid dashboard | Dark retro-tech dashboard with neon blue glow, grid/circuit accents, and luminous gauge assets. |
 | v3.4.9 | steam-scrap dashboard | Steampunk/scrapyard dashboard with brass/copper/iron plates, pipes, wires, rivets, lamps, and deliberately overbuilt decoration. |
 

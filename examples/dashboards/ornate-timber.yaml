@@ -1,0 +1,130 @@
+# GoDriveLog v3.4 ornate timber dashboard
+#
+# Purpose:
+#   Exercise the completed v3.4 gauge families through one generated
+#   timber-themed dashboard without adding new renderer behaviour.
+#
+# Regenerate assets from the repository root:
+#   go run ./scripts/generate-example-assets -theme ornate-timber
+#
+# Run through the harness path from the repository root:
+#   go run ./cmd/GoDriveLog --harness --config ./examples/dashboards/ornate-timber.yaml --vehicle demo --pattern sweep --interval 50ms --duration 30s --renderer ebiten
+
+vehicles:
+  demo:
+    name: "Ornate Timber"
+    obd:
+      address: "serial:///dev/null"
+      timeout: 1000
+    logs:
+      - ornate_jsonl
+    dashboards:
+      - ornate_timber
+
+sensors:
+  speed:
+    type: virtual
+    unit: "km/h"
+    poll: 250
+    min: 0
+    max: 180
+
+  rpm:
+    type: virtual
+    unit: "rpm"
+    poll: 250
+    min: 0
+    max: 8000
+
+  trip_distance:
+    type: virtual
+    unit: "km"
+    poll: 250
+    min: 0
+    max: 9999
+
+  fuel_level:
+    type: virtual
+    unit: "%"
+    poll: 500
+    min: 0
+    max: 100
+
+  coolant_temperature:
+    type: virtual
+    unit: "C"
+    poll: 500
+    min: 40
+    max: 120
+
+  check_engine:
+    type: virtual
+    unit: "bool"
+    poll: 1000
+    min: 0
+    max: 1
+
+assets:
+  image_sets:
+    ornate_timber_panel:
+      background: "examples/assets/v3.4/ornate-timber/panel/background.png"
+      foreground: "examples/assets/v3.4/ornate-timber/panel/foreground.png"
+
+logs:
+  ornate_jsonl:
+    path: "logs/ornate-timber.jsonl"
+    sensors:
+      - speed
+      - rpm
+      - trip_distance
+      - fuel_level
+      - coolant_temperature
+      - check_engine
+
+dashboards:
+  ornate_timber:
+    display: "HDMI-1"
+    size:
+      width: 1280
+      height: 720
+    widgets:
+      - id: panel_backplate
+        type: image
+        asset: ornate_timber_panel
+        position: [0, 0]
+
+      - id: speed_numeric
+        type: gauge
+        gauge: assets/gauges/v3.4/ornate-timber/speed_numeric
+        position: [92, 104]
+        scale: 1.0
+
+      - id: rpm_radial
+        type: gauge
+        gauge: assets/gauges/v3.4/ornate-timber/radial_rpm
+        position: [472, 86]
+        scale: 1.0
+
+      - id: rpm_segmented
+        type: gauge
+        gauge: assets/gauges/v3.4/ornate-timber/rpm_segmented
+        position: [852, 110]
+        scale: 1.0
+
+      - id: fuel_bar
+        type: gauge
+        gauge: assets/gauges/v3.4/ornate-timber/fuel_bar
+        position: [1030, 192]
+        scale: 1.0
+
+      - id: trip_odometer
+        type: gauge
+        gauge: assets/gauges/v3.4/ornate-timber/trip_odometer
+        position: [104, 524]
+        scale: 1.0
+
+      - id: check_engine_indicator
+        type: gauge
+        gauge: assets/gauges/v3.4/ornate-timber/check_engine_indicator
+        position: [878, 528]
+        scale: 1.0

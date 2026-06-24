@@ -5,13 +5,15 @@ These assets are the committed output of the deterministic v3.4 example generato
 Source of truth:
 
 - generator entry point: `go run ./scripts/generate-example-assets`
-- active smoke-test theme: `framework-smoke`
+- committed themes: `framework-smoke`, `ornate-timber`
 - dashboard configs using this tree: `examples/dashboards/*.yaml`
 
 Regenerate from the repository root:
 
 ```bash
 go run ./scripts/generate-example-assets -theme framework-smoke
+go run ./scripts/generate-example-assets -theme ornate-timber
+go run ./scripts/generate-example-assets -theme all
 ```
 
 Conventions:
