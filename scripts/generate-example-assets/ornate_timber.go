@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image/color"
 	"math"
+	"os"
 	"path/filepath"
 
 	"github.com/MickMake/GoDriveLog/internal/assets/examplegen"
@@ -31,6 +32,160 @@ var ornatePalette = struct {
 	cream:    color.NRGBA{R: 223, G: 211, B: 180, A: 255},
 }
 
+var ornateRuntimeGaugePackages = map[string]string{
+	"check_engine_indicator": `id: ornate_timber_check_engine_indicator
+type: indicator
+sensor: check_engine
+
+size:
+  width: 108
+  height: 108
+
+layers:
+  bezel: bezel.png
+  face: face.png
+  off: off.png
+  on: on.png
+  glass: glass.png
+`,
+	"fuel_bar": `id: ornate_timber_fuel_bar
+type: bar
+sensor: fuel_level
+
+size:
+  width: 152
+  height: 300
+
+layers:
+  panel: panel.png
+  level: level.png
+  glass: glass.png
+
+value_map:
+  min: 0
+  max: 100
+  clamp: true
+
+bar:
+  mode: level
+  axis: vertical
+  origin: bottom
+  bounds: [56, 34, 40, 220]
+`,
+	"radial_rpm": `id: ornate_timber_radial_rpm
+type: radial
+sensor: rpm
+
+size:
+  width: 360
+  height: 360
+
+layers:
+  background: background.png
+  face: face.png
+  ticks: ticks.png
+  needle: needle.png
+  overlay: overlay.png
+
+pivot:
+  face: { x: 0.5, y: 0.5 }
+  needle: { x: 0.5, y: 0.5 }
+
+value_map:
+  min: 0
+  max: 8000
+  start_angle: -135
+  end_angle: 135
+  clamp: true
+`,
+	"rpm_segmented": `id: ornate_timber_rpm_segmented
+type: segmented
+sensor: rpm
+
+size:
+  width: 240
+  height: 144
+
+layers:
+  panel: panel.png
+  segments: levels/rpm_{percent:03}.png
+  glass: glass.png
+
+segmented:
+  hysteresis: 25
+`,
+	"speed_numeric": `id: ornate_timber_speed_numeric
+type: numeric
+sensor: speed
+format: "%03.0f"
+
+size:
+  width: 380
+  height: 160
+
+layers:
+  panel: panel.png
+  glass: glass.png
+
+digit_set:
+  background: digits/digit_back.png
+  characters:
+    "0": digits/digit_0.png
+    "1": digits/digit_1.png
+    "2": digits/digit_2.png
+    "3": digits/digit_3.png
+    "4": digits/digit_4.png
+    "5": digits/digit_5.png
+    "6": digits/digit_6.png
+    "7": digits/digit_7.png
+    "8": digits/digit_8.png
+    "9": digits/digit_9.png
+    "-": digits/digit_minus.png
+  decimal_point: digits/digit_dp.png
+  foreground: digits/digit_glass.png
+  spacing: 12
+
+digits:
+  count: 3
+  positions:
+    - [40, 30]
+    - [144, 30]
+    - [248, 30]
+`,
+	"trip_odometer": `id: ornate_timber_trip_odometer
+type: odometer
+sensor: trip_distance
+
+size:
+  width: 332
+  height: 118
+
+layers:
+  panel: panel.png
+  glass: glass.png
+
+odometer:
+  movement: smooth
+  wheels:
+    - strip: digits.png
+      position: [24, 28]
+      window: { width: 40, height: 56 }
+    - strip: digits.png
+      position: [82, 28]
+      window: { width: 40, height: 56 }
+    - strip: digits.png
+      position: [140, 28]
+      window: { width: 40, height: 56 }
+    - strip: digits.png
+      position: [198, 28]
+      window: { width: 40, height: 56 }
+    - strip: tenths.png
+      position: [256, 28]
+      window: { width: 40, height: 56 }
+      role: sub_unit
+`,
+}
+
 func generateOrnateTimber(repoRoot string) error {
 	exampleThemeRoot := filepath.Join(repoRoot, "examples", "assets", "v3.4", ornateTimberTheme)
 	exampleGaugeRoot := filepath.Join(exampleThemeRoot, "gauges")
@@ -54,8 +209,24 @@ func generateOrnateTimber(repoRoot string) error {
 			}
 		}
 	}
+	if err := writeOrnateTimberRuntimeGaugeYAML(runtimeGaugeRoot); err != nil {
+		return err
+	}
 
 	fmt.Printf("generated %s assets under %s and %s\n", ornateTimberTheme, exampleThemeRoot, runtimeGaugeRoot)
+	return nil
+}
+
+func writeOrnateTimberRuntimeGaugeYAML(runtimeGaugeRoot string) error {
+	for packageDir, yaml := range ornateRuntimeGaugePackages {
+		path := filepath.Join(runtimeGaugeRoot, packageDir, "gauge.yaml")
+		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+			return fmt.Errorf("create ornate runtime gauge package dir %s: %w", packageDir, err)
+		}
+		if err := os.WriteFile(path, []byte(yaml), 0o644); err != nil {
+			return fmt.Errorf("write ornate runtime gauge package %s: %w", packageDir, err)
+		}
+	}
 	return nil
 }
 

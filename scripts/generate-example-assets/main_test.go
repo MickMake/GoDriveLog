@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
 )
 
@@ -100,9 +101,15 @@ func TestOrnateTimberGeneratedAssetsIncludeExpectedPaths(t *testing.T) {
 
 	runtimeRoot := filepath.Join(root, "assets", "gauges", "v3.4", ornateTimberTheme)
 	for _, relative := range []string{
+		"check_engine_indicator/gauge.yaml",
+		"fuel_bar/gauge.yaml",
+		"radial_rpm/gauge.yaml",
+		"rpm_segmented/gauge.yaml",
 		"speed_numeric/panel.png",
+		"speed_numeric/gauge.yaml",
 		"speed_numeric/digits/digit_8.png",
 		"radial_rpm/needle.png",
+		"trip_odometer/gauge.yaml",
 		"trip_odometer/tenths.png",
 		"check_engine_indicator/on.png",
 		"fuel_bar/level.png",
@@ -112,6 +119,15 @@ func TestOrnateTimberGeneratedAssetsIncludeExpectedPaths(t *testing.T) {
 		if _, err := os.Stat(path); err != nil {
 			t.Fatalf("expected %s to exist: %v", path, err)
 		}
+	}
+
+	segmentedGaugePath := filepath.Join(runtimeRoot, "rpm_segmented", "gauge.yaml")
+	segmentedGauge, err := os.ReadFile(segmentedGaugePath)
+	if err != nil {
+		t.Fatalf("read %s: %v", segmentedGaugePath, err)
+	}
+	if !strings.Contains(string(segmentedGauge), "sensor: rpm") {
+		t.Fatalf("%s does not contain sensor: rpm", segmentedGaugePath)
 	}
 }
 
