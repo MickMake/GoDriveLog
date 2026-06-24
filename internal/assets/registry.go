@@ -88,6 +88,9 @@ type ImageAsset struct {
 //  2. current working directory / vehicle ID
 //  3. config directory
 //  4. current working directory
+//  5. /etc/godrivelog
+//  6. /usr/local/etc/godrivelog
+
 func DefaultSearchPaths(configPath, vehicleID string) ([]string, error) {
 	configDir := "."
 	if strings.TrimSpace(configPath) != "" {
