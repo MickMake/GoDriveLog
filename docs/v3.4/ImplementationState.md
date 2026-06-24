@@ -1,8 +1,8 @@
 # GoDriveLog v3.4 implementation state
 
-Status: v3.4.7 ornate timber dashboard implemented
+Status: v3.4.7.1 example layout cleanup completed
 Current target: v3.4.8 neon-grid dashboard
-Current branch: v3.4.7-ornate-timber-dashboard
+Current branch: v3.4.7.1-example-layout-cleanup
 
 ## Purpose
 
@@ -166,18 +166,26 @@ The v3.4.6 implementation adds:
 
 - `go run ./scripts/generate-example-assets -theme framework-smoke` as the deterministic asset-generation entry point;
 - a small reusable drawing helper package under `internal/assets/examplegen` using only the Go standard library;
-- committed `framework-smoke` assets under `examples/assets/v3.4/framework-smoke/`;
-- a runnable smoke dashboard config at `examples/dashboards/framework-smoke.yaml`;
+- committed `framework-smoke` assets under `examples/framework-smoke/assets/`;
+- a runnable smoke dashboard config at `examples/framework-smoke/dashboard.yaml`;
 - harness coverage proving the generated asset path loads through the active dashboard runtime.
 
 The v3.4.7 implementation adds:
 
 - `go run ./scripts/generate-example-assets -theme ornate-timber` as the ornate timber regeneration command;
-- committed `ornate-timber` review PNG copies under `examples/assets/v3.4/ornate-timber/`;
-- runnable ornate timber gauge packages plus local runtime artwork under `assets/gauges/v3.4/ornate-timber/`;
-- a runnable ornate timber dashboard config at `examples/dashboards/ornate-timber.yaml`;
+- committed `ornate-timber` dashboard-local artwork under `examples/ornate-timber/assets/`;
+- runnable ornate timber gauge packages with `gauge.yaml` beside the local assets under `examples/ornate-timber/assets/gauges/`;
+- a runnable ornate timber dashboard config at `examples/ornate-timber/dashboard.yaml`;
 - gauge-package example coverage for `numeric`, `radial`, `odometer`, `indicator`, `bar`, and `segmented` inside one themed dashboard;
 - harness coverage proving the ornate timber example loads through the active dashboard runtime without new renderer behaviour.
+
+The v3.4.7.1 cleanup adds:
+
+- self-contained generated example dashboard directories under `examples/<dashboard_name>/`;
+- dashboard configs moved from `examples/dashboards/` to `examples/<dashboard_name>/dashboard.yaml`;
+- dashboard-local assets moved from `examples/assets/v3.4/` to `examples/<dashboard_name>/assets/`;
+- runtime gauge packages moved from `assets/gauges/v3.4/` to `examples/<dashboard_name>/assets/gauges/`;
+- a movement manifest at `docs/v3.4/ExampleLayoutMoves.md`.
 
 Example dashboard rules:
 
@@ -217,8 +225,9 @@ The generated example dashboard tail should add richer example coverage for the 
 | v3.4.3 | completed | Added `indicator` package validation, required `on` layer with optional `off` layer, two-state scene selection, dashboard gauge routing, and focused tests. |
 | v3.4.4 | completed | Added `bar` package validation, required `value_map` normalization, package-space bottom-up clipping, dashboard routing, Ebiten source-rect clipping, and focused tests. |
 | v3.4.5 | completed | Added segmented percent-threshold discovery, raw-value normalization before selection, threshold-gap hysteresis, dashboard routing, and focused package/runtime tests. |
-| v3.4.6 | completed | Added the deterministic example-asset generation entry point, standard-library drawing helpers, committed `framework-smoke` output under `examples/assets/v3.4/`, a runnable smoke dashboard config, and harness coverage for the generated example path. |
-| v3.4.7 | completed | Added the ornate timber generated dashboard, committed generated theme artwork under `examples/assets/v3.4/ornate-timber/`, runnable gauge packages under `assets/gauges/v3.4/ornate-timber/`, a runnable ornate dashboard config, and harness coverage for the themed example path. |
+| v3.4.6 | completed | Added the deterministic example-asset generation entry point, standard-library drawing helpers, committed `framework-smoke` output under `examples/framework-smoke/assets/`, a runnable smoke dashboard config, and harness coverage for the generated example path. |
+| v3.4.7 | completed | Added the ornate timber generated dashboard, committed generated theme artwork under `examples/ornate-timber/assets/`, runnable gauge packages under `examples/ornate-timber/assets/gauges/`, a runnable ornate dashboard config, and harness coverage for the themed example path. |
+| v3.4.7.1 | completed | Rehomed the generated framework-smoke and ornate-timber example dashboards under self-contained `examples/<dashboard_name>/` directories, including dashboard configs, dashboard-local assets, and co-located gauge packages. |
 
 ## Pending slices
 

@@ -12,9 +12,9 @@ func TestEvaluateConfiguredConditionFromDecoderValue(t *testing.T) {
 	registry := makeRegistry(t)
 	dashboard := baseDashboard()
 	dashboard.Blocks = append(dashboard.Blocks, config.DashboardBlockConfig{
-		ID:      "redline_glow",
-		Type:    config.DashboardBlockImage,
-		Asset:   "background",
+		ID:       "redline_glow",
+		Type:     config.DashboardBlockImage,
+		Asset:    "background",
 		Geometry: config.RectConfig{Width: 800, Height: 480},
 		Condition: config.DashboardConditionConfig{
 			Decoder: "rpm_warning",
@@ -47,9 +47,9 @@ func TestEvaluateConfiguredConditionFromSensorStatus(t *testing.T) {
 	registry := makeRegistry(t)
 	dashboard := baseDashboard()
 	dashboard.Blocks = append(dashboard.Blocks, config.DashboardBlockConfig{
-		ID:      "stale_indicator",
-		Type:    config.DashboardBlockImage,
-		Asset:   "background",
+		ID:       "stale_indicator",
+		Type:     config.DashboardBlockImage,
+		Asset:    "background",
 		Geometry: config.RectConfig{Width: 100, Height: 40},
 		Condition: config.DashboardConditionConfig{
 			Sensor: "rpm",

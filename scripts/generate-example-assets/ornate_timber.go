@@ -187,33 +187,30 @@ odometer:
 }
 
 func generateOrnateTimber(repoRoot string) error {
-	exampleThemeRoot := filepath.Join(repoRoot, "examples", "assets", "v3.4", ornateTimberTheme)
+	exampleThemeRoot := filepath.Join(repoRoot, "examples", ornateTimberTheme, "assets")
 	exampleGaugeRoot := filepath.Join(exampleThemeRoot, "gauges")
-	runtimeGaugeRoot := filepath.Join(repoRoot, "assets", "gauges", "v3.4", ornateTimberTheme)
 
 	if err := generateOrnateTimberPanel(exampleThemeRoot); err != nil {
 		return err
 	}
 
-	for _, gaugesRoot := range []string{exampleGaugeRoot, runtimeGaugeRoot} {
-		for _, generate := range []func(string) error{
-			generateOrnateTimberNumeric,
-			generateOrnateTimberRadial,
-			generateOrnateTimberOdometer,
-			generateOrnateTimberIndicator,
-			generateOrnateTimberBar,
-			generateOrnateTimberSegmented,
-		} {
-			if err := generate(gaugesRoot); err != nil {
-				return err
-			}
+	for _, generate := range []func(string) error{
+		generateOrnateTimberNumeric,
+		generateOrnateTimberRadial,
+		generateOrnateTimberOdometer,
+		generateOrnateTimberIndicator,
+		generateOrnateTimberBar,
+		generateOrnateTimberSegmented,
+	} {
+		if err := generate(exampleGaugeRoot); err != nil {
+			return err
 		}
 	}
-	if err := writeOrnateTimberRuntimeGaugeYAML(runtimeGaugeRoot); err != nil {
+	if err := writeOrnateTimberRuntimeGaugeYAML(exampleGaugeRoot); err != nil {
 		return err
 	}
 
-	fmt.Printf("generated %s assets under %s and %s\n", ornateTimberTheme, exampleThemeRoot, runtimeGaugeRoot)
+	fmt.Printf("generated %s assets under %s\n", ornateTimberTheme, exampleThemeRoot)
 	return nil
 }
 

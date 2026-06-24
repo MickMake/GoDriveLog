@@ -16,7 +16,7 @@ func TestFrameworkSmokeGeneratedDigitAssetsShareCellDimensions(t *testing.T) {
 		t.Fatalf("generateFrameworkSmoke: %v", err)
 	}
 
-	digitsRoot := filepath.Join(root, "examples", "assets", "v3.4", frameworkSmokeTheme, "digits")
+	digitsRoot := filepath.Join(root, "examples", frameworkSmokeTheme, "assets", "digits")
 	want := readPNGSize(t, filepath.Join(digitsRoot, "digit_back.png"))
 
 	for _, name := range []string{
@@ -48,7 +48,7 @@ func TestOrnateTimberGeneratedDigitAssetsShareCellDimensions(t *testing.T) {
 		t.Fatalf("generateOrnateTimber: %v", err)
 	}
 
-	digitsRoot := filepath.Join(root, "examples", "assets", "v3.4", ornateTimberTheme, "gauges", "speed_numeric", "digits")
+	digitsRoot := filepath.Join(root, "examples", ornateTimberTheme, "assets", "gauges", "speed_numeric", "digits")
 	want := readPNGSize(t, filepath.Join(digitsRoot, "digit_back.png"))
 
 	for _, name := range []string{
@@ -80,7 +80,8 @@ func TestOrnateTimberGeneratedAssetsIncludeExpectedPaths(t *testing.T) {
 		t.Fatalf("generateOrnateTimber: %v", err)
 	}
 
-	themeRoot := filepath.Join(root, "examples", "assets", "v3.4", ornateTimberTheme)
+	themeRoot := filepath.Join(root, "examples", ornateTimberTheme, "assets")
+	runtimeRoot := filepath.Join(themeRoot, "gauges")
 	for _, relative := range []string{
 		"panel/background.png",
 		"panel/foreground.png",
@@ -99,7 +100,6 @@ func TestOrnateTimberGeneratedAssetsIncludeExpectedPaths(t *testing.T) {
 		}
 	}
 
-	runtimeRoot := filepath.Join(root, "assets", "gauges", "v3.4", ornateTimberTheme)
 	for _, relative := range []string{
 		"check_engine_indicator/gauge.yaml",
 		"fuel_bar/gauge.yaml",
@@ -121,13 +121,52 @@ func TestOrnateTimberGeneratedAssetsIncludeExpectedPaths(t *testing.T) {
 		}
 	}
 
-	segmentedGaugePath := filepath.Join(runtimeRoot, "rpm_segmented", "gauge.yaml")
+	segmentedGaugePath := filepath.Join(themeRoot, "gauges", "rpm_segmented", "gauge.yaml")
 	segmentedGauge, err := os.ReadFile(segmentedGaugePath)
 	if err != nil {
 		t.Fatalf("read %s: %v", segmentedGaugePath, err)
 	}
 	if !strings.Contains(string(segmentedGauge), "sensor: rpm") {
 		t.Fatalf("%s does not contain sensor: rpm", segmentedGaugePath)
+	}
+
+	for _, relative := range []string{
+		"examples/dashboards/framework-smoke.yaml",
+		"examples/dashboards/ornate-timber.yaml",
+		"examples/assets/v3.4/framework-smoke",
+		"examples/assets/v3.4/ornate-timber",
+		"assets/gauges/v3.4/ornate-timber",
+	} {
+		path := filepath.Join(root, relative)
+		if _, err := os.Stat(path); !os.IsNotExist(err) {
+			t.Fatalf("expected %s to be removed, got err=%v", path, err)
+		}
+	}
+}
+
+func TestCommittedExampleDashboardsUseSelfContainedLayout(t *testing.T) {
+	repoRoot := testRepoRoot(t)
+
+	for _, relative := range []string{
+		"examples/framework-smoke/dashboard.yaml",
+		"examples/framework-smoke/assets/panel/background.png",
+		"examples/framework-smoke/assets/panel/foreground.png",
+		"examples/framework-smoke/assets/digits/digit_back.png",
+		"examples/framework-smoke/assets/indicator/lamp_on.png",
+		"examples/ornate-timber/dashboard.yaml",
+		"examples/ornate-timber/assets/panel/background.png",
+		"examples/ornate-timber/assets/panel/foreground.png",
+		"examples/ornate-timber/assets/gauges/speed_numeric/gauge.yaml",
+		"examples/ornate-timber/assets/gauges/radial_rpm/gauge.yaml",
+		"examples/ornate-timber/assets/gauges/trip_odometer/gauge.yaml",
+		"examples/ornate-timber/assets/gauges/check_engine_indicator/gauge.yaml",
+		"examples/ornate-timber/assets/gauges/fuel_bar/gauge.yaml",
+		"examples/ornate-timber/assets/gauges/rpm_segmented/gauge.yaml",
+	} {
+		path := filepath.Join(repoRoot, relative)
+		if _, err := os.Stat(path); err != nil {
+			t.Fatalf("expected %s to exist: %v", path, err)
+		}
 	}
 }
 

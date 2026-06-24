@@ -9,7 +9,7 @@
 #   go run ./scripts/generate-example-assets -theme framework-smoke
 #
 # Run through the harness path from the repository root:
-#   go run ./cmd/GoDriveLog --harness --config ./examples/dashboards/framework-smoke.yaml --vehicle demo --pattern sweep --interval 50ms --duration 30s --renderer ebiten
+#   go run ./cmd/GoDriveLog --harness --config ./examples/framework-smoke/dashboard.yaml --vehicle demo --pattern sweep --interval 50ms --duration 30s --renderer ebiten
 
 vehicles:
   demo:
@@ -47,36 +47,36 @@ sensors:
 assets:
   digit_sets:
     smoke_digits:
-      background: "examples/assets/v3.4/framework-smoke/digits/digit_back.png"
+      background: "assets/digits/digit_back.png"
       characters:
-        "0": "examples/assets/v3.4/framework-smoke/digits/digit_0.png"
-        "1": "examples/assets/v3.4/framework-smoke/digits/digit_1.png"
-        "2": "examples/assets/v3.4/framework-smoke/digits/digit_2.png"
-        "3": "examples/assets/v3.4/framework-smoke/digits/digit_3.png"
-        "4": "examples/assets/v3.4/framework-smoke/digits/digit_4.png"
-        "5": "examples/assets/v3.4/framework-smoke/digits/digit_5.png"
-        "6": "examples/assets/v3.4/framework-smoke/digits/digit_6.png"
-        "7": "examples/assets/v3.4/framework-smoke/digits/digit_7.png"
-        "8": "examples/assets/v3.4/framework-smoke/digits/digit_8.png"
-        "9": "examples/assets/v3.4/framework-smoke/digits/digit_9.png"
-        "-": "examples/assets/v3.4/framework-smoke/digits/digit_minus.png"
-      decimal_point: "examples/assets/v3.4/framework-smoke/digits/digit_dp.png"
-      foreground: "examples/assets/v3.4/framework-smoke/digits/digit_glass.png"
+        "0": "assets/digits/digit_0.png"
+        "1": "assets/digits/digit_1.png"
+        "2": "assets/digits/digit_2.png"
+        "3": "assets/digits/digit_3.png"
+        "4": "assets/digits/digit_4.png"
+        "5": "assets/digits/digit_5.png"
+        "6": "assets/digits/digit_6.png"
+        "7": "assets/digits/digit_7.png"
+        "8": "assets/digits/digit_8.png"
+        "9": "assets/digits/digit_9.png"
+        "-": "assets/digits/digit_minus.png"
+      decimal_point: "assets/digits/digit_dp.png"
+      foreground: "assets/digits/digit_glass.png"
       spacing: 6
 
   indicator_sets:
     warning_lamp:
-      background: "examples/assets/v3.4/framework-smoke/indicator/lamp_back.png"
+      background: "assets/indicator/lamp_back.png"
       states:
-        off: "examples/assets/v3.4/framework-smoke/indicator/lamp_off.png"
-        on: "examples/assets/v3.4/framework-smoke/indicator/lamp_on.png"
-        unknown: "examples/assets/v3.4/framework-smoke/indicator/lamp_unknown.png"
-      foreground: "examples/assets/v3.4/framework-smoke/indicator/lamp_glass.png"
+        off: "assets/indicator/lamp_off.png"
+        on: "assets/indicator/lamp_on.png"
+        unknown: "assets/indicator/lamp_unknown.png"
+      foreground: "assets/indicator/lamp_glass.png"
 
   image_sets:
     framework_smoke_panel:
-      background: "examples/assets/v3.4/framework-smoke/panel/background.png"
-      foreground: "examples/assets/v3.4/framework-smoke/panel/foreground.png"
+      background: "assets/panel/background.png"
+      foreground: "assets/panel/foreground.png"
 
 logs:
   smoke_jsonl:

@@ -48,7 +48,7 @@ func run(repoRoot, theme string) error {
 }
 
 func generateFrameworkSmoke(repoRoot string) error {
-	themeRoot := filepath.Join(repoRoot, "examples", "assets", "v3.4", frameworkSmokeTheme)
+	themeRoot := filepath.Join(repoRoot, "examples", frameworkSmokeTheme, "assets")
 
 	if err := generatePanel(themeRoot); err != nil {
 		return err
