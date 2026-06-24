@@ -1,0 +1,14 @@
+id: steam_scrap_boiler_warning_indicator
+type: indicator
+sensor: boiler_warning
+
+size:
+  width: 112
+  height: 112
+
+layers:
+  bezel: bezel.png
+  face: face.png
+  off: off.png
+  on: on.png
+  glass: glass.png

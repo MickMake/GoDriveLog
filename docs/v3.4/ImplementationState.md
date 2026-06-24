@@ -1,8 +1,8 @@
 # GoDriveLog v3.4 implementation state
 
-Status: v3.4.8 neon-grid dashboard implemented
-Current target: v3.4.9 steam-scrap dashboard
-Current branch: v3.4.8-neon-grid-dashboard
+Status: v3.4.9 steam-scrap dashboard implemented
+Current target: none - v3.4 dashboard tail complete
+Current branch: v3.4.9-steam-scrap-dashboard
 
 ## Purpose
 
@@ -196,6 +196,15 @@ The v3.4.8 implementation adds:
 - gauge-package example coverage for `numeric`, `radial`, `odometer`, `indicator`, `bar`, and `segmented` inside one dark retro-tech themed dashboard;
 - harness coverage proving the neon-grid example loads through the active dashboard runtime without new renderer behaviour.
 
+The v3.4.9 implementation adds:
+
+- `go run ./scripts/generate-example-assets -theme steam-scrap` as the steam-scrap regeneration command;
+- committed `steam-scrap` dashboard-local artwork under `examples/steam-scrap/assets/`;
+- runnable steam-scrap gauge packages with `gauge.yaml` beside the local assets under `examples/steam-scrap/assets/gauges/`;
+- a runnable steam-scrap dashboard config at `examples/steam-scrap/dashboard.yaml`;
+- gauge-package example coverage for `numeric`, `radial`, `odometer`, `indicator`, `bar`, and `segmented` inside one brass, iron, and salvaged-hardware themed dashboard;
+- harness coverage proving the steam-scrap example loads through the active dashboard runtime without new renderer behaviour.
+
 Example dashboard rules:
 
 - Use local deterministic scripts and stable seed/config values.
@@ -238,12 +247,13 @@ The generated example dashboard tail should add richer example coverage for the 
 | v3.4.7 | completed | Added the ornate timber generated dashboard, committed generated theme artwork under `examples/ornate-timber/assets/`, runnable gauge packages under `examples/ornate-timber/assets/gauges/`, a runnable ornate dashboard config, and harness coverage for the themed example path. |
 | v3.4.7.1 | completed | Rehomed the generated framework-smoke and ornate-timber example dashboards under self-contained `examples/<dashboard_name>/` directories, including dashboard configs, dashboard-local assets, and co-located gauge packages. |
 | v3.4.8 | completed | Added the neon-grid generated dashboard, committed generated theme artwork under `examples/neon-grid/assets/`, runnable gauge packages under `examples/neon-grid/assets/gauges/`, a runnable neon-grid dashboard config, and harness coverage for the themed example path. |
+| v3.4.9 | completed | Added the steam-scrap generated dashboard, committed generated theme artwork under `examples/steam-scrap/assets/`, runnable gauge packages under `examples/steam-scrap/assets/gauges/`, a runnable steam-scrap dashboard config, and harness coverage for the themed example path. |
 
 ## Pending slices
 
 | Version | Target | Notes |
 |---|---|---|
-| v3.4.9 | steam-scrap dashboard | Steampunk/scrapyard dashboard with brass/copper/iron plates, pipes, wires, rivets, lamps, and deliberately overbuilt decoration. |
+| none | v3.4 complete | The planned generated example dashboard tail is complete through v3.4.9. |
 
 ## Update rule
 

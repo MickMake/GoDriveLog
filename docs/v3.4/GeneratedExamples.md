@@ -153,6 +153,23 @@ examples/neon-grid/assets/
 
 The neon-grid dashboard uses dashboard-local panel and gauge assets to exercise `numeric`, `radial`, `odometer`, `indicator`, `bar`, and `segmented` through the normal `type: gauge` runtime path. The generator writes panel art and co-located gauge packages under `examples/neon-grid/assets/`, keeping the dark retro-tech identity in images and layout rather than in renderer behaviour or runtime style fields.
 
+## v3.4.9 steam-scrap output
+
+The steam-scrap slice now uses:
+
+```bash
+go run ./scripts/generate-example-assets -theme steam-scrap
+```
+
+Current committed steam-scrap output:
+
+```text
+examples/steam-scrap/dashboard.yaml
+examples/steam-scrap/assets/
+```
+
+The steam-scrap dashboard uses dashboard-local panel and gauge assets to exercise `numeric`, `radial`, `odometer`, `indicator`, `bar`, and `segmented` through the normal `type: gauge` runtime path. The generator writes weathered metal panel art and co-located gauge packages under `examples/steam-scrap/assets/`, keeping the brass, copper, iron, pipes, lamps, and salvaged-hardware identity in images and layout rather than in renderer behaviour or runtime style fields.
+
 The cleanup movement manifest records the old-to-new path mapping for both example dashboards and is linked from `docs/v3.4/ExampleLayoutMoves.md`.
 
 ## Gauge coverage target

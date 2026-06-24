@@ -14,11 +14,12 @@ import (
 const frameworkSmokeTheme = "framework-smoke"
 const ornateTimberTheme = "ornate-timber"
 const neonGridTheme = "neon-grid"
+const steamScrapTheme = "steam-scrap"
 
 func main() {
 	var (
 		repoRoot = flag.String("repo-root", ".", "repository root")
-		theme    = flag.String("theme", frameworkSmokeTheme, "theme to generate: framework-smoke, ornate-timber, neon-grid, or all")
+		theme    = flag.String("theme", frameworkSmokeTheme, "theme to generate: framework-smoke, ornate-timber, neon-grid, steam-scrap, or all")
 	)
 	flag.Parse()
 
@@ -40,6 +41,8 @@ func run(repoRoot, theme string) error {
 		return generateOrnateTimber(root)
 	case neonGridTheme:
 		return generateNeonGrid(root)
+	case steamScrapTheme:
+		return generateSteamScrap(root)
 	case "all":
 		if err := generateFrameworkSmoke(root); err != nil {
 			return err
@@ -47,9 +50,12 @@ func run(repoRoot, theme string) error {
 		if err := generateOrnateTimber(root); err != nil {
 			return err
 		}
-		return generateNeonGrid(root)
+		if err := generateNeonGrid(root); err != nil {
+			return err
+		}
+		return generateSteamScrap(root)
 	default:
-		return fmt.Errorf("unsupported theme %q; supported themes: %s, %s, %s, all", theme, frameworkSmokeTheme, ornateTimberTheme, neonGridTheme)
+		return fmt.Errorf("unsupported theme %q; supported themes: %s, %s, %s, %s, all", theme, frameworkSmokeTheme, ornateTimberTheme, neonGridTheme, steamScrapTheme)
 	}
 }
 

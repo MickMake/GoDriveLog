@@ -106,6 +106,38 @@ func TestNeonGridGeneratedDigitAssetsShareCellDimensions(t *testing.T) {
 	}
 }
 
+func TestSteamScrapGeneratedDigitAssetsShareCellDimensions(t *testing.T) {
+	root := t.TempDir()
+	if err := generateSteamScrap(root); err != nil {
+		t.Fatalf("generateSteamScrap: %v", err)
+	}
+
+	digitsRoot := filepath.Join(root, "examples", steamScrapTheme, "assets", "gauges", "speed_numeric", "digits")
+	want := readPNGSize(t, filepath.Join(digitsRoot, "digit_back.png"))
+
+	for _, name := range []string{
+		"digit_back.png",
+		"digit_glass.png",
+		"digit_0.png",
+		"digit_1.png",
+		"digit_2.png",
+		"digit_3.png",
+		"digit_4.png",
+		"digit_5.png",
+		"digit_6.png",
+		"digit_7.png",
+		"digit_8.png",
+		"digit_9.png",
+		"digit_minus.png",
+		"digit_dp.png",
+	} {
+		got := readPNGSize(t, filepath.Join(digitsRoot, name))
+		if got != want {
+			t.Fatalf("%s size = %v, want %v for the steam-scrap digit cell", name, got, want)
+		}
+	}
+}
+
 func TestOrnateTimberGeneratedAssetsIncludeExpectedPaths(t *testing.T) {
 	root := t.TempDir()
 	if err := generateOrnateTimber(root); err != nil {
@@ -233,6 +265,63 @@ func TestNeonGridGeneratedAssetsIncludeExpectedPaths(t *testing.T) {
 	}
 }
 
+func TestSteamScrapGeneratedAssetsIncludeExpectedPaths(t *testing.T) {
+	root := t.TempDir()
+	if err := generateSteamScrap(root); err != nil {
+		t.Fatalf("generateSteamScrap: %v", err)
+	}
+
+	themeRoot := filepath.Join(root, "examples", steamScrapTheme, "assets")
+	runtimeRoot := filepath.Join(themeRoot, "gauges")
+	for _, relative := range []string{
+		"panel/background.png",
+		"panel/foreground.png",
+		"gauges/speed_numeric/panel.png",
+		"gauges/speed_numeric/digits/digit_8.png",
+		"gauges/radial_rpm/needle.png",
+		"gauges/trip_odometer/digits.png",
+		"gauges/trip_odometer/tenths.png",
+		"gauges/boiler_warning_indicator/on.png",
+		"gauges/boiler_pressure_bar/level.png",
+		"gauges/rpm_segmented/levels/rpm_100.png",
+	} {
+		path := filepath.Join(themeRoot, relative)
+		if _, err := os.Stat(path); err != nil {
+			t.Fatalf("expected %s to exist: %v", path, err)
+		}
+	}
+
+	for _, relative := range []string{
+		"boiler_warning_indicator/gauge.yaml",
+		"boiler_pressure_bar/gauge.yaml",
+		"radial_rpm/gauge.yaml",
+		"rpm_segmented/gauge.yaml",
+		"speed_numeric/panel.png",
+		"speed_numeric/gauge.yaml",
+		"speed_numeric/digits/digit_8.png",
+		"radial_rpm/needle.png",
+		"trip_odometer/gauge.yaml",
+		"trip_odometer/tenths.png",
+		"boiler_warning_indicator/on.png",
+		"boiler_pressure_bar/level.png",
+		"rpm_segmented/levels/rpm_100.png",
+	} {
+		path := filepath.Join(runtimeRoot, relative)
+		if _, err := os.Stat(path); err != nil {
+			t.Fatalf("expected %s to exist: %v", path, err)
+		}
+	}
+
+	segmentedGaugePath := filepath.Join(themeRoot, "gauges", "rpm_segmented", "gauge.yaml")
+	segmentedGauge, err := os.ReadFile(segmentedGaugePath)
+	if err != nil {
+		t.Fatalf("read %s: %v", segmentedGaugePath, err)
+	}
+	if !strings.Contains(string(segmentedGauge), "sensor: rpm") {
+		t.Fatalf("%s does not contain sensor: rpm", segmentedGaugePath)
+	}
+}
+
 func TestCommittedExampleDashboardsUseSelfContainedLayout(t *testing.T) {
 	repoRoot := testRepoRoot(t)
 
@@ -260,6 +349,15 @@ func TestCommittedExampleDashboardsUseSelfContainedLayout(t *testing.T) {
 		"examples/neon-grid/assets/gauges/check_engine_indicator/gauge.yaml",
 		"examples/neon-grid/assets/gauges/coolant_bar/gauge.yaml",
 		"examples/neon-grid/assets/gauges/rpm_segmented/gauge.yaml",
+		"examples/steam-scrap/dashboard.yaml",
+		"examples/steam-scrap/assets/panel/background.png",
+		"examples/steam-scrap/assets/panel/foreground.png",
+		"examples/steam-scrap/assets/gauges/speed_numeric/gauge.yaml",
+		"examples/steam-scrap/assets/gauges/radial_rpm/gauge.yaml",
+		"examples/steam-scrap/assets/gauges/trip_odometer/gauge.yaml",
+		"examples/steam-scrap/assets/gauges/boiler_warning_indicator/gauge.yaml",
+		"examples/steam-scrap/assets/gauges/boiler_pressure_bar/gauge.yaml",
+		"examples/steam-scrap/assets/gauges/rpm_segmented/gauge.yaml",
 	} {
 		path := filepath.Join(repoRoot, relative)
 		if _, err := os.Stat(path); err != nil {
