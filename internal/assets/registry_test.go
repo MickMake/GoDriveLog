@@ -54,6 +54,8 @@ func TestDefaultSearchPathsUsesExpectedOrder(t *testing.T) {
 		filepath.Join(currentPwd, "test_vehicle"),
 		configRoot,
 		currentPwd,
+		"/etc/godrivelog",
+		"/usr/local/etc/godrivelog",
 	}
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("DefaultSearchPaths order = %#v, want %#v", got, want)

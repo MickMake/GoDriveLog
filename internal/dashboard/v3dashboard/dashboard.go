@@ -278,7 +278,7 @@ func (d Dashboard) renderWidget(configWidget v3config.WidgetConfig, states map[s
 		indicatorState := indicatorStateFor(state)
 		widget.Parts = appendIndicatorParts(widget.Parts, set, indicatorState)
 	case v3config.WidgetTypeGauge:
-  pkg, err := v3gauges.LoadPackageWithSearchPaths(d.Assets.SearchPaths(), configWidget.Gauge)
+		pkg, err := v3gauges.LoadPackageWithSearchPaths(d.Assets.SearchPaths(), configWidget.Gauge)
 		if err != nil {
 			return Widget{}, fmt.Errorf("dashboard %q widget %q gauge %q could not load package: %w", d.ID, configWidget.ID, configWidget.Gauge, err)
 		}
