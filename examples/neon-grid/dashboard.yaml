@@ -1,0 +1,130 @@
+# GoDriveLog v3.4 neon-grid dashboard
+#
+# Purpose:
+#   Exercise the completed v3.4 gauge families through one generated
+#   neon-grid dashboard without adding new renderer behaviour.
+#
+# Regenerate assets from the repository root:
+#   go run ./scripts/generate-example-assets -theme neon-grid
+#
+# Run through the harness path from the repository root:
+#   go run ./cmd/GoDriveLog --harness --config ./examples/neon-grid/dashboard.yaml --vehicle demo --pattern sweep --interval 50ms --duration 30s --renderer ebiten
+
+vehicles:
+  demo:
+    name: "Neon Grid"
+    obd:
+      address: "serial:///dev/null"
+      timeout: 1000
+    logs:
+      - neon_jsonl
+    dashboards:
+      - neon_grid
+
+sensors:
+  speed:
+    type: virtual
+    unit: "km/h"
+    poll: 250
+    min: 0
+    max: 180
+
+  rpm:
+    type: virtual
+    unit: "rpm"
+    poll: 250
+    min: 0
+    max: 8000
+
+  trip_distance:
+    type: virtual
+    unit: "km"
+    poll: 250
+    min: 0
+    max: 9999
+
+  fuel_level:
+    type: virtual
+    unit: "%"
+    poll: 500
+    min: 0
+    max: 100
+
+  coolant_temperature:
+    type: virtual
+    unit: "C"
+    poll: 500
+    min: 40
+    max: 120
+
+  check_engine:
+    type: virtual
+    unit: "bool"
+    poll: 1000
+    min: 0
+    max: 1
+
+assets:
+  image_sets:
+    neon_grid_panel:
+      background: "assets/panel/background.png"
+      foreground: "assets/panel/foreground.png"
+
+logs:
+  neon_jsonl:
+    path: "logs/neon-grid.jsonl"
+    sensors:
+      - speed
+      - rpm
+      - trip_distance
+      - fuel_level
+      - coolant_temperature
+      - check_engine
+
+dashboards:
+  neon_grid:
+    display: "HDMI-1"
+    size:
+      width: 1280
+      height: 720
+    widgets:
+      - id: panel_backplate
+        type: image
+        asset: neon_grid_panel
+        position: [0, 0]
+
+      - id: speed_numeric
+        type: gauge
+        gauge: assets/gauges/speed_numeric
+        position: [94, 106]
+        scale: 1.0
+
+      - id: rpm_radial
+        type: gauge
+        gauge: assets/gauges/radial_rpm
+        position: [468, 84]
+        scale: 1.0
+
+      - id: rpm_segmented
+        type: gauge
+        gauge: assets/gauges/rpm_segmented
+        position: [926, 114]
+        scale: 1.0
+
+      - id: coolant_bar
+        type: gauge
+        gauge: assets/gauges/coolant_bar
+        position: [1086, 194]
+        scale: 1.0
+
+      - id: trip_odometer
+        type: gauge
+        gauge: assets/gauges/trip_odometer
+        position: [108, 534]
+        scale: 1.0
+
+      - id: check_engine_indicator
+        type: gauge
+        gauge: assets/gauges/check_engine_indicator
+        position: [886, 530]
+        scale: 1.0

@@ -1,0 +1,15 @@
+id: neon_grid_rpm_segmented
+type: segmented
+sensor: rpm
+
+size:
+  width: 240
+  height: 144
+
+layers:
+  panel: panel.png
+  segments: levels/rpm_{percent:03}.png
+  glass: glass.png
+
+segmented:
+  hysteresis: 25

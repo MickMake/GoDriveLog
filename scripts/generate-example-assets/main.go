@@ -13,11 +13,12 @@ import (
 
 const frameworkSmokeTheme = "framework-smoke"
 const ornateTimberTheme = "ornate-timber"
+const neonGridTheme = "neon-grid"
 
 func main() {
 	var (
 		repoRoot = flag.String("repo-root", ".", "repository root")
-		theme    = flag.String("theme", frameworkSmokeTheme, "theme to generate: framework-smoke, ornate-timber, or all")
+		theme    = flag.String("theme", frameworkSmokeTheme, "theme to generate: framework-smoke, ornate-timber, neon-grid, or all")
 	)
 	flag.Parse()
 
@@ -37,13 +38,18 @@ func run(repoRoot, theme string) error {
 		return generateFrameworkSmoke(root)
 	case ornateTimberTheme:
 		return generateOrnateTimber(root)
+	case neonGridTheme:
+		return generateNeonGrid(root)
 	case "all":
 		if err := generateFrameworkSmoke(root); err != nil {
 			return err
 		}
-		return generateOrnateTimber(root)
+		if err := generateOrnateTimber(root); err != nil {
+			return err
+		}
+		return generateNeonGrid(root)
 	default:
-		return fmt.Errorf("unsupported theme %q; supported themes: %s, %s, all", theme, frameworkSmokeTheme, ornateTimberTheme)
+		return fmt.Errorf("unsupported theme %q; supported themes: %s, %s, %s, all", theme, frameworkSmokeTheme, ornateTimberTheme, neonGridTheme)
 	}
 }
 

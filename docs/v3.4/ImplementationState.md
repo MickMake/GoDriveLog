@@ -1,8 +1,8 @@
 # GoDriveLog v3.4 implementation state
 
-Status: v3.4.7.1 example layout cleanup completed
-Current target: v3.4.8 neon-grid dashboard
-Current branch: v3.4.7.1-example-layout-cleanup
+Status: v3.4.8 neon-grid dashboard implemented
+Current target: v3.4.9 steam-scrap dashboard
+Current branch: v3.4.8-neon-grid-dashboard
 
 ## Purpose
 
@@ -187,6 +187,15 @@ The v3.4.7.1 cleanup adds:
 - runtime gauge packages moved from `assets/gauges/v3.4/` to `examples/<dashboard_name>/assets/gauges/`;
 - a movement manifest at `docs/v3.4/ExampleLayoutMoves.md`.
 
+The v3.4.8 implementation adds:
+
+- `go run ./scripts/generate-example-assets -theme neon-grid` as the neon-grid regeneration command;
+- committed `neon-grid` dashboard-local artwork under `examples/neon-grid/assets/`;
+- runnable neon-grid gauge packages with `gauge.yaml` beside the local assets under `examples/neon-grid/assets/gauges/`;
+- a runnable neon-grid dashboard config at `examples/neon-grid/dashboard.yaml`;
+- gauge-package example coverage for `numeric`, `radial`, `odometer`, `indicator`, `bar`, and `segmented` inside one dark retro-tech themed dashboard;
+- harness coverage proving the neon-grid example loads through the active dashboard runtime without new renderer behaviour.
+
 Example dashboard rules:
 
 - Use local deterministic scripts and stable seed/config values.
@@ -228,12 +237,12 @@ The generated example dashboard tail should add richer example coverage for the 
 | v3.4.6 | completed | Added the deterministic example-asset generation entry point, standard-library drawing helpers, committed `framework-smoke` output under `examples/framework-smoke/assets/`, a runnable smoke dashboard config, and harness coverage for the generated example path. |
 | v3.4.7 | completed | Added the ornate timber generated dashboard, committed generated theme artwork under `examples/ornate-timber/assets/`, runnable gauge packages under `examples/ornate-timber/assets/gauges/`, a runnable ornate dashboard config, and harness coverage for the themed example path. |
 | v3.4.7.1 | completed | Rehomed the generated framework-smoke and ornate-timber example dashboards under self-contained `examples/<dashboard_name>/` directories, including dashboard configs, dashboard-local assets, and co-located gauge packages. |
+| v3.4.8 | completed | Added the neon-grid generated dashboard, committed generated theme artwork under `examples/neon-grid/assets/`, runnable gauge packages under `examples/neon-grid/assets/gauges/`, a runnable neon-grid dashboard config, and harness coverage for the themed example path. |
 
 ## Pending slices
 
 | Version | Target | Notes |
 |---|---|---|
-| v3.4.8 | neon-grid dashboard | Dark retro-tech dashboard with neon blue glow, grid/circuit accents, and luminous gauge assets. |
 | v3.4.9 | steam-scrap dashboard | Steampunk/scrapyard dashboard with brass/copper/iron plates, pipes, wires, rivets, lamps, and deliberately overbuilt decoration. |
 
 ## Update rule

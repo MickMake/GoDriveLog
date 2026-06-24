@@ -1,0 +1,31 @@
+id: neon_grid_trip_odometer
+type: odometer
+sensor: trip_distance
+
+size:
+  width: 332
+  height: 118
+
+layers:
+  panel: panel.png
+  glass: glass.png
+
+odometer:
+  movement: smooth
+  wheels:
+    - strip: digits.png
+      position: [24, 28]
+      window: { width: 40, height: 56 }
+    - strip: digits.png
+      position: [82, 28]
+      window: { width: 40, height: 56 }
+    - strip: digits.png
+      position: [140, 28]
+      window: { width: 40, height: 56 }
+    - strip: digits.png
+      position: [198, 28]
+      window: { width: 40, height: 56 }
+    - strip: tenths.png
+      position: [256, 28]
+      window: { width: 40, height: 56 }
+      role: sub_unit
