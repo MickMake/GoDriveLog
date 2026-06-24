@@ -13,6 +13,7 @@ Asset paths are repository-root relative.
 - `framework-smoke/dashboard.yaml` - generated v3.4 smoke-test dashboard proving the deterministic example-asset pipeline.
 - `ornate-timber/dashboard.yaml` - generated v3.4 ornate timber dashboard covering the completed gauge families through theme-specific gauge packages.
 - `neon-grid/dashboard.yaml` - generated v3.4 neon-grid dashboard covering the completed gauge families through a dark retro-tech, glow-heavy asset theme.
+- `steam-scrap/dashboard.yaml` - generated v3.4 steam-scrap dashboard covering the completed gauge families through a brass, iron, and salvaged-hardware theme.
 
 ## Reusable assets
 

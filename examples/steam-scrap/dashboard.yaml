@@ -1,0 +1,122 @@
+# GoDriveLog v3.4 steam-scrap dashboard
+#
+# Purpose:
+#   Exercise the completed v3.4 gauge families through one generated
+#   steam-scrap dashboard without adding new renderer behaviour.
+#
+# Regenerate assets from the repository root:
+#   go run ./scripts/generate-example-assets -theme steam-scrap
+#
+# Run through the harness path from the repository root:
+#   go run ./cmd/GoDriveLog --harness --config ./examples/steam-scrap/dashboard.yaml --vehicle demo --pattern sweep --interval 50ms --duration 30s --renderer ebiten
+
+vehicles:
+  demo:
+    name: "Steam Scrap"
+    obd:
+      address: "serial:///dev/null"
+      timeout: 1000
+    logs:
+      - steam_jsonl
+    dashboards:
+      - steam_scrap
+
+sensors:
+  speed:
+    type: virtual
+    unit: "km/h"
+    poll: 250
+    min: 0
+    max: 180
+
+  rpm:
+    type: virtual
+    unit: "rpm"
+    poll: 250
+    min: 0
+    max: 8000
+
+  trip_distance:
+    type: virtual
+    unit: "km"
+    poll: 250
+    min: 0
+    max: 9999
+
+  boiler_pressure:
+    type: virtual
+    unit: "kPa"
+    poll: 500
+    min: 0
+    max: 240
+
+  boiler_warning:
+    type: virtual
+    unit: "bool"
+    poll: 1000
+    min: 0
+    max: 1
+
+assets:
+  image_sets:
+    steam_scrap_panel:
+      background: "assets/panel/background.png"
+      foreground: "assets/panel/foreground.png"
+
+logs:
+  steam_jsonl:
+    path: "logs/steam-scrap.jsonl"
+    sensors:
+      - speed
+      - rpm
+      - trip_distance
+      - boiler_pressure
+      - boiler_warning
+
+dashboards:
+  steam_scrap:
+    display: "HDMI-1"
+    size:
+      width: 1280
+      height: 720
+    widgets:
+      - id: panel_backplate
+        type: image
+        asset: steam_scrap_panel
+        position: [0, 0]
+
+      - id: speed_numeric
+        type: gauge
+        gauge: assets/gauges/speed_numeric
+        position: [96, 112]
+        scale: 1.0
+
+      - id: rpm_radial
+        type: gauge
+        gauge: assets/gauges/radial_rpm
+        position: [474, 90]
+        scale: 1.0
+
+      - id: rpm_segmented
+        type: gauge
+        gauge: assets/gauges/rpm_segmented
+        position: [924, 118]
+        scale: 1.0
+
+      - id: boiler_pressure_bar
+        type: gauge
+        gauge: assets/gauges/boiler_pressure_bar
+        position: [1080, 200]
+        scale: 1.0
+
+      - id: trip_odometer
+        type: gauge
+        gauge: assets/gauges/trip_odometer
+        position: [114, 536]
+        scale: 1.0
+
+      - id: boiler_warning_indicator
+        type: gauge
+        gauge: assets/gauges/boiler_warning_indicator
+        position: [878, 526]
+        scale: 1.0

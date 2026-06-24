@@ -1,0 +1,37 @@
+id: steam_scrap_speed_numeric
+type: numeric
+sensor: speed
+format: "%03.0f"
+
+size:
+  width: 380
+  height: 160
+
+layers:
+  panel: panel.png
+  glass: glass.png
+
+digit_set:
+  background: digits/digit_back.png
+  characters:
+    "0": digits/digit_0.png
+    "1": digits/digit_1.png
+    "2": digits/digit_2.png
+    "3": digits/digit_3.png
+    "4": digits/digit_4.png
+    "5": digits/digit_5.png
+    "6": digits/digit_6.png
+    "7": digits/digit_7.png
+    "8": digits/digit_8.png
+    "9": digits/digit_9.png
+    "-": digits/digit_minus.png
+  decimal_point: digits/digit_dp.png
+  foreground: digits/digit_glass.png
+  spacing: 12
+
+digits:
+  count: 3
+  positions:
+    - [40, 30]
+    - [144, 30]
+    - [248, 30]
