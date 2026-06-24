@@ -10,14 +10,14 @@ Asset paths are repository-root relative.
 - `simple_speed_warning.yaml` - deliberately small first-slice example: image + digit displays + indicator.
 - `nissan_300zx_z31_inspired.yaml` - retro-inspired richer example using digit, bar, frame, indicator, and image assets.
 - `honda_s2000_inspired.yaml` - retro-inspired richer example using digit, bar, frame, indicator, and image assets.
-- `dashboards/framework-smoke.yaml` - generated v3.4 smoke-test dashboard proving the deterministic example-asset pipeline.
-- `dashboards/ornate-timber.yaml` - generated v3.4 ornate timber dashboard covering the completed gauge families through theme-specific gauge packages.
+- `framework-smoke/dashboard.yaml` - generated v3.4 smoke-test dashboard proving the deterministic example-asset pipeline.
+- `ornate-timber/dashboard.yaml` - generated v3.4 ornate timber dashboard covering the completed gauge families through theme-specific gauge packages.
 
 ## Reusable assets
 
 Reusable active assets live under the repository-root `assets/` tree.
 
-Generated v3.4 example dashboard assets live under `examples/assets/v3.4/`, with matching configs under `examples/dashboards/`.
+Generated v3.4 example dashboards are self-contained under `examples/<dashboard_name>/`, with each dashboard's assets under `examples/<dashboard_name>/assets/`.
 
 Versioned docs should reference examples and shared assets instead of carrying active runnable copies. Docs explain a slice; examples are the fixtures. This keeps the project from repeatedly moving the same cheese while the mouse files a complaint.
 

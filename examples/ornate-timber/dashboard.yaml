@@ -8,7 +8,7 @@
 #   go run ./scripts/generate-example-assets -theme ornate-timber
 #
 # Run through the harness path from the repository root:
-#   go run ./cmd/GoDriveLog --harness --config ./examples/dashboards/ornate-timber.yaml --vehicle demo --pattern sweep --interval 50ms --duration 30s --renderer ebiten
+#   go run ./cmd/GoDriveLog --harness --config ./examples/ornate-timber/dashboard.yaml --vehicle demo --pattern sweep --interval 50ms --duration 30s --renderer ebiten
 
 vehicles:
   demo:
@@ -67,8 +67,8 @@ sensors:
 assets:
   image_sets:
     ornate_timber_panel:
-      background: "examples/assets/v3.4/ornate-timber/panel/background.png"
-      foreground: "examples/assets/v3.4/ornate-timber/panel/foreground.png"
+      background: "assets/panel/background.png"
+      foreground: "assets/panel/foreground.png"
 
 logs:
   ornate_jsonl:
@@ -95,36 +95,36 @@ dashboards:
 
       - id: speed_numeric
         type: gauge
-        gauge: assets/gauges/v3.4/ornate-timber/speed_numeric
+        gauge: assets/gauges/speed_numeric
         position: [92, 104]
         scale: 1.0
 
       - id: rpm_radial
         type: gauge
-        gauge: assets/gauges/v3.4/ornate-timber/radial_rpm
+        gauge: assets/gauges/radial_rpm
         position: [472, 86]
         scale: 1.0
 
       - id: rpm_segmented
         type: gauge
-        gauge: assets/gauges/v3.4/ornate-timber/rpm_segmented
+        gauge: assets/gauges/rpm_segmented
         position: [852, 110]
         scale: 1.0
 
       - id: fuel_bar
         type: gauge
-        gauge: assets/gauges/v3.4/ornate-timber/fuel_bar
+        gauge: assets/gauges/fuel_bar
         position: [1030, 192]
         scale: 1.0
 
       - id: trip_odometer
         type: gauge
-        gauge: assets/gauges/v3.4/ornate-timber/trip_odometer
+        gauge: assets/gauges/trip_odometer
         position: [104, 524]
         scale: 1.0
 
       - id: check_engine_indicator
         type: gauge
-        gauge: assets/gauges/v3.4/ornate-timber/check_engine_indicator
+        gauge: assets/gauges/check_engine_indicator
         position: [878, 528]
         scale: 1.0

@@ -2,8 +2,9 @@
 
 ## Unreleased
 
-- Added the v3.4.7 ornate timber generated dashboard theme with deterministic local asset generation under `examples/assets/v3.4/ornate-timber/`, runnable gauge packages under `assets/gauges/v3.4/ornate-timber/`, coverage for `numeric`, `radial`, `odometer`, `indicator`, `bar`, and `segmented`, a runnable `examples/dashboards/ornate-timber.yaml`, and harness coverage for the themed example path.
-- Added the v3.4.6 deterministic example-asset generation framework with a standard-library Go generator, committed `framework-smoke` PNG output under `examples/assets/v3.4/`, a runnable smoke dashboard config under `examples/dashboards/`, and harness coverage for the generated example path.
+- Added the v3.4.7 ornate timber generated dashboard theme with deterministic local asset generation under `examples/ornate-timber/assets/`, runnable gauge packages with `gauge.yaml` beside their assets under `examples/ornate-timber/assets/gauges/`, coverage for `numeric`, `radial`, `odometer`, `indicator`, `bar`, and `segmented`, a runnable `examples/ornate-timber/dashboard.yaml`, and harness coverage for the themed example path.
+- Added the v3.4.6 deterministic example-asset generation framework with a standard-library Go generator, committed `framework-smoke` PNG output under `examples/framework-smoke/assets/`, a runnable smoke dashboard config under `examples/framework-smoke/dashboard.yaml`, and harness coverage for the generated example path.
+- Rehomed the generated v3.4 example dashboards under self-contained `examples/<dashboard_name>/` directories and documented every moved path in `docs/v3.4/ExampleLayoutMoves.md`.
 - Fixed the `framework-smoke` generated decimal-point asset to use the digit set's own cell dimensions, added dimension guards for generated smoke digits plus the real amber `7Seg8.png` source asset, and documented source-dimension/`scale`/decimal-slot rules for v3.4 generated examples.
 - Added v3.4 generated example dashboard planning docs and prompts for v3.4.6 through v3.4.9, covering the deterministic asset framework, ornate timber, neon-grid, and steam-scrap dashboard slices.
 - Added v3.4.5 segmented gauge support with sparse `{percent}` discovery, raw-value normalization to percent before threshold selection, threshold-gap hysteresis, dashboard routing, and focused package/runtime tests.

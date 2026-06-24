@@ -185,7 +185,7 @@ func TestBaselineDashboardConfigRunsHarnessPatterns(t *testing.T) {
 }
 
 func TestFrameworkSmokeDashboardConfigRunsHarness(t *testing.T) {
-	configPath := setupExampleHarnessEnvironment(t, filepath.Join("examples", "dashboards", "framework-smoke.yaml"), "demo")
+	configPath := setupExampleHarnessEnvironment(t, filepath.Join("examples", "framework-smoke", "dashboard.yaml"), "demo")
 
 	var sceneUpdates int
 	summary, err := Run(context.Background(), Options{
@@ -243,7 +243,7 @@ func TestFrameworkSmokeDashboardConfigRunsHarness(t *testing.T) {
 }
 
 func TestOrnateTimberDashboardConfigRunsHarness(t *testing.T) {
-	configPath := setupExampleHarnessEnvironment(t, filepath.Join("examples", "dashboards", "ornate-timber.yaml"), "demo")
+	configPath := setupExampleHarnessEnvironment(t, filepath.Join("examples", "ornate-timber", "dashboard.yaml"), "demo")
 
 	var sceneUpdates int
 	summary, err := Run(context.Background(), Options{

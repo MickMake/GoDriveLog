@@ -23,6 +23,29 @@ Visual identity belongs to generated PNG assets, dashboard layout, and gauge pac
 
 Generator-internal theme options are allowed. Runtime `style` fields are not.
 
+## Layout contract
+
+Generated example dashboards are self-contained under `examples/<dashboard_name>/`.
+
+The canonical example shape is:
+
+```text
+examples/<dashboard_name>/
+  dashboard.yaml
+  assets/
+    panel/
+      background.png
+      foreground.png
+    gauges/
+      <gauge_name>/
+        gauge.yaml
+        <gauge assets>
+```
+
+Use repo-root-relative paths that point into the example directory tree. Do not place generated example dashboards under `examples/dashboards/`, generated assets under `examples/assets/v3.4/`, or generated runtime gauge packages under `assets/gauges/v3.4/`.
+
+The movement manifest for the cleanup is `docs/v3.4/ExampleLayoutMoves.md`.
+
 ## Reproducibility requirements
 
 Generated dashboard assets must be reproducible from committed scripts and stable inputs:
@@ -56,11 +79,11 @@ Source asset dimensions are authoritative.
 
 ## Expected output shape
 
-Exact layout may change during implementation, but generated assets should live under a predictable v3.4 example tree, for example:
+The example tail now uses self-contained dashboard directories, for example:
 
 ```text
-examples/assets/v3.4/<theme>/
-examples/dashboards/<theme>.yaml
+examples/<theme>/dashboard.yaml
+examples/<theme>/assets/
 ```
 
 The framework may introduce helper modules such as:
@@ -89,8 +112,8 @@ go run ./scripts/generate-example-assets -theme framework-smoke
 Current committed smoke-test output:
 
 ```text
-examples/assets/v3.4/framework-smoke/
-examples/dashboards/framework-smoke.yaml
+examples/framework-smoke/dashboard.yaml
+examples/framework-smoke/assets/
 ```
 
 The smoke dashboard proves the deterministic asset pipeline, path conventions, and active harness/runtime loading path. It is intentionally small and does not claim the final ornate timber, neon-grid, or steam-scrap art direction yet.
@@ -106,12 +129,14 @@ go run ./scripts/generate-example-assets -theme ornate-timber
 Current committed ornate timber output:
 
 ```text
-examples/assets/v3.4/ornate-timber/
-examples/dashboards/ornate-timber.yaml
+examples/ornate-timber/dashboard.yaml
+examples/ornate-timber/assets/
 ```
 
 The ornate timber dashboard uses generated gauge-package artwork plus one generated panel image set to exercise `numeric`, `radial`, `odometer`, `indicator`, `bar`, and `segmented` through the normal `type: gauge` runtime path. The theme is the joinery; the behaviour remains the existing v3.4 gauge model.
-The generator writes review-friendly PNG copies under `examples/assets/v3.4/ornate-timber/`, plus runtime-local gauge artwork and gauge package YAML under `assets/gauges/v3.4/ornate-timber/`, so the active dashboard loader can use the existing package search rules without a renderer detour.
+The generator writes dashboard-local panel and gauge assets under `examples/ornate-timber/assets/`, with each gauge package writing its `gauge.yaml` beside its own artwork so the active dashboard loader can use the existing package search rules without a renderer detour.
+
+The cleanup movement manifest records the old-to-new path mapping for both example dashboards and is linked from `docs/v3.4/ExampleLayoutMoves.md`.
 
 ## Gauge coverage target
 
