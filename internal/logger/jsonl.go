@@ -14,9 +14,9 @@ import (
 const DateFormat = "20060102"
 
 type JSONL struct {
-	mu     sync.Mutex
-	dir    string
-	file   *os.File
+	mu         sync.Mutex
+	dir        string
+	file       *os.File
 	activeDate string
 	active     string
 }

@@ -128,7 +128,7 @@ func NewPollingRuntime(reader Reader, sensorConfigs map[string]v3config.SensorCo
 	}
 
 	runtime := &PollingRuntime{
-		reader: reader,
+		reader:  reader,
 		sensors: sensors,
 		store:   NewStateStore(definitions),
 		now:     time.Now,

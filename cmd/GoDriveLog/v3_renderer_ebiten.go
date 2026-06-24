@@ -8,10 +8,10 @@ import (
 	"log"
 	"time"
 
+	"github.com/MickMake/GoDriveLog/internal/config/v3config"
 	v3ebitenadapter "github.com/MickMake/GoDriveLog/internal/dashboard/adapter/ebiten"
 	v3harness "github.com/MickMake/GoDriveLog/internal/dashboard/harness"
 	"github.com/MickMake/GoDriveLog/internal/dashboard/scenesink"
-	"github.com/MickMake/GoDriveLog/internal/config/v3config"
 	v3runtime "github.com/MickMake/GoDriveLog/internal/runtime/v3runtime"
 )
 

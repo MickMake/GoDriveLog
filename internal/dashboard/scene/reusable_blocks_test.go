@@ -9,28 +9,28 @@ import (
 func TestReusableBlockAliasesResolveToScenePrimitives(t *testing.T) {
 	registry := makeRegistry(t)
 	tests := []struct {
-		name          string
-		block         config.DashboardBlockConfig
-		wantType      string
-		wantText      string
-		wantFrame     bool
-		wantAssetID   string
-		wantGlyphs    int
+		name           string
+		block          config.DashboardBlockConfig
+		wantType       string
+		wantText       string
+		wantFrame      bool
+		wantAssetID    string
+		wantGlyphs     int
 		wantChildCount int
 	}{
 		{
-			name:        "seven segment number",
-			block:       config.DashboardBlockConfig{ID: "subject", Type: config.DashboardBlockSevenSegmentNumber, Asset: "yellow_digits", Decoder: "rpm_digits", Geometry: config.RectConfig{X: 10, Y: 10, Width: 200, Height: 80}},
-			wantType:    config.DashboardBlockSpriteText,
-			wantText:    "10",
-			wantGlyphs:  2,
+			name:       "seven segment number",
+			block:      config.DashboardBlockConfig{ID: "subject", Type: config.DashboardBlockSevenSegmentNumber, Asset: "yellow_digits", Decoder: "rpm_digits", Geometry: config.RectConfig{X: 10, Y: 10, Width: 200, Height: 80}},
+			wantType:   config.DashboardBlockSpriteText,
+			wantText:   "10",
+			wantGlyphs: 2,
 		},
 		{
-			name:        "labelled sensor value",
-			block:       config.DashboardBlockConfig{ID: "subject", Type: config.DashboardBlockLabelledSensorValue, Asset: "yellow_digits", Decoder: "rpm_digits", Geometry: config.RectConfig{X: 10, Y: 10, Width: 200, Height: 80}},
-			wantType:    config.DashboardBlockSpriteText,
-			wantText:    "10",
-			wantGlyphs:  2,
+			name:       "labelled sensor value",
+			block:      config.DashboardBlockConfig{ID: "subject", Type: config.DashboardBlockLabelledSensorValue, Asset: "yellow_digits", Decoder: "rpm_digits", Geometry: config.RectConfig{X: 10, Y: 10, Width: 200, Height: 80}},
+			wantType:   config.DashboardBlockSpriteText,
+			wantText:   "10",
+			wantGlyphs: 2,
 		},
 		{
 			name:      "percent frame bar",
@@ -63,16 +63,16 @@ func TestReusableBlockAliasesResolveToScenePrimitives(t *testing.T) {
 			wantAssetID: "background",
 		},
 		{
-			name:        "glowing number box as text",
-			block:       config.DashboardBlockConfig{ID: "subject", Type: config.DashboardBlockGlowingNumberBox, Asset: "yellow_digits", Decoder: "rpm_digits", Geometry: config.RectConfig{X: 10, Y: 10, Width: 200, Height: 80}},
-			wantType:    config.DashboardBlockSpriteText,
-			wantText:    "10",
-			wantGlyphs:  2,
+			name:       "glowing number box as text",
+			block:      config.DashboardBlockConfig{ID: "subject", Type: config.DashboardBlockGlowingNumberBox, Asset: "yellow_digits", Decoder: "rpm_digits", Geometry: config.RectConfig{X: 10, Y: 10, Width: 200, Height: 80}},
+			wantType:   config.DashboardBlockSpriteText,
+			wantText:   "10",
+			wantGlyphs: 2,
 		},
 		{
-			name: "glowing number box as group",
-			block: config.DashboardBlockConfig{ID: "subject", Type: config.DashboardBlockGlowingNumberBox, Blocks: []string{"panel", "digits"}},
-			wantType: config.DashboardBlockGroup,
+			name:           "glowing number box as group",
+			block:          config.DashboardBlockConfig{ID: "subject", Type: config.DashboardBlockGlowingNumberBox, Blocks: []string{"panel", "digits"}},
+			wantType:       config.DashboardBlockGroup,
 			wantChildCount: 2,
 		},
 	}

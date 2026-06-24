@@ -154,9 +154,9 @@ type loggedState struct {
 }
 
 type JSONLSubscriber struct {
-	ID      string
-	writer  jsonlEventWriter
-	sensors map[string]struct{}
+	ID       string
+	writer   jsonlEventWriter
+	sensors  map[string]struct{}
 	mu       sync.Mutex
 	lastSeen map[string]loggedState
 }
@@ -228,7 +228,7 @@ func (s *JSONLSubscriber) Handle(event sensors.SensorEvent) error {
 	return nil
 }
 
-func (s *JSONLSubscriber) Close() error { return s.writer.Close() }
+func (s *JSONLSubscriber) Close() error       { return s.writer.Close() }
 func (s *JSONLSubscriber) ActivePath() string { return s.writer.ActivePath() }
 
 func (s *JSONLSubscriber) shouldConsider(event sensors.SensorEvent) bool {

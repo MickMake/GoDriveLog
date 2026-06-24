@@ -543,4 +543,3 @@ func statePart(widget Widget) string {
 	}
 	return ""
 }
-
