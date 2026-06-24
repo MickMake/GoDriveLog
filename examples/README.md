@@ -12,6 +12,7 @@ Asset paths are repository-root relative.
 - `honda_s2000_inspired.yaml` - retro-inspired richer example using digit, bar, frame, indicator, and image assets.
 - `framework-smoke/dashboard.yaml` - generated v3.4 smoke-test dashboard proving the deterministic example-asset pipeline.
 - `ornate-timber/dashboard.yaml` - generated v3.4 ornate timber dashboard covering the completed gauge families through theme-specific gauge packages.
+- `neon-grid/dashboard.yaml` - generated v3.4 neon-grid dashboard covering the completed gauge families through a dark retro-tech, glow-heavy asset theme.
 
 ## Reusable assets
 

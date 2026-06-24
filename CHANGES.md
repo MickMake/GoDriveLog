@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added the v3.4.8 neon-grid generated dashboard theme with deterministic local asset generation under `examples/neon-grid/assets/`, runnable gauge packages with `gauge.yaml` beside their assets under `examples/neon-grid/assets/gauges/`, coverage for `numeric`, `radial`, `odometer`, `indicator`, `bar`, and `segmented`, a runnable `examples/neon-grid/dashboard.yaml`, and harness coverage for the themed example path.
 - Added the v3.4.7 ornate timber generated dashboard theme with deterministic local asset generation under `examples/ornate-timber/assets/`, runnable gauge packages with `gauge.yaml` beside their assets under `examples/ornate-timber/assets/gauges/`, coverage for `numeric`, `radial`, `odometer`, `indicator`, `bar`, and `segmented`, a runnable `examples/ornate-timber/dashboard.yaml`, and harness coverage for the themed example path.
 - Added the v3.4.6 deterministic example-asset generation framework with a standard-library Go generator, committed `framework-smoke` PNG output under `examples/framework-smoke/assets/`, a runnable smoke dashboard config under `examples/framework-smoke/dashboard.yaml`, and harness coverage for the generated example path.
 - Rehomed the generated v3.4 example dashboards under self-contained `examples/<dashboard_name>/` directories and documented every moved path in `docs/v3.4/ExampleLayoutMoves.md`.

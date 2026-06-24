@@ -136,6 +136,23 @@ examples/ornate-timber/assets/
 The ornate timber dashboard uses generated gauge-package artwork plus one generated panel image set to exercise `numeric`, `radial`, `odometer`, `indicator`, `bar`, and `segmented` through the normal `type: gauge` runtime path. The theme is the joinery; the behaviour remains the existing v3.4 gauge model.
 The generator writes dashboard-local panel and gauge assets under `examples/ornate-timber/assets/`, with each gauge package writing its `gauge.yaml` beside its own artwork so the active dashboard loader can use the existing package search rules without a renderer detour.
 
+## v3.4.8 neon-grid output
+
+The neon-grid slice now uses:
+
+```bash
+go run ./scripts/generate-example-assets -theme neon-grid
+```
+
+Current committed neon-grid output:
+
+```text
+examples/neon-grid/dashboard.yaml
+examples/neon-grid/assets/
+```
+
+The neon-grid dashboard uses dashboard-local panel and gauge assets to exercise `numeric`, `radial`, `odometer`, `indicator`, `bar`, and `segmented` through the normal `type: gauge` runtime path. The generator writes panel art and co-located gauge packages under `examples/neon-grid/assets/`, keeping the dark retro-tech identity in images and layout rather than in renderer behaviour or runtime style fields.
+
 The cleanup movement manifest records the old-to-new path mapping for both example dashboards and is linked from `docs/v3.4/ExampleLayoutMoves.md`.
 
 ## Gauge coverage target

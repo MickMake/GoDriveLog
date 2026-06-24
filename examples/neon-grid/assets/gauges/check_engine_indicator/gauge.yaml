@@ -1,0 +1,14 @@
+id: neon_grid_check_engine_indicator
+type: indicator
+sensor: check_engine
+
+size:
+  width: 108
+  height: 108
+
+layers:
+  bezel: bezel.png
+  face: face.png
+  off: off.png
+  on: on.png
+  glass: glass.png
