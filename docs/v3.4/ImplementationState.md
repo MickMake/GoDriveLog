@@ -1,8 +1,8 @@
 # GoDriveLog v3.4 implementation state
 
-Status: v3.4.9 steam-scrap dashboard implemented
-Current target: none - v3.4 dashboard tail complete
-Current branch: v3.4.9-steam-scrap-dashboard
+Status: v3.4.10 dashboard CLI planned
+Current target: v3.4.10 dashboard CLI
+Current branch: docs/v3.4.10-dashboard-cli
 
 ## Purpose
 
@@ -221,6 +221,44 @@ Example dashboard rules:
 - Keep decorative timber, glow, pipes, rivets, wires, screws, and panels as assets, not renderer features.
 - Prefer small, reviewable slices over one giant asset PR with a top hat and a boiler whistle.
 
+## Dashboard CLI tail
+
+v3.4.10 is planned as a dashboard-scoped CLI slice.
+
+Target command tree:
+
+```text
+GoDriveLog dashboard [--config <config-file>]
+GoDriveLog dashboard run [vehicle-id] [--config <config-file>] [--renderer ebiten]
+GoDriveLog dashboard harness [vehicle-id] [--config <config-file>] [--pattern sweep] [--interval 50ms] [--duration 60s] [--renderer ebiten]
+GoDriveLog dashboard examples --output <directory> [--config <config-file>] [--vehicle <vehicle-id>] [--theme framework-smoke] [--force]
+GoDriveLog dashboard validate [config-file]
+GoDriveLog dashboard validate [--config <config-file>]
+```
+
+Decision state:
+
+- All active dashboard CLI functions live under `dashboard`.
+- `dashboard preview` is intentionally not part of v3.4.10.
+- `--config` is optional and uses the same directory search ordering concept as assets.
+- `--renderer` is optional and defaults to `ebiten`.
+- `dashboard` without a subcommand prints a compact config overview.
+- The overview must include vehicle data source type: serial, Bluetooth, Wi-Fi/TCP, fake/test, or unknown.
+- Gauge overview rows must keep gauge ID/name, type, source of data, and PID where applicable.
+- `dashboard examples` requires `--output` and uses `--force` to suppress overwrite prompts.
+- `dashboard harness --pattern sweep` should become gauge-aware while keeping other patterns for later scope decisions.
+
+Gauge-aware harness `sweep` target:
+
+| Gauge type | Sweep behaviour |
+|---|---|
+| `odometer` | Let `n = 0`; increment from `n - 20` to `n + 20` for 5 seconds, then `n + 20` to `n + 30` for 5 seconds. |
+| `numeric` | Same as `odometer`. |
+| `radial` | Keep the existing sweep style. |
+| `indicator` | Flash on/off for 5 seconds with a 1s duty cycle, then flash on/off for 5 seconds with a 250ms duty cycle. |
+| `bar` | Heartbeat pulse at 90 bpm. |
+| `segmented` | Same input shape as `radial`. |
+
 ## Baseline dashboard
 
 The v3.4 baseline remains conceptually based on the reusable baseline config:
@@ -253,7 +291,7 @@ The generated example dashboard tail should add richer example coverage for the 
 
 | Version | Target | Notes |
 |---|---|---|
-| none | v3.4 complete | The planned generated example dashboard tail is complete through v3.4.9. |
+| v3.4.10 | dashboard CLI | Add dashboard-scoped commands for run, harness, examples, validation, and compact config overview. |
 
 ## Update rule
 
