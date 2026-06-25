@@ -9,7 +9,7 @@ v3.4 defines the next gauge package model for the active Ebiten dashboard path.
 
 The release direction is gauge/display package cleanup and expansion. It does not introduce a platform packaging track.
 
-The original behaviour implementation slices are complete through v3.4.5. The v3.4.6 through v3.4.9 tail adds generated example dashboards that prove the completed gauge types with repeatable assets. v3.4.10 tacks on a dashboard CLI slice so the active runtime, harness, config overview, validation, and example generation commands have a clearer command structure.
+The original behaviour implementation slices are complete through v3.4.5. The v3.4.6 through v3.4.9 tail adds generated example dashboards that prove the completed gauge types with repeatable assets. The v3.4.10 through v3.4.12 tail adds dashboard-scoped CLI commands in small slices.
 
 ## Release goal
 
@@ -142,9 +142,9 @@ Example dashboard rules:
 
 ## Dashboard CLI tail
 
-v3.4.10 adds a command-structure slice for the active dashboard tooling.
+v3.4.10 through v3.4.12 add dashboard-scoped commands for the active dashboard tooling.
 
-This slice should replace the current flat command flags with dashboard-scoped subcommands:
+The completed command tree target is:
 
 ```text
 GoDriveLog dashboard [--config <config-file>]
@@ -155,20 +155,65 @@ GoDriveLog dashboard validate [config-file]
 GoDriveLog dashboard validate [--config <config-file>]
 ```
 
-CLI rules:
+The CLI tail is split into focused slices:
 
-- Keep everything under `dashboard` for this slice.
+| Version | Slice | Result |
+|---|---|---|
+| v3.4.10 | dashboard CLI foundation | Add the `dashboard` command namespace, `dashboard run`, `dashboard validate`, deterministic config discovery, and help-output coverage for implemented commands. |
+| v3.4.11 | dashboard overview | Add bare `dashboard` compact config overview. |
+| v3.4.12 | dashboard harness and examples | Add `dashboard harness` with gauge-aware sweep and `dashboard examples` with portable output directories. |
+
+### Config discovery rules
+
+When a positional config file or `--config` is supplied, load exactly that file and bypass config discovery.
+
+When no config file is supplied, search config files from:
+
+```text
+current working directory
+/etc/godrivelog recursively
+```
+
+Directory traversal must be deterministic:
+
+- sort each directory's entries alphabetically before evaluating them;
+- search the current working directory non-recursively;
+- search `/etc/godrivelog` recursively;
+- evaluate only candidate config filenames.
+
+Candidate config filenames are:
+
+```text
+godrivelog.yaml
+godrivelog.yml
+dashboard.yaml
+dashboard.yml
+config.yaml
+config.yml
+```
+
+If no vehicle ID is supplied, use the first valid config in search order that defines exactly one vehicle. If the first valid config defines multiple vehicles, stop and return an error requiring a vehicle ID.
+
+If a vehicle ID is supplied, use the first valid single-vehicle or multi-vehicle config in search order that defines the matching vehicle. Keep searching until a match is found. If no config contains the requested vehicle, return an error that lists searched config files and the vehicles found in each valid config.
+
+Do not default to `config.example.yaml`.
+
+### Dashboard command rules
+
+- Keep active dashboard CLI functions under `dashboard`.
 - Do not add `dashboard preview` yet.
-- `--config` is optional and should resolve using the same directory search ordering concept as asset lookup.
-- Do not default to `config.example.yaml`.
 - `--renderer` is optional and defaults to `ebiten`.
 - `ebiten` remains the only active renderer.
-- Bare `dashboard` prints a compact overview of the resolved config.
-- The overview must include vehicle data source type, such as serial, Bluetooth, Wi-Fi/TCP, fake/test, or unknown.
-- The overview must list gauges/widgets with gauge type, data source, and PID where applicable.
+- Bare `dashboard` prints a compact overview of the resolved config in v3.4.11.
+- The overview prints the configured vehicle OBD source string as-is; it does not infer serial/Bluetooth/Wi-Fi/fake source types.
+- The overview must list gauges/widgets with gauge ID/name, type, source of data, and PID where applicable.
 - Do not add a separate PID section.
-- `dashboard examples` requires `--output` and supports `--force` for clobbering existing output without asking.
-- `dashboard harness --pattern sweep` becomes gauge-aware synthetic input.
+- `dashboard examples` requires `--output` in v3.4.12.
+- `dashboard examples --output <directory>` treats `<directory>` as the generated dashboard root, creates it when missing, writes `dashboard.yaml` and `assets/` directly inside it, and does not add a theme subdirectory.
+- Generated example output must use paths relative to the output directory so each generated dashboard is self-contained and movable.
+- If the examples output directory exists and is non-empty, interactive terminals may prompt unless `--force` is supplied; non-interactive use must fail unless `--force` is supplied.
+- `dashboard harness --pattern sweep` becomes gauge-aware in v3.4.12 while keeping other patterns for later scope decisions.
+- Do not add compatibility or migration behaviour for any earlier flat flag shape.
 
 Gauge-aware sweep rules:
 
@@ -181,7 +226,7 @@ Gauge-aware sweep rules:
 | `bar` | Heartbeat pulse at 90 bpm. |
 | `segmented` | Same input shape as `radial`. |
 
-Do not change gauge package semantics, renderer scene semantics, or generated example artwork rules in this slice.
+Do not change gauge package semantics, renderer scene semantics, or generated example artwork rules in the CLI tail.
 
 ## Planned implementation slices
 
@@ -197,7 +242,9 @@ Do not change gauge package semantics, renderer scene semantics, or generated ex
 | v3.4.7 | ornate timber dashboard | Add generated ornate timber dashboard assets/config. |
 | v3.4.8 | neon-grid dashboard | Add generated Tron-like dark neon dashboard assets/config. |
 | v3.4.9 | steam-scrap dashboard | Add generated steampunk/scrapyard dashboard assets/config. |
-| v3.4.10 | dashboard CLI | Add dashboard-scoped commands for run, harness, examples, validation, and compact config overview. |
+| v3.4.10 | dashboard CLI foundation | Add dashboard command namespace, run, validate, deterministic config discovery, and help-output coverage. |
+| v3.4.11 | dashboard overview | Add compact config overview for bare `dashboard`. |
+| v3.4.12 | dashboard harness and examples | Add gauge-aware harness sweep and portable example generation command. |
 
 ## Branch-chat workflow
 
