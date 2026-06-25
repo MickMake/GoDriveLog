@@ -9,7 +9,7 @@ v3.4 defines the next gauge package model for the active Ebiten dashboard path.
 
 The release direction is gauge/display package cleanup and expansion. It does not introduce a platform packaging track.
 
-The original behaviour implementation slices are complete through v3.4.5. The v3.4.6 through v3.4.9 tail adds generated example dashboards that prove the completed gauge types with repeatable assets. The v3.4.10 through v3.4.12 tail adds dashboard-scoped CLI commands in small slices.
+The original behaviour implementation slices are complete through v3.4.5. The v3.4.6 through v3.4.9 tail adds generated example dashboards that prove the completed gauge types with repeatable assets. The v3.4.10 through v3.4.12 tail remaps existing flat dashboard flags into dashboard-scoped CLI commands in small slices.
 
 ## Release goal
 
@@ -142,7 +142,7 @@ Example dashboard rules:
 
 ## Dashboard CLI tail
 
-v3.4.10 through v3.4.12 add dashboard-scoped commands for the active dashboard tooling.
+v3.4.10 through v3.4.12 remap the existing flat flag dashboard entry points into dashboard-scoped commands for the active dashboard tooling.
 
 The completed command tree target is:
 
@@ -155,13 +155,39 @@ GoDriveLog dashboard validate [config-file]
 GoDriveLog dashboard validate [--config <config-file>]
 ```
 
+The CLI tail is routing work. It must not create replacement runtime, renderer, harness, config, validation, or example-generation systems. The existing `cmd/GoDriveLog/main_ebiten.go` flat flag behaviours already reach the required backend paths; the CLI work should move those switches into named command drawers.
+
+Command routing target:
+
+| New command form | Existing flat flag path or machinery being remapped | Existing code path to reuse |
+|---|---|---|
+| `GoDriveLog dashboard run [vehicle-id]` | Default run path when `--harness=false`; uses existing `--config`, `--vehicle`, `--renderer`, and current runtime duration handling if preserved. | Existing `runV3EbitenCommand(configPath, vehicleID, duration)` path. |
+| `GoDriveLog dashboard harness [vehicle-id]` | Existing `--harness=true` path plus `--config`, `--vehicle`, `--pattern`, `--interval`, `--duration`, and `--renderer`. | Existing `runV3EbitenHarnessCommand(configPath, vehicleID, pattern, interval, duration)` path. |
+| `GoDriveLog dashboard validate [config-file]` | Existing config load and validation behaviour, reached through a command instead of flat flags. | Existing config parsing/validation helpers; do not create a replacement validator. |
+| `GoDriveLog dashboard validate --config <config-file>` | Existing `--config` file selection plus existing config validation behaviour. | Existing config parsing/validation helpers; do not create a replacement validator. |
+| `GoDriveLog dashboard [--config <config-file>]` | Existing config load structures, rendered as a compact overview. | Existing config parsing structures; do not invent a new config model. |
+| `GoDriveLog dashboard examples --output <directory>` | Existing generated example asset machinery/scripts, plus existing `--config` and `--vehicle` concepts where relevant. | Existing generated-example helpers/scripts; do not build a duplicate generator. |
+
+Flag redistribution:
+
+| Existing flat flag | New command usage |
+|---|---|
+| `--config` | Used by `dashboard`, `dashboard run`, `dashboard harness`, `dashboard examples`, and `dashboard validate`. |
+| `--vehicle` | Becomes positional `[vehicle-id]` for `dashboard run` and `dashboard harness`; remains `--vehicle` for `dashboard examples`. |
+| `--renderer` | Used by `dashboard run` and `dashboard harness`. |
+| `--duration` | Used by `dashboard harness`; may stay on `dashboard run` if preserving the existing runtime duration behaviour. |
+| `--harness` | Replaced by the command name `dashboard harness`. |
+| `--pattern` | Used by `dashboard harness`. |
+| `--interval` | Used by `dashboard harness`. |
+| `--v3` | Removed; the `dashboard` command tree implies the active v3 dashboard path. |
+
 The CLI tail is split into focused slices:
 
 | Version | Slice | Result |
 |---|---|---|
-| v3.4.10 | dashboard CLI foundation | Add the `dashboard` command namespace, `dashboard run`, `dashboard validate`, deterministic config discovery, and help-output coverage for implemented commands. |
-| v3.4.11 | dashboard overview | Add bare `dashboard` compact config overview. |
-| v3.4.12 | dashboard harness and examples | Add `dashboard harness` with gauge-aware sweep and `dashboard examples` with portable output directories. |
+| v3.4.10 | dashboard CLI foundation | Remap the `main_ebiten.go` default run path into `dashboard run`, add `dashboard validate`, deterministic config discovery, and help-output coverage for implemented commands. |
+| v3.4.11 | dashboard overview | Add bare `dashboard` compact config overview using existing config structures. |
+| v3.4.12 | dashboard harness and examples | Remap the existing harness path into `dashboard harness`, add gauge-aware sweep, and wrap existing generated-example machinery as `dashboard examples`. |
 
 ### Config discovery rules
 
@@ -242,9 +268,9 @@ Do not change gauge package semantics, renderer scene semantics, or generated ex
 | v3.4.7 | ornate timber dashboard | Add generated ornate timber dashboard assets/config. |
 | v3.4.8 | neon-grid dashboard | Add generated Tron-like dark neon dashboard assets/config. |
 | v3.4.9 | steam-scrap dashboard | Add generated steampunk/scrapyard dashboard assets/config. |
-| v3.4.10 | dashboard CLI foundation | Add dashboard command namespace, run, validate, deterministic config discovery, and help-output coverage. |
+| v3.4.10 | dashboard CLI foundation | Remap default run path into `dashboard run`, add `dashboard validate`, deterministic config discovery, and help-output coverage. |
 | v3.4.11 | dashboard overview | Add compact config overview for bare `dashboard`. |
-| v3.4.12 | dashboard harness and examples | Add gauge-aware harness sweep and portable example generation command. |
+| v3.4.12 | dashboard harness and examples | Remap harness path into `dashboard harness`, add gauge-aware sweep, and wrap example generation as `dashboard examples`. |
 
 ## Branch-chat workflow
 
