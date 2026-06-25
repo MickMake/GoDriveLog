@@ -288,6 +288,29 @@ func TestDashboardOverviewPrintsResolvedConfigHierarchy(t *testing.T) {
 	}
 }
 
+func TestDashboardOverviewUsesRuntimeAssetSearchPaths(t *testing.T) {
+	root := t.TempDir()
+	configDir := filepath.Join(root, "configs")
+	configPath := filepath.Join(configDir, "dashboard.yaml")
+	writeTestConfig(t, configPath, singleVehicleGaugeConfigYAML("assets/gauges/test_speed"))
+	writeTestGaugePackage(t, filepath.Join(configDir, "demo", "assets", "gauges", "test_speed"))
+
+	stdout := &bytes.Buffer{}
+	if err := runCLI([]string{"dashboard", "--config", configPath}, stdout, &bytes.Buffer{}); err != nil {
+		t.Fatalf("runCLI returned error: %v", err)
+	}
+
+	if strings.Contains(stdout.String(), "type=unknown") {
+		t.Fatalf("overview unexpectedly reported unknown gauge type\n%s", stdout.String())
+	}
+	if strings.Contains(stdout.String(), "warning:") {
+		t.Fatalf("overview unexpectedly reported a gauge warning\n%s", stdout.String())
+	}
+	if !strings.Contains(stdout.String(), "speed_widget: type=numeric source=speed pid=010D") {
+		t.Fatalf("overview missing resolved gauge details\n%s", stdout.String())
+	}
+}
+
 func TestDashboardOverviewDiscoveryRequiresSingleVehicleConfig(t *testing.T) {
 	root := t.TempDir()
 	writeTestConfig(t, filepath.Join(root, "dashboard.yaml"), multiVehicleConfigYAML())

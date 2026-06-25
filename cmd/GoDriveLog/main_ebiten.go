@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	v3assets "github.com/MickMake/GoDriveLog/internal/assets"
 	"github.com/MickMake/GoDriveLog/internal/config/v3config"
 	"github.com/MickMake/GoDriveLog/internal/dashboard/gauges"
 	v3harness "github.com/MickMake/GoDriveLog/internal/dashboard/harness"
@@ -120,7 +121,6 @@ func buildDashboardOverview(configPath string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("resolve dashboard config path %q: %w", resolvedConfigPath, err)
 	}
-	searchPaths := []string{filepath.Dir(absoluteConfigPath)}
 
 	var b strings.Builder
 	fmt.Fprintln(&b, "GoDriveLog dashboard overview")
@@ -129,6 +129,10 @@ func buildDashboardOverview(configPath string) (string, error) {
 	fmt.Fprintln(&b, "Vehicles:")
 
 	for _, vehicleID := range sortedVehicleIDs(cfg.Vehicles) {
+		searchPaths, err := v3assets.DefaultSearchPaths(absoluteConfigPath, vehicleID)
+		if err != nil {
+			return "", err
+		}
 		vehicle := cfg.Vehicles[vehicleID]
 		fmt.Fprintf(&b, "- %s", vehicleID)
 		if name := strings.TrimSpace(vehicle.Name); name != "" {
