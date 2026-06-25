@@ -1,6 +1,6 @@
 # GoDriveLog v3.4 release plan
 
-Status: example dashboard tail planned
+Status: dashboard CLI tail planned
 Owner: gauge package implementor
 
 ## Purpose
@@ -9,7 +9,7 @@ v3.4 defines the next gauge package model for the active Ebiten dashboard path.
 
 The release direction is gauge/display package cleanup and expansion. It does not introduce a platform packaging track.
 
-The original behaviour implementation slices are complete through v3.4.5. The remaining v3.4 tail adds generated example dashboards that prove the completed gauge types with repeatable assets.
+The original behaviour implementation slices are complete through v3.4.5. The v3.4.6 through v3.4.9 tail adds generated example dashboards that prove the completed gauge types with repeatable assets. v3.4.10 tacks on a dashboard CLI slice so the active runtime, harness, config overview, validation, and example generation commands have a clearer command structure.
 
 ## Release goal
 
@@ -140,6 +140,49 @@ Example dashboard rules:
 - Generated PNGs should be reproducible from scripts with stable seed/config values.
 - Each themed dashboard should cover as many completed gauge types as practical.
 
+## Dashboard CLI tail
+
+v3.4.10 adds a command-structure slice for the active dashboard tooling.
+
+This slice should replace the current flat command flags with dashboard-scoped subcommands:
+
+```text
+GoDriveLog dashboard [--config <config-file>]
+GoDriveLog dashboard run [vehicle-id] [--config <config-file>] [--renderer ebiten]
+GoDriveLog dashboard harness [vehicle-id] [--config <config-file>] [--pattern sweep] [--interval 50ms] [--duration 60s] [--renderer ebiten]
+GoDriveLog dashboard examples --output <directory> [--config <config-file>] [--vehicle <vehicle-id>] [--theme framework-smoke] [--force]
+GoDriveLog dashboard validate [config-file]
+GoDriveLog dashboard validate [--config <config-file>]
+```
+
+CLI rules:
+
+- Keep everything under `dashboard` for this slice.
+- Do not add `dashboard preview` yet.
+- `--config` is optional and should resolve using the same directory search ordering concept as asset lookup.
+- Do not default to `config.example.yaml`.
+- `--renderer` is optional and defaults to `ebiten`.
+- `ebiten` remains the only active renderer.
+- Bare `dashboard` prints a compact overview of the resolved config.
+- The overview must include vehicle data source type, such as serial, Bluetooth, Wi-Fi/TCP, fake/test, or unknown.
+- The overview must list gauges/widgets with gauge type, data source, and PID where applicable.
+- Do not add a separate PID section.
+- `dashboard examples` requires `--output` and supports `--force` for clobbering existing output without asking.
+- `dashboard harness --pattern sweep` becomes gauge-aware synthetic input.
+
+Gauge-aware sweep rules:
+
+| Gauge type | Sweep behaviour |
+|---|---|
+| `odometer` | Let `n = 0`; increment from `n - 20` to `n + 20` for 5 seconds, then `n + 20` to `n + 30` for 5 seconds. |
+| `numeric` | Same as `odometer`. |
+| `radial` | Keep the existing sweep style. |
+| `indicator` | Flash on/off for 5 seconds with a 1s duty cycle, then flash on/off for 5 seconds with a 250ms duty cycle. |
+| `bar` | Heartbeat pulse at 90 bpm. |
+| `segmented` | Same input shape as `radial`. |
+
+Do not change gauge package semantics, renderer scene semantics, or generated example artwork rules in this slice.
+
 ## Planned implementation slices
 
 | Version | Slice | Result |
@@ -154,6 +197,7 @@ Example dashboard rules:
 | v3.4.7 | ornate timber dashboard | Add generated ornate timber dashboard assets/config. |
 | v3.4.8 | neon-grid dashboard | Add generated Tron-like dark neon dashboard assets/config. |
 | v3.4.9 | steam-scrap dashboard | Add generated steampunk/scrapyard dashboard assets/config. |
+| v3.4.10 | dashboard CLI | Add dashboard-scoped commands for run, harness, examples, validation, and compact config overview. |
 
 ## Branch-chat workflow
 
@@ -179,3 +223,4 @@ Each implementation chat should:
 - Do not chase curved odometer wheel depth before flat strip scrolling works.
 - Do not add unrelated platform/package work here.
 - Do not use image-generation services, downloaded stock art, or non-reproducible manual PNG editing for the v3.4 example dashboard tail.
+- Do not add `dashboard preview` until it has a job distinct from harness/runtime.
