@@ -1,7 +1,7 @@
 # GoDriveLog v3.4 implementation state
 
-Status: v3.4.10 dashboard CLI foundation planned
-Current target: v3.4.10 dashboard CLI foundation
+Status: v3.4.10 dashboard CLI command tree planned
+Current target: v3.4.10 dashboard CLI command tree
 Current branch: docs/v3.4.10-dashboard-cli
 
 ## Purpose
@@ -223,7 +223,7 @@ Example dashboard rules:
 
 ## Dashboard CLI tail
 
-v3.4.10 through v3.4.12 remap the existing flat flag dashboard entry points into dashboard-scoped CLI commands.
+v3.4.10 through v3.4.12 reshape the existing flat flag dashboard entry points into dashboard-scoped CLI commands.
 
 Target command tree:
 
@@ -239,7 +239,7 @@ GoDriveLog dashboard validate [--config <config-file>]
 CLI remapping state:
 
 - This is command routing work, not replacement backend work.
-- The existing `cmd/GoDriveLog/main_ebiten.go` flat flag handling already reaches the required runtime and harness behaviours.
+- The existing `cmd/GoDriveLog/main_ebiten.go` flat flag handling already reaches the required runtime, harness, and example-generation behaviours.
 - Most implementation work should stay in `cmd/GoDriveLog/main_ebiten.go` unless small helper extraction avoids duplicate routing code.
 - Do not create new runtime packages, renderer abstractions, config schemas, validation engines, harness engines, or example-generation systems as part of the CLI tail.
 - Existing backend functions and helpers should be reused directly wherever practical.
@@ -272,9 +272,9 @@ Slice state:
 
 | Version | Target | Notes |
 |---|---|---|
-| v3.4.10 | dashboard CLI foundation | Remap the `main_ebiten.go` default run path into `dashboard run`, add `dashboard validate`, deterministic config discovery, and help-output coverage for implemented commands. |
+| v3.4.10 | dashboard CLI command tree | Remap `run`, `harness`, `examples`, and `validate`; add deterministic config discovery and help-output coverage for implemented commands. |
 | v3.4.11 | dashboard overview | Add bare `dashboard` compact config overview using existing config structures. Print the configured vehicle OBD source string as-is rather than inferring source type. |
-| v3.4.12 | dashboard harness and examples | Remap the existing harness path into `dashboard harness`, add gauge-aware sweep, and wrap existing generated-example machinery as `dashboard examples`. |
+| v3.4.12 | gauge-aware harness sweep | Refine `dashboard harness --pattern sweep` so synthetic input matches gauge behaviour. |
 
 Config discovery state:
 
@@ -343,9 +343,9 @@ The generated example dashboard tail should add richer example coverage for the 
 
 | Version | Target | Notes |
 |---|---|---|
-| v3.4.10 | dashboard CLI foundation | Remap dashboard-scoped `run` and `validate` from existing flat flag behaviour, add deterministic config discovery, and help-output coverage for implemented commands. |
+| v3.4.10 | dashboard CLI command tree | Remap dashboard-scoped `run`, `harness`, `examples`, and `validate`; add deterministic config discovery and help-output coverage for implemented commands. |
 | v3.4.11 | dashboard overview | Add compact config overview for bare `dashboard` using existing config structures; print configured OBD source strings as-is. |
-| v3.4.12 | dashboard harness and examples | Remap existing harness behaviour into `dashboard harness`, add gauge-aware sweep, and wrap existing example generation as portable `dashboard examples --output <directory>`. |
+| v3.4.12 | gauge-aware harness sweep | Refine `dashboard harness --pattern sweep` so synthetic input matches gauge behaviour. |
 
 ## Update rule
 
