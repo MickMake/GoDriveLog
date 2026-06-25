@@ -223,7 +223,7 @@ Example dashboard rules:
 
 ## Dashboard CLI tail
 
-v3.4.10 through v3.4.12 are planned as dashboard-scoped CLI slices.
+v3.4.10 through v3.4.12 remap the existing flat flag dashboard entry points into dashboard-scoped CLI commands.
 
 Target command tree:
 
@@ -236,13 +236,45 @@ GoDriveLog dashboard validate [config-file]
 GoDriveLog dashboard validate [--config <config-file>]
 ```
 
+CLI remapping state:
+
+- This is command routing work, not replacement backend work.
+- The existing `cmd/GoDriveLog/main_ebiten.go` flat flag handling already reaches the required runtime and harness behaviours.
+- Most implementation work should stay in `cmd/GoDriveLog/main_ebiten.go` unless small helper extraction avoids duplicate routing code.
+- Do not create new runtime packages, renderer abstractions, config schemas, validation engines, harness engines, or example-generation systems as part of the CLI tail.
+- Existing backend functions and helpers should be reused directly wherever practical.
+
+Command routing target:
+
+| New command form | Existing flat flag path or machinery being remapped | Existing code path to reuse |
+|---|---|---|
+| `GoDriveLog dashboard run [vehicle-id]` | Default run path when `--harness=false`; uses existing `--config`, `--vehicle`, `--renderer`, and current runtime duration handling if preserved. | Existing `runV3EbitenCommand(configPath, vehicleID, duration)` path. |
+| `GoDriveLog dashboard harness [vehicle-id]` | Existing `--harness=true` path plus `--config`, `--vehicle`, `--pattern`, `--interval`, `--duration`, and `--renderer`. | Existing `runV3EbitenHarnessCommand(configPath, vehicleID, pattern, interval, duration)` path. |
+| `GoDriveLog dashboard validate [config-file]` | Existing config load and validation behaviour, reached through a command instead of flat flags. | Existing config parsing/validation helpers; do not create a replacement validator. |
+| `GoDriveLog dashboard validate --config <config-file>` | Existing `--config` file selection plus existing config validation behaviour. | Existing config parsing/validation helpers; do not create a replacement validator. |
+| `GoDriveLog dashboard [--config <config-file>]` | Existing config load structures, rendered as a compact overview. | Existing config parsing structures; do not invent a new config model. |
+| `GoDriveLog dashboard examples --output <directory>` | Existing generated example asset machinery/scripts, plus existing `--config` and `--vehicle` concepts where relevant. | Existing generated-example helpers/scripts; do not build a duplicate generator. |
+
+Flag redistribution:
+
+| Existing flat flag | New command usage |
+|---|---|
+| `--config` | Used by `dashboard`, `dashboard run`, `dashboard harness`, `dashboard examples`, and `dashboard validate`. |
+| `--vehicle` | Becomes positional `[vehicle-id]` for `dashboard run` and `dashboard harness`; remains `--vehicle` for `dashboard examples`. |
+| `--renderer` | Used by `dashboard run` and `dashboard harness`. |
+| `--duration` | Used by `dashboard harness`; may stay on `dashboard run` if preserving the existing runtime duration behaviour. |
+| `--harness` | Replaced by the command name `dashboard harness`. |
+| `--pattern` | Used by `dashboard harness`. |
+| `--interval` | Used by `dashboard harness`. |
+| `--v3` | Removed; the `dashboard` command tree implies the active v3 dashboard path. |
+
 Slice state:
 
 | Version | Target | Notes |
 |---|---|---|
-| v3.4.10 | dashboard CLI foundation | Add the `dashboard` command namespace, `dashboard run`, `dashboard validate`, deterministic config discovery, and help-output coverage for implemented commands. |
-| v3.4.11 | dashboard overview | Add bare `dashboard` compact config overview. Print the configured vehicle OBD source string as-is rather than inferring source type. |
-| v3.4.12 | dashboard harness and examples | Add `dashboard harness` with gauge-aware sweep and `dashboard examples` with portable output directories. |
+| v3.4.10 | dashboard CLI foundation | Remap the `main_ebiten.go` default run path into `dashboard run`, add `dashboard validate`, deterministic config discovery, and help-output coverage for implemented commands. |
+| v3.4.11 | dashboard overview | Add bare `dashboard` compact config overview using existing config structures. Print the configured vehicle OBD source string as-is rather than inferring source type. |
+| v3.4.12 | dashboard harness and examples | Remap the existing harness path into `dashboard harness`, add gauge-aware sweep, and wrap existing generated-example machinery as `dashboard examples`. |
 
 Config discovery state:
 
@@ -311,9 +343,9 @@ The generated example dashboard tail should add richer example coverage for the 
 
 | Version | Target | Notes |
 |---|---|---|
-| v3.4.10 | dashboard CLI foundation | Add dashboard-scoped `run` and `validate`, deterministic config discovery, and help-output coverage for implemented commands. |
-| v3.4.11 | dashboard overview | Add compact config overview for bare `dashboard`; print configured OBD source strings as-is. |
-| v3.4.12 | dashboard harness and examples | Add gauge-aware harness sweep and portable `dashboard examples --output <directory>` generation. |
+| v3.4.10 | dashboard CLI foundation | Remap dashboard-scoped `run` and `validate` from existing flat flag behaviour, add deterministic config discovery, and help-output coverage for implemented commands. |
+| v3.4.11 | dashboard overview | Add compact config overview for bare `dashboard` using existing config structures; print configured OBD source strings as-is. |
+| v3.4.12 | dashboard harness and examples | Remap existing harness behaviour into `dashboard harness`, add gauge-aware sweep, and wrap existing example generation as portable `dashboard examples --output <directory>`. |
 
 ## Update rule
 
