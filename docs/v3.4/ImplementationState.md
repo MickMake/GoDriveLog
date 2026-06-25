@@ -1,8 +1,8 @@
 # GoDriveLog v3.4 implementation state
 
-Status: v3.4.10 dashboard CLI command tree implemented
-Current target: v3.4.11 dashboard overview
-Current branch: v3.4.10-dashboard-cli
+Status: v3.4.11 dashboard overview implemented
+Current target: v3.4.12 gauge-aware harness sweep
+Current branch: v3.4.11-dashboard-overview
 
 ## Purpose
 
@@ -243,6 +243,7 @@ CLI remapping state:
 - `dashboard run` and `dashboard harness` reuse the existing Ebiten runtime and harness paths.
 - `dashboard validate` reuses the existing config parser/validator and accepts either positional config or `--config`.
 - `dashboard examples` exports a self-contained built-in or explicit source dashboard directory to a caller-provided output root.
+- Bare `dashboard` now prints a compact overview of the resolved config path, vehicles, attached dashboards, widget/gauge entries, configured OBD source strings, and OBD PIDs where applicable without dumping raw YAML.
 - Deterministic config discovery now selects single-vehicle configs or requires explicit vehicle selection when the first valid config is multi-vehicle.
 - Relative gauge-package loading now also honors the resolved dashboard config path when discovery selected the config instead of a literal `--config` argument.
 - Headless CI must not run `go test ./...` against `cmd/GoDriveLog`; the active Actions validation path is `go test ./internal/... ./scripts/generate-example-assets` plus `go test -c ./cmd/GoDriveLog`, because the Ebiten/GLFW command package imports display-backed code paths.
@@ -277,7 +278,7 @@ Slice state:
 | Version | Target | Notes |
 |---|---|---|
 | v3.4.10 | dashboard CLI command tree | Remap `run`, `harness`, `examples`, and `validate`; add deterministic config discovery and help-output coverage for implemented commands. |
-| v3.4.11 | dashboard overview | Add bare `dashboard` compact config overview using existing config structures. Print the configured vehicle OBD source string as-is rather than inferring source type. |
+| v3.4.11 | dashboard overview | Bare `dashboard` now prints a compact config overview using existing config structures and configured vehicle OBD source strings as-is. |
 | v3.4.12 | gauge-aware harness sweep | Refine `dashboard harness --pattern sweep` so synthetic input matches gauge behaviour. |
 
 Config discovery state:
@@ -343,12 +344,12 @@ The generated example dashboard tail should add richer example coverage for the 
 | v3.4.8 | completed | Added the neon-grid generated dashboard, committed generated theme artwork under `examples/neon-grid/assets/`, runnable gauge packages under `examples/neon-grid/assets/gauges/`, a runnable neon-grid dashboard config, and harness coverage for the themed example path. |
 | v3.4.9 | completed | Added the steam-scrap generated dashboard, committed generated theme artwork under `examples/steam-scrap/assets/`, runnable gauge packages under `examples/steam-scrap/assets/gauges/`, a runnable steam-scrap dashboard config, and harness coverage for the themed example path. |
 | v3.4.10 | completed | Replaced the active flat dashboard flags with `dashboard run`, `dashboard harness`, `dashboard validate`, and `dashboard examples`, added deterministic config discovery, added dashboard help coverage, and exported self-contained example dashboards to caller-selected output directories. |
+| v3.4.11 | completed | Added the bare `dashboard` compact overview, printing the resolved config path, configured vehicle OBD source strings as-is, attached dashboards, widget/gauge source summaries, OBD PIDs where applicable, and compact gauge-package warnings when overview details cannot be loaded. |
 
 ## Pending slices
 
 | Version | Target | Notes |
 |---|---|---|
-| v3.4.11 | dashboard overview | Add compact config overview for bare `dashboard` using existing config structures; print configured OBD source strings as-is. |
 | v3.4.12 | gauge-aware harness sweep | Refine `dashboard harness --pattern sweep` so synthetic input matches gauge behaviour. |
 
 ## Update rule
