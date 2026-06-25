@@ -109,6 +109,15 @@ func runBareDashboardFlags(args []string, stdout, stderr io.Writer) error {
 }
 
 func runDashboardRunCommand(args []string, stdout, stderr io.Writer) error {
+	filteredArgs, positionalArgs, err := splitArgsAllowingSinglePositional(args, map[string]bool{
+		"--config":   true,
+		"--renderer": true,
+		"--duration": true,
+	})
+	if err != nil {
+		return err
+	}
+
 	fs := newDashboardFlagSet("dashboard run")
 	configPath := fs.String("config", "", "path to a dashboard config; when omitted, use deterministic discovery")
 	renderer := fs.String("renderer", v3RendererEbiten, "dashboard renderer backend")
@@ -117,14 +126,17 @@ func runDashboardRunCommand(args []string, stdout, stderr io.Writer) error {
 		writeDashboardRunHelp(stdout)
 	}
 
-	if err := fs.Parse(args); err != nil {
+	if err := fs.Parse(filteredArgs); err != nil {
 		if err == flag.ErrHelp {
 			writeDashboardRunHelp(stdout)
 			return nil
 		}
 		return err
 	}
-	if len(fs.Args()) > 1 {
+	if len(fs.Args()) != 0 {
+		return fmt.Errorf("dashboard run accepts at most one vehicle id")
+	}
+	if len(positionalArgs) > 1 {
 		return fmt.Errorf("dashboard run accepts at most one vehicle id")
 	}
 
@@ -137,8 +149,8 @@ func runDashboardRunCommand(args []string, stdout, stderr io.Writer) error {
 	}
 
 	vehicleID := ""
-	if len(fs.Args()) == 1 {
-		vehicleID = fs.Args()[0]
+	if len(positionalArgs) == 1 {
+		vehicleID = positionalArgs[0]
 	}
 	selection, err := resolveDashboardSelection(*configPath, vehicleID)
 	if err != nil {
@@ -151,6 +163,17 @@ func runDashboardRunCommand(args []string, stdout, stderr io.Writer) error {
 }
 
 func runDashboardHarnessSubcommand(args []string, stdout, stderr io.Writer) error {
+	filteredArgs, positionalArgs, err := splitArgsAllowingSinglePositional(args, map[string]bool{
+		"--config":   true,
+		"--pattern":  true,
+		"--interval": true,
+		"--duration": true,
+		"--renderer": true,
+	})
+	if err != nil {
+		return err
+	}
+
 	fs := newDashboardFlagSet("dashboard harness")
 	configPath := fs.String("config", "", "path to a dashboard config; when omitted, use deterministic discovery")
 	pattern := fs.String("pattern", v3harness.PatternSweep, "harness pattern: sweep, heartbeat, or fixed")
@@ -161,14 +184,17 @@ func runDashboardHarnessSubcommand(args []string, stdout, stderr io.Writer) erro
 		writeDashboardHarnessHelp(stdout)
 	}
 
-	if err := fs.Parse(args); err != nil {
+	if err := fs.Parse(filteredArgs); err != nil {
 		if err == flag.ErrHelp {
 			writeDashboardHarnessHelp(stdout)
 			return nil
 		}
 		return err
 	}
-	if len(fs.Args()) > 1 {
+	if len(fs.Args()) != 0 {
+		return fmt.Errorf("dashboard harness accepts at most one vehicle id")
+	}
+	if len(positionalArgs) > 1 {
 		return fmt.Errorf("dashboard harness accepts at most one vehicle id")
 	}
 
@@ -181,8 +207,8 @@ func runDashboardHarnessSubcommand(args []string, stdout, stderr io.Writer) erro
 	}
 
 	vehicleID := ""
-	if len(fs.Args()) == 1 {
-		vehicleID = fs.Args()[0]
+	if len(positionalArgs) == 1 {
+		vehicleID = positionalArgs[0]
 	}
 	selection, err := resolveDashboardSelection(*configPath, vehicleID)
 	if err != nil {
@@ -253,11 +279,11 @@ func runDashboardValidateCommand(args []string, stdout, stderr io.Writer) error 
 	}
 
 	if selectedConfig == "" {
-		selection, err := resolveDashboardSelection("", "")
+		discoveredConfig, err := discoverDashboardConfigForValidation()
 		if err != nil {
 			return err
 		}
-		selectedConfig = selection.ConfigPath
+		selectedConfig = discoveredConfig
 	}
 
 	if _, err := v3config.LoadFile(selectedConfig); err != nil {
@@ -342,6 +368,23 @@ func discoverDashboardSelection(vehicleID string) (dashboardSelection, error) {
 	return dashboardSelection{}, fmt.Errorf("no valid single-vehicle dashboard config files were discovered in the current directory or /etc/godrivelog")
 }
 
+func discoverDashboardConfigForValidation() (string, error) {
+	paths, err := discoverDashboardConfigPaths()
+	if err != nil {
+		return "", err
+	}
+	if len(paths) == 0 {
+		return "", fmt.Errorf("no dashboard config files found in the current directory or /etc/godrivelog")
+	}
+
+	for _, path := range paths {
+		if _, err := v3config.LoadFile(path); err == nil {
+			return path, nil
+		}
+	}
+	return "", fmt.Errorf("no valid dashboard config files were discovered in the current directory or /etc/godrivelog")
+}
+
 func discoverDashboardConfigPaths() ([]string, error) {
 	paths := []string{}
 	if cwd, err := os.Getwd(); err == nil {
@@ -401,6 +444,43 @@ func sortedVehicleIDs(vehicles map[string]v3config.VehicleConfig) []string {
 	}
 	sort.Strings(ids)
 	return ids
+}
+
+func splitArgsAllowingSinglePositional(args []string, valueFlags map[string]bool) ([]string, []string, error) {
+	filtered := make([]string, 0, len(args))
+	positionals := []string{}
+
+	for index := 0; index < len(args); index++ {
+		arg := args[index]
+		if arg == "--" {
+			positionals = append(positionals, args[index+1:]...)
+			break
+		}
+		if flagName, isFlag := commandFlagName(arg); isFlag {
+			filtered = append(filtered, arg)
+			if valueFlags[flagName] && !strings.Contains(arg, "=") {
+				if index+1 >= len(args) {
+					return nil, nil, fmt.Errorf("flag needs an argument: %s", arg)
+				}
+				index++
+				filtered = append(filtered, args[index])
+			}
+			continue
+		}
+		positionals = append(positionals, arg)
+	}
+
+	return filtered, positionals, nil
+}
+
+func commandFlagName(arg string) (string, bool) {
+	if strings.HasPrefix(arg, "--") {
+		if cut := strings.Index(arg, "="); cut >= 0 {
+			return arg[:cut], true
+		}
+		return arg, true
+	}
+	return "", false
 }
 
 func containsString(values []string, want string) bool {

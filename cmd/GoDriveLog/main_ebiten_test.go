@@ -94,6 +94,52 @@ func TestDashboardRunSearchesConfigsForRequestedVehicle(t *testing.T) {
 	}
 }
 
+func TestDashboardRunAcceptsVehicleBeforeOrAfterFlags(t *testing.T) {
+	root := t.TempDir()
+	configPath := filepath.Join(root, "dashboard.yaml")
+	writeTestConfig(t, configPath, multiVehicleConfigYAML())
+
+	testCases := []struct {
+		name string
+		args []string
+	}{
+		{
+			name: "vehicle before flags",
+			args: []string{"dashboard", "run", "vw_caddy", "--config", configPath},
+		},
+		{
+			name: "vehicle after flags",
+			args: []string{"dashboard", "run", "--config", configPath, "vw_caddy"},
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.name, func(t *testing.T) {
+			var gotConfig string
+			var gotVehicle string
+			previousRun := dashboardRunCommand
+			dashboardRunCommand = func(configPath, vehicleID string, duration time.Duration) error {
+				gotConfig = configPath
+				gotVehicle = vehicleID
+				return nil
+			}
+			defer func() {
+				dashboardRunCommand = previousRun
+			}()
+
+			if err := runCLI(test.args, &bytes.Buffer{}, &bytes.Buffer{}); err != nil {
+				t.Fatalf("runCLI returned error: %v", err)
+			}
+			if gotConfig != configPath {
+				t.Fatalf("config path = %q, want %q", gotConfig, configPath)
+			}
+			if gotVehicle != "vw_caddy" {
+				t.Fatalf("vehicle id = %q, want vw_caddy", gotVehicle)
+			}
+		})
+	}
+}
+
 func TestDashboardHarnessUsesPositionalVehicleAndDefaults(t *testing.T) {
 	root := t.TempDir()
 	configPath := filepath.Join(root, "dashboard.yaml")
@@ -137,6 +183,57 @@ func TestDashboardHarnessUsesPositionalVehicleAndDefaults(t *testing.T) {
 	}
 }
 
+func TestDashboardHarnessAcceptsVehicleBeforeOrAfterFlags(t *testing.T) {
+	root := t.TempDir()
+	configPath := filepath.Join(root, "dashboard.yaml")
+	writeTestConfig(t, configPath, multiVehicleConfigYAML())
+
+	testCases := []struct {
+		name string
+		args []string
+	}{
+		{
+			name: "vehicle before flags",
+			args: []string{"dashboard", "harness", "vw_caddy", "--config", configPath, "--pattern", v3harness.PatternSweep},
+		},
+		{
+			name: "vehicle after flags",
+			args: []string{"dashboard", "harness", "--config", configPath, "--pattern", v3harness.PatternSweep, "vw_caddy"},
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.name, func(t *testing.T) {
+			var gotConfig string
+			var gotVehicle string
+			var gotPattern string
+			previousHarness := dashboardHarnessCommand
+			dashboardHarnessCommand = func(configPath, vehicleID, pattern string, interval, duration time.Duration) error {
+				gotConfig = configPath
+				gotVehicle = vehicleID
+				gotPattern = pattern
+				return nil
+			}
+			defer func() {
+				dashboardHarnessCommand = previousHarness
+			}()
+
+			if err := runCLI(test.args, &bytes.Buffer{}, &bytes.Buffer{}); err != nil {
+				t.Fatalf("runCLI returned error: %v", err)
+			}
+			if gotConfig != configPath {
+				t.Fatalf("config path = %q, want %q", gotConfig, configPath)
+			}
+			if gotVehicle != "vw_caddy" {
+				t.Fatalf("vehicle id = %q, want vw_caddy", gotVehicle)
+			}
+			if gotPattern != v3harness.PatternSweep {
+				t.Fatalf("pattern = %q, want %q", gotPattern, v3harness.PatternSweep)
+			}
+		})
+	}
+}
+
 func TestDashboardValidateRejectsPositionalAndFlagConfig(t *testing.T) {
 	err := runCLI([]string{"dashboard", "validate", "./one.yaml", "--config", "./two.yaml"}, &bytes.Buffer{}, &bytes.Buffer{})
 	if err == nil {
@@ -144,6 +241,21 @@ func TestDashboardValidateRejectsPositionalAndFlagConfig(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), "either a positional config file or --config") {
 		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestDashboardValidateDiscoversMultiVehicleConfigWithoutVehicle(t *testing.T) {
+	root := t.TempDir()
+	writeTestConfig(t, filepath.Join(root, "dashboard.yaml"), multiVehicleConfigYAML())
+	restoreWD := changeWorkingDirectory(t, root)
+	defer restoreWD()
+
+	stdout := &bytes.Buffer{}
+	if err := runCLI([]string{"dashboard", "validate"}, stdout, &bytes.Buffer{}); err != nil {
+		t.Fatalf("runCLI returned error: %v", err)
+	}
+	if !strings.Contains(stdout.String(), "validated dashboard config") {
+		t.Fatalf("stdout = %q, want validation confirmation", stdout.String())
 	}
 }
 
