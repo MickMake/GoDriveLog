@@ -45,8 +45,8 @@ jobs:
           go test -run '^TestBaselineDashboardConfigRunsHarnessPatterns$' ./internal/dashboard/harness
           go test -run '^$' -bench '^BenchmarkBaselineDashboardHarnessPatterns$' -benchmem -count=3 ./internal/dashboard/harness
 
-      - name: Test Code
-        run: go test ./...
+      - name: Test non-GUI packages
+        run: go test ./internal/... ./scripts/generate-example-assets
 
-      - name: Build
-        run: go build ./cmd/GoDriveLog
+      - name: Compile-check GUI command package
+        run: go test -c ./cmd/GoDriveLog

@@ -245,6 +245,7 @@ CLI remapping state:
 - `dashboard examples` exports a self-contained built-in or explicit source dashboard directory to a caller-provided output root.
 - Deterministic config discovery now selects single-vehicle configs or requires explicit vehicle selection when the first valid config is multi-vehicle.
 - Relative gauge-package loading now also honors the resolved dashboard config path when discovery selected the config instead of a literal `--config` argument.
+- Headless CI must not run `go test ./...` against `cmd/GoDriveLog`; the active Actions validation path is `go test ./internal/... ./scripts/generate-example-assets` plus `go test -c ./cmd/GoDriveLog`, because the Ebiten/GLFW command package imports display-backed code paths.
 - Do not create new runtime packages, renderer abstractions, config schemas, validation engines, harness engines, or example-generation systems as part of the CLI tail.
 
 Command routing target:

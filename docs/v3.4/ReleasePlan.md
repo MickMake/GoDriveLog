@@ -159,6 +159,8 @@ The CLI tail routing work must not create replacement runtime, renderer, harness
 
 v3.4.10 is complete: the active command tree now lives under `GoDriveLog dashboard`, with deterministic config discovery and the first public `run`, `harness`, `validate`, and `examples` command routing in place. The remaining CLI tail slices are the bare overview and gauge-aware sweep behaviour only.
 
+For headless CI, validate v3.4.10 with non-GUI package tests plus `go test -c ./cmd/GoDriveLog`; do not use `go test ./...` while the active command package imports the Ebiten/GLFW display path.
+
 Command routing target:
 
 | New command form | Existing flat flag path or machinery being remapped | Existing code path to reuse |
