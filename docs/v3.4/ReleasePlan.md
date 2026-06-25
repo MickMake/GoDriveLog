@@ -9,7 +9,7 @@ v3.4 defines the next gauge package model for the active Ebiten dashboard path.
 
 The release direction is gauge/display package cleanup and expansion. It does not introduce a platform packaging track.
 
-The original behaviour implementation slices are complete through v3.4.5. The v3.4.6 through v3.4.9 tail adds generated example dashboards that prove the completed gauge types with repeatable assets. The v3.4.10 through v3.4.12 tail remaps existing flat dashboard flags into dashboard-scoped CLI commands in small slices.
+The original behaviour implementation slices are complete through v3.4.5. The v3.4.6 through v3.4.9 tail adds generated example dashboards that prove the completed gauge types with repeatable assets. The v3.4.10 through v3.4.12 tail now splits dashboard CLI work into full command-tree routing, compact overview output, and gauge-aware harness sweep behaviour.
 
 ## Release goal
 
@@ -142,7 +142,7 @@ Example dashboard rules:
 
 ## Dashboard CLI tail
 
-v3.4.10 through v3.4.12 remap the existing flat flag dashboard entry points into dashboard-scoped commands for the active dashboard tooling.
+v3.4.10 through v3.4.12 reshape the existing flat flag dashboard entry points into dashboard-scoped commands for the active dashboard tooling.
 
 The completed command tree target is:
 
@@ -155,7 +155,7 @@ GoDriveLog dashboard validate [config-file]
 GoDriveLog dashboard validate [--config <config-file>]
 ```
 
-The CLI tail is routing work. It must not create replacement runtime, renderer, harness, config, validation, or example-generation systems. The existing `cmd/GoDriveLog/main_ebiten.go` flat flag behaviours already reach the required backend paths; the CLI work should move those switches into named command drawers.
+The CLI tail routing work must not create replacement runtime, renderer, harness, config, validation, or example-generation systems. The existing `cmd/GoDriveLog/main_ebiten.go` flat flag behaviours already reach the required backend paths; the CLI work should move those switches into named command drawers.
 
 Command routing target:
 
@@ -185,9 +185,9 @@ The CLI tail is split into focused slices:
 
 | Version | Slice | Result |
 |---|---|---|
-| v3.4.10 | dashboard CLI foundation | Remap the `main_ebiten.go` default run path into `dashboard run`, add `dashboard validate`, deterministic config discovery, and help-output coverage for implemented commands. |
+| v3.4.10 | dashboard CLI command tree | Remap `run`, `harness`, `examples`, and `validate`; add deterministic config discovery and help-output coverage for implemented commands. |
 | v3.4.11 | dashboard overview | Add bare `dashboard` compact config overview using existing config structures. |
-| v3.4.12 | dashboard harness and examples | Remap the existing harness path into `dashboard harness`, add gauge-aware sweep, and wrap existing generated-example machinery as `dashboard examples`. |
+| v3.4.12 | gauge-aware harness sweep | Make `dashboard harness --pattern sweep` drive each gauge according to gauge behaviour. |
 
 ### Config discovery rules
 
@@ -231,10 +231,10 @@ Do not default to `config.example.yaml`.
 - `--renderer` is optional and defaults to `ebiten`.
 - `ebiten` remains the only active renderer.
 - Bare `dashboard` prints a compact overview of the resolved config in v3.4.11.
-- The overview prints the configured vehicle OBD source string as-is; it does not infer serial/Bluetooth/Wi-Fi/fake source types.
+- The overview prints the configured vehicle OBD source string as-is; it does not infer source-type labels.
 - The overview must list gauges/widgets with gauge ID/name, type, source of data, and PID where applicable.
 - Do not add a separate PID section.
-- `dashboard examples` requires `--output` in v3.4.12.
+- `dashboard examples` requires `--output` in v3.4.10.
 - `dashboard examples --output <directory>` treats `<directory>` as the generated dashboard root, creates it when missing, writes `dashboard.yaml` and `assets/` directly inside it, and does not add a theme subdirectory.
 - Generated example output must use paths relative to the output directory so each generated dashboard is self-contained and movable.
 - If the examples output directory exists and is non-empty, interactive terminals may prompt unless `--force` is supplied; non-interactive use must fail unless `--force` is supplied.
@@ -268,9 +268,9 @@ Do not change gauge package semantics, renderer scene semantics, or generated ex
 | v3.4.7 | ornate timber dashboard | Add generated ornate timber dashboard assets/config. |
 | v3.4.8 | neon-grid dashboard | Add generated Tron-like dark neon dashboard assets/config. |
 | v3.4.9 | steam-scrap dashboard | Add generated steampunk/scrapyard dashboard assets/config. |
-| v3.4.10 | dashboard CLI foundation | Remap default run path into `dashboard run`, add `dashboard validate`, deterministic config discovery, and help-output coverage. |
+| v3.4.10 | dashboard CLI command tree | Remap dashboard-scoped `run`, `harness`, `examples`, and `validate`, add deterministic config discovery, and help-output coverage. |
 | v3.4.11 | dashboard overview | Add compact config overview for bare `dashboard`. |
-| v3.4.12 | dashboard harness and examples | Remap harness path into `dashboard harness`, add gauge-aware sweep, and wrap example generation as `dashboard examples`. |
+| v3.4.12 | gauge-aware harness sweep | Refine `dashboard harness --pattern sweep` so synthetic input matches gauge behaviour. |
 
 ## Branch-chat workflow
 
