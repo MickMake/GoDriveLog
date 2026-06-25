@@ -1,8 +1,8 @@
 # GoDriveLog v3.4 implementation state
 
-Status: v3.4.9 steam-scrap dashboard implemented
-Current target: none - v3.4 dashboard tail complete
-Current branch: v3.4.9-steam-scrap-dashboard
+Status: v3.4.10 dashboard CLI command tree planned
+Current target: v3.4.10 dashboard CLI command tree
+Current branch: docs/v3.4.10-dashboard-cli
 
 ## Purpose
 
@@ -221,6 +221,96 @@ Example dashboard rules:
 - Keep decorative timber, glow, pipes, rivets, wires, screws, and panels as assets, not renderer features.
 - Prefer small, reviewable slices over one giant asset PR with a top hat and a boiler whistle.
 
+## Dashboard CLI tail
+
+v3.4.10 through v3.4.12 reshape the existing flat flag dashboard entry points into dashboard-scoped CLI commands.
+
+Target command tree:
+
+```text
+GoDriveLog dashboard [--config <config-file>]
+GoDriveLog dashboard run [vehicle-id] [--config <config-file>] [--renderer ebiten]
+GoDriveLog dashboard harness [vehicle-id] [--config <config-file>] [--pattern sweep] [--interval 50ms] [--duration 60s] [--renderer ebiten]
+GoDriveLog dashboard examples --output <directory> [--config <config-file>] [--vehicle <vehicle-id>] [--theme framework-smoke] [--force]
+GoDriveLog dashboard validate [config-file]
+GoDriveLog dashboard validate [--config <config-file>]
+```
+
+CLI remapping state:
+
+- This is command routing work, not replacement backend work.
+- The existing `cmd/GoDriveLog/main_ebiten.go` flat flag handling already reaches the required runtime, harness, and example-generation behaviours.
+- Most implementation work should stay in `cmd/GoDriveLog/main_ebiten.go` unless small helper extraction avoids duplicate routing code.
+- Do not create new runtime packages, renderer abstractions, config schemas, validation engines, harness engines, or example-generation systems as part of the CLI tail.
+- Existing backend functions and helpers should be reused directly wherever practical.
+
+Command routing target:
+
+| New command form | Existing flat flag path or machinery being remapped | Existing code path to reuse |
+|---|---|---|
+| `GoDriveLog dashboard run [vehicle-id]` | Default run path when `--harness=false`; uses existing `--config`, `--vehicle`, `--renderer`, and current runtime duration handling if preserved. | Existing `runV3EbitenCommand(configPath, vehicleID, duration)` path. |
+| `GoDriveLog dashboard harness [vehicle-id]` | Existing `--harness=true` path plus `--config`, `--vehicle`, `--pattern`, `--interval`, `--duration`, and `--renderer`. | Existing `runV3EbitenHarnessCommand(configPath, vehicleID, pattern, interval, duration)` path. |
+| `GoDriveLog dashboard validate [config-file]` | Existing config load and validation behaviour, reached through a command instead of flat flags. | Existing config parsing/validation helpers; do not create a replacement validator. |
+| `GoDriveLog dashboard validate --config <config-file>` | Existing `--config` file selection plus existing config validation behaviour. | Existing config parsing/validation helpers; do not create a replacement validator. |
+| `GoDriveLog dashboard [--config <config-file>]` | Existing config load structures, rendered as a compact overview. | Existing config parsing structures; do not invent a new config model. |
+| `GoDriveLog dashboard examples --output <directory>` | Existing generated example asset machinery/scripts, plus existing `--config` and `--vehicle` concepts where relevant. | Existing generated-example helpers/scripts; do not build a duplicate generator. |
+
+Flag redistribution:
+
+| Existing flat flag | New command usage |
+|---|---|
+| `--config` | Used by `dashboard`, `dashboard run`, `dashboard harness`, `dashboard examples`, and `dashboard validate`. |
+| `--vehicle` | Becomes positional `[vehicle-id]` for `dashboard run` and `dashboard harness`; remains `--vehicle` for `dashboard examples`. |
+| `--renderer` | Used by `dashboard run` and `dashboard harness`. |
+| `--duration` | Used by `dashboard harness`; may stay on `dashboard run` if preserving the existing runtime duration behaviour. |
+| `--harness` | Replaced by the command name `dashboard harness`. |
+| `--pattern` | Used by `dashboard harness`. |
+| `--interval` | Used by `dashboard harness`. |
+| `--v3` | Removed; the `dashboard` command tree implies the active v3 dashboard path. |
+
+Slice state:
+
+| Version | Target | Notes |
+|---|---|---|
+| v3.4.10 | dashboard CLI command tree | Remap `run`, `harness`, `examples`, and `validate`; add deterministic config discovery and help-output coverage for implemented commands. |
+| v3.4.11 | dashboard overview | Add bare `dashboard` compact config overview using existing config structures. Print the configured vehicle OBD source string as-is rather than inferring source type. |
+| v3.4.12 | gauge-aware harness sweep | Refine `dashboard harness --pattern sweep` so synthetic input matches gauge behaviour. |
+
+Config discovery state:
+
+- Explicit positional config or `--config` loads exactly that file and bypasses discovery.
+- If no config is supplied, search the current working directory, then `/etc/godrivelog` recursively.
+- Sort each directory's entries alphabetically before evaluating them.
+- Search the current working directory non-recursively.
+- Candidate config filenames are `godrivelog.yaml`, `godrivelog.yml`, `dashboard.yaml`, `dashboard.yml`, `config.yaml`, and `config.yml`.
+- With no vehicle ID, use the first valid config in search order that defines exactly one vehicle.
+- With no vehicle ID, the first valid multi-vehicle config stops discovery and returns a vehicle-required error.
+- With a vehicle ID, use the first valid single-vehicle or multi-vehicle config in search order that defines the requested vehicle.
+- If no config contains the requested vehicle, return an error listing searched config files and vehicles found in each valid config.
+- Do not default to `config.example.yaml`.
+
+Dashboard command decisions:
+
+- All active dashboard CLI functions live under `dashboard`.
+- `dashboard preview` is intentionally not part of the current CLI tail.
+- `--renderer` is optional and defaults to `ebiten`.
+- `ebiten` remains the only active renderer.
+- Do not add compatibility or migration behaviour for any earlier flat flag shape.
+- `dashboard examples --output <directory>` treats `<directory>` as the generated dashboard root, creates it when missing, writes `dashboard.yaml` and `assets/` directly inside it, and does not add a theme subdirectory.
+- Generated example output paths must be relative to the output directory so each dashboard is self-contained and movable.
+- If the examples output directory exists and is non-empty, interactive terminals may prompt unless `--force` is supplied; non-interactive use must fail unless `--force` is supplied.
+
+Gauge-aware harness `sweep` target:
+
+| Gauge type | Sweep behaviour |
+|---|---|
+| `odometer` | Let `n = 0`; increment from `n - 20` to `n + 20` for 5 seconds, then `n + 20` to `n + 30` for 5 seconds. |
+| `numeric` | Same as `odometer`. |
+| `radial` | Keep the existing sweep style. |
+| `indicator` | Flash on/off for 5 seconds with a 1s duty cycle, then flash on/off for 5 seconds with a 250ms duty cycle. |
+| `bar` | Heartbeat pulse at 90 bpm. |
+| `segmented` | Same input shape as `radial`. |
+
 ## Baseline dashboard
 
 The v3.4 baseline remains conceptually based on the reusable baseline config:
@@ -253,7 +343,9 @@ The generated example dashboard tail should add richer example coverage for the 
 
 | Version | Target | Notes |
 |---|---|---|
-| none | v3.4 complete | The planned generated example dashboard tail is complete through v3.4.9. |
+| v3.4.10 | dashboard CLI command tree | Remap dashboard-scoped `run`, `harness`, `examples`, and `validate`; add deterministic config discovery and help-output coverage for implemented commands. |
+| v3.4.11 | dashboard overview | Add compact config overview for bare `dashboard` using existing config structures; print configured OBD source strings as-is. |
+| v3.4.12 | gauge-aware harness sweep | Refine `dashboard harness --pattern sweep` so synthetic input matches gauge behaviour. |
 
 ## Update rule
 
