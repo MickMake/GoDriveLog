@@ -23,6 +23,8 @@ Each prompt should be used in a fresh implementation chat after reading:
 | v3.4.8 | `v3.4.8-neon-grid-dashboard.md` |
 | v3.4.9 | `v3.4.9-steam-scrap-dashboard.md` |
 | v3.4.10 | `v3.4.10-dashboard-cli.md` |
+| v3.4.11 | `v3.4.11-dashboard-overview.md` |
+| v3.4.12 | `v3.4.12-dashboard-harness-examples.md` |
 
 ## Standard workflow
 
@@ -36,6 +38,6 @@ Each prompt should be used in a fresh implementation chat after reading:
 
 For v3.4.6 through v3.4.9, keep the work deterministic and local. Do not use remote image generation, downloaded stock art, or hand-edited opaque PNGs as the source of truth.
 
-For v3.4.10, keep the work focused on dashboard CLI shape and related runtime/harness wiring. Do not add new gauge behaviour types or renderer models.
+For v3.4.10 through v3.4.12, keep the work focused on dashboard CLI shape and related runtime/harness/example wiring. Do not add new gauge behaviour types or renderer models.
 
 No wandering into the shed and accidentally building a font engine. That way lie tiny layout gremlins with measuring tapes.
