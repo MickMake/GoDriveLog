@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/MickMake/GoDriveLog/internal/config/v3config"
+	"github.com/MickMake/GoDriveLog/internal/dashboard/gauges"
 	v3harness "github.com/MickMake/GoDriveLog/internal/dashboard/harness"
 )
 
@@ -58,8 +59,7 @@ func runCLI(args []string, stdout, stderr io.Writer) error {
 
 func runDashboardCLI(args []string, stdout, stderr io.Writer) error {
 	if len(args) == 0 {
-		writeDashboardHelp(stdout)
-		return nil
+		return runBareDashboardFlags(nil, stdout, stderr)
 	}
 
 	switch args[0] {
@@ -85,7 +85,7 @@ func runDashboardCLI(args []string, stdout, stderr io.Writer) error {
 
 func runBareDashboardFlags(args []string, stdout, stderr io.Writer) error {
 	fs := newDashboardFlagSet("dashboard")
-	configPath := fs.String("config", "", "path to a dashboard config; bare overview is deferred to v3.4.11")
+	configPath := fs.String("config", "", "path to a dashboard config; when omitted, use deterministic discovery")
 	fs.Usage = func() {
 		writeDashboardHelp(stdout)
 	}
@@ -101,11 +101,162 @@ func runBareDashboardFlags(args []string, stdout, stderr io.Writer) error {
 		writeDashboardHelp(stderr)
 		return fmt.Errorf("unexpected arguments for dashboard: %s", strings.Join(fs.Args(), " "))
 	}
-	if strings.TrimSpace(*configPath) == "" {
-		writeDashboardHelp(stdout)
-		return nil
+
+	overview, err := buildDashboardOverview(*configPath)
+	if err != nil {
+		return err
 	}
-	return fmt.Errorf("bare dashboard overview is not implemented in v3.4.10; use dashboard run, harness, examples, or validate")
+	_, _ = io.WriteString(stdout, overview)
+	return nil
+}
+
+func buildDashboardOverview(configPath string) (string, error) {
+	resolvedConfigPath, cfg, err := loadDashboardOverviewConfig(configPath)
+	if err != nil {
+		return "", err
+	}
+
+	absoluteConfigPath, err := filepath.Abs(filepath.Clean(resolvedConfigPath))
+	if err != nil {
+		return "", fmt.Errorf("resolve dashboard config path %q: %w", resolvedConfigPath, err)
+	}
+	searchPaths := []string{filepath.Dir(absoluteConfigPath)}
+
+	var b strings.Builder
+	fmt.Fprintln(&b, "GoDriveLog dashboard overview")
+	fmt.Fprintln(&b)
+	fmt.Fprintf(&b, "Resolved config: %s\n", absoluteConfigPath)
+	fmt.Fprintln(&b, "Vehicles:")
+
+	for _, vehicleID := range sortedVehicleIDs(cfg.Vehicles) {
+		vehicle := cfg.Vehicles[vehicleID]
+		fmt.Fprintf(&b, "- %s", vehicleID)
+		if name := strings.TrimSpace(vehicle.Name); name != "" {
+			fmt.Fprintf(&b, " (%s)", name)
+		}
+		fmt.Fprintln(&b)
+		fmt.Fprintf(&b, "  obd source: %s\n", vehicle.OBD.Address)
+
+		plan, err := v3config.Resolve(cfg, vehicleID)
+		if err != nil {
+			fmt.Fprintf(&b, "  warning: %s\n", compactOverviewWarning(err))
+			continue
+		}
+		if len(plan.Dashboards) == 0 {
+			fmt.Fprintln(&b, "  dashboards: none")
+			continue
+		}
+
+		fmt.Fprintln(&b, "  dashboards:")
+		for _, dashboard := range plan.Dashboards {
+			fmt.Fprintf(&b, "    - %s\n", dashboard.ID)
+			if len(dashboard.Config.Widgets) == 0 {
+				fmt.Fprintln(&b, "      widgets: none")
+				continue
+			}
+
+			fmt.Fprintln(&b, "      widgets:")
+			for _, widget := range dashboard.Config.Widgets {
+				entry := describeOverviewWidget(cfg, searchPaths, widget)
+				fmt.Fprintf(&b, "        - %s: type=%s source=%s", entry.Label, entry.Type, entry.Source)
+				if entry.PID != "" {
+					fmt.Fprintf(&b, " pid=%s", entry.PID)
+				}
+				fmt.Fprintln(&b)
+				if entry.Warning != "" {
+					fmt.Fprintf(&b, "          warning: %s\n", entry.Warning)
+				}
+			}
+		}
+	}
+
+	return b.String(), nil
+}
+
+func loadDashboardOverviewConfig(configPath string) (string, v3config.Config, error) {
+	selectedConfigPath := strings.TrimSpace(configPath)
+	if selectedConfigPath == "" {
+		selection, err := resolveDashboardSelection("", "")
+		if err != nil {
+			return "", v3config.Config{}, err
+		}
+		selectedConfigPath = selection.ConfigPath
+	}
+
+	cfg, err := v3config.LoadFile(selectedConfigPath)
+	if err != nil {
+		return "", v3config.Config{}, fmt.Errorf("load dashboard config %q: %w", selectedConfigPath, err)
+	}
+	return selectedConfigPath, cfg, nil
+}
+
+type overviewWidgetEntry struct {
+	Label   string
+	Type    string
+	Source  string
+	PID     string
+	Warning string
+}
+
+func describeOverviewWidget(cfg v3config.Config, searchPaths []string, widget v3config.WidgetConfig) overviewWidgetEntry {
+	entry := overviewWidgetEntry{
+		Label:  overviewWidgetLabel(widget),
+		Type:   widget.Type,
+		Source: "none",
+	}
+
+	sensorID := strings.TrimSpace(widget.Sensor)
+	if widget.Type == v3config.WidgetTypeGauge {
+		pkg, err := gauges.LoadPackageWithSearchPaths(searchPaths, widget.Gauge)
+		if err != nil {
+			entry.Type = "unknown"
+			entry.Source = "unknown"
+			entry.Warning = compactOverviewWarning(err)
+			return entry
+		}
+		entry.Type = pkg.Type
+		sensorID = pkg.Sensor
+	}
+
+	if sensorID == "" {
+		return entry
+	}
+
+	entry.Source = sensorID
+	sensor, ok := cfg.Sensors[sensorID]
+	if !ok {
+		entry.Warning = fmt.Sprintf("sensor %q is not defined in top-level sensors", sensorID)
+		return entry
+	}
+	if sensor.Type == v3config.SensorTypeOBD {
+		entry.PID = sensor.PID
+	}
+	return entry
+}
+
+func overviewWidgetLabel(widget v3config.WidgetConfig) string {
+	if id := strings.TrimSpace(widget.ID); id != "" {
+		return id
+	}
+	if widget.Type == v3config.WidgetTypeGauge {
+		if gaugePath := strings.TrimSpace(widget.Gauge); gaugePath != "" {
+			return gaugePath
+		}
+	}
+	if asset := strings.TrimSpace(widget.Asset); asset != "" {
+		return asset
+	}
+	if sensor := strings.TrimSpace(widget.Sensor); sensor != "" {
+		return sensor
+	}
+	return widget.Type
+}
+
+func compactOverviewWarning(err error) string {
+	if err == nil {
+		return ""
+	}
+	return strings.Join(strings.Fields(err.Error()), " ")
 }
 
 func runDashboardRunCommand(args []string, stdout, stderr io.Writer) error {
@@ -687,10 +838,14 @@ func writeRootHelp(w io.Writer) {
 }
 
 func writeDashboardHelp(w io.Writer) {
-	fmt.Fprintln(w, "GoDriveLog dashboard")
+	fmt.Fprintln(w, "GoDriveLog dashboard [--config <config-file>]")
 	fmt.Fprintln(w)
 	fmt.Fprintln(w, "Purpose:")
-	fmt.Fprintln(w, "  Run dashboard runtime, harness, validation, and example export commands through the active v3 command tree.")
+	fmt.Fprintln(w, "  Print a compact dashboard config overview or run dashboard-scoped commands through the active v3 command tree.")
+	fmt.Fprintln(w)
+	fmt.Fprintln(w, "Flags:")
+	fmt.Fprintln(w, "  --config string")
+	fmt.Fprintln(w, "        path to a dashboard config; when omitted, search the current directory and /etc/godrivelog")
 	fmt.Fprintln(w)
 	fmt.Fprintln(w, "Subcommands:")
 	fmt.Fprintln(w, "  run       Start the active dashboard runtime for a selected vehicle")
@@ -699,7 +854,7 @@ func writeDashboardHelp(w io.Writer) {
 	fmt.Fprintln(w, "  validate  Validate a dashboard config file")
 	fmt.Fprintln(w)
 	fmt.Fprintln(w, "Example:")
-	fmt.Fprintln(w, "  GoDriveLog dashboard run vw_caddy --config ./examples/baseline-dashboard.yaml --renderer ebiten")
+	fmt.Fprintln(w, "  GoDriveLog dashboard --config ./examples/baseline-dashboard.yaml")
 }
 
 func writeDashboardRunHelp(w io.Writer) {

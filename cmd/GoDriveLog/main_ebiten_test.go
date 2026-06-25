@@ -259,6 +259,86 @@ func TestDashboardValidateDiscoversMultiVehicleConfigWithoutVehicle(t *testing.T
 	}
 }
 
+func TestDashboardOverviewPrintsResolvedConfigHierarchy(t *testing.T) {
+	root := t.TempDir()
+	configPath := filepath.Join(root, "dashboard.yaml")
+	writeTestConfig(t, configPath, singleVehicleGaugeConfigYAML("assets/gauges/test_speed"))
+	writeTestGaugePackage(t, filepath.Join(root, "assets", "gauges", "test_speed"))
+
+	stdout := &bytes.Buffer{}
+	if err := runCLI([]string{"dashboard", "--config", configPath}, stdout, &bytes.Buffer{}); err != nil {
+		t.Fatalf("runCLI returned error: %v", err)
+	}
+
+	absoluteConfigPath, err := filepath.Abs(configPath)
+	if err != nil {
+		t.Fatalf("Abs(%s): %v", configPath, err)
+	}
+	for _, want := range []string{
+		"GoDriveLog dashboard overview",
+		"Resolved config: " + absoluteConfigPath,
+		"- demo (Demo)",
+		"obd source: serial:///dev/ttyUSB0",
+		"    - primary",
+		"        - speed_widget: type=numeric source=speed pid=010D",
+	} {
+		if !strings.Contains(stdout.String(), want) {
+			t.Fatalf("overview missing %q\n%s", want, stdout.String())
+		}
+	}
+}
+
+func TestDashboardOverviewDiscoveryRequiresSingleVehicleConfig(t *testing.T) {
+	root := t.TempDir()
+	writeTestConfig(t, filepath.Join(root, "dashboard.yaml"), multiVehicleConfigYAML())
+	restoreWD := changeWorkingDirectory(t, root)
+	defer restoreWD()
+
+	err := runCLI([]string{"dashboard"}, &bytes.Buffer{}, &bytes.Buffer{})
+	if err == nil {
+		t.Fatal("expected bare dashboard discovery to reject the first valid multi-vehicle config")
+	}
+	if !strings.Contains(err.Error(), "defines multiple vehicles") {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestDashboardOverviewExplicitConfigShowsAllVehicles(t *testing.T) {
+	root := t.TempDir()
+	configPath := filepath.Join(root, "dashboard.yaml")
+	writeTestConfig(t, configPath, multiVehicleConfigYAML())
+
+	stdout := &bytes.Buffer{}
+	if err := runCLI([]string{"dashboard", "--config", configPath}, stdout, &bytes.Buffer{}); err != nil {
+		t.Fatalf("runCLI returned error: %v", err)
+	}
+
+	for _, want := range []string{
+		"- bench_z31 (Bench Z31)",
+		"obd source: tcp://127.0.0.1:35000",
+		"- vw_caddy (VW Caddy)",
+		"obd source: serial:///dev/ttyUSB0",
+	} {
+		if !strings.Contains(stdout.String(), want) {
+			t.Fatalf("overview missing %q\n%s", want, stdout.String())
+		}
+	}
+}
+
+func TestDashboardOverviewShowsGaugePackageWarning(t *testing.T) {
+	root := t.TempDir()
+	configPath := filepath.Join(root, "dashboard.yaml")
+	writeTestConfig(t, configPath, singleVehicleGaugeConfigYAML("assets/gauges/missing_speed"))
+
+	stdout := &bytes.Buffer{}
+	if err := runCLI([]string{"dashboard", "--config", configPath}, stdout, &bytes.Buffer{}); err != nil {
+		t.Fatalf("runCLI returned error: %v", err)
+	}
+	if !strings.Contains(stdout.String(), "warning:") || !strings.Contains(stdout.String(), "assets/gauges/missing_speed") {
+		t.Fatalf("expected gauge package warning in overview\n%s", stdout.String())
+	}
+}
+
 func TestDashboardExamplesExportsBuiltInTheme(t *testing.T) {
 	repoRoot := repoRootFromTestFile(t)
 	outputDir := filepath.Join(t.TempDir(), "framework-smoke")
@@ -314,7 +394,7 @@ func TestDashboardHelpOutputsIncludeNewCommandTree(t *testing.T) {
 		{
 			name: "dashboard",
 			args: []string{"dashboard", "--help"},
-			want: []string{"GoDriveLog dashboard", "run", "harness", "examples", "validate"},
+			want: []string{"GoDriveLog dashboard [--config <config-file>]", "--config", "run", "harness", "examples", "validate"},
 		},
 		{
 			name: "run",
@@ -473,4 +553,65 @@ dashboards:
         asset: panel
         position: [0, 0]
 `
+}
+
+func singleVehicleGaugeConfigYAML(gaugePath string) string {
+	return `vehicles:
+  demo:
+    name: Demo
+    obd:
+      address: serial:///dev/ttyUSB0
+      timeout: 1000
+    logs:
+      - jsonl
+    dashboards:
+      - primary
+sensors:
+  speed:
+    type: obd
+    pid: "010D"
+    unit: km/h
+    poll: 250
+logs:
+  jsonl:
+    path: logs/demo.jsonl
+    sensors:
+      - speed
+dashboards:
+  primary:
+    size:
+      width: 800
+      height: 480
+    widgets:
+      - id: speed_widget
+        type: gauge
+        gauge: ` + gaugePath + `
+        position: [0, 0]
+`
+}
+
+func writeTestGaugePackage(t *testing.T, packageDir string) {
+	t.Helper()
+	writeTestConfig(t, filepath.Join(packageDir, "gauge.yaml"), `id: test_speed
+type: numeric
+sensor: speed
+format: "%03.0f"
+size:
+  width: 120
+  height: 40
+digit_set:
+  characters:
+    "0": digits/0.png
+    "1": digits/1.png
+    "2": digits/2.png
+    "3": digits/3.png
+    "4": digits/4.png
+    "5": digits/5.png
+    "6": digits/6.png
+    "7": digits/7.png
+    "8": digits/8.png
+    "9": digits/9.png
+digits:
+  count: 3
+`)
 }

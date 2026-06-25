@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added the v3.4.11 bare `GoDriveLog dashboard` compact overview, including resolved-config reporting, per-vehicle dashboard/widget hierarchy, configured OBD source strings printed as-is, widget/gauge data sources with OBD PIDs where applicable, and compact warnings when gauge packages cannot be loaded for overview output.
 - Narrowed the v3.4.10 CI validation path for headless runners: GitHub Actions now runs `go test ./internal/... ./scripts/generate-example-assets` and `go test -c ./cmd/GoDriveLog` instead of `go test ./...`, because the Ebiten/GLFW-backed command package requires a display for direct test execution.
 - Added the v3.4.10 dashboard CLI command tree under `GoDriveLog dashboard`, replacing the active flat `--harness`/`--v3` flow with `dashboard run`, `dashboard harness`, `dashboard validate`, and `dashboard examples`, plus deterministic config discovery, help coverage, and self-contained example export.
 - Clarified that the v3.4 dashboard CLI tail is command-routing/remapping work: existing `cmd/GoDriveLog/main_ebiten.go` flat flag behaviours should be moved into dashboard subcommands while reusing the same runtime, harness, renderer, config, validation, and example-generation backend paths.

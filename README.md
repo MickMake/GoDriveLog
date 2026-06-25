@@ -133,6 +133,16 @@ go run ./cmd/GoDriveLog dashboard harness vw_caddy \
 
 `--renderer ebiten` is explicit for readability. Ebiten is already the default renderer in the active v3.4 dashboard command path.
 
+## Dashboard overview
+
+To inspect the resolved dashboard config without dumping the whole YAML:
+
+```bash
+go run ./cmd/GoDriveLog dashboard --config ./examples/baseline-dashboard.yaml
+```
+
+The bare `dashboard` command prints a compact overview of vehicles, attached dashboards, widget/gauge sources, and OBD-backed PIDs. It is a map, not the territory, but it is at least the correct map.
+
 ## Raspberry Pi notes
 
 The active v3.3 dashboard renderer is Ebiten. Raspberry Pi builds should focus on Go, graphics/display dependencies needed by Ebiten, and the selected kiosk/display setup.
