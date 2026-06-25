@@ -15,16 +15,17 @@ import (
 )
 
 const (
-	TypeNumeric      = "numeric"
-	TypeRadial       = "radial"
-	TypeOdometer     = "odometer"
-	TypeIndicator    = "indicator"
-	TypeBar          = "bar"
-	TypeSegmented    = "segmented"
-	MovementSmooth   = "smooth"
-	MovementClick    = "click"
-	WheelRoleDigit   = "digit"
-	WheelRoleSubUnit = "sub_unit"
+	dashboardConfigEnvVar = "GODRIVELOG_CONFIG_PATH"
+	TypeNumeric           = "numeric"
+	TypeRadial            = "radial"
+	TypeOdometer          = "odometer"
+	TypeIndicator         = "indicator"
+	TypeBar               = "bar"
+	TypeSegmented         = "segmented"
+	MovementSmooth        = "smooth"
+	MovementClick         = "click"
+	WheelRoleDigit        = "digit"
+	WheelRoleSubUnit      = "sub_unit"
 )
 
 type Package struct {
@@ -217,6 +218,11 @@ func defaultGaugeSearchPaths() []string {
 		paths = append(paths, pwd)
 	}
 	if configPath := commandLineConfigPath(os.Args[1:]); configPath != "" {
+		if configDir, err := filepath.Abs(filepath.Dir(configPath)); err == nil {
+			paths = append(paths, configDir)
+		}
+	}
+	if configPath := strings.TrimSpace(os.Getenv(dashboardConfigEnvVar)); configPath != "" {
 		if configDir, err := filepath.Abs(filepath.Dir(configPath)); err == nil {
 			paths = append(paths, configDir)
 		}

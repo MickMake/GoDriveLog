@@ -1,6 +1,6 @@
 # GoDriveLog v3.4 release plan
 
-Status: dashboard CLI tail planned
+Status: dashboard overview and gauge-aware harness follow-up planned
 Owner: gauge package implementor
 
 ## Purpose
@@ -156,6 +156,10 @@ GoDriveLog dashboard validate [--config <config-file>]
 ```
 
 The CLI tail routing work must not create replacement runtime, renderer, harness, config, validation, or example-generation systems. The existing `cmd/GoDriveLog/main_ebiten.go` flat flag behaviours already reach the required backend paths; the CLI work should move those switches into named command drawers.
+
+v3.4.10 is complete: the active command tree now lives under `GoDriveLog dashboard`, with deterministic config discovery and the first public `run`, `harness`, `validate`, and `examples` command routing in place. The remaining CLI tail slices are the bare overview and gauge-aware sweep behaviour only.
+
+For headless CI, validate v3.4.10 with non-GUI package tests plus `go test -c ./cmd/GoDriveLog`; do not use `go test ./...` while the active command package imports the Ebiten/GLFW display path.
 
 Command routing target:
 

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Narrowed the v3.4.10 CI validation path for headless runners: GitHub Actions now runs `go test ./internal/... ./scripts/generate-example-assets` and `go test -c ./cmd/GoDriveLog` instead of `go test ./...`, because the Ebiten/GLFW-backed command package requires a display for direct test execution.
+- Added the v3.4.10 dashboard CLI command tree under `GoDriveLog dashboard`, replacing the active flat `--harness`/`--v3` flow with `dashboard run`, `dashboard harness`, `dashboard validate`, and `dashboard examples`, plus deterministic config discovery, help coverage, and self-contained example export.
 - Clarified that the v3.4 dashboard CLI tail is command-routing/remapping work: existing `cmd/GoDriveLog/main_ebiten.go` flat flag behaviours should be moved into dashboard subcommands while reusing the same runtime, harness, renderer, config, validation, and example-generation backend paths.
 - Refined v3.4 dashboard CLI planning into three focused slices: v3.4.10 for the full dashboard command tree, deterministic config discovery, `run`, `harness`, `examples`, `validate`, and help-output coverage; v3.4.11 for compact config overview using configured OBD source strings as-is; and v3.4.12 for gauge-aware harness sweep behaviour only.
 - Added the v3.4.9 steam-scrap generated dashboard theme with deterministic local asset generation under `examples/steam-scrap/assets/`, runnable gauge packages with `gauge.yaml` beside their assets under `examples/steam-scrap/assets/gauges/`, coverage for `numeric`, `radial`, `odometer`, `indicator`, `bar`, and `segmented`, a runnable `examples/steam-scrap/dashboard.yaml`, and harness coverage for the themed example path.

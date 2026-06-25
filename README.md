@@ -123,17 +123,15 @@ The binary will be written to the current directory as `GoDriveLog` unless you p
 From the repository root:
 
 ```bash
-go run ./cmd/GoDriveLog \
-  --harness \
+go run ./cmd/GoDriveLog dashboard harness vw_caddy \
   --config ./examples/baseline-dashboard.yaml \
-  --vehicle vw_caddy \
   --pattern sweep \
   --interval 50ms \
   --duration 60s \
   --renderer ebiten
 ```
 
-`--renderer ebiten` is explicit for readability. Ebiten is already the default renderer in the active v3.3 command path.
+`--renderer ebiten` is explicit for readability. Ebiten is already the default renderer in the active v3.4 dashboard command path.
 
 ## Raspberry Pi notes
 
@@ -152,4 +150,4 @@ vehicles:
       timeout: 1000
 ```
 
-For bench or harness work, use `--harness` and the reusable baseline config instead of requiring live OBD hardware.
+For bench or harness work, use `dashboard harness` and the reusable baseline config instead of requiring live OBD hardware.

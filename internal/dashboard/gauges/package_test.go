@@ -60,6 +60,31 @@ digits:
 	}
 }
 
+func TestDefaultGaugeSearchPathsIncludesDashboardConfigEnvPath(t *testing.T) {
+	configPath := filepath.Join(t.TempDir(), "dashboard.yaml")
+	if err := os.Setenv(dashboardConfigEnvVar, configPath); err != nil {
+		t.Fatalf("Setenv: %v", err)
+	}
+	defer func() {
+		_ = os.Unsetenv(dashboardConfigEnvVar)
+	}()
+
+	paths := defaultGaugeSearchPaths()
+	want := filepath.Dir(configPath)
+	if !containsPath(paths, want) {
+		t.Fatalf("defaultGaugeSearchPaths() = %v, want %q", paths, want)
+	}
+}
+
+func containsPath(paths []string, want string) bool {
+	for _, path := range paths {
+		if path == want {
+			return true
+		}
+	}
+	return false
+}
+
 func TestLoadPackageLoadsRadialGaugeFromArbitraryDirectory(t *testing.T) {
 	root := makeGaugeFixtures(t)
 	packageDir := filepath.Join(root, "assets", "gauges", "random", "not_semantic", "rpm_round")

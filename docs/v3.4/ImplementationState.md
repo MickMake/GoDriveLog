@@ -1,8 +1,8 @@
 # GoDriveLog v3.4 implementation state
 
-Status: v3.4.10 dashboard CLI command tree planned
-Current target: v3.4.10 dashboard CLI command tree
-Current branch: docs/v3.4.10-dashboard-cli
+Status: v3.4.10 dashboard CLI command tree implemented
+Current target: v3.4.11 dashboard overview
+Current branch: v3.4.10-dashboard-cli
 
 ## Purpose
 
@@ -238,11 +238,15 @@ GoDriveLog dashboard validate [--config <config-file>]
 
 CLI remapping state:
 
-- This is command routing work, not replacement backend work.
-- The existing `cmd/GoDriveLog/main_ebiten.go` flat flag handling already reaches the required runtime, harness, and example-generation behaviours.
-- Most implementation work should stay in `cmd/GoDriveLog/main_ebiten.go` unless small helper extraction avoids duplicate routing code.
+- v3.4.10 is command routing work, not replacement backend work.
+- `cmd/GoDriveLog/main_ebiten.go` now exposes the active dashboard CLI under `dashboard`.
+- `dashboard run` and `dashboard harness` reuse the existing Ebiten runtime and harness paths.
+- `dashboard validate` reuses the existing config parser/validator and accepts either positional config or `--config`.
+- `dashboard examples` exports a self-contained built-in or explicit source dashboard directory to a caller-provided output root.
+- Deterministic config discovery now selects single-vehicle configs or requires explicit vehicle selection when the first valid config is multi-vehicle.
+- Relative gauge-package loading now also honors the resolved dashboard config path when discovery selected the config instead of a literal `--config` argument.
+- Headless CI must not run `go test ./...` against `cmd/GoDriveLog`; the active Actions validation path is `go test ./internal/... ./scripts/generate-example-assets` plus `go test -c ./cmd/GoDriveLog`, because the Ebiten/GLFW command package imports display-backed code paths.
 - Do not create new runtime packages, renderer abstractions, config schemas, validation engines, harness engines, or example-generation systems as part of the CLI tail.
-- Existing backend functions and helpers should be reused directly wherever practical.
 
 Command routing target:
 
@@ -338,12 +342,12 @@ The generated example dashboard tail should add richer example coverage for the 
 | v3.4.7.1 | completed | Rehomed the generated framework-smoke and ornate-timber example dashboards under self-contained `examples/<dashboard_name>/` directories, including dashboard configs, dashboard-local assets, and co-located gauge packages. |
 | v3.4.8 | completed | Added the neon-grid generated dashboard, committed generated theme artwork under `examples/neon-grid/assets/`, runnable gauge packages under `examples/neon-grid/assets/gauges/`, a runnable neon-grid dashboard config, and harness coverage for the themed example path. |
 | v3.4.9 | completed | Added the steam-scrap generated dashboard, committed generated theme artwork under `examples/steam-scrap/assets/`, runnable gauge packages under `examples/steam-scrap/assets/gauges/`, a runnable steam-scrap dashboard config, and harness coverage for the themed example path. |
+| v3.4.10 | completed | Replaced the active flat dashboard flags with `dashboard run`, `dashboard harness`, `dashboard validate`, and `dashboard examples`, added deterministic config discovery, added dashboard help coverage, and exported self-contained example dashboards to caller-selected output directories. |
 
 ## Pending slices
 
 | Version | Target | Notes |
 |---|---|---|
-| v3.4.10 | dashboard CLI command tree | Remap dashboard-scoped `run`, `harness`, `examples`, and `validate`; add deterministic config discovery and help-output coverage for implemented commands. |
 | v3.4.11 | dashboard overview | Add compact config overview for bare `dashboard` using existing config structures; print configured OBD source strings as-is. |
 | v3.4.12 | gauge-aware harness sweep | Refine `dashboard harness --pattern sweep` so synthetic input matches gauge behaviour. |
 
