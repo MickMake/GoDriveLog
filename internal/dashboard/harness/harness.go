@@ -11,6 +11,7 @@ import (
 
 	v3assets "github.com/MickMake/GoDriveLog/internal/assets"
 	"github.com/MickMake/GoDriveLog/internal/config/v3config"
+	v3gauges "github.com/MickMake/GoDriveLog/internal/dashboard/gauges"
 	"github.com/MickMake/GoDriveLog/internal/dashboard/v3dashboard"
 	"github.com/MickMake/GoDriveLog/internal/sensors"
 )
@@ -26,6 +27,12 @@ const (
 	defaultSweepHold         = time.Second
 	defaultHeartbeatCycle    = 10 * time.Second
 	defaultHeartbeatBaseline = 0.08
+	defaultIncrementCycle    = 10 * time.Second
+	defaultIncrementRise     = 5 * time.Second
+	defaultIndicatorSlow     = time.Second
+	defaultIndicatorFast     = 250 * time.Millisecond
+	defaultIndicatorCycle    = 10 * time.Second
+	defaultBarPulseCycle     = (2 * time.Second) / 3
 )
 
 // Scene is the harness dashboard scene boundary type.
@@ -63,12 +70,22 @@ type Summary struct {
 	Events         int
 }
 
+type sweepProfile string
+
+const (
+	sweepProfileRange       sweepProfile = "range"
+	sweepProfileIncremental sweepProfile = "incremental"
+	sweepProfileIndicator   sweepProfile = "indicator"
+	sweepProfileHeartbeat   sweepProfile = "heartbeat"
+)
+
 type sensorSource struct {
-	ID    string
-	Unit  string
-	Min   float64
-	Max   float64
-	first bool
+	ID           string
+	Unit         string
+	Min          float64
+	Max          float64
+	SweepProfile sweepProfile
+	first        bool
 }
 
 // NormalizePattern validates and normalises a harness pattern name.
@@ -142,7 +159,10 @@ func Run(ctx context.Context, opts Options) (Summary, error) {
 		return Summary{}, fmt.Errorf("create v3 dashboard runtime: %w", err)
 	}
 
-	sources := sensorSources(plan.Sensors)
+	sources, err := sensorSources(plan, searchPaths)
+	if err != nil {
+		return Summary{}, err
+	}
 	summary := Summary{
 		VehicleID:      plan.VehicleID,
 		VehicleName:    plan.Vehicle.Name,
@@ -237,9 +257,10 @@ func ValueForPattern(pattern string, minValue, maxValue float64, elapsed time.Du
 }
 
 func eventForSource(source *sensorSource, pattern string, elapsed time.Duration, at time.Time) sensors.SensorEvent {
-	value, err := ValueForPattern(pattern, source.Min, source.Max, elapsed)
+	value, typedValue, err := valueForSourcePattern(pattern, *source, elapsed)
 	if err != nil {
 		value = source.Min
+		typedValue = sensors.NewNumericValue(value, source.Unit)
 	}
 	kind := sensors.EventKindValueChange
 	previousStatus := sensors.StatusOK
@@ -252,6 +273,7 @@ func eventForSource(source *sensorSource, pattern string, elapsed time.Duration,
 	state := sensors.SensorState{
 		ID:         source.ID,
 		Value:      value,
+		TypedValue: typedValue,
 		Unit:       source.Unit,
 		Min:        minValue,
 		Max:        maxValue,
@@ -269,15 +291,19 @@ func eventForSource(source *sensorSource, pattern string, elapsed time.Duration,
 	}
 }
 
-func sensorSources(sensorConfigs map[string]v3config.SensorConfig) []sensorSource {
-	ids := make([]string, 0, len(sensorConfigs))
-	for id := range sensorConfigs {
+func sensorSources(plan v3config.RuntimePlan, searchPaths []string) ([]sensorSource, error) {
+	profiles, err := sensorSweepProfiles(plan.Dashboards, searchPaths)
+	if err != nil {
+		return nil, err
+	}
+	ids := make([]string, 0, len(plan.Sensors))
+	for id := range plan.Sensors {
 		ids = append(ids, id)
 	}
 	sort.Strings(ids)
 	sources := make([]sensorSource, 0, len(ids))
 	for _, id := range ids {
-		cfg := sensorConfigs[id]
+		cfg := plan.Sensors[id]
 		minValue := 0.0
 		maxValue := 1.0
 		if cfg.Min != nil {
@@ -287,9 +313,147 @@ func sensorSources(sensorConfigs map[string]v3config.SensorConfig) []sensorSourc
 			maxValue = *cfg.Max
 		}
 		minValue, maxValue = normalRange(minValue, maxValue)
-		sources = append(sources, sensorSource{ID: id, Unit: cfg.Unit, Min: minValue, Max: maxValue, first: true})
+		profile := profiles[id]
+		if profile == "" {
+			profile = sweepProfileRange
+		}
+		sources = append(sources, sensorSource{
+			ID:           id,
+			Unit:         cfg.Unit,
+			Min:          minValue,
+			Max:          maxValue,
+			SweepProfile: profile,
+			first:        true,
+		})
 	}
-	return sources
+	return sources, nil
+}
+
+func sensorSweepProfiles(dashboards []v3config.ResolvedDashboard, searchPaths []string) (map[string]sweepProfile, error) {
+	profiles := map[string]sweepProfile{}
+	for _, dashboard := range dashboards {
+		for _, widget := range dashboard.Config.Widgets {
+			sensorID, profile, ok, err := widgetSweepProfile(widget, searchPaths)
+			if err != nil {
+				return nil, fmt.Errorf("dashboard %q widget %q sweep profile: %w", dashboard.ID, widget.ID, err)
+			}
+			if !ok || strings.TrimSpace(sensorID) == "" {
+				continue
+			}
+			profiles[sensorID] = mergeSweepProfile(profiles[sensorID], profile)
+		}
+	}
+	return profiles, nil
+}
+
+func widgetSweepProfile(widget v3config.WidgetConfig, searchPaths []string) (string, sweepProfile, bool, error) {
+	switch widget.Type {
+	case v3config.WidgetTypeImage:
+		return "", "", false, nil
+	case v3config.WidgetTypeDigitDisplay:
+		return widget.Sensor, sweepProfileIncremental, true, nil
+	case v3config.WidgetTypeBarDisplay:
+		return widget.Sensor, sweepProfileHeartbeat, true, nil
+	case v3config.WidgetTypeFrameGauge:
+		return widget.Sensor, sweepProfileRange, true, nil
+	case v3config.WidgetTypeIndicator:
+		return widget.Sensor, sweepProfileIndicator, true, nil
+	case v3config.WidgetTypeGauge:
+		pkg, err := v3gauges.LoadPackageWithSearchPaths(searchPaths, widget.Gauge)
+		if err != nil {
+			return "", "", false, err
+		}
+		return pkg.Sensor, sweepProfileForGaugeType(pkg.Type), true, nil
+	default:
+		if strings.TrimSpace(widget.Sensor) == "" {
+			return "", "", false, nil
+		}
+		return widget.Sensor, sweepProfileRange, true, nil
+	}
+}
+
+func sweepProfileForGaugeType(gaugeType string) sweepProfile {
+	switch gaugeType {
+	case v3gauges.TypeNumeric, v3gauges.TypeOdometer:
+		return sweepProfileIncremental
+	case v3gauges.TypeIndicator:
+		return sweepProfileIndicator
+	case v3gauges.TypeBar:
+		return sweepProfileHeartbeat
+	case v3gauges.TypeSegmented, v3gauges.TypeRadial:
+		return sweepProfileRange
+	default:
+		return sweepProfileRange
+	}
+}
+
+// Shared sensors can only emit one synthetic waveform, so mixed-use sensors
+// resolve to the highest-impact profile instead of duplicating sensor IDs.
+func mergeSweepProfile(current, next sweepProfile) sweepProfile {
+	if sweepProfilePriority(next) > sweepProfilePriority(current) {
+		return next
+	}
+	if current == "" {
+		return next
+	}
+	return current
+}
+
+func sweepProfilePriority(profile sweepProfile) int {
+	switch profile {
+	case sweepProfileIndicator:
+		return 4
+	case sweepProfileHeartbeat:
+		return 3
+	case sweepProfileRange:
+		return 2
+	case sweepProfileIncremental:
+		return 1
+	default:
+		return 0
+	}
+}
+
+func valueForSourcePattern(pattern string, source sensorSource, elapsed time.Duration) (float64, sensors.Value, error) {
+	pattern, err := NormalizePattern(pattern)
+	if err != nil {
+		return 0, sensors.Value{}, err
+	}
+	minValue, maxValue := normalRange(source.Min, source.Max)
+	switch pattern {
+	case PatternFixed:
+		value := minValue + ((maxValue - minValue) / 2)
+		return value, sensors.NewNumericValue(value, source.Unit), nil
+	case PatternSweep:
+		return sweepValueForSource(source, elapsed)
+	case PatternHeartbeat:
+		value := heartbeatValue(minValue, maxValue, elapsed)
+		return value, sensors.NewNumericValue(value, source.Unit), nil
+	default:
+		return 0, sensors.Value{}, fmt.Errorf("unknown harness pattern %q", pattern)
+	}
+}
+
+func sweepValueForSource(source sensorSource, elapsed time.Duration) (float64, sensors.Value, error) {
+	switch source.SweepProfile {
+	case sweepProfileIncremental:
+		value := incrementalSweepValue(elapsed)
+		return value, sensors.NewNumericValue(value, source.Unit), nil
+	case sweepProfileIndicator:
+		on := indicatorSweepOn(elapsed)
+		if on {
+			return 1, sensors.NewBoolValue(true), nil
+		}
+		return 0, sensors.NewBoolValue(false), nil
+	case sweepProfileHeartbeat:
+		value := barPulseValue(source.Min, source.Max, elapsed)
+		return value, sensors.NewNumericValue(value, source.Unit), nil
+	case sweepProfileRange, "":
+		value := sweepValue(source.Min, source.Max, elapsed)
+		return value, sensors.NewNumericValue(value, source.Unit), nil
+	default:
+		return 0, sensors.Value{}, fmt.Errorf("unknown harness sweep profile %q", source.SweepProfile)
+	}
 }
 
 func normalRange(minValue, maxValue float64) (float64, float64) {
@@ -300,6 +464,32 @@ func normalRange(minValue, maxValue float64) (float64, float64) {
 		maxValue = minValue + 1
 	}
 	return minValue, maxValue
+}
+
+func incrementalSweepValue(elapsed time.Duration) float64 {
+	cycle := positiveModulo(elapsed, defaultIncrementCycle)
+	if cycle <= defaultIncrementRise {
+		fraction := float64(cycle) / float64(defaultIncrementRise)
+		return -20 + fraction*40
+	}
+	secondElapsed := cycle - defaultIncrementRise
+	fraction := float64(secondElapsed) / float64(defaultIncrementRise)
+	return 20 + fraction*10
+}
+
+func indicatorSweepOn(elapsed time.Duration) bool {
+	cycle := positiveModulo(elapsed, defaultIndicatorCycle)
+	if cycle < defaultIncrementRise {
+		return blinkOn(cycle, defaultIndicatorSlow)
+	}
+	return blinkOn(cycle-defaultIncrementRise, defaultIndicatorFast)
+}
+
+func blinkOn(elapsed, interval time.Duration) bool {
+	if interval <= 0 {
+		return true
+	}
+	return int(elapsed/interval)%2 == 0
 }
 
 // sweepValue uses an 11 second cycle: 5 seconds min->max, 1 second pause at
@@ -316,6 +506,22 @@ func sweepValue(minValue, maxValue float64, elapsed time.Duration) float64 {
 	fallElapsed := cycle - defaultSweepRise - defaultSweepHold
 	fraction := float64(fallElapsed) / float64(defaultSweepRise)
 	return maxValue - fraction*(maxValue-minValue)
+}
+
+func barPulseValue(minValue, maxValue float64, elapsed time.Duration) float64 {
+	cycle := positiveModulo(elapsed, defaultBarPulseCycle)
+	rangeValue := maxValue - minValue
+	baseline := minValue + rangeValue*0.12
+	peak := minValue + rangeValue*0.92
+	recovery := minValue + rangeValue*0.38
+	points := []wavePoint{
+		{at: 0, value: baseline},
+		{at: 80 * time.Millisecond, value: peak},
+		{at: 160 * time.Millisecond, value: recovery},
+		{at: 280 * time.Millisecond, value: baseline},
+		{at: defaultBarPulseCycle, value: baseline},
+	}
+	return interpolate(points, cycle)
 }
 
 // heartbeatValue uses a 10 second cycle with a slightly-above-min baseline, a
