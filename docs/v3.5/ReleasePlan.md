@@ -10,6 +10,7 @@ v3.5 improves how gauges behave when values change. It focuses on:
 
 - static imperfection that does not require a frame tick;
 - finite movement responses after value changes;
+- small deterministic radial display effects that need renderer support;
 - visual inspection support so each behaviour can be judged by eye.
 
 It does not add a general physics engine, idle animation, ambient flicker, dashboard power lifecycle effects, or asset-generation work.
@@ -98,6 +99,8 @@ Suggested controls:
 | v3.5.14 | Odometer snap/settle | Add mechanical snap into digit position. |
 | v3.5.15 | Odometer backlash | Add direction-change slack/settle. |
 | v3.5.16 | Display-only hysteresis | Add direction-dependent displayed offset without changing source value. |
+| v3.5.17 | Radial needle drop shadow | Draw an optional offset/tinted copy of the rotating needle behind the real needle. |
+| v3.5.18 | Radial calibration offset | Add an optional display-only degree offset for imperfect needle alignment. |
 
 ## Parked for later
 
@@ -109,5 +112,5 @@ These are good ideas, but not v3.5:
 - power-on sweep/gauge dance;
 - brownout dip;
 - lazy power-off/capacitive bleed-down;
-- parallax/needle shadow movement;
-- odometer housing shadow masking, unless it can be handled as ordinary overlay assets.
+- dynamic parallax or gyro/light-driven visual effects;
+- asset-only presentation work that does not need code changes.
