@@ -133,6 +133,8 @@ go run ./cmd/GoDriveLog dashboard harness vw_caddy \
 
 `--renderer ebiten` is explicit for readability. Ebiten is already the default renderer in the active v3.4 dashboard command path.
 
+With `--pattern sweep`, the harness is now gauge-aware: numeric and odometer sources walk from `-20` to `+30`, radial and segmented sources keep the full-range sweep, indicator sources flash, and bar sources pulse at 90 bpm.
+
 ## Dashboard overview
 
 To inspect the resolved dashboard config without dumping the whole YAML:

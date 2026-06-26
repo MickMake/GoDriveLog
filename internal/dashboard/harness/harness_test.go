@@ -10,6 +10,8 @@ import (
 	"testing"
 	"time"
 
+	v3assets "github.com/MickMake/GoDriveLog/internal/assets"
+	"github.com/MickMake/GoDriveLog/internal/config/v3config"
 	"github.com/MickMake/GoDriveLog/internal/dashboard/v3dashboard"
 )
 
@@ -80,6 +82,87 @@ func TestHeartbeatPatternUsesTwoPeaksAndNegativeDip(t *testing.T) {
 	}
 	if cycleEnd != baseline {
 		t.Fatalf("cycle end = %v, want baseline %v", cycleEnd, baseline)
+	}
+}
+
+func TestGaugeAwareSweepIncrementalProfile(t *testing.T) {
+	source := sensorSource{ID: "speed", Unit: "km/h", Min: 0, Max: 180, SweepProfile: sweepProfileIncremental}
+	checks := []struct {
+		elapsed time.Duration
+		want    float64
+	}{
+		{elapsed: 0, want: -20},
+		{elapsed: 2500 * time.Millisecond, want: 0},
+		{elapsed: 5 * time.Second, want: 20},
+		{elapsed: 7500 * time.Millisecond, want: 25},
+		{elapsed: 10 * time.Second, want: -20},
+	}
+
+	for _, check := range checks {
+		got, typed, err := valueForSourcePattern(PatternSweep, source, check.elapsed)
+		if err != nil {
+			t.Fatalf("valueForSourcePattern(%s) returned error: %v", check.elapsed, err)
+		}
+		if got != check.want {
+			t.Fatalf("valueForSourcePattern(%s) = %v, want %v", check.elapsed, got, check.want)
+		}
+		if typed.Kind != "numeric" {
+			t.Fatalf("typed kind = %q, want numeric", typed.Kind)
+		}
+	}
+}
+
+func TestGaugeAwareSweepIndicatorProfile(t *testing.T) {
+	source := sensorSource{ID: "check_engine", SweepProfile: sweepProfileIndicator}
+	checks := []struct {
+		elapsed time.Duration
+		want    bool
+	}{
+		{elapsed: 0, want: true},
+		{elapsed: 999 * time.Millisecond, want: true},
+		{elapsed: 1 * time.Second, want: false},
+		{elapsed: 5 * time.Second, want: true},
+		{elapsed: 5250 * time.Millisecond, want: false},
+	}
+
+	for _, check := range checks {
+		got, typed, err := valueForSourcePattern(PatternSweep, source, check.elapsed)
+		if err != nil {
+			t.Fatalf("valueForSourcePattern(%s) returned error: %v", check.elapsed, err)
+		}
+		if got != 0 && got != 1 {
+			t.Fatalf("valueForSourcePattern(%s) value = %v, want 0 or 1", check.elapsed, got)
+		}
+		if typed.Kind != "bool" || typed.Bool == nil || *typed.Bool != check.want {
+			t.Fatalf("typed bool at %s = %#v, want %v", check.elapsed, typed, check.want)
+		}
+	}
+}
+
+func TestGaugeAwareSweepHeartbeatProfile(t *testing.T) {
+	source := sensorSource{ID: "fuel_level", Min: 0, Max: 100, SweepProfile: sweepProfileHeartbeat}
+	checks := []struct {
+		elapsed time.Duration
+		want    float64
+	}{
+		{elapsed: 0, want: 12},
+		{elapsed: 80 * time.Millisecond, want: 92},
+		{elapsed: 160 * time.Millisecond, want: 38},
+		{elapsed: 280 * time.Millisecond, want: 12},
+		{elapsed: defaultBarPulseCycle, want: 12},
+	}
+
+	for _, check := range checks {
+		got, typed, err := valueForSourcePattern(PatternSweep, source, check.elapsed)
+		if err != nil {
+			t.Fatalf("valueForSourcePattern(%s) returned error: %v", check.elapsed, err)
+		}
+		if got != check.want {
+			t.Fatalf("valueForSourcePattern(%s) = %v, want %v", check.elapsed, got, check.want)
+		}
+		if typed.Kind != "numeric" {
+			t.Fatalf("typed kind = %q, want numeric", typed.Kind)
+		}
 	}
 }
 
@@ -440,6 +523,71 @@ func TestSteamScrapDashboardConfigRunsHarness(t *testing.T) {
 	}
 }
 
+func TestSensorSourcesUseGaugeAwareProfilesForThemedDashboards(t *testing.T) {
+	configPath := setupExampleHarnessEnvironment(t, filepath.Join("examples", "ornate-timber", "dashboard.yaml"), "demo")
+	cfg, err := v3config.LoadFile(configPath)
+	if err != nil {
+		t.Fatalf("LoadFile returned error: %v", err)
+	}
+	plan, err := v3config.Resolve(cfg, "demo")
+	if err != nil {
+		t.Fatalf("Resolve returned error: %v", err)
+	}
+	searchPaths, err := v3assets.DefaultSearchPaths(configPath, plan.VehicleID)
+	if err != nil {
+		t.Fatalf("DefaultSearchPaths returned error: %v", err)
+	}
+	sources, err := sensorSources(plan, searchPaths)
+	if err != nil {
+		t.Fatalf("sensorSources returned error: %v", err)
+	}
+	profiles := sensorProfilesByID(sources)
+
+	if profiles["speed"] != sweepProfileIncremental {
+		t.Fatalf("speed profile = %q, want %q", profiles["speed"], sweepProfileIncremental)
+	}
+	if profiles["trip_distance"] != sweepProfileIncremental {
+		t.Fatalf("trip_distance profile = %q, want %q", profiles["trip_distance"], sweepProfileIncremental)
+	}
+	if profiles["fuel_level"] != sweepProfileHeartbeat {
+		t.Fatalf("fuel_level profile = %q, want %q", profiles["fuel_level"], sweepProfileHeartbeat)
+	}
+	if profiles["check_engine"] != sweepProfileIndicator {
+		t.Fatalf("check_engine profile = %q, want %q", profiles["check_engine"], sweepProfileIndicator)
+	}
+	if profiles["rpm"] != sweepProfileRange {
+		t.Fatalf("rpm profile = %q, want %q", profiles["rpm"], sweepProfileRange)
+	}
+}
+
+func TestSensorSourcesPreferRangeSweepForSharedBaselineRPMSensor(t *testing.T) {
+	configPath := setupBaselineHarnessEnvironment(t)
+	cfg, err := v3config.LoadFile(configPath)
+	if err != nil {
+		t.Fatalf("LoadFile returned error: %v", err)
+	}
+	plan, err := v3config.Resolve(cfg, "vw_caddy")
+	if err != nil {
+		t.Fatalf("Resolve returned error: %v", err)
+	}
+	searchPaths, err := v3assets.DefaultSearchPaths(configPath, plan.VehicleID)
+	if err != nil {
+		t.Fatalf("DefaultSearchPaths returned error: %v", err)
+	}
+	sources, err := sensorSources(plan, searchPaths)
+	if err != nil {
+		t.Fatalf("sensorSources returned error: %v", err)
+	}
+	profiles := sensorProfilesByID(sources)
+
+	if profiles["rpm"] != sweepProfileRange {
+		t.Fatalf("rpm profile = %q, want %q", profiles["rpm"], sweepProfileRange)
+	}
+	if profiles["speed"] != sweepProfileIncremental {
+		t.Fatalf("speed profile = %q, want %q", profiles["speed"], sweepProfileIncremental)
+	}
+}
+
 func BenchmarkBaselineDashboardHarnessPatterns(b *testing.B) {
 	configPath := setupBaselineHarnessEnvironment(b)
 	patterns := []string{PatternFixed, PatternSweep, PatternHeartbeat}
@@ -584,4 +732,12 @@ func writeTestPNG(path string) error {
 	img := image.NewRGBA(image.Rect(0, 0, 1, 1))
 	img.Set(0, 0, color.RGBA{R: 255, A: 255})
 	return png.Encode(file, img)
+}
+
+func sensorProfilesByID(sources []sensorSource) map[string]sweepProfile {
+	profiles := map[string]sweepProfile{}
+	for _, source := range sources {
+		profiles[source.ID] = source.SweepProfile
+	}
+	return profiles
 }
