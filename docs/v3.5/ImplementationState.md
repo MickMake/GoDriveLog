@@ -12,6 +12,8 @@ v3.5 is the gauge realism pass.
 
 It adds believable gauge behaviour without changing the v3.4 gauge family model. The intent is to make gauges look more like real mechanisms when values change, while avoiding perpetual ambient effects.
 
+The final v3.5 tail also includes two small radial-only display refinements that need renderer support: an optional needle drop shadow and an optional display-only calibration offset.
+
 ## Current decisions
 
 - The existing odometer movement modes `smooth` and `click` remain valid base modes.
@@ -21,6 +23,8 @@ It adds believable gauge behaviour without changing the v3.4 gauge family model.
 - Harness start value is the midpoint of the configured value range.
 - Each single-feature harness case should enable one realism feature only.
 - Each gauge type may also have one deliberate `99-all-options` case.
+- Radial needle shadow is a static renderer feature, not dynamic parallax or lighting.
+- Radial calibration offset is display-only and must not change input values.
 
 ## Scope boundaries
 
@@ -29,7 +33,8 @@ Allowed in v3.5:
 - static imperfection;
 - finite value-change movement;
 - manual visual inspection cases;
-- deterministic, bounded behaviour.
+- deterministic, bounded behaviour;
+- small radial-only display refinements that need renderer support.
 
 Not allowed in v3.5:
 
@@ -40,7 +45,7 @@ Not allowed in v3.5:
 - power-on sweep;
 - brownout dip;
 - lazy power-off;
-- parallax or gyro/light-driven shadow movement;
+- dynamic parallax or gyro/light-driven shadow movement;
 - general physics engine.
 
 ## Slice checklist
@@ -62,6 +67,8 @@ Not allowed in v3.5:
 - [ ] v3.5.14 odometer snap / settle
 - [ ] v3.5.15 odometer backlash
 - [ ] v3.5.16 display-only hysteresis
+- [ ] v3.5.17 radial needle drop shadow
+- [ ] v3.5.18 radial calibration offset
 
 ## Next-slice workflow
 
