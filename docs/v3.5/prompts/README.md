@@ -37,6 +37,8 @@ or from a more explicit implementation request.
 - `v3.5.14-odometer-snap-settle.md`
 - `v3.5.15-odometer-backlash.md`
 - `v3.5.16-display-only-hysteresis.md`
+- `v3.5.17-radial-needle-drop-shadow.md`
+- `v3.5.18-radial-calibration-offset.md`
 
 ## Shared rules
 
@@ -47,3 +49,4 @@ or from a more explicit implementation request.
 - Keep odometer `smooth` and `click` base modes intact.
 - Add tests where behaviour can be asserted.
 - Add or update visual harness YAML only where useful.
+- Do not implement asset-only presentation work in these code slices.
