@@ -1,10 +1,10 @@
 # v3.5 Implementation State
 
-Status: v3.5.1 Gauge Preview Mode implemented
+Status: v3.5.2 odometer wraparound implemented
 
-Current target: v3.5.2 odometer wraparound
+Current target: v3.5.3 odometer drum slop
 
-Current branch: `codex/v3.5.1-gauge-preview-mode`
+Current branch: `codex/v3.5.2-odometer-wraparound`
 
 ## Scope
 
@@ -86,7 +86,7 @@ Not allowed in v3.5:
 
 - [x] v3.5.0 movement realism docs
 - [x] v3.5.1 Gauge Preview Mode
-- [ ] v3.5.2 odometer wraparound
+- [x] v3.5.2 odometer wraparound
 - [ ] v3.5.3 odometer drum slop
 - [ ] v3.5.4 finite movement lifecycle
 - [ ] v3.5.5 shared movement policy

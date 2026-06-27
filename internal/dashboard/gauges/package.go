@@ -33,6 +33,7 @@ type Package struct {
 	Type      string            `yaml:"type"`
 	Sensor    string            `yaml:"sensor"`
 	Format    string            `yaml:"format,omitempty"`
+	Realism   Realism           `yaml:"realism,omitempty"`
 	Size      Size              `yaml:"size"`
 	Layers    map[string]string `yaml:"layers,omitempty"`
 	DigitSet  DigitSet          `yaml:"digit_set,omitempty"`
@@ -81,6 +82,10 @@ type ValueMap struct {
 	StartAngle float64 `yaml:"start_angle"`
 	EndAngle   float64 `yaml:"end_angle"`
 	Clamp      bool    `yaml:"clamp"`
+}
+
+type Realism struct {
+	Wraparound *bool `yaml:"wraparound,omitempty"`
 }
 
 type Odometer struct {
@@ -308,6 +313,9 @@ func validatePackage(pkg Package) error {
 	if pkg.Size.Width <= 0 || pkg.Size.Height <= 0 {
 		return fmt.Errorf("size width and height must be positive")
 	}
+	if err := validateRealism(pkg); err != nil {
+		return err
+	}
 	if pkg.Type == TypeOdometer {
 		if err := validateOdometer(pkg.Odometer); err != nil {
 			return err
@@ -371,6 +379,13 @@ func validateOdometer(odometer Odometer) error {
 		default:
 			return fmt.Errorf("odometer wheel %d role %q is not supported", index, wheel.Role)
 		}
+	}
+	return nil
+}
+
+func validateRealism(pkg Package) error {
+	if pkg.Realism.Wraparound != nil && pkg.Type != TypeOdometer {
+		return fmt.Errorf("realism wraparound is only supported for odometer gauges")
 	}
 	return nil
 }

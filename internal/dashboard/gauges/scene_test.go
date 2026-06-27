@@ -255,7 +255,7 @@ func TestRadialSceneRejectsMissingNeedleLayer(t *testing.T) {
 }
 
 func TestOdometerSceneEmitsSmoothWheelStripOffsets(t *testing.T) {
-	pkg := loadOdometerScenePackage(t, "")
+	pkg := loadOdometerScenePackage(t, "", false)
 
 	scene, err := OdometerScene(pkg, Placement{Position: []int{50, 20}, Scale: 1.25}, okGaugeState("trip_distance", 12.3))
 	if err != nil {
@@ -287,7 +287,7 @@ func TestOdometerSceneEmitsSmoothWheelStripOffsets(t *testing.T) {
 }
 
 func TestOdometerSceneClickMovementSnapsWheelStripOffsets(t *testing.T) {
-	pkg := loadOdometerScenePackage(t, "click")
+	pkg := loadOdometerScenePackage(t, "click", false)
 
 	scene, err := OdometerScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("trip_distance", 12.9))
 	if err != nil {
@@ -304,7 +304,7 @@ func TestOdometerSceneClickMovementSnapsWheelStripOffsets(t *testing.T) {
 }
 
 func TestOdometerSceneDoesNotRenderWheelStripsForNonOKStates(t *testing.T) {
-	pkg := loadOdometerScenePackage(t, "")
+	pkg := loadOdometerScenePackage(t, "", false)
 
 	scene, err := OdometerScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, sensors.SensorState{ID: "trip_distance", Status: sensors.StatusTimeout, Error: "not live"})
 	if err != nil {
@@ -322,7 +322,7 @@ func TestOdometerSceneDoesNotRenderWheelStripsForNonOKStates(t *testing.T) {
 }
 
 func TestOdometerSceneSignatureChangesWithSmoothOffset(t *testing.T) {
-	pkg := loadOdometerScenePackage(t, "")
+	pkg := loadOdometerScenePackage(t, "", false)
 	first, err := OdometerScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("trip_distance", 12.1))
 	if err != nil {
 		t.Fatalf("OdometerScene returned error: %v", err)
@@ -333,6 +333,52 @@ func TestOdometerSceneSignatureChangesWithSmoothOffset(t *testing.T) {
 	}
 	if first.Signature() == changed.Signature() {
 		t.Fatal("expected signature to change when smooth wheel offset changes")
+	}
+}
+
+func TestOdometerSceneWraparoundKeepsBoundaryRolloverContinuous(t *testing.T) {
+	pkg := loadOdometerScenePackage(t, "", true)
+
+	scene, err := OdometerScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("trip_distance", 10.0))
+	if err != nil {
+		t.Fatalf("OdometerScene returned error: %v", err)
+	}
+
+	wheels := wheelStripParts(scene)
+	if len(wheels) != 3 {
+		t.Fatalf("wheel parts = %d, want 3", len(wheels))
+	}
+	if !wheels[1].Wraparound || !wheels[2].Wraparound {
+		t.Fatalf("expected wraparound wheel parts, got %#v", wheels)
+	}
+	if !almostEqual(wheels[1].StripOffset, 200) || wheels[1].Source[1] != 200 {
+		t.Fatalf("ones rollover offset/source = %.2f/%d, want 200/200", wheels[1].StripOffset, wheels[1].Source[1])
+	}
+	if !almostEqual(wheels[2].StripOffset, 2000) || wheels[2].Source[1] != 2004 {
+		t.Fatalf("tenths rollover offset/source = %.2f/%d, want 2000/2004", wheels[2].StripOffset, wheels[2].Source[1])
+	}
+}
+
+func TestOdometerSceneWraparoundDisabledKeepsLegacyResetAtBoundary(t *testing.T) {
+	pkg := loadOdometerScenePackage(t, "", false)
+
+	scene, err := OdometerScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("trip_distance", 10.0))
+	if err != nil {
+		t.Fatalf("OdometerScene returned error: %v", err)
+	}
+
+	wheels := wheelStripParts(scene)
+	if len(wheels) != 3 {
+		t.Fatalf("wheel parts = %d, want 3", len(wheels))
+	}
+	if wheels[1].Wraparound || wheels[2].Wraparound {
+		t.Fatalf("expected legacy non-wrap wheel parts, got %#v", wheels)
+	}
+	if !almostEqual(wheels[1].StripOffset, 0) || wheels[1].Source[1] != 0 {
+		t.Fatalf("ones rollover offset/source = %.2f/%d, want 0/0", wheels[1].StripOffset, wheels[1].Source[1])
+	}
+	if !almostEqual(wheels[2].StripOffset, 0) || wheels[2].Source[1] != 4 {
+		t.Fatalf("tenths rollover offset/source = %.2f/%d, want 0/4", wheels[2].StripOffset, wheels[2].Source[1])
 	}
 }
 
@@ -604,11 +650,11 @@ func loadRadialScenePackage(t *testing.T) Package {
 	return pkg
 }
 
-func loadOdometerScenePackage(t *testing.T, movement string) Package {
+func loadOdometerScenePackage(t *testing.T, movement string, wraparound bool) Package {
 	t.Helper()
 	root := makeGaugeFixtures(t)
 	packageDir := filepath.Join(root, "assets", "gauges", "odometer", "trip")
-	writeGaugeYAML(t, packageDir, odometerGaugeYAML(movement))
+	writeGaugeYAML(t, packageDir, odometerGaugeYAML(movement, wraparound))
 	pkg, err := LoadPackage(packageDir)
 	if err != nil {
 		t.Fatalf("LoadPackage returned error: %v", err)
@@ -752,15 +798,19 @@ value_map:
 `
 }
 
-func odometerGaugeYAML(movement string) string {
+func odometerGaugeYAML(movement string, wraparound bool) string {
 	movementLine := ""
 	if movement != "" {
 		movementLine = fmt.Sprintf("  movement: %s\n", movement)
 	}
+	realismBlock := ""
+	if wraparound {
+		realismBlock = "realism:\n  wraparound: true\n"
+	}
 	return fmt.Sprintf(`id: test_trip_odometer
 type: odometer
 sensor: trip_distance
-size:
+%ssize:
   width: 150
   height: 60
 layers:
@@ -779,7 +829,7 @@ odometer:
       window: { width: 12, height: 20 }
       offset: [2, 4]
       role: sub_unit
-`, movementLine)
+`, realismBlock, movementLine)
 }
 
 func indicatorGaugeYAML() string {

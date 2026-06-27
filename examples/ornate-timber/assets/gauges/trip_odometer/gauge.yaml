@@ -2,6 +2,9 @@ id: ornate_timber_trip_odometer
 type: odometer
 sensor: trip_distance
 
+realism:
+  wraparound: true
+
 size:
   width: 332
   height: 118

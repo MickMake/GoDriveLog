@@ -60,7 +60,8 @@ type renderedPart struct {
 	pivotX float64
 	pivotY float64
 
-	source image.Rectangle
+	source     image.Rectangle
+	wraparound bool
 }
 
 // New creates an Ebiten adapter for v3 dashboard scene output.
@@ -149,30 +150,13 @@ func (a *Adapter) Draw(screen *ebitenui.Image) {
 	parts := append([]renderedPart(nil), a.parts...)
 	a.mu.RUnlock()
 	for _, part := range parts {
-		drawImage := part.asset.image
-		if drawImage == nil {
+		if part.wraparound && !part.source.Empty() {
+			for _, segment := range wrappedSourceSegments(part.source, part.asset) {
+				a.drawPart(screen, part, segment.source, segment.offsetY)
+			}
 			continue
 		}
-		if !part.source.Empty() {
-			source := clampSourceRect(part.source, part.asset)
-			if source.Empty() {
-				continue
-			}
-			if subImage, ok := drawImage.SubImage(source).(*ebitenui.Image); ok {
-				drawImage = subImage
-			}
-		}
-		options := &ebitenui.DrawImageOptions{}
-		if part.needle {
-			options.GeoM.Translate(-part.pivotX, -part.pivotY)
-			options.GeoM.Rotate(part.angle * math.Pi / 180)
-			options.GeoM.Scale(part.scale, part.scale)
-			options.GeoM.Translate(part.x, part.y)
-		} else {
-			options.GeoM.Scale(part.scale, part.scale)
-			options.GeoM.Translate(part.x, part.y)
-		}
-		screen.DrawImage(drawImage, options)
+		a.drawPart(screen, part, part.source, 0)
 	}
 }
 
@@ -291,9 +275,36 @@ func (a *Adapter) renderWidgetParts(dashboardID string, widget v3dashboard.Widge
 			continue
 		}
 		x, y := partPosition(baseX, baseY, asset, widgetScale, part)
-		parts = append(parts, renderedPart{asset: asset, x: x, y: y, scale: widgetScale, source: partSourceRect(part)})
+		parts = append(parts, renderedPart{asset: asset, x: x, y: y, scale: widgetScale, source: partSourceRect(part), wraparound: part.Wraparound})
 	}
 	return parts, nil
+}
+
+func (a *Adapter) drawPart(screen *ebitenui.Image, part renderedPart, source image.Rectangle, sourceOffsetY float64) {
+	drawImage := part.asset.image
+	if drawImage == nil {
+		return
+	}
+	if !source.Empty() {
+		source = clampSourceRect(source, part.asset)
+		if source.Empty() {
+			return
+		}
+		if subImage, ok := drawImage.SubImage(source).(*ebitenui.Image); ok {
+			drawImage = subImage
+		}
+	}
+	options := &ebitenui.DrawImageOptions{}
+	if part.needle {
+		options.GeoM.Translate(-part.pivotX, -part.pivotY)
+		options.GeoM.Rotate(part.angle * math.Pi / 180)
+		options.GeoM.Scale(part.scale, part.scale)
+		options.GeoM.Translate(part.x, part.y)
+	} else {
+		options.GeoM.Scale(part.scale, part.scale)
+		options.GeoM.Translate(part.x, part.y+sourceOffsetY*part.scale)
+	}
+	screen.DrawImage(drawImage, options)
 }
 
 func (a *Adapter) loadAsset(assetPath string) (cachedAsset, error) {
@@ -397,6 +408,48 @@ func partSourceRect(part v3dashboard.Part) image.Rectangle {
 		y = part.Source[1]
 	}
 	return image.Rect(x, y, x+part.Window.Width, y+part.Window.Height)
+}
+
+type wrappedSourceSegment struct {
+	source  image.Rectangle
+	offsetY float64
+}
+
+func wrappedSourceSegments(rect image.Rectangle, asset cachedAsset) []wrappedSourceSegment {
+	if asset.width <= 0 || asset.height <= 0 {
+		return nil
+	}
+	width := rect.Dx()
+	height := rect.Dy()
+	if width <= 0 || height <= 0 {
+		return nil
+	}
+	if width > asset.width {
+		width = asset.width
+	}
+	if height > asset.height {
+		height = asset.height
+	}
+	x := rect.Min.X
+	if x < 0 {
+		x = 0
+	}
+	if x+width > asset.width {
+		x = asset.width - width
+	}
+	y := rect.Min.Y % asset.height
+	if y < 0 {
+		y += asset.height
+	}
+	if y+height <= asset.height {
+		return []wrappedSourceSegment{{source: image.Rect(x, y, x+width, y+height)}}
+	}
+	firstHeight := asset.height - y
+	secondHeight := height - firstHeight
+	return []wrappedSourceSegment{
+		{source: image.Rect(x, y, x+width, asset.height)},
+		{source: image.Rect(x, 0, x+width, secondHeight), offsetY: float64(firstHeight)},
+	}
 }
 
 func clampSourceRect(rect image.Rectangle, asset cachedAsset) image.Rectangle {

@@ -156,6 +156,9 @@ digits:
 type: odometer
 sensor: trip_distance
 
+realism:
+  wraparound: true
+
 size:
   width: 332
   height: 118
