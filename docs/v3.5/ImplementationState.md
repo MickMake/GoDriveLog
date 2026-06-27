@@ -27,6 +27,7 @@ The final v3.5 tail also includes two small radial-only display refinements that
 - Known realism options used on unsupported gauge types must fail config loading.
 - `realism.order` may optionally control the order of enabled realism behaviours.
 - Do not rely on YAML key order to control behaviour order.
+- `docs/v3.5/RealismBehaviourGuide.md` defines the intended visual feel of each realism option.
 - Gauge Preview Mode is the simple visual viewer for one gauge at a time.
 - Gauge Preview Mode CLI is `godrivelog dashboard preview <file>`.
 - `<file>` is mandatory and positional.
@@ -36,6 +37,7 @@ The final v3.5 tail also includes two small radial-only display refinements that
 - Radial needle shadow is a static renderer feature, not dynamic parallax or lighting.
 - Radial calibration offset is display-only and must not change input values.
 - Hysteresis applies only to radial and bar gauges in v3.5.
+- Indicator gauges support `thermal_fade` in v3.5.
 
 ## Approved v3.5 realism options
 
@@ -52,6 +54,7 @@ The final v3.5 tail also includes two small radial-only display refinements that
 | `damping` | radial, bar |
 | `overshoot` | radial, bar |
 | `peg_bounce` | radial |
+| `thermal_fade` | indicator |
 | `needle_shadow` | radial |
 | `calibration_offset` | radial |
 
