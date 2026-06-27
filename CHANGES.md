@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added the v3.5.5 shared `realism.movement_policy` surface for finite gauge transitions, with `immediate`, `linear`, and `ease_out` validation/defaulting, runtime policy tracking separate from source values, and focused package/runtime coverage for defaults, accepted policies, invalid policies, and policy-shaped movement behaviour.
 - Added the v3.5.4 shared finite-movement lifecycle plumbing for gauge value changes, including `static -> value changed -> moving -> settled -> static` runtime state tracking, preview/runtime tick support only while movement is active, and focused lifecycle coverage for radial gauge redraw start, mid-move, settle, and unchanged-value no-op behaviour.
 - Added the v3.5.3 odometer `realism.drum_slop` option for fixed per-wheel vertical alignment offsets, with bounded validation, deterministic scene positioning, focused odometer tests, and an `examples/gauge-realism/odometer/02-drum-slop.yaml` preview fixture.
 - Added the v3.5.2 odometer `realism.wraparound` option so odometer wheel strips roll cleanly through `9 -> 0` boundaries without the old reset jump, including wrapped wheel-strip rendering support, focused rollover tests, and an `examples/gauge-realism/odometer/01-wraparound.yaml` preview fixture.

@@ -234,7 +234,7 @@ func TestRuntimeRadialGaugeWidgetSceneSignatureChangesWithAngle(t *testing.T) {
 }
 
 func TestRuntimeGaugeMovementLifecycle(t *testing.T) {
-	packageDir := makeDashboardRadialGaugePackage(t)
+	packageDir := makeDashboardRadialGaugePackageWithPolicy(t, v3gauges.MovementPolicyLinear)
 	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 1024, Height: 600}, Widgets: []v3config.WidgetConfig{{ID: "rpm", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{0, 0}, Scale: 1}}}}}}
 	runtime, err := NewRuntime(plan, testAssetRegistry())
 	if err != nil {
@@ -375,7 +375,7 @@ func TestRuntimeGaugeMovementLifecycle(t *testing.T) {
 }
 
 func TestRuntimeGaugeMovementUsesEventTimestamp(t *testing.T) {
-	runtime := testRadialMovementRuntime(t)
+	runtime := testRadialMovementRuntimeWithPolicy(t, v3gauges.MovementPolicyLinear)
 	wallClock := time.Unix(500, 0)
 	runtime.clock = func() time.Time { return wallClock }
 	runtime.movementPlanner = func(context movementContext, state sensors.SensorState, current widgetMovementState) time.Duration {
@@ -416,7 +416,7 @@ func TestRuntimeGaugeMovementUsesEventTimestamp(t *testing.T) {
 }
 
 func TestRuntimeGaugeMovementFallsBackToReadAt(t *testing.T) {
-	runtime := testRadialMovementRuntime(t)
+	runtime := testRadialMovementRuntimeWithPolicy(t, v3gauges.MovementPolicyLinear)
 	wallClock := time.Unix(500, 0)
 	runtime.clock = func() time.Time { return wallClock }
 	runtime.movementPlanner = func(context movementContext, state sensors.SensorState, current widgetMovementState) time.Duration {
@@ -456,7 +456,7 @@ func TestRuntimeGaugeMovementFallsBackToReadAt(t *testing.T) {
 }
 
 func TestRuntimeGaugeMovementFallsBackToRuntimeClock(t *testing.T) {
-	runtime := testRadialMovementRuntime(t)
+	runtime := testRadialMovementRuntimeWithPolicy(t, v3gauges.MovementPolicyLinear)
 	wallClock := time.Unix(500, 0)
 	runtime.clock = func() time.Time { return wallClock }
 	runtime.movementPlanner = func(context movementContext, state sensors.SensorState, current widgetMovementState) time.Duration {
@@ -494,7 +494,7 @@ func TestRuntimeGaugeMovementFallsBackToRuntimeClock(t *testing.T) {
 }
 
 func TestRuntimeGaugeMovementRetargetsFromAdvancedDisplayPosition(t *testing.T) {
-	runtime := testRadialMovementRuntime(t)
+	runtime := testRadialMovementRuntimeWithPolicy(t, v3gauges.MovementPolicyLinear)
 	runtime.movementPlanner = func(context movementContext, state sensors.SensorState, current widgetMovementState) time.Duration {
 		return 200 * time.Millisecond
 	}
@@ -578,6 +578,102 @@ func TestRuntimeGaugeMovementRetargetsFromAdvancedDisplayPosition(t *testing.T) 
 	}
 	if runtime.HasActiveMovement() {
 		t.Fatalf("expected retargeted movement to return to static after cleanup")
+	}
+}
+
+func TestRuntimeGaugeMovementDefaultsToImmediatePolicy(t *testing.T) {
+	runtime := testRadialMovementRuntime(t)
+	runtime.movementPlanner = func(context movementContext, state sensors.SensorState, current widgetMovementState) time.Duration {
+		return 200 * time.Millisecond
+	}
+
+	start := time.Unix(100, 0)
+	_, _, err := runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "rpm",
+		State:     okState("rpm", 0, "rpm"),
+		Timestamp: start,
+		ReadAt:    start,
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+
+	scenes, changed, err := runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "rpm",
+		State:     okState("rpm", 3500, "rpm"),
+		Timestamp: start.Add(10 * time.Millisecond),
+		ReadAt:    start.Add(10 * time.Millisecond),
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected immediate policy update to redraw")
+	}
+	if runtime.HasActiveMovement() {
+		t.Fatalf("expected default immediate policy to avoid active movement")
+	}
+	movement := runtime.movements[movementKey("primary", "rpm")]
+	if movement.Policy != v3gauges.MovementPolicyImmediate || movement.Phase != movementPhaseStatic || movement.DisplayValue != 3500 {
+		t.Fatalf("unexpected immediate policy state: %#v", movement)
+	}
+	if got := requireWidget(t, scenes[0], "rpm").GaugeAngle; math.Abs(got) > 0.001 {
+		t.Fatalf("expected immediate policy to jump to target angle 0, got %v", got)
+	}
+}
+
+func TestRuntimeGaugeMovementEaseOutPolicyAdvancesFurtherThanLinear(t *testing.T) {
+	linearRuntime := testRadialMovementRuntimeWithPolicy(t, v3gauges.MovementPolicyLinear)
+	easeOutRuntime := testRadialMovementRuntimeWithPolicy(t, v3gauges.MovementPolicyEaseOut)
+
+	for _, runtime := range []*Runtime{linearRuntime, easeOutRuntime} {
+		runtime.movementPlanner = func(context movementContext, state sensors.SensorState, current widgetMovementState) time.Duration {
+			return 200 * time.Millisecond
+		}
+	}
+
+	start := time.Unix(100, 0)
+	for _, runtime := range []*Runtime{linearRuntime, easeOutRuntime} {
+		_, _, err := runtime.ApplyEvent(sensors.SensorEvent{
+			Kind:      sensors.EventKindValueChange,
+			SensorID:  "rpm",
+			State:     okState("rpm", 0, "rpm"),
+			Timestamp: start,
+			ReadAt:    start,
+		})
+		if err != nil {
+			t.Fatalf("ApplyEvent failed: %v", err)
+		}
+		_, _, err = runtime.ApplyEvent(sensors.SensorEvent{
+			Kind:      sensors.EventKindValueChange,
+			SensorID:  "rpm",
+			State:     okState("rpm", 3500, "rpm"),
+			Timestamp: start.Add(10 * time.Millisecond),
+			ReadAt:    start.Add(10 * time.Millisecond),
+		})
+		if err != nil {
+			t.Fatalf("ApplyEvent failed: %v", err)
+		}
+	}
+
+	_, _, err := linearRuntime.Tick(start.Add(110 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	_, _, err = easeOutRuntime.Tick(start.Add(110 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+
+	linearMovement := linearRuntime.movements[movementKey("primary", "rpm")]
+	easeOutMovement := easeOutRuntime.movements[movementKey("primary", "rpm")]
+	if linearMovement.Policy != v3gauges.MovementPolicyLinear || easeOutMovement.Policy != v3gauges.MovementPolicyEaseOut {
+		t.Fatalf("unexpected policies: linear=%#v easeOut=%#v", linearMovement, easeOutMovement)
+	}
+	if !(easeOutMovement.DisplayValue > linearMovement.DisplayValue) {
+		t.Fatalf("expected ease_out to advance further than linear: linear=%#v ease_out=%#v", linearMovement, easeOutMovement)
 	}
 }
 
@@ -823,6 +919,10 @@ func makeDashboardGaugePackage(t *testing.T, count int, format string) string {
 }
 
 func makeDashboardRadialGaugePackage(t *testing.T) string {
+	return makeDashboardRadialGaugePackageWithPolicy(t, "")
+}
+
+func makeDashboardRadialGaugePackageWithPolicy(t *testing.T, policy string) string {
 	t.Helper()
 	root := t.TempDir()
 	files := []string{
@@ -845,7 +945,7 @@ func makeDashboardRadialGaugePackage(t *testing.T) string {
 	if err := os.MkdirAll(packageDir, 0o755); err != nil {
 		t.Fatalf("MkdirAll: %v", err)
 	}
-	if err := os.WriteFile(filepath.Join(packageDir, "gauge.yaml"), []byte(dashboardRadialGaugeYAML()), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(packageDir, "gauge.yaml"), []byte(dashboardRadialGaugeYAML(policy)), 0o600); err != nil {
 		t.Fatalf("WriteFile: %v", err)
 	}
 	return packageDir
@@ -1000,11 +1100,15 @@ digits:
 %s`, count, format, count, positions.String())
 }
 
-func dashboardRadialGaugeYAML() string {
+func dashboardRadialGaugeYAML(policy string) string {
+	realismBlock := ""
+	if policy != "" {
+		realismBlock = "realism:\n  movement_policy: " + policy + "\n"
+	}
 	return `id: dashboard_radial_rpm
 type: radial
 sensor: rpm
-size:
+` + realismBlock + `size:
   width: 512
   height: 512
 layers:
@@ -1102,8 +1206,12 @@ layers:
 }
 
 func testRadialMovementRuntime(t *testing.T) *Runtime {
+	return testRadialMovementRuntimeWithPolicy(t, "")
+}
+
+func testRadialMovementRuntimeWithPolicy(t *testing.T, policy string) *Runtime {
 	t.Helper()
-	packageDir := makeDashboardRadialGaugePackage(t)
+	packageDir := makeDashboardRadialGaugePackageWithPolicy(t, policy)
 	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 1024, Height: 600}, Widgets: []v3config.WidgetConfig{{ID: "rpm", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{0, 0}, Scale: 1}}}}}}
 	runtime, err := NewRuntime(plan, testAssetRegistry())
 	if err != nil {

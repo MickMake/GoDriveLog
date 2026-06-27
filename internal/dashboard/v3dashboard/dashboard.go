@@ -54,6 +54,7 @@ const (
 
 type widgetMovementState struct {
 	Phase                movementPhase
+	Policy               string
 	PreviousDisplayValue float64
 	DisplayValue         float64
 	TargetValue          float64
@@ -398,7 +399,7 @@ func (d Dashboard) renderWidget(configWidget v3config.WidgetConfig, states map[s
 			WidgetID:    configWidget.ID,
 			SensorID:    pkg.Sensor,
 			GaugeType:   pkg.Type,
-		}, state, planner, now)
+		}, state, pkg.Realism.MovementPolicy, planner, now)
 		var gaugeScene v3gauges.Scene
 		switch pkg.Type {
 		case v3gauges.TypeNumeric:
@@ -447,9 +448,12 @@ func movementKey(dashboardID string, widgetID string) string {
 	return dashboardID + "|" + widgetID
 }
 
-func resolveMovementState(movements map[string]widgetMovementState, key string, context movementContext, source sensors.SensorState, planner movementPlanner, now time.Time) (sensors.SensorState, bool) {
+func resolveMovementState(movements map[string]widgetMovementState, key string, context movementContext, source sensors.SensorState, policy string, planner movementPlanner, now time.Time) (sensors.SensorState, bool) {
 	if movements == nil {
 		return source, false
+	}
+	if strings.TrimSpace(policy) == "" {
+		policy = v3gauges.MovementPolicyImmediate
 	}
 	if source.Status != sensors.StatusOK {
 		previous, hadMovement := movements[key]
@@ -463,6 +467,7 @@ func resolveMovementState(movements map[string]widgetMovementState, key string, 
 	if !movement.HasValue {
 		movement = widgetMovementState{
 			Phase:                movementPhaseStatic,
+			Policy:               policy,
 			PreviousDisplayValue: source.Value,
 			DisplayValue:         source.Value,
 			TargetValue:          source.Value,
@@ -472,13 +477,14 @@ func resolveMovementState(movements map[string]widgetMovementState, key string, 
 		if movementActive(movement) {
 			movement = advanceMovementState(movement, now)
 		}
+		movement.Policy = policy
 		movement.PreviousDisplayValue = movement.DisplayValue
 		movement.TargetValue = source.Value
 		duration := time.Duration(0)
 		if planner != nil {
 			duration = planner(context, source, movement)
 		}
-		if duration <= 0 || movement.DisplayValue == source.Value {
+		if duration <= 0 || movement.DisplayValue == source.Value || movement.Policy == v3gauges.MovementPolicyImmediate {
 			movement.DisplayValue = source.Value
 			movement.Phase = movementPhaseStatic
 			movement.Duration = 0
@@ -519,12 +525,24 @@ func advanceMovementState(movement widgetMovementState, now time.Time) widgetMov
 		if progress < 0 {
 			progress = 0
 		}
+		progress = applyMovementPolicy(progress, movement.Policy)
 		movement.DisplayValue = movement.PreviousDisplayValue + ((movement.TargetValue - movement.PreviousDisplayValue) * progress)
 	case movementPhaseSettled:
 		movement.Phase = movementPhaseStatic
 		movement.DisplayValue = movement.TargetValue
 	}
 	return movement
+}
+
+func applyMovementPolicy(progress float64, policy string) float64 {
+	switch policy {
+	case "", v3gauges.MovementPolicyImmediate:
+		return 1
+	case v3gauges.MovementPolicyEaseOut:
+		return 1 - ((1 - progress) * (1 - progress))
+	default:
+		return progress
+	}
 }
 
 func movementActive(movement widgetMovementState) bool {

@@ -15,17 +15,20 @@ import (
 )
 
 const (
-	dashboardConfigEnvVar = "GODRIVELOG_CONFIG_PATH"
-	TypeNumeric           = "numeric"
-	TypeRadial            = "radial"
-	TypeOdometer          = "odometer"
-	TypeIndicator         = "indicator"
-	TypeBar               = "bar"
-	TypeSegmented         = "segmented"
-	MovementSmooth        = "smooth"
-	MovementClick         = "click"
-	WheelRoleDigit        = "digit"
-	WheelRoleSubUnit      = "sub_unit"
+	dashboardConfigEnvVar   = "GODRIVELOG_CONFIG_PATH"
+	TypeNumeric             = "numeric"
+	TypeRadial              = "radial"
+	TypeOdometer            = "odometer"
+	TypeIndicator           = "indicator"
+	TypeBar                 = "bar"
+	TypeSegmented           = "segmented"
+	MovementSmooth          = "smooth"
+	MovementClick           = "click"
+	MovementPolicyImmediate = "immediate"
+	MovementPolicyLinear    = "linear"
+	MovementPolicyEaseOut   = "ease_out"
+	WheelRoleDigit          = "digit"
+	WheelRoleSubUnit        = "sub_unit"
 )
 
 type Package struct {
@@ -85,27 +88,38 @@ type ValueMap struct {
 }
 
 type Realism struct {
-	Wraparound  *bool `yaml:"wraparound,omitempty"`
-	DrumSlop    []int `yaml:"drum_slop,omitempty"`
-	DrumSlopSet bool  `yaml:"-"`
+	Wraparound     *bool  `yaml:"wraparound,omitempty"`
+	MovementPolicy string `yaml:"movement_policy,omitempty"`
+	DrumSlop       []int  `yaml:"drum_slop,omitempty"`
+	DrumSlopSet    bool   `yaml:"-"`
 }
 
 func (r *Realism) UnmarshalYAML(node *yaml.Node) error {
+	if node.Kind != yaml.MappingNode {
+		return fmt.Errorf("realism must be a mapping")
+	}
+	allowedKeys := map[string]bool{
+		"wraparound":      true,
+		"movement_policy": true,
+		"drum_slop":       true,
+	}
+	for index := 0; index+1 < len(node.Content); index += 2 {
+		key := node.Content[index].Value
+		if !allowedKeys[key] {
+			return fmt.Errorf("realism field %q is not supported", key)
+		}
+		if key == "drum_slop" {
+			r.DrumSlopSet = true
+		}
+	}
 	type rawRealism Realism
 	var decoded rawRealism
 	if err := node.Decode(&decoded); err != nil {
 		return err
 	}
+	drumSlopSet := r.DrumSlopSet
 	*r = Realism(decoded)
-	if node.Kind != yaml.MappingNode {
-		return nil
-	}
-	for index := 0; index+1 < len(node.Content); index += 2 {
-		if node.Content[index].Value == "drum_slop" {
-			r.DrumSlopSet = true
-			break
-		}
-	}
+	r.DrumSlopSet = drumSlopSet
 	return nil
 }
 
@@ -364,6 +378,9 @@ func validatePackage(pkg Package) error {
 }
 
 func normalizePackage(pkg *Package) {
+	if strings.TrimSpace(pkg.Realism.MovementPolicy) == "" {
+		pkg.Realism.MovementPolicy = MovementPolicyImmediate
+	}
 	if pkg.Type == TypeOdometer && strings.TrimSpace(pkg.Odometer.Movement) == "" {
 		pkg.Odometer.Movement = MovementSmooth
 	}
@@ -405,6 +422,11 @@ func validateOdometer(odometer Odometer) error {
 }
 
 func validateRealism(pkg Package) error {
+	switch pkg.Realism.MovementPolicy {
+	case MovementPolicyImmediate, MovementPolicyLinear, MovementPolicyEaseOut:
+	default:
+		return fmt.Errorf("realism movement_policy %q is not supported", pkg.Realism.MovementPolicy)
+	}
 	if pkg.Realism.Wraparound != nil && pkg.Type != TypeOdometer {
 		return fmt.Errorf("realism wraparound is only supported for odometer gauges")
 	}

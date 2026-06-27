@@ -163,6 +163,9 @@ odometer:
 	if pkg.Odometer.Movement != MovementSmooth {
 		t.Fatalf("movement = %q, want default smooth", pkg.Odometer.Movement)
 	}
+	if pkg.Realism.MovementPolicy != MovementPolicyImmediate {
+		t.Fatalf("movement policy = %q, want default immediate", pkg.Realism.MovementPolicy)
+	}
 	if pkg.Realism.DrumSlopSet {
 		t.Fatalf("expected omitted drum_slop to remain absent, got %#v", pkg.Realism)
 	}
@@ -464,6 +467,108 @@ value_map:
 		t.Fatal("LoadPackage returned nil error, want error")
 	}
 	assertErrorContains(t, err, "wraparound")
+}
+
+func TestLoadPackageAcceptsSharedMovementPolicies(t *testing.T) {
+	policies := []string{
+		MovementPolicyImmediate,
+		MovementPolicyLinear,
+		MovementPolicyEaseOut,
+	}
+
+	for _, policy := range policies {
+		t.Run(policy, func(t *testing.T) {
+			root := makeGaugeFixtures(t)
+			packageDir := filepath.Join(root, "assets", "gauges", "radial", policy)
+			writeGaugeYAML(t, packageDir, `id: policy_radial
+type: radial
+sensor: rpm
+realism:
+  movement_policy: `+policy+`
+size:
+  width: 100
+  height: 100
+layers:
+  needle: ../../shared/radial/simple_rpm/needle.png
+pivot:
+  face: { x: 0.5, y: 0.5 }
+  needle: { x: 0.5, y: 0.9 }
+value_map:
+  min: 0
+  max: 100
+  start_angle: -90
+  end_angle: 90
+`)
+
+			pkg, err := LoadPackage(packageDir)
+			if err != nil {
+				t.Fatalf("LoadPackage returned error: %v", err)
+			}
+			if pkg.Realism.MovementPolicy != policy {
+				t.Fatalf("movement policy = %q, want %q", pkg.Realism.MovementPolicy, policy)
+			}
+		})
+	}
+}
+
+func TestLoadPackageRejectsInvalidSharedMovementPolicy(t *testing.T) {
+	root := makeGaugeFixtures(t)
+	packageDir := filepath.Join(root, "assets", "gauges", "radial", "bad_policy")
+	writeGaugeYAML(t, packageDir, `id: bad_radial
+type: radial
+sensor: rpm
+realism:
+  movement_policy: elastic
+size:
+  width: 100
+  height: 100
+layers:
+  needle: ../../shared/radial/simple_rpm/needle.png
+pivot:
+  face: { x: 0.5, y: 0.5 }
+  needle: { x: 0.5, y: 0.9 }
+value_map:
+  min: 0
+  max: 100
+  start_angle: -90
+  end_angle: 90
+`)
+
+	_, err := LoadPackage(packageDir)
+	if err == nil {
+		t.Fatal("LoadPackage returned nil error, want error")
+	}
+	assertErrorContains(t, err, "movement_policy")
+}
+
+func TestLoadPackageRejectsMisspelledSharedMovementPolicyKey(t *testing.T) {
+	root := makeGaugeFixtures(t)
+	packageDir := filepath.Join(root, "assets", "gauges", "radial", "bad_policy_key")
+	writeGaugeYAML(t, packageDir, `id: bad_radial
+type: radial
+sensor: rpm
+realism:
+  movement_polciy: linear
+size:
+  width: 100
+  height: 100
+layers:
+  needle: ../../shared/radial/simple_rpm/needle.png
+pivot:
+  face: { x: 0.5, y: 0.5 }
+  needle: { x: 0.5, y: 0.9 }
+value_map:
+  min: 0
+  max: 100
+  start_angle: -90
+  end_angle: 90
+`)
+
+	_, err := LoadPackage(packageDir)
+	if err == nil {
+		t.Fatal("LoadPackage returned nil error, want error")
+	}
+	assertErrorContains(t, err, "movement_polciy")
 }
 
 func TestLoadPackageRejectsExplicitEmptyDrumSlopOnNonOdometerGauge(t *testing.T) {
