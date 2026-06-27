@@ -13,6 +13,8 @@ v3.5 improves how gauges behave when values change. It focuses on:
 - small deterministic display effects that need renderer support;
 - simple preview support so each behaviour can be judged by eye.
 
+Use `docs/v3.5/RealismBehaviourGuide.md` for the intended visual feel of each realism option.
+
 It does not add a general physics engine, idle animation, ambient flicker, dashboard power lifecycle effects, or asset-generation work.
 
 ## Existing v3.4 behaviour to preserve
@@ -78,10 +80,11 @@ These options are in scope for v3.5 and should be defined, not parked:
 | `damping` | radial, bar | Lagged/smoothed response to value changes. |
 | `overshoot` | radial, bar | Bounded pass-and-settle movement. |
 | `peg_bounce` | radial | Tiny bounded bounce at configured min/max physical stops. |
+| `thermal_fade` | indicator | Soft incandescent-style on/off response. |
 | `needle_shadow` | radial | Optional offset/tinted copy of the rotating needle for visual depth. |
 | `calibration_offset` | radial | Optional display-only degree offset for imperfect needle alignment. |
 
-Numeric, indicator, and segmented gauges do not get extra realism behaviour in v3.5 unless a later slice explicitly adds it. They may still have baseline preview files.
+Numeric and segmented gauges do not get extra realism behaviour in v3.5 unless a later slice explicitly adds it. Indicator gauges support `thermal_fade`. These gauge types may still have baseline preview files.
 
 ## Realism ordering
 
@@ -132,6 +135,12 @@ carry_drag
 backlash
 snap_settle
 drum_slop
+```
+
+Default indicator order:
+
+```text
+thermal_fade
 ```
 
 The default order is a starting point. `99-all-options` preview files exist so the combined feel can be judged visually and tuned later.
@@ -223,7 +232,7 @@ Each relevant gauge type gets:
 
 The all-options case is a taste test, not a debugging case. If it looks wrong, inspect the single-option previews first, then adjust order, defaults, or composition rules.
 
-Numeric, segmented, and indicator gauges should only get baseline previews in v3.5 unless a specific realism option applies to them.
+Numeric and segmented gauges should only get baseline previews in v3.5 unless a specific realism option applies to them. Indicator gauges may also get a `thermal_fade` preview.
 
 ## Version slices
 
