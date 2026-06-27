@@ -110,26 +110,39 @@ When asked to do the next slice:
 
 1. Read this file.
 2. Find the first unchecked slice.
-3. Read `docs/v3.5/ReleasePlan.md`.
-4. Read the matching prompt in `docs/v3.5/prompts/`.
-5. Make only that slice's changes.
+3. Read docs/v3.5/ReleasePlan.md.
+4. Read the matching prompt in docs/v3.5/prompts/.
+5. Make only that slice’s changes.
 6. Update this checklist and any relevant docs.
 7. Do not implement later slices early.
 8. Run the relevant local tests/checks.
-9. Commit the completed slice.
+9. Commit the completed slice with a clear message.
 10. Push the branch to GitHub.
-11. Raise a pull request against `main`.
+11. Raise a pull request against main.
+
+Then enter the review-fix loop:
+
 12. Wait for Codex/GitHub review feedback and CI results.
-13. If review requests changes, unresolved comments exist, or CI fails:
-    - inspect the feedback;
-    - make the smallest safe fixes;
-    - rerun relevant tests/checks;
-    - commit and push the fixes;
-    - continue the review-fix loop.
-14. Stop only when:
-    - the PR exists;
-    - CI/checks are passing;
-    - there are no requested changes;
-    - there are no unresolved review comments requiring code changes;
-    - the PR is green and ready for human merge.
-15. Do not merge the PR.
+13. If CI fails, review requests changes, or unresolved review comments require code changes:
+    * inspect the feedback;
+    * make the smallest safe fixes only;
+    * do not refactor unrelated code;
+    * rerun relevant tests/checks;
+    * commit and push the fixes.
+14. Repeat the review-fix loop at most 3 times.
+
+Stop when either:
+
+* the PR exists;
+* CI/checks are passing;
+* there are no requested changes;
+* there are no unresolved review comments requiring code changes;
+* the PR is green and ready for human merge.
+
+If the review-fix loop reaches 3 attempts, stop and leave a PR comment summarising:
+
+* what was fixed;
+* what remains unresolved;
+* why it could not be safely completed automatically.
+
+Do not merge the PR.
