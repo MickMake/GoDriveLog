@@ -2,7 +2,29 @@
 
 These prompts define the v3.5 slice sequence.
 
-## How to use
+## Codex usage
+
+These prompt files are intended for Codex or ChatGPT.
+
+If the user says any of the following:
+
+- "implement the next slice"
+- "do the next slice"
+- "continue v3.5"
+- "start the next v3.5 slice"
+
+the agent must:
+
+1. Read `docs/v3.5/ImplementationState.md`.
+2. Find the first unchecked slice.
+3. Read `docs/v3.5/ReleasePlan.md`.
+4. Read `docs/v3.5/RealismBehaviourGuide.md`.
+5. Read the matching prompt file under `docs/v3.5/prompts/`.
+6. Implement only that slice.
+7. Update implementation state and relevant docs.
+8. Do not implement later slices early.
+
+## ChatGPT usage
 
 1. Read `docs/v3.5/ImplementationState.md`.
 2. Find the first unchecked slice.
