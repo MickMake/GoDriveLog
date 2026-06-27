@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -255,7 +256,7 @@ func TestRadialSceneRejectsMissingNeedleLayer(t *testing.T) {
 }
 
 func TestOdometerSceneEmitsSmoothWheelStripOffsets(t *testing.T) {
-	pkg := loadOdometerScenePackage(t, "", false)
+	pkg := loadOdometerScenePackage(t, "", false, nil)
 
 	scene, err := OdometerScene(pkg, Placement{Position: []int{50, 20}, Scale: 1.25}, okGaugeState("trip_distance", 12.3))
 	if err != nil {
@@ -287,7 +288,7 @@ func TestOdometerSceneEmitsSmoothWheelStripOffsets(t *testing.T) {
 }
 
 func TestOdometerSceneClickMovementSnapsWheelStripOffsets(t *testing.T) {
-	pkg := loadOdometerScenePackage(t, "click", false)
+	pkg := loadOdometerScenePackage(t, "click", false, nil)
 
 	scene, err := OdometerScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("trip_distance", 12.9))
 	if err != nil {
@@ -304,7 +305,7 @@ func TestOdometerSceneClickMovementSnapsWheelStripOffsets(t *testing.T) {
 }
 
 func TestOdometerSceneDoesNotRenderWheelStripsForNonOKStates(t *testing.T) {
-	pkg := loadOdometerScenePackage(t, "", false)
+	pkg := loadOdometerScenePackage(t, "", false, nil)
 
 	scene, err := OdometerScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, sensors.SensorState{ID: "trip_distance", Status: sensors.StatusTimeout, Error: "not live"})
 	if err != nil {
@@ -322,7 +323,7 @@ func TestOdometerSceneDoesNotRenderWheelStripsForNonOKStates(t *testing.T) {
 }
 
 func TestOdometerSceneSignatureChangesWithSmoothOffset(t *testing.T) {
-	pkg := loadOdometerScenePackage(t, "", false)
+	pkg := loadOdometerScenePackage(t, "", false, nil)
 	first, err := OdometerScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("trip_distance", 12.1))
 	if err != nil {
 		t.Fatalf("OdometerScene returned error: %v", err)
@@ -337,7 +338,7 @@ func TestOdometerSceneSignatureChangesWithSmoothOffset(t *testing.T) {
 }
 
 func TestOdometerSceneWraparoundKeepsBoundaryRolloverContinuous(t *testing.T) {
-	pkg := loadOdometerScenePackage(t, "", true)
+	pkg := loadOdometerScenePackage(t, "", true, nil)
 
 	scene, err := OdometerScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("trip_distance", 10.0))
 	if err != nil {
@@ -360,7 +361,7 @@ func TestOdometerSceneWraparoundKeepsBoundaryRolloverContinuous(t *testing.T) {
 }
 
 func TestOdometerSceneWraparoundDisabledKeepsLegacyResetAtBoundary(t *testing.T) {
-	pkg := loadOdometerScenePackage(t, "", false)
+	pkg := loadOdometerScenePackage(t, "", false, nil)
 
 	scene, err := OdometerScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("trip_distance", 10.0))
 	if err != nil {
@@ -379,6 +380,43 @@ func TestOdometerSceneWraparoundDisabledKeepsLegacyResetAtBoundary(t *testing.T)
 	}
 	if !almostEqual(wheels[2].StripOffset, 0) || wheels[2].Source[1] != 4 {
 		t.Fatalf("tenths rollover offset/source = %.2f/%d, want 0/4", wheels[2].StripOffset, wheels[2].Source[1])
+	}
+}
+
+func TestOdometerSceneAppliesConfiguredDrumSlopToWheelPositions(t *testing.T) {
+	pkg := loadOdometerScenePackage(t, "", false, []int{2, -1, 3})
+
+	scene, err := OdometerScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("trip_distance", 12.3))
+	if err != nil {
+		t.Fatalf("OdometerScene returned error: %v", err)
+	}
+
+	wheels := wheelStripParts(scene)
+	if len(wheels) != 3 {
+		t.Fatalf("wheel parts = %d, want 3", len(wheels))
+	}
+	if wheels[0].Position[1] != 14 || wheels[1].Position[1] != 11 || wheels[2].Position[1] != 15 {
+		t.Fatalf("drum slop positions = %v/%v/%v, want y 14/11/15", wheels[0].Position, wheels[1].Position, wheels[2].Position)
+	}
+	if !almostEqual(wheels[0].StripOffset, 24.6) || !almostEqual(wheels[1].StripOffset, 46) || !almostEqual(wheels[2].StripOffset, 60) {
+		t.Fatalf("expected drum slop to keep wheel strip offsets unchanged, got %.2f/%.2f/%.2f", wheels[0].StripOffset, wheels[1].StripOffset, wheels[2].StripOffset)
+	}
+}
+
+func TestOdometerSceneDefaultsToNoDrumSlop(t *testing.T) {
+	pkg := loadOdometerScenePackage(t, "", false, nil)
+
+	scene, err := OdometerScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("trip_distance", 12.3))
+	if err != nil {
+		t.Fatalf("OdometerScene returned error: %v", err)
+	}
+
+	wheels := wheelStripParts(scene)
+	if len(wheels) != 3 {
+		t.Fatalf("wheel parts = %d, want 3", len(wheels))
+	}
+	if wheels[0].Position[1] != 12 || wheels[1].Position[1] != 12 || wheels[2].Position[1] != 12 {
+		t.Fatalf("default wheel positions = %v/%v/%v, want y=12 for all wheels", wheels[0].Position, wheels[1].Position, wheels[2].Position)
 	}
 }
 
@@ -650,11 +688,11 @@ func loadRadialScenePackage(t *testing.T) Package {
 	return pkg
 }
 
-func loadOdometerScenePackage(t *testing.T, movement string, wraparound bool) Package {
+func loadOdometerScenePackage(t *testing.T, movement string, wraparound bool, drumSlop []int) Package {
 	t.Helper()
 	root := makeGaugeFixtures(t)
 	packageDir := filepath.Join(root, "assets", "gauges", "odometer", "trip")
-	writeGaugeYAML(t, packageDir, odometerGaugeYAML(movement, wraparound))
+	writeGaugeYAML(t, packageDir, odometerGaugeYAML(movement, wraparound, drumSlop))
 	pkg, err := LoadPackage(packageDir)
 	if err != nil {
 		t.Fatalf("LoadPackage returned error: %v", err)
@@ -798,14 +836,25 @@ value_map:
 `
 }
 
-func odometerGaugeYAML(movement string, wraparound bool) string {
+func odometerGaugeYAML(movement string, wraparound bool, drumSlop []int) string {
 	movementLine := ""
 	if movement != "" {
 		movementLine = fmt.Sprintf("  movement: %s\n", movement)
 	}
-	realismBlock := ""
+	realismLines := []string{}
 	if wraparound {
-		realismBlock = "realism:\n  wraparound: true\n"
+		realismLines = append(realismLines, "  wraparound: true")
+	}
+	if len(drumSlop) > 0 {
+		values := make([]string, len(drumSlop))
+		for index, value := range drumSlop {
+			values[index] = strconv.Itoa(value)
+		}
+		realismLines = append(realismLines, fmt.Sprintf("  drum_slop: [%s]", strings.Join(values, ", ")))
+	}
+	realismBlock := ""
+	if len(realismLines) > 0 {
+		realismBlock = "realism:\n" + strings.Join(realismLines, "\n") + "\n"
 	}
 	return fmt.Sprintf(`id: test_trip_odometer
 type: odometer

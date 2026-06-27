@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added the v3.5.3 odometer `realism.drum_slop` option for fixed per-wheel vertical alignment offsets, with bounded validation, deterministic scene positioning, focused odometer tests, and an `examples/gauge-realism/odometer/02-drum-slop.yaml` preview fixture.
 - Added the v3.5.2 odometer `realism.wraparound` option so odometer wheel strips roll cleanly through `9 -> 0` boundaries without the old reset jump, including wrapped wheel-strip rendering support, focused rollover tests, and an `examples/gauge-realism/odometer/01-wraparound.yaml` preview fixture.
 - Added the v3.5.1 `GoDriveLog dashboard preview <file>` Gauge Preview Mode, reusing the active gauge scene/runtime path to render one selected gauge from a normal YAML preview file with keyboard and mouse-wheel value controls, plus shipped baseline preview files under `examples/gauge-realism/` for radial, numeric, odometer, bar, indicator, and segmented gauges.
 - Added the v3.4.12 gauge-aware `dashboard harness --pattern sweep` behaviour so numeric and odometer sources step from `-20` to `+30`, radial and segmented sources keep the existing full-range sweep, indicator sources flash on/off, and bar sources pulse at 90 bpm, with deterministic precedence when multiple widget types share one sensor.

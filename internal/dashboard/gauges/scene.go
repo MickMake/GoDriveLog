@@ -223,11 +223,15 @@ func OdometerScene(pkg Package, placement Placement, state sensors.SensorState) 
 				return Scene{}, fmt.Errorf("gauge package %q: %w", pkg.ID, err)
 			}
 			sourceX, sourceY := odometerWheelSource(wheel, offset)
+			position := cloneInts(wheel.Position)
+			if len(position) >= 2 {
+				position[1] += odometerDrumSlop(pkg, index)
+			}
 			scene.Parts = append(scene.Parts, ScenePart{
 				Kind:        ScenePartKindWheelStrip,
 				AssetPath:   wheel.Strip,
 				Slot:        index,
-				Position:    cloneInts(wheel.Position),
+				Position:    position,
 				Source:      []int{sourceX, sourceY},
 				Window:      wheel.Window,
 				StripOffset: offset,
@@ -661,6 +665,13 @@ func odometerWheelPosition(wheel OdometerWheel, place int, value float64, wrapar
 
 func odometerWraparoundEnabled(pkg Package) bool {
 	return pkg.Realism.Wraparound != nil && *pkg.Realism.Wraparound
+}
+
+func odometerDrumSlop(pkg Package, wheelIndex int) int {
+	if wheelIndex < 0 || wheelIndex >= len(pkg.Realism.DrumSlop) {
+		return 0
+	}
+	return pkg.Realism.DrumSlop[wheelIndex]
 }
 
 func odometerWheelSource(wheel OdometerWheel, stripOffset float64) (int, int) {
