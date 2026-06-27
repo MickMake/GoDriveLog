@@ -23,6 +23,7 @@ the agent must:
 6. Implement only that slice.
 7. Update implementation state and relevant docs.
 8. Do not implement later slices early.
+9. After the slice is complete, follow the finalisation / PR cycle in `docs/v3.5/ImplementationState.md`.
 
 ## ChatGPT usage
 
