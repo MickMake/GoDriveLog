@@ -85,8 +85,28 @@ type ValueMap struct {
 }
 
 type Realism struct {
-	Wraparound *bool `yaml:"wraparound,omitempty"`
-	DrumSlop   []int `yaml:"drum_slop,omitempty"`
+	Wraparound  *bool `yaml:"wraparound,omitempty"`
+	DrumSlop    []int `yaml:"drum_slop,omitempty"`
+	DrumSlopSet bool  `yaml:"-"`
+}
+
+func (r *Realism) UnmarshalYAML(node *yaml.Node) error {
+	type rawRealism Realism
+	var decoded rawRealism
+	if err := node.Decode(&decoded); err != nil {
+		return err
+	}
+	*r = Realism(decoded)
+	if node.Kind != yaml.MappingNode {
+		return nil
+	}
+	for index := 0; index+1 < len(node.Content); index += 2 {
+		if node.Content[index].Value == "drum_slop" {
+			r.DrumSlopSet = true
+			break
+		}
+	}
+	return nil
 }
 
 type Odometer struct {
@@ -388,7 +408,7 @@ func validateRealism(pkg Package) error {
 	if pkg.Realism.Wraparound != nil && pkg.Type != TypeOdometer {
 		return fmt.Errorf("realism wraparound is only supported for odometer gauges")
 	}
-	if len(pkg.Realism.DrumSlop) != 0 {
+	if pkg.Realism.DrumSlopSet {
 		if pkg.Type != TypeOdometer {
 			return fmt.Errorf("realism drum_slop is only supported for odometer gauges")
 		}

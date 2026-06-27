@@ -182,6 +182,7 @@ func (r *Runtime) ApplyEvent(event sensors.SensorEvent) ([]Scene, bool, error) {
 	if r == nil {
 		return nil, false, fmt.Errorf("v3 dashboard runtime is nil")
 	}
+	now := eventTime(event, r.now())
 	if event.SensorID != "" {
 		state := event.State
 		if state.ID == "" {
@@ -190,7 +191,7 @@ func (r *Runtime) ApplyEvent(event sensors.SensorEvent) ([]Scene, bool, error) {
 		r.states[event.SensorID] = state
 	}
 
-	scenes, movementChanged, err := r.snapshotAt(r.now())
+	scenes, movementChanged, err := r.snapshotAt(now)
 	if err != nil {
 		return nil, false, err
 	}
@@ -206,6 +207,16 @@ func (r *Runtime) ApplyEvent(event sensors.SensorEvent) ([]Scene, bool, error) {
 		return nil, false, nil
 	}
 	return scenes, true, nil
+}
+
+func eventTime(event sensors.SensorEvent, fallback time.Time) time.Time {
+	if !event.Timestamp.IsZero() {
+		return event.Timestamp
+	}
+	if !event.ReadAt.IsZero() {
+		return event.ReadAt
+	}
+	return fallback
 }
 
 func (r *Runtime) Snapshot() ([]Scene, error) {
@@ -458,6 +469,9 @@ func resolveMovementState(movements map[string]widgetMovementState, key string, 
 			HasValue:             true,
 		}
 	} else if source.Value != movement.TargetValue {
+		if movementActive(movement) {
+			movement = advanceMovementState(movement, now)
+		}
 		movement.PreviousDisplayValue = movement.DisplayValue
 		movement.TargetValue = source.Value
 		duration := time.Duration(0)
