@@ -551,6 +551,18 @@ func (c *gaugePreviewController) tick() error {
 	if c == nil {
 		return nil
 	}
+	now := c.now()
+	if c.runtime != nil && c.runtime.HasActiveMovement() {
+		scenes, changed, err := c.runtime.Tick(now)
+		if err != nil {
+			return err
+		}
+		if changed {
+			if err := c.adapter.UpdateScenes(scenes); err != nil {
+				return err
+			}
+		}
+	}
 	if inpututil.IsKeyJustPressed(ebitenui.KeyEscape) || inpututil.IsKeyJustPressed(ebitenui.KeyQ) {
 		c.stop()
 		return nil
@@ -575,7 +587,7 @@ func (c *gaugePreviewController) tick() error {
 		return c.applyValue(c.max)
 	}
 	if direction := c.repeatDirection(
-		c.now(),
+		now,
 		ebitenui.IsKeyPressed(ebitenui.KeyUp),
 		ebitenui.IsKeyPressed(ebitenui.KeyDown),
 	); direction != 0 {
@@ -638,12 +650,23 @@ func (c *gaugePreviewController) renderValue(value float64) error {
 		Min:        c.min,
 		Max:        c.max,
 		Status:     sensors.StatusOK,
-		UpdatedAt:  time.Now(),
+		UpdatedAt:  c.now(),
 	}
-	c.runtime.SetState(state)
-	scenes, err := c.runtime.Snapshot()
+	scenes, changed, err := c.runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  c.sensorID,
+		State:     state,
+		Timestamp: state.UpdatedAt,
+		ReadAt:    state.UpdatedAt,
+	})
 	if err != nil {
 		return err
+	}
+	if !changed {
+		scenes, err = c.runtime.Snapshot()
+		if err != nil {
+			return err
+		}
 	}
 	if err := c.adapter.UpdateScenes(scenes); err != nil {
 		return err

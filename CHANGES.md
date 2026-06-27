@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added the v3.5.4 shared finite-movement lifecycle plumbing for gauge value changes, including `static -> value changed -> moving -> settled -> static` runtime state tracking, preview/runtime tick support only while movement is active, and focused lifecycle coverage for radial gauge redraw start, mid-move, settle, and unchanged-value no-op behaviour.
 - Added the v3.5.3 odometer `realism.drum_slop` option for fixed per-wheel vertical alignment offsets, with bounded validation, deterministic scene positioning, focused odometer tests, and an `examples/gauge-realism/odometer/02-drum-slop.yaml` preview fixture.
 - Added the v3.5.2 odometer `realism.wraparound` option so odometer wheel strips roll cleanly through `9 -> 0` boundaries without the old reset jump, including wrapped wheel-strip rendering support, focused rollover tests, and an `examples/gauge-realism/odometer/01-wraparound.yaml` preview fixture.
 - Added the v3.5.1 `GoDriveLog dashboard preview <file>` Gauge Preview Mode, reusing the active gauge scene/runtime path to render one selected gauge from a normal YAML preview file with keyboard and mouse-wheel value controls, plus shipped baseline preview files under `examples/gauge-realism/` for radial, numeric, odometer, bar, indicator, and segmented gauges.
