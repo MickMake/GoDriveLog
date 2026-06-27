@@ -857,6 +857,60 @@ dashboards:
 	}
 }
 
+func TestPreviewRepeatStateImmediateDelayAndInterval(t *testing.T) {
+	var state previewRepeatState
+	start := time.Unix(100, 0)
+
+	if !state.advance(start, true, previewKeyRepeatDelay, previewKeyRepeatInterval) {
+		t.Fatal("expected immediate first trigger")
+	}
+	if state.advance(start.Add(200*time.Millisecond), true, previewKeyRepeatDelay, previewKeyRepeatInterval) {
+		t.Fatal("unexpected trigger before repeat delay")
+	}
+	if !state.advance(start.Add(300*time.Millisecond), true, previewKeyRepeatDelay, previewKeyRepeatInterval) {
+		t.Fatal("expected trigger at repeat delay")
+	}
+	if state.advance(start.Add(340*time.Millisecond), true, previewKeyRepeatDelay, previewKeyRepeatInterval) {
+		t.Fatal("unexpected trigger before repeat interval")
+	}
+	if !state.advance(start.Add(350*time.Millisecond), true, previewKeyRepeatDelay, previewKeyRepeatInterval) {
+		t.Fatal("expected trigger at repeat interval")
+	}
+}
+
+func TestPreviewRepeatStateReleaseResetsSequence(t *testing.T) {
+	var state previewRepeatState
+	start := time.Unix(200, 0)
+
+	if !state.advance(start, true, previewKeyRepeatDelay, previewKeyRepeatInterval) {
+		t.Fatal("expected immediate first trigger")
+	}
+	if state.advance(start.Add(100*time.Millisecond), false, previewKeyRepeatDelay, previewKeyRepeatInterval) {
+		t.Fatal("unexpected trigger on release")
+	}
+	if !state.advance(start.Add(150*time.Millisecond), true, previewKeyRepeatDelay, previewKeyRepeatInterval) {
+		t.Fatal("expected immediate first trigger after re-press")
+	}
+}
+
+func TestGaugePreviewControllerRepeatDirection(t *testing.T) {
+	controller := &gaugePreviewController{}
+	start := time.Unix(300, 0)
+
+	if direction := controller.repeatDirection(start, true, false); direction != 1 {
+		t.Fatalf("direction = %d, want 1", direction)
+	}
+	if direction := controller.repeatDirection(start.Add(100*time.Millisecond), true, false); direction != 0 {
+		t.Fatalf("direction = %d, want 0", direction)
+	}
+	if direction := controller.repeatDirection(start.Add(300*time.Millisecond), true, false); direction != 1 {
+		t.Fatalf("direction = %d, want 1", direction)
+	}
+	if direction := controller.repeatDirection(start.Add(310*time.Millisecond), false, true); direction != -1 {
+		t.Fatalf("direction = %d, want -1", direction)
+	}
+}
+
 func writeTestRadialGaugePackage(t *testing.T, packageDir string) {
 	t.Helper()
 	writeTestConfig(t, filepath.Join(packageDir, "gauge.yaml"), `id: test_rpm

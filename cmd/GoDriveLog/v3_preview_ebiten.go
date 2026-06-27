@@ -23,6 +23,11 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+const (
+	previewKeyRepeatDelay    = 300 * time.Millisecond
+	previewKeyRepeatInterval = 50 * time.Millisecond
+)
+
 type previewGaugeCandidate struct {
 	DashboardID string
 	Widget      v3config.WidgetConfig
@@ -46,6 +51,7 @@ type gaugePreviewController struct {
 	runtime *v3dashboard.Runtime
 	adapter *v3ebitenadapter.Adapter
 	stop    func()
+	now     func() time.Time
 
 	sensorID   string
 	unit       string
@@ -61,6 +67,14 @@ type gaugePreviewController struct {
 	lastTo        float64
 	hasLast       bool
 	replayPending bool
+	upRepeat      previewRepeatState
+	downRepeat    previewRepeatState
+}
+
+type previewRepeatState struct {
+	active     bool
+	startedAt  time.Time
+	lastFireAt time.Time
 }
 
 func runV3EbitenPreviewCommand(options dashboardPreviewOptions) error {
@@ -84,6 +98,7 @@ func runV3EbitenPreviewCommand(options dashboardPreviewOptions) error {
 		runtime:      spec.Runtime,
 		adapter:      adapter,
 		stop:         stop,
+		now:          time.Now,
 		sensorID:     spec.SensorID,
 		unit:         spec.Unit,
 		min:          spec.Min,
@@ -559,11 +574,12 @@ func (c *gaugePreviewController) tick() error {
 	if inpututil.IsKeyJustPressed(ebitenui.KeyRight) {
 		return c.applyValue(c.max)
 	}
-	if inpututil.IsKeyJustPressed(ebitenui.KeyUp) {
-		return c.applyValue(c.currentValue + c.activeStep())
-	}
-	if inpututil.IsKeyJustPressed(ebitenui.KeyDown) {
-		return c.applyValue(c.currentValue - c.activeStep())
+	if direction := c.repeatDirection(
+		c.now(),
+		ebitenui.IsKeyPressed(ebitenui.KeyUp),
+		ebitenui.IsKeyPressed(ebitenui.KeyDown),
+	); direction != 0 {
+		return c.applyValue(c.currentValue + (float64(direction) * c.activeStep()))
 	}
 
 	_, wheelY := ebitenui.Wheel()
@@ -574,6 +590,22 @@ func (c *gaugePreviewController) tick() error {
 		return c.applyValue(c.currentValue - c.step)
 	}
 	return nil
+}
+
+func (c *gaugePreviewController) repeatDirection(now time.Time, upPressed, downPressed bool) int {
+	if c == nil {
+		return 0
+	}
+	upTriggered := c.upRepeat.advance(now, upPressed, previewKeyRepeatDelay, previewKeyRepeatInterval)
+	downTriggered := c.downRepeat.advance(now, downPressed, previewKeyRepeatDelay, previewKeyRepeatInterval)
+	switch {
+	case upTriggered:
+		return 1
+	case downTriggered:
+		return -1
+	default:
+		return 0
+	}
 }
 
 func (c *gaugePreviewController) activeStep() float64 {
@@ -618,4 +650,27 @@ func (c *gaugePreviewController) renderValue(value float64) error {
 	}
 	c.currentValue = value
 	return nil
+}
+
+func (s *previewRepeatState) advance(now time.Time, pressed bool, delay time.Duration, interval time.Duration) bool {
+	if !pressed {
+		s.active = false
+		s.startedAt = time.Time{}
+		s.lastFireAt = time.Time{}
+		return false
+	}
+	if !s.active {
+		s.active = true
+		s.startedAt = now
+		s.lastFireAt = now
+		return true
+	}
+	if now.Sub(s.startedAt) < delay {
+		return false
+	}
+	if now.Sub(s.lastFireAt) < interval {
+		return false
+	}
+	s.lastFireAt = now
+	return true
 }
