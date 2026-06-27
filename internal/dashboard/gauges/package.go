@@ -119,6 +119,14 @@ type SegmentedSelection struct {
 }
 
 func LoadPackage(packageDir string) (Package, error) {
+	return loadPackage(packageDir, false)
+}
+
+func LoadPackageForPreview(packageDir string) (Package, error) {
+	return loadPackage(packageDir, true)
+}
+
+func loadPackage(packageDir string, allowAnyAssetRoot bool) (Package, error) {
 	if packageDir == "" {
 		return Package{}, fmt.Errorf("gauge package path must not be empty")
 	}
@@ -139,7 +147,10 @@ func LoadPackage(packageDir string) (Package, error) {
 	}
 	assetRoot, err := findAssetRoot(resolvedPackageDir)
 	if err != nil {
-		return Package{}, err
+		if !allowAnyAssetRoot {
+			return Package{}, err
+		}
+		assetRoot = resolvedPackageDir
 	}
 
 	yamlPath := filepath.Join(resolvedPackageDir, "gauge.yaml")

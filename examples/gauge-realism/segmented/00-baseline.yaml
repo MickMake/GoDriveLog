@@ -1,0 +1,27 @@
+vehicles:
+  demo:
+    name: Gauge Preview
+    obd:
+      address: preview://manual
+      timeout: 1000
+    dashboards:
+      - preview
+sensors:
+  rpm:
+    type: obd
+    pid: "010C"
+    unit: rpm
+    min: 0
+    max: 8000
+    poll: 250
+dashboards:
+  preview:
+    display: preview
+    size:
+      width: 400
+      height: 240
+    widgets:
+      - id: rpm_segmented
+        type: gauge
+        gauge: ../../ornate-timber/assets/gauges/rpm_segmented
+        position: [0, 0]

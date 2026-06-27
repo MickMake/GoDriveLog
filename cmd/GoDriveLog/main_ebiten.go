@@ -32,7 +32,17 @@ const (
 var (
 	dashboardRunCommand     = runV3EbitenCommand
 	dashboardHarnessCommand = runV3EbitenHarnessCommand
+	dashboardPreviewCommand = runV3EbitenPreviewCommand
 )
+
+type dashboardPreviewOptions struct {
+	ConfigPath   string
+	GaugeID      string
+	InitialValue *float64
+	Step         *float64
+	FineStep     *float64
+	CoarseStep   *float64
+}
 
 func main() {
 	if err := runCLI(os.Args[1:], os.Stdout, os.Stderr); err != nil {
@@ -71,6 +81,8 @@ func runDashboardCLI(args []string, stdout, stderr io.Writer) error {
 		return runDashboardRunCommand(args[1:], stdout, stderr)
 	case "harness":
 		return runDashboardHarnessSubcommand(args[1:], stdout, stderr)
+	case "preview":
+		return runDashboardPreviewCommand(args[1:], stdout, stderr)
 	case "examples":
 		return runDashboardExamplesCommand(args[1:], stdout, stderr)
 	case "validate":
@@ -407,6 +419,77 @@ func runDashboardExamplesCommand(args []string, stdout, stderr io.Writer) error 
 	return nil
 }
 
+func runDashboardPreviewCommand(args []string, stdout, stderr io.Writer) error {
+	filteredArgs, positionalArgs, err := splitArgsAllowingSinglePositional(args, map[string]bool{
+		"--gauge":       true,
+		"--value":       true,
+		"--step":        true,
+		"--fine-step":   true,
+		"--coarse-step": true,
+	})
+	if err != nil {
+		return err
+	}
+
+	fs := newDashboardFlagSet("dashboard preview")
+	gaugeID := fs.String("gauge", "", "optional gauge widget id; use dashboard/widget when the file contains duplicates")
+	initialValue := fs.Float64("value", 0, "optional starting value override; defaults to the midpoint of the inferred range")
+	step := fs.Float64("step", 0, "optional step size for Up/Down")
+	fineStep := fs.Float64("fine-step", 0, "optional fine step size for Ctrl/Cmd+Up/Down")
+	coarseStep := fs.Float64("coarse-step", 0, "optional coarse step size for Shift+Up/Down")
+	fs.Usage = func() {
+		writeDashboardPreviewHelp(stdout)
+	}
+
+	if err := fs.Parse(filteredArgs); err != nil {
+		if err == flag.ErrHelp {
+			writeDashboardPreviewHelp(stdout)
+			return nil
+		}
+		return err
+	}
+	if len(fs.Args()) != 0 {
+		return fmt.Errorf("dashboard preview accepts exactly one positional preview file")
+	}
+	if len(positionalArgs) != 1 {
+		writeDashboardPreviewHelp(stderr)
+		return fmt.Errorf("dashboard preview requires exactly one preview file")
+	}
+
+	options := dashboardPreviewOptions{
+		ConfigPath: strings.TrimSpace(positionalArgs[0]),
+		GaugeID:    strings.TrimSpace(*gaugeID),
+	}
+	if options.ConfigPath == "" {
+		return fmt.Errorf("dashboard preview requires exactly one preview file")
+	}
+
+	if value, ok, err := optionalPositiveOrNegativeFloat64Flag(fs, "value", *initialValue); err != nil {
+		return err
+	} else if ok {
+		options.InitialValue = value
+	}
+	if value, ok, err := optionalPositiveFloat64Flag(fs, "step", *step); err != nil {
+		return err
+	} else if ok {
+		options.Step = value
+	}
+	if value, ok, err := optionalPositiveFloat64Flag(fs, "fine-step", *fineStep); err != nil {
+		return err
+	} else if ok {
+		options.FineStep = value
+	}
+	if value, ok, err := optionalPositiveFloat64Flag(fs, "coarse-step", *coarseStep); err != nil {
+		return err
+	} else if ok {
+		options.CoarseStep = value
+	}
+
+	return withDashboardConfigPathEnv(options.ConfigPath, func() error {
+		return dashboardPreviewCommand(options)
+	})
+}
+
 func runDashboardValidateCommand(args []string, stdout, stderr io.Writer) error {
 	fs := newDashboardFlagSet("dashboard validate")
 	configPath := fs.String("config", "", "path to a dashboard config; when omitted, use deterministic discovery")
@@ -647,6 +730,33 @@ func containsString(values []string, want string) bool {
 	return false
 }
 
+func optionalPositiveFloat64Flag(fs *flag.FlagSet, name string, value float64) (*float64, bool, error) {
+	if !flagWasProvided(fs, name) {
+		return nil, false, nil
+	}
+	if value <= 0 {
+		return nil, false, fmt.Errorf("--%s must be greater than zero", name)
+	}
+	return &value, true, nil
+}
+
+func optionalPositiveOrNegativeFloat64Flag(fs *flag.FlagSet, name string, value float64) (*float64, bool, error) {
+	if !flagWasProvided(fs, name) {
+		return nil, false, nil
+	}
+	return &value, true, nil
+}
+
+func flagWasProvided(fs *flag.FlagSet, name string) bool {
+	provided := false
+	fs.Visit(func(flag *flag.Flag) {
+		if flag.Name == name {
+			provided = true
+		}
+	})
+	return provided
+}
+
 func formatSearchedConfigRecords(records []searchedConfigRecord) string {
 	parts := make([]string, 0, len(records))
 	for _, record := range records {
@@ -854,6 +964,7 @@ func writeDashboardHelp(w io.Writer) {
 	fmt.Fprintln(w, "Subcommands:")
 	fmt.Fprintln(w, "  run       Start the active dashboard runtime for a selected vehicle")
 	fmt.Fprintln(w, "  harness   Run the dashboard harness for a selected vehicle")
+	fmt.Fprintln(w, "  preview   Open a single-gauge preview viewer for one preview YAML file")
 	fmt.Fprintln(w, "  examples  Export a self-contained generated example dashboard")
 	fmt.Fprintln(w, "  validate  Validate a dashboard config file")
 	fmt.Fprintln(w)
@@ -927,6 +1038,35 @@ func writeDashboardExamplesHelp(w io.Writer) {
 	fmt.Fprintln(w)
 	fmt.Fprintln(w, "Example:")
 	fmt.Fprintln(w, "  GoDriveLog dashboard examples --theme framework-smoke --output ./tmp/framework-smoke")
+}
+
+func writeDashboardPreviewHelp(w io.Writer) {
+	fmt.Fprintln(w, "GoDriveLog dashboard preview <file>")
+	fmt.Fprintln(w)
+	fmt.Fprintln(w, "Purpose:")
+	fmt.Fprintln(w, "  Open one normal preview YAML file and interactively inspect a single gauge.")
+	fmt.Fprintln(w)
+	fmt.Fprintln(w, "Positional arguments:")
+	fmt.Fprintln(w, "  file   required preview YAML file; it must resolve to exactly one selected vehicle")
+	fmt.Fprintln(w)
+	fmt.Fprintln(w, "Flags:")
+	fmt.Fprintln(w, "  --gauge string")
+	fmt.Fprintln(w, "        optional gauge widget id; use dashboard/widget when the file contains duplicate widget ids")
+	fmt.Fprintln(w, "  --value float")
+	fmt.Fprintln(w, "        optional starting value override; default is the midpoint of the inferred range")
+	fmt.Fprintln(w, "  --step float")
+	fmt.Fprintln(w, "        optional step size for Up/Down")
+	fmt.Fprintln(w, "  --fine-step float")
+	fmt.Fprintln(w, "        optional fine step size for Ctrl/Cmd+Up/Down")
+	fmt.Fprintln(w, "  --coarse-step float")
+	fmt.Fprintln(w, "        optional coarse step size for Shift+Up/Down")
+	fmt.Fprintln(w)
+	fmt.Fprintln(w, "Controls:")
+	fmt.Fprintln(w, "  Left=min  Right=max  Up/Down=step  Shift+Up/Down=coarse  Ctrl/Cmd+Up/Down=fine")
+	fmt.Fprintln(w, "  R=midpoint  Space=replay last transition  Esc/Q=quit")
+	fmt.Fprintln(w)
+	fmt.Fprintln(w, "Example:")
+	fmt.Fprintln(w, "  GoDriveLog dashboard preview ./examples/gauge-realism/radial/00-baseline.yaml")
 }
 
 func writeDashboardValidateHelp(w io.Writer) {
