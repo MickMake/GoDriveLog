@@ -1,0 +1,27 @@
+vehicles:
+  demo:
+    name: Gauge Preview
+    obd:
+      address: preview://manual
+      timeout: 1000
+    dashboards:
+      - preview
+sensors:
+  trip_distance:
+    type: obd
+    pid: "015A"
+    unit: km
+    min: 0
+    max: 999.9
+    poll: 250
+dashboards:
+  preview:
+    display: preview
+    size:
+      width: 640
+      height: 240
+    widgets:
+      - id: trip_odometer
+        type: gauge
+        gauge: packages/eased_roll_trip_odometer
+        position: [0, 0]

@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added the v3.5.6 odometer eased-roll slice so odometer gauges with `odometer.movement: smooth` and a non-immediate shared `realism.movement_policy` use the existing finite movement lifecycle with a bounded eased wheel-roll transition, while default and `click` odometer behaviour stay immediate; this also ships focused runtime coverage and an `examples/gauge-realism/odometer/03-eased-roll.yaml` preview fixture.
 - Added the v3.5.5 shared `realism.movement_policy` surface for finite gauge transitions, with `immediate`, `linear`, and `ease_out` validation/defaulting, runtime policy tracking separate from source values, and focused package/runtime coverage for defaults, accepted policies, invalid policies, and policy-shaped movement behaviour.
 - Added the v3.5.4 shared finite-movement lifecycle plumbing for gauge value changes, including `static -> value changed -> moving -> settled -> static` runtime state tracking, preview/runtime tick support only while movement is active, and focused lifecycle coverage for radial gauge redraw start, mid-move, settle, and unchanged-value no-op behaviour.
 - Added the v3.5.3 odometer `realism.drum_slop` option for fixed per-wheel vertical alignment offsets, with bounded validation, deterministic scene positioning, focused odometer tests, and an `examples/gauge-realism/odometer/02-drum-slop.yaml` preview fixture.

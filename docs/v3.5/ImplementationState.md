@@ -1,10 +1,10 @@
 # v3.5 Implementation State
 
-Status: v3.5.5 shared movement policy implemented
+Status: v3.5.6 odometer eased roll implemented
 
-Current target: v3.5.6 odometer eased roll
+Current target: v3.5.7 odometer carry-drag / 9-drag
 
-Current branch: `codex/v3.5.5-shared-movement-policy`
+Current branch: `codex/v3.5.6-odometer-eased-roll`
 
 ## Scope
 
@@ -92,7 +92,7 @@ Not allowed in v3.5:
 - [x] v3.5.3 odometer drum slop
 - [x] v3.5.4 finite movement lifecycle
 - [x] v3.5.5 shared movement policy
-- [ ] v3.5.6 odometer eased roll
+- [x] v3.5.6 odometer eased roll
 - [ ] v3.5.7 odometer carry-drag / 9-drag
 - [ ] v3.5.8 radial damping
 - [ ] v3.5.9 radial stiction
