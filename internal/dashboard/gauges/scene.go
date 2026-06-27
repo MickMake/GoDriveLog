@@ -61,6 +61,7 @@ type ScenePart struct {
 	Source      []int
 	Window      Size
 	StripOffset float64
+	Wraparound  bool
 	Role        string
 }
 
@@ -215,8 +216,9 @@ func OdometerScene(pkg Package, placement Placement, state sensors.SensorState) 
 	if state.Status == sensors.StatusOK {
 		scene.Text = formatValue("%.1f", state.Value)
 		digitPlaces := odometerDigitPlaces(pkg.Odometer.Wheels)
+		wraparound := odometerWraparoundEnabled(pkg)
 		for index, wheel := range pkg.Odometer.Wheels {
-			offset, err := odometerWheelOffset(pkg.Odometer.Movement, wheel, digitPlaces[index], state.Value)
+			offset, err := odometerWheelOffset(pkg.Odometer.Movement, wraparound, wheel, digitPlaces[index], state.Value)
 			if err != nil {
 				return Scene{}, fmt.Errorf("gauge package %q: %w", pkg.ID, err)
 			}
@@ -229,6 +231,7 @@ func OdometerScene(pkg Package, placement Placement, state sensors.SensorState) 
 				Source:      []int{sourceX, sourceY},
 				Window:      wheel.Window,
 				StripOffset: offset,
+				Wraparound:  wraparound,
 				Role:        odometerWheelRole(wheel),
 			})
 		}
@@ -513,6 +516,8 @@ func (s Scene) Signature() string {
 		b.WriteString("#")
 		b.WriteString(strconv.FormatFloat(part.StripOffset, 'f', -1, 64))
 		b.WriteString("#")
+		b.WriteString(strconv.FormatBool(part.Wraparound))
+		b.WriteString("#")
 		b.WriteString(part.Role)
 		b.WriteString(";")
 	}
@@ -619,8 +624,8 @@ func odometerDigitPlaces(wheels []OdometerWheel) []int {
 	return places
 }
 
-func odometerWheelOffset(movement string, wheel OdometerWheel, place int, value float64) (float64, error) {
-	position, err := odometerWheelPosition(wheel, place, value)
+func odometerWheelOffset(movement string, wraparound bool, wheel OdometerWheel, place int, value float64) (float64, error) {
+	position, err := odometerWheelPosition(wheel, place, value, wraparound)
 	if err != nil {
 		return 0, err
 	}
@@ -633,19 +638,29 @@ func odometerWheelOffset(movement string, wheel OdometerWheel, place int, value 
 	return position * float64(wheel.Window.Height), nil
 }
 
-func odometerWheelPosition(wheel OdometerWheel, place int, value float64) (float64, error) {
+func odometerWheelPosition(wheel OdometerWheel, place int, value float64, wraparound bool) (float64, error) {
 	if wheel.Window.Height <= 0 {
 		return 0, fmt.Errorf("odometer wheel window height must be positive")
 	}
 	absolute := math.Abs(value)
 	if odometerWheelRole(wheel) == WheelRoleSubUnit {
+		if wraparound {
+			return absolute * 10, nil
+		}
 		return math.Mod(absolute*10, 10), nil
 	}
 	if place < 0 {
 		return 0, fmt.Errorf("odometer wheel place must not be negative")
 	}
 	divisor := math.Pow10(place)
+	if wraparound {
+		return absolute / divisor, nil
+	}
 	return math.Mod(absolute/divisor, 10), nil
+}
+
+func odometerWraparoundEnabled(pkg Package) bool {
+	return pkg.Realism.Wraparound != nil && *pkg.Realism.Wraparound
 }
 
 func odometerWheelSource(wheel OdometerWheel, stripOffset float64) (int, int) {

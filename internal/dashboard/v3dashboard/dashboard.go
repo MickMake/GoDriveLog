@@ -92,6 +92,7 @@ type Part struct {
 	Source      []int
 	Window      v3gauges.Size
 	StripOffset float64
+	Wraparound  bool
 	Role        string
 }
 
@@ -491,6 +492,7 @@ func gaugeSceneParts(scene v3gauges.Scene) []Part {
 			Source:      append([]int(nil), scenePart.Source...),
 			Window:      scenePart.Window,
 			StripOffset: scenePart.StripOffset,
+			Wraparound:  scenePart.Wraparound,
 			Role:        scenePart.Role,
 		})
 	}
@@ -768,6 +770,8 @@ func sceneSignature(scene Scene) string {
 			b.WriteString(strconv.Itoa(part.Window.Height))
 			b.WriteString("#")
 			b.WriteString(strconv.FormatFloat(part.StripOffset, 'f', -1, 64))
+			b.WriteString("#")
+			b.WriteString(strconv.FormatBool(part.Wraparound))
 			b.WriteString("#")
 			b.WriteString(part.Role)
 			b.WriteString(";")
