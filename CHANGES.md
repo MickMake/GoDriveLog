@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added the v3.5.1 `GoDriveLog dashboard preview <file>` Gauge Preview Mode, reusing the active gauge scene/runtime path to render one selected gauge from a normal YAML preview file with keyboard and mouse-wheel value controls, plus shipped baseline preview files under `examples/gauge-realism/` for radial, numeric, odometer, bar, indicator, and segmented gauges.
 - Added the v3.4.12 gauge-aware `dashboard harness --pattern sweep` behaviour so numeric and odometer sources step from `-20` to `+30`, radial and segmented sources keep the existing full-range sweep, indicator sources flash on/off, and bar sources pulse at 90 bpm, with deterministic precedence when multiple widget types share one sensor.
 - Added the v3.4.11 bare `GoDriveLog dashboard` compact overview, including resolved-config reporting, per-vehicle dashboard/widget hierarchy, configured OBD source strings printed as-is, widget/gauge data sources with OBD PIDs where applicable, and compact warnings when gauge packages cannot be loaded for overview output.
 - Narrowed the v3.4.10 CI validation path for headless runners: GitHub Actions now runs `go test ./internal/... ./scripts/generate-example-assets` and `go test -c ./cmd/GoDriveLog` instead of `go test ./...`, because the Ebiten/GLFW-backed command package requires a display for direct test execution.

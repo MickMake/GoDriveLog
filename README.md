@@ -145,6 +145,27 @@ go run ./cmd/GoDriveLog dashboard --config ./examples/baseline-dashboard.yaml
 
 The bare `dashboard` command prints a compact overview of vehicles, attached dashboards, widget/gauge sources, and OBD-backed PIDs. It is a map, not the territory, but it is at least the correct map.
 
+## Gauge preview
+
+To inspect one gauge manually without live OBD input or the full harness:
+
+```bash
+go run ./cmd/GoDriveLog dashboard preview \
+  ./examples/gauge-realism/radial/00-baseline.yaml
+```
+
+Useful controls:
+
+- Left/Right jump to min/max.
+- Up/Down step the value.
+- Shift + Up/Down uses a coarse step.
+- Ctrl/Cmd + Up/Down uses a fine step.
+- `R` resets to midpoint.
+- `Space` replays the last transition.
+- `Esc` or `Q` quits.
+
+Baseline preview files live under `examples/gauge-realism/` for `radial`, `numeric`, `odometer`, `bar`, `indicator`, and `segmented`.
+
 ## Raspberry Pi notes
 
 The active v3.3 dashboard renderer is Ebiten. Raspberry Pi builds should focus on Go, graphics/display dependencies needed by Ebiten, and the selected kiosk/display setup.

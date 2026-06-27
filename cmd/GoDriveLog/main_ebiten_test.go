@@ -234,6 +234,72 @@ func TestDashboardHarnessAcceptsVehicleBeforeOrAfterFlags(t *testing.T) {
 	}
 }
 
+func TestDashboardPreviewAcceptsFileBeforeOrAfterFlags(t *testing.T) {
+	root := t.TempDir()
+	configPath := filepath.Join(root, "preview.yaml")
+	writeTestConfig(t, configPath, singleVehicleGaugeConfigYAML("assets/gauges/test_speed"))
+
+	testCases := []struct {
+		name string
+		args []string
+	}{
+		{
+			name: "file before flags",
+			args: []string{"dashboard", "preview", configPath, "--gauge", "speed_widget", "--value", "88", "--step", "5", "--fine-step", "1", "--coarse-step", "20"},
+		},
+		{
+			name: "file after flags",
+			args: []string{"dashboard", "preview", "--gauge", "speed_widget", "--value", "88", "--step", "5", "--fine-step", "1", "--coarse-step", "20", configPath},
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.name, func(t *testing.T) {
+			var got dashboardPreviewOptions
+			previousPreview := dashboardPreviewCommand
+			dashboardPreviewCommand = func(options dashboardPreviewOptions) error {
+				got = options
+				return nil
+			}
+			defer func() {
+				dashboardPreviewCommand = previousPreview
+			}()
+
+			if err := runCLI(test.args, &bytes.Buffer{}, &bytes.Buffer{}); err != nil {
+				t.Fatalf("runCLI returned error: %v", err)
+			}
+			if got.ConfigPath != configPath {
+				t.Fatalf("config path = %q, want %q", got.ConfigPath, configPath)
+			}
+			if got.GaugeID != "speed_widget" {
+				t.Fatalf("gauge id = %q, want speed_widget", got.GaugeID)
+			}
+			if got.InitialValue == nil || *got.InitialValue != 88 {
+				t.Fatalf("initial value = %v, want 88", got.InitialValue)
+			}
+			if got.Step == nil || *got.Step != 5 {
+				t.Fatalf("step = %v, want 5", got.Step)
+			}
+			if got.FineStep == nil || *got.FineStep != 1 {
+				t.Fatalf("fine step = %v, want 1", got.FineStep)
+			}
+			if got.CoarseStep == nil || *got.CoarseStep != 20 {
+				t.Fatalf("coarse step = %v, want 20", got.CoarseStep)
+			}
+		})
+	}
+}
+
+func TestDashboardPreviewRejectsMissingFile(t *testing.T) {
+	err := runCLI([]string{"dashboard", "preview"}, &bytes.Buffer{}, &bytes.Buffer{})
+	if err == nil {
+		t.Fatal("expected missing preview file to fail")
+	}
+	if !strings.Contains(err.Error(), "requires exactly one preview file") {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
 func TestDashboardValidateRejectsPositionalAndFlagConfig(t *testing.T) {
 	err := runCLI([]string{"dashboard", "validate", "./one.yaml", "--config", "./two.yaml"}, &bytes.Buffer{}, &bytes.Buffer{})
 	if err == nil {
@@ -435,6 +501,11 @@ func TestDashboardHelpOutputsIncludeNewCommandTree(t *testing.T) {
 			want: []string{"GoDriveLog dashboard examples --output <directory>", "--output", "--theme", "--force"},
 		},
 		{
+			name: "preview",
+			args: []string{"dashboard", "preview", "--help"},
+			want: []string{"GoDriveLog dashboard preview <file>", "--gauge", "--value", "--step", "--fine-step", "--coarse-step"},
+		},
+		{
 			name: "validate",
 			args: []string{"dashboard", "validate", "--help"},
 			want: []string{"GoDriveLog dashboard validate [config-file]", "--config"},
@@ -519,6 +590,7 @@ logs:
       - speed
 dashboards:
   primary:
+    display: main
     size:
       width: 800
       height: 480
@@ -567,6 +639,7 @@ logs:
       - speed
 dashboards:
   primary:
+    display: main
     size:
       width: 800
       height: 480
@@ -602,6 +675,7 @@ logs:
       - speed
 dashboards:
   primary:
+    display: main
     size:
       width: 800
       height: 480
@@ -609,6 +683,48 @@ dashboards:
       - id: speed_widget
         type: gauge
         gauge: ` + gaugePath + `
+        position: [0, 0]
+`
+}
+
+func multiGaugeConfigYAML(firstGaugePath, secondGaugePath string) string {
+	return `vehicles:
+  demo:
+    name: Demo
+    obd:
+      address: serial:///dev/ttyUSB0
+      timeout: 1000
+    dashboards:
+      - primary
+sensors:
+  speed:
+    type: obd
+    pid: "010D"
+    unit: km/h
+    min: 0
+    max: 200
+    poll: 250
+  rpm:
+    type: obd
+    pid: "010C"
+    unit: rpm
+    min: 0
+    max: 8000
+    poll: 250
+dashboards:
+  primary:
+    display: preview
+    size:
+      width: 800
+      height: 480
+    widgets:
+      - id: speed_widget
+        type: gauge
+        gauge: ` + firstGaugePath + `
+        position: [0, 0]
+      - id: rpm_widget
+        type: gauge
+        gauge: ` + secondGaugePath + `
         position: [0, 0]
 `
 }
@@ -636,5 +752,63 @@ digit_set:
     "9": digits/9.png
 digits:
   count: 3
+`)
+}
+
+func TestBuildGaugePreviewSpecRequiresGaugeSelectionWhenFileHasMultipleGauges(t *testing.T) {
+	root := t.TempDir()
+	configPath := filepath.Join(root, "preview.yaml")
+	writeTestConfig(t, configPath, multiGaugeConfigYAML("assets/gauges/test_speed", "assets/gauges/test_rpm"))
+	writeTestGaugePackage(t, filepath.Join(root, "assets", "gauges", "test_speed"))
+	writeTestRadialGaugePackage(t, filepath.Join(root, "assets", "gauges", "test_rpm"))
+
+	_, err := buildGaugePreviewSpec(dashboardPreviewOptions{ConfigPath: configPath})
+	if err == nil {
+		t.Fatal("expected multiple gauges to require --gauge")
+	}
+	if !strings.Contains(err.Error(), "contains multiple gauges") || !strings.Contains(err.Error(), "primary/speed_widget") || !strings.Contains(err.Error(), "primary/rpm_widget") {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestBuildGaugePreviewSpecSelectsNamedGauge(t *testing.T) {
+	root := t.TempDir()
+	configPath := filepath.Join(root, "preview.yaml")
+	writeTestConfig(t, configPath, multiGaugeConfigYAML("assets/gauges/test_speed", "assets/gauges/test_rpm"))
+	writeTestGaugePackage(t, filepath.Join(root, "assets", "gauges", "test_speed"))
+	writeTestRadialGaugePackage(t, filepath.Join(root, "assets", "gauges", "test_rpm"))
+
+	spec, err := buildGaugePreviewSpec(dashboardPreviewOptions{ConfigPath: configPath, GaugeID: "rpm_widget"})
+	if err != nil {
+		t.Fatalf("buildGaugePreviewSpec returned error: %v", err)
+	}
+	if spec.SensorID != "rpm" {
+		t.Fatalf("sensor id = %q, want rpm", spec.SensorID)
+	}
+	if spec.Min != 0 || spec.Max != 8000 {
+		t.Fatalf("range = %v..%v, want 0..8000", spec.Min, spec.Max)
+	}
+}
+
+func writeTestRadialGaugePackage(t *testing.T, packageDir string) {
+	t.Helper()
+	writeTestConfig(t, filepath.Join(packageDir, "gauge.yaml"), `id: test_rpm
+type: radial
+sensor: rpm
+size:
+  width: 160
+  height: 160
+layers:
+  background: background.png
+  needle: needle.png
+pivot:
+  face: { x: 0.5, y: 0.5 }
+  needle: { x: 0.5, y: 0.5 }
+value_map:
+  min: 0
+  max: 8000
+  start_angle: -135
+  end_angle: 135
+  clamp: true
 `)
 }

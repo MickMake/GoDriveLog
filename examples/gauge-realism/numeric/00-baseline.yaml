@@ -1,0 +1,27 @@
+vehicles:
+  demo:
+    name: Gauge Preview
+    obd:
+      address: preview://manual
+      timeout: 1000
+    dashboards:
+      - preview
+sensors:
+  speed:
+    type: obd
+    pid: "010D"
+    unit: km/h
+    min: 0
+    max: 240
+    poll: 250
+dashboards:
+  preview:
+    display: preview
+    size:
+      width: 640
+      height: 320
+    widgets:
+      - id: speed_numeric
+        type: gauge
+        gauge: ../../ornate-timber/assets/gauges/speed_numeric
+        position: [0, 0]

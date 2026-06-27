@@ -29,7 +29,8 @@ type Adapter struct {
 	width    int
 	height   int
 
-	ctx context.Context
+	ctx  context.Context
+	tick func() error
 
 	mu     sync.RWMutex
 	assets map[string]cachedAsset
@@ -132,8 +133,11 @@ func (a *Adapter) Update() error {
 	case <-a.ctx.Done():
 		return a.ctx.Err()
 	default:
-		return nil
 	}
+	if a.tick != nil {
+		return a.tick()
+	}
+	return nil
 }
 
 // Draw is Ebiten's render hook.
@@ -193,6 +197,13 @@ func (a *Adapter) Layout(outsideWidth int, outsideHeight int) (int, int) {
 		height = 1
 	}
 	return width, height
+}
+
+func (a *Adapter) SetUpdateHook(tick func() error) {
+	if a == nil {
+		return
+	}
+	a.tick = tick
 }
 
 func (a *Adapter) renderParts(scenes []v3dashboard.Scene) ([]renderedPart, int, int, error) {
