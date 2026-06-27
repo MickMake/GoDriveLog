@@ -1,12 +1,6 @@
 # v3.5 Prompts
 
-These prompts are written for any coding agent. They avoid tool-specific language and should work whether the work is started from a short instruction like:
-
-```text
-do the next slice
-```
-
-or from a more explicit implementation request.
+These prompts define the v3.5 slice sequence.
 
 ## How to use
 
@@ -14,14 +8,14 @@ or from a more explicit implementation request.
 2. Find the first unchecked slice.
 3. Read `docs/v3.5/ReleasePlan.md`.
 4. Read the matching prompt below.
-5. Implement only that slice.
+5. Make only that slice's changes.
 6. Update implementation state and relevant docs.
-7. Do not implement future slices early.
+7. Do not make future slice changes early.
 
 ## Prompt files
 
 - `v3.5.0-movement-realism-docs.md`
-- `v3.5.1-manual-gauge-inspection-harness.md`
+- `v3.5.1-manual-gauge-inspection-harness.md` - legacy filename; this slice is Gauge Preview Mode
 - `v3.5.2-odometer-wraparound.md`
 - `v3.5.3-odometer-drum-slop.md`
 - `v3.5.4-finite-movement-lifecycle.md`
@@ -46,7 +40,12 @@ or from a more explicit implementation request.
 - Preserve v3.4 gauge semantics.
 - Do not add idle animation or ambient effects.
 - Do not add a general physics engine.
-- Keep odometer `smooth` and `click` base modes intact.
-- Add tests where behaviour can be asserted.
-- Add or update visual harness YAML only where useful.
+- Put new realism configuration under `realism`.
+- Keep realism config collapsed where possible.
+- `realism.movement` defaults to `click`.
+- Unknown realism options must produce a clear configuration error.
+- Known realism options used on unsupported gauge types must produce a clear configuration error.
+- Add checks where behaviour can be asserted.
+- Add or update Gauge Preview Mode YAML only where useful.
+- Preview files are normal YAML; do not add a special metadata layer.
 - Do not implement asset-only presentation work in these code slices.
