@@ -2,13 +2,16 @@ package v3dashboard
 
 import (
 	"fmt"
+	"math"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	v3assets "github.com/MickMake/GoDriveLog/internal/assets"
 	"github.com/MickMake/GoDriveLog/internal/config/v3config"
+	v3gauges "github.com/MickMake/GoDriveLog/internal/dashboard/gauges"
 	"github.com/MickMake/GoDriveLog/internal/sensors"
 )
 
@@ -227,6 +230,354 @@ func TestRuntimeRadialGaugeWidgetSceneSignatureChangesWithAngle(t *testing.T) {
 	}
 	if !changed {
 		t.Fatalf("expected changed radial angle to redraw")
+	}
+}
+
+func TestRuntimeGaugeMovementLifecycle(t *testing.T) {
+	packageDir := makeDashboardRadialGaugePackage(t)
+	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 1024, Height: 600}, Widgets: []v3config.WidgetConfig{{ID: "rpm", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{0, 0}, Scale: 1}}}}}}
+	runtime, err := NewRuntime(plan, testAssetRegistry())
+	if err != nil {
+		t.Fatalf("NewRuntime failed: %v", err)
+	}
+
+	now := time.Unix(100, 0)
+	runtime.clock = func() time.Time { return now }
+	runtime.movementPlanner = func(context movementContext, state sensors.SensorState, current widgetMovementState) time.Duration {
+		if context.DashboardID != "primary" || context.WidgetID != "rpm" || context.SensorID != "rpm" || context.GaugeType != v3gauges.TypeRadial {
+			t.Fatalf("unexpected movement planner context: %#v", context)
+		}
+		if state.Value != 7000 {
+			t.Fatalf("unexpected movement planner state value: %#v", state)
+		}
+		if !current.HasValue || current.DisplayValue != 3500 || current.TargetValue != 7000 {
+			t.Fatalf("unexpected current movement state: %#v", current)
+		}
+		return 200 * time.Millisecond
+	}
+
+	initialState := okState("rpm", 3500, "rpm")
+	initialState.UpdatedAt = now
+	_, changed, err := runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "rpm",
+		State:     initialState,
+		Timestamp: now,
+		ReadAt:    now,
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected initial gauge event to redraw")
+	}
+	if runtime.HasActiveMovement() {
+		t.Fatalf("did not expect initial static state to activate movement")
+	}
+
+	now = now.Add(10 * time.Millisecond)
+	targetState := okState("rpm", 7000, "rpm")
+	targetState.UpdatedAt = now
+	scenes, changed, err := runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "rpm",
+		State:     targetState,
+		Timestamp: now,
+		ReadAt:    now,
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected changed target value to start movement")
+	}
+	if !runtime.HasActiveMovement() {
+		t.Fatalf("expected active movement after target change")
+	}
+	movement := runtime.movements[movementKey("primary", "rpm")]
+	if movement.Phase != movementPhaseMoving || movement.PreviousDisplayValue != 3500 || movement.DisplayValue != 3500 || movement.TargetValue != 7000 {
+		t.Fatalf("unexpected movement start state: %#v", movement)
+	}
+	if movement.Duration != 200*time.Millisecond || !movement.StartedAt.Equal(now) {
+		t.Fatalf("unexpected movement timing: %#v", movement)
+	}
+	if got := requireWidget(t, scenes[0], "rpm").GaugeAngle; got != 0 {
+		t.Fatalf("expected start render to keep previous angle, got %v", got)
+	}
+
+	now = now.Add(100 * time.Millisecond)
+	scenes, changed, err = runtime.Tick(now)
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected active movement tick to redraw")
+	}
+	if !runtime.HasActiveMovement() {
+		t.Fatalf("expected movement to remain active mid-tick")
+	}
+	movement = runtime.movements[movementKey("primary", "rpm")]
+	if movement.Phase != movementPhaseMoving {
+		t.Fatalf("expected moving phase mid-tick, got %#v", movement)
+	}
+	if math.Abs(movement.DisplayValue-5250) > 0.001 {
+		t.Fatalf("expected halfway display value, got %#v", movement)
+	}
+	if got := requireWidget(t, scenes[0], "rpm").GaugeAngle; math.Abs(got-67.5) > 0.001 {
+		t.Fatalf("expected halfway angle 67.5, got %v", got)
+	}
+
+	now = now.Add(100 * time.Millisecond)
+	scenes, changed, err = runtime.Tick(now)
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected settling tick to redraw")
+	}
+	if !runtime.HasActiveMovement() {
+		t.Fatalf("expected settled phase to request one cleanup tick")
+	}
+	movement = runtime.movements[movementKey("primary", "rpm")]
+	if movement.Phase != movementPhaseSettled || movement.DisplayValue != 7000 || movement.TargetValue != 7000 {
+		t.Fatalf("unexpected settled state: %#v", movement)
+	}
+	if got := requireWidget(t, scenes[0], "rpm").GaugeAngle; math.Abs(got-135) > 0.001 {
+		t.Fatalf("expected settled angle 135, got %v", got)
+	}
+
+	now = now.Add(1 * time.Millisecond)
+	scenes, changed, err = runtime.Tick(now)
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected cleanup tick to finish movement lifecycle")
+	}
+	if runtime.HasActiveMovement() {
+		t.Fatalf("expected static phase after cleanup tick")
+	}
+	movement = runtime.movements[movementKey("primary", "rpm")]
+	if movement.Phase != movementPhaseStatic || movement.DisplayValue != 7000 || movement.TargetValue != 7000 {
+		t.Fatalf("unexpected final static movement state: %#v", movement)
+	}
+	if got := requireWidget(t, scenes[0], "rpm").GaugeAngle; math.Abs(got-135) > 0.001 {
+		t.Fatalf("expected final static angle 135, got %v", got)
+	}
+
+	_, changed, err = runtime.ApplyEvent(sensorEvent("rpm", okState("rpm", 7000, "rpm")))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if changed {
+		t.Fatalf("expected unchanged target value to skip redraw once static")
+	}
+}
+
+func TestRuntimeGaugeMovementUsesEventTimestamp(t *testing.T) {
+	runtime := testRadialMovementRuntime(t)
+	wallClock := time.Unix(500, 0)
+	runtime.clock = func() time.Time { return wallClock }
+	runtime.movementPlanner = func(context movementContext, state sensors.SensorState, current widgetMovementState) time.Duration {
+		return 200 * time.Millisecond
+	}
+
+	start := time.Unix(100, 0)
+	_, _, err := runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "rpm",
+		State:     okState("rpm", 0, "rpm"),
+		Timestamp: start,
+		ReadAt:    start,
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+
+	eventTime := start.Add(10 * time.Millisecond)
+	_, changed, err := runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "rpm",
+		State:     okState("rpm", 3500, "rpm"),
+		Timestamp: eventTime,
+		ReadAt:    wallClock,
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected movement-start event to redraw")
+	}
+
+	movement := runtime.movements[movementKey("primary", "rpm")]
+	if !movement.StartedAt.Equal(eventTime) {
+		t.Fatalf("StartedAt = %v, want event timestamp %v", movement.StartedAt, eventTime)
+	}
+}
+
+func TestRuntimeGaugeMovementFallsBackToReadAt(t *testing.T) {
+	runtime := testRadialMovementRuntime(t)
+	wallClock := time.Unix(500, 0)
+	runtime.clock = func() time.Time { return wallClock }
+	runtime.movementPlanner = func(context movementContext, state sensors.SensorState, current widgetMovementState) time.Duration {
+		return 200 * time.Millisecond
+	}
+
+	start := time.Unix(100, 0)
+	_, _, err := runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "rpm",
+		State:     okState("rpm", 0, "rpm"),
+		Timestamp: start,
+		ReadAt:    start,
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+
+	readAt := start.Add(10 * time.Millisecond)
+	_, changed, err := runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:     sensors.EventKindValueChange,
+		SensorID: "rpm",
+		State:    okState("rpm", 3500, "rpm"),
+		ReadAt:   readAt,
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected movement-start event to redraw")
+	}
+
+	movement := runtime.movements[movementKey("primary", "rpm")]
+	if !movement.StartedAt.Equal(readAt) {
+		t.Fatalf("StartedAt = %v, want ReadAt %v", movement.StartedAt, readAt)
+	}
+}
+
+func TestRuntimeGaugeMovementFallsBackToRuntimeClock(t *testing.T) {
+	runtime := testRadialMovementRuntime(t)
+	wallClock := time.Unix(500, 0)
+	runtime.clock = func() time.Time { return wallClock }
+	runtime.movementPlanner = func(context movementContext, state sensors.SensorState, current widgetMovementState) time.Duration {
+		return 200 * time.Millisecond
+	}
+
+	start := time.Unix(100, 0)
+	_, _, err := runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "rpm",
+		State:     okState("rpm", 0, "rpm"),
+		Timestamp: start,
+		ReadAt:    start,
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+
+	_, changed, err := runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:     sensors.EventKindValueChange,
+		SensorID: "rpm",
+		State:    okState("rpm", 3500, "rpm"),
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected movement-start event to redraw")
+	}
+
+	movement := runtime.movements[movementKey("primary", "rpm")]
+	if !movement.StartedAt.Equal(wallClock) {
+		t.Fatalf("StartedAt = %v, want runtime wall clock %v", movement.StartedAt, wallClock)
+	}
+}
+
+func TestRuntimeGaugeMovementRetargetsFromAdvancedDisplayPosition(t *testing.T) {
+	runtime := testRadialMovementRuntime(t)
+	runtime.movementPlanner = func(context movementContext, state sensors.SensorState, current widgetMovementState) time.Duration {
+		return 200 * time.Millisecond
+	}
+
+	start := time.Unix(100, 0)
+	_, _, err := runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "rpm",
+		State:     okState("rpm", 0, "rpm"),
+		Timestamp: start,
+		ReadAt:    start,
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+
+	firstTarget := start.Add(10 * time.Millisecond)
+	scenes, changed, err := runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "rpm",
+		State:     okState("rpm", 3500, "rpm"),
+		Timestamp: firstTarget,
+		ReadAt:    firstTarget,
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected first movement leg to redraw")
+	}
+	if got := requireWidget(t, scenes[0], "rpm").GaugeAngle; math.Abs(got+135) > 0.001 {
+		t.Fatalf("expected first leg to start at angle -135, got %v", got)
+	}
+
+	retargetAt := firstTarget.Add(100 * time.Millisecond)
+	scenes, changed, err = runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "rpm",
+		State:     okState("rpm", 7000, "rpm"),
+		Timestamp: retargetAt,
+		ReadAt:    retargetAt,
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected retarget event to redraw")
+	}
+
+	movement := runtime.movements[movementKey("primary", "rpm")]
+	if movement.Phase != movementPhaseMoving {
+		t.Fatalf("expected retargeted movement to remain active, got %#v", movement)
+	}
+	if math.Abs(movement.PreviousDisplayValue-1750) > 0.001 || math.Abs(movement.DisplayValue-1750) > 0.001 {
+		t.Fatalf("expected retarget to continue from advanced halfway display, got %#v", movement)
+	}
+	if movement.TargetValue != 7000 || !movement.StartedAt.Equal(retargetAt) {
+		t.Fatalf("unexpected retarget timing/state: %#v", movement)
+	}
+	if got := requireWidget(t, scenes[0], "rpm").GaugeAngle; math.Abs(got+67.5) > 0.001 {
+		t.Fatalf("expected retarget render to continue at angle -67.5, got %v", got)
+	}
+
+	scenes, changed, err = runtime.Tick(retargetAt.Add(200 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected final target tick to redraw")
+	}
+	if got := requireWidget(t, scenes[0], "rpm").GaugeAngle; math.Abs(got-135) > 0.001 {
+		t.Fatalf("expected final target angle 135, got %v", got)
+	}
+
+	scenes, changed, err = runtime.Tick(retargetAt.Add(201 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected cleanup tick after retarget to redraw")
+	}
+	if runtime.HasActiveMovement() {
+		t.Fatalf("expected retargeted movement to return to static after cleanup")
 	}
 }
 
@@ -748,6 +1099,17 @@ layers:
   segments: levels/rpm_{percent:03}.png
   glass: glass.png
 `
+}
+
+func testRadialMovementRuntime(t *testing.T) *Runtime {
+	t.Helper()
+	packageDir := makeDashboardRadialGaugePackage(t)
+	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 1024, Height: 600}, Widgets: []v3config.WidgetConfig{{ID: "rpm", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{0, 0}, Scale: 1}}}}}}
+	runtime, err := NewRuntime(plan, testAssetRegistry())
+	if err != nil {
+		t.Fatalf("NewRuntime failed: %v", err)
+	}
+	return runtime
 }
 
 func firstPartCharacter(widget Widget, character string) Part {

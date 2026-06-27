@@ -6,6 +6,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	v3assets "github.com/MickMake/GoDriveLog/internal/assets"
 	"github.com/MickMake/GoDriveLog/internal/config/v3config"
@@ -33,11 +34,42 @@ const (
 // Runtime owns selected v3 dashboard scene state. It consumes sensor state/events
 // produced by the sensor runtime; it never reads endpoint or OBD code directly.
 type Runtime struct {
-	dashboards []Dashboard
-	states     map[string]sensors.SensorState
-	signatures map[string]string
-	segments   map[string]v3gauges.SegmentedSelection
+	dashboards      []Dashboard
+	states          map[string]sensors.SensorState
+	signatures      map[string]string
+	segments        map[string]v3gauges.SegmentedSelection
+	movements       map[string]widgetMovementState
+	movementPlanner movementPlanner
+	clock           func() time.Time
 }
+
+type movementPhase string
+
+const (
+	movementPhaseStatic      movementPhase = "static"
+	movementPhaseValueChange movementPhase = "value_changed"
+	movementPhaseMoving      movementPhase = "moving"
+	movementPhaseSettled     movementPhase = "settled"
+)
+
+type widgetMovementState struct {
+	Phase                movementPhase
+	PreviousDisplayValue float64
+	DisplayValue         float64
+	TargetValue          float64
+	Duration             time.Duration
+	StartedAt            time.Time
+	HasValue             bool
+}
+
+type movementContext struct {
+	DashboardID string
+	WidgetID    string
+	SensorID    string
+	GaugeType   string
+}
+
+type movementPlanner func(movementContext, sensors.SensorState, widgetMovementState) time.Duration
 
 type Dashboard struct {
 	ID     string
@@ -115,6 +147,8 @@ func NewRuntime(plan v3config.RuntimePlan, registry *v3assets.Registry) (*Runtim
 		states:     map[string]sensors.SensorState{},
 		signatures: map[string]string{},
 		segments:   map[string]v3gauges.SegmentedSelection{},
+		movements:  map[string]widgetMovementState{},
+		clock:      time.Now,
 	}, nil
 }
 
@@ -148,6 +182,7 @@ func (r *Runtime) ApplyEvent(event sensors.SensorEvent) ([]Scene, bool, error) {
 	if r == nil {
 		return nil, false, fmt.Errorf("v3 dashboard runtime is nil")
 	}
+	now := eventTime(event, r.now())
 	if event.SensorID != "" {
 		state := event.State
 		if state.ID == "" {
@@ -156,11 +191,11 @@ func (r *Runtime) ApplyEvent(event sensors.SensorEvent) ([]Scene, bool, error) {
 		r.states[event.SensorID] = state
 	}
 
-	scenes, err := r.Snapshot()
+	scenes, movementChanged, err := r.snapshotAt(now)
 	if err != nil {
 		return nil, false, err
 	}
-	changed := false
+	changed := movementChanged
 	for _, scene := range scenes {
 		signature := sceneSignature(scene)
 		if r.signatures[scene.DashboardID] != signature {
@@ -174,19 +209,76 @@ func (r *Runtime) ApplyEvent(event sensors.SensorEvent) ([]Scene, bool, error) {
 	return scenes, true, nil
 }
 
+func eventTime(event sensors.SensorEvent, fallback time.Time) time.Time {
+	if !event.Timestamp.IsZero() {
+		return event.Timestamp
+	}
+	if !event.ReadAt.IsZero() {
+		return event.ReadAt
+	}
+	return fallback
+}
+
 func (r *Runtime) Snapshot() ([]Scene, error) {
 	if r == nil {
 		return nil, fmt.Errorf("v3 dashboard runtime is nil")
 	}
+	scenes, _, err := r.snapshotAt(r.now())
+	return scenes, err
+}
+
+func (r *Runtime) Tick(now time.Time) ([]Scene, bool, error) {
+	if r == nil {
+		return nil, false, fmt.Errorf("v3 dashboard runtime is nil")
+	}
+	if now.IsZero() {
+		now = r.now()
+	}
+	scenes, movementChanged, err := r.snapshotAt(now)
+	if err != nil {
+		return nil, false, err
+	}
+	changed := movementChanged
+	for _, scene := range scenes {
+		signature := sceneSignature(scene)
+		if r.signatures[scene.DashboardID] != signature {
+			r.signatures[scene.DashboardID] = signature
+			changed = true
+		}
+	}
+	if !changed {
+		return nil, false, nil
+	}
+	return scenes, true, nil
+}
+
+func (r *Runtime) HasActiveMovement() bool {
+	if r == nil {
+		return false
+	}
+	for _, movement := range r.movements {
+		if movementActive(movement) {
+			return true
+		}
+	}
+	return false
+}
+
+func (r *Runtime) snapshotAt(now time.Time) ([]Scene, bool, error) {
+	if r == nil {
+		return nil, false, fmt.Errorf("v3 dashboard runtime is nil")
+	}
 	scenes := make([]Scene, 0, len(r.dashboards))
+	movementChanged := false
 	for _, dashboard := range r.dashboards {
-		scene, err := dashboard.render(r.states, r.segments)
+		scene, dashboardMovementChanged, err := dashboard.render(r.states, r.segments, r.movements, r.movementPlanner, now)
 		if err != nil {
-			return nil, err
+			return nil, false, err
 		}
 		scenes = append(scenes, scene)
+		movementChanged = movementChanged || dashboardMovementChanged
 	}
-	return scenes, nil
+	return scenes, movementChanged, nil
 }
 
 func (d Dashboard) Validate() error {
@@ -197,7 +289,7 @@ func (d Dashboard) Validate() error {
 		if strings.TrimSpace(widget.ID) == "" {
 			return fmt.Errorf("dashboard %q has widget with empty id", d.ID)
 		}
-		if _, err := d.renderWidget(widget, map[string]sensors.SensorState{}, nil); err != nil && !isMissingSensorOnly(err) {
+		if _, _, err := d.renderWidget(widget, map[string]sensors.SensorState{}, nil, nil, nil, time.Time{}); err != nil && !isMissingSensorOnly(err) {
 			return err
 		}
 	}
@@ -205,22 +297,25 @@ func (d Dashboard) Validate() error {
 }
 
 func (d Dashboard) Render(states map[string]sensors.SensorState) (Scene, error) {
-	return d.render(states, nil)
+	scene, _, err := d.render(states, nil, nil, nil, time.Time{})
+	return scene, err
 }
 
-func (d Dashboard) render(states map[string]sensors.SensorState, segments map[string]v3gauges.SegmentedSelection) (Scene, error) {
+func (d Dashboard) render(states map[string]sensors.SensorState, segments map[string]v3gauges.SegmentedSelection, movements map[string]widgetMovementState, planner movementPlanner, now time.Time) (Scene, bool, error) {
 	scene := Scene{DashboardID: d.ID, Display: d.Config.Display, Size: d.Config.Size}
+	movementChanged := false
 	for _, configWidget := range d.Config.Widgets {
-		widget, err := d.renderWidget(configWidget, states, segments)
+		widget, widgetMovementChanged, err := d.renderWidget(configWidget, states, segments, movements, planner, now)
 		if err != nil {
-			return Scene{}, err
+			return Scene{}, false, err
 		}
 		scene.Widgets = append(scene.Widgets, widget)
+		movementChanged = movementChanged || widgetMovementChanged
 	}
-	return scene, nil
+	return scene, movementChanged, nil
 }
 
-func (d Dashboard) renderWidget(configWidget v3config.WidgetConfig, states map[string]sensors.SensorState, segments map[string]v3gauges.SegmentedSelection) (Widget, error) {
+func (d Dashboard) renderWidget(configWidget v3config.WidgetConfig, states map[string]sensors.SensorState, segments map[string]v3gauges.SegmentedSelection, movements map[string]widgetMovementState, planner movementPlanner, now time.Time) (Widget, bool, error) {
 	widget := Widget{
 		ID:       configWidget.ID,
 		Type:     configWidget.Type,
@@ -233,7 +328,7 @@ func (d Dashboard) renderWidget(configWidget v3config.WidgetConfig, states map[s
 	case v3config.WidgetTypeImage:
 		set, ok := d.Assets.ImageSet(configWidget.Asset)
 		if !ok {
-			return Widget{}, fmt.Errorf("dashboard %q widget %q asset %q must reference assets.image_sets", d.ID, configWidget.ID, configWidget.Asset)
+			return Widget{}, false, fmt.Errorf("dashboard %q widget %q asset %q must reference assets.image_sets", d.ID, configWidget.ID, configWidget.Asset)
 		}
 		widget.Status = sensors.StatusOK
 		widget.Parts = appendImageSetParts(widget.Parts, set)
@@ -243,16 +338,16 @@ func (d Dashboard) renderWidget(configWidget v3config.WidgetConfig, states map[s
 		widget.Error = state.Error
 		set, ok := d.Assets.DigitSet(configWidget.Asset)
 		if !ok {
-			return Widget{}, fmt.Errorf("dashboard %q widget %q asset %q must reference assets.digit_sets", d.ID, configWidget.ID, configWidget.Asset)
+			return Widget{}, false, fmt.Errorf("dashboard %q widget %q asset %q must reference assets.digit_sets", d.ID, configWidget.ID, configWidget.Asset)
 		}
 		if state.Status != sensors.StatusOK {
 			widget.Parts = appendDigitLayerParts(widget.Parts, set, configWidget.Digits)
-			return widget, nil
+			return widget, false, nil
 		}
 		text := formatValue(configWidget.Format, state.Value)
 		parts, err := digitParts(set, text, configWidget.Digits, d.ID, configWidget.ID, configWidget.Asset)
 		if err != nil {
-			return Widget{}, err
+			return Widget{}, false, err
 		}
 		widget.Text = text
 		widget.Parts = parts
@@ -262,11 +357,11 @@ func (d Dashboard) renderWidget(configWidget v3config.WidgetConfig, states map[s
 		widget.Error = state.Error
 		set, ok := d.Assets.BarSet(configWidget.Asset)
 		if !ok {
-			return Widget{}, fmt.Errorf("dashboard %q widget %q asset %q must reference assets.bar_sets", d.ID, configWidget.ID, configWidget.Asset)
+			return Widget{}, false, fmt.Errorf("dashboard %q widget %q asset %q must reference assets.bar_sets", d.ID, configWidget.ID, configWidget.Asset)
 		}
 		parts, err := barParts(set, configWidget, state, d.ID)
 		if err != nil {
-			return Widget{}, err
+			return Widget{}, false, err
 		}
 		widget.Parts = parts
 	case v3config.WidgetTypeFrameGauge:
@@ -275,11 +370,11 @@ func (d Dashboard) renderWidget(configWidget v3config.WidgetConfig, states map[s
 		widget.Error = state.Error
 		set, ok := d.Assets.FrameSet(configWidget.Asset)
 		if !ok {
-			return Widget{}, fmt.Errorf("dashboard %q widget %q asset %q must reference assets.frame_sets", d.ID, configWidget.ID, configWidget.Asset)
+			return Widget{}, false, fmt.Errorf("dashboard %q widget %q asset %q must reference assets.frame_sets", d.ID, configWidget.ID, configWidget.Asset)
 		}
 		parts, err := frameGaugeParts(set, configWidget, state, d.ID)
 		if err != nil {
-			return Widget{}, err
+			return Widget{}, false, err
 		}
 		widget.Parts = parts
 	case v3config.WidgetTypeIndicator:
@@ -288,16 +383,22 @@ func (d Dashboard) renderWidget(configWidget v3config.WidgetConfig, states map[s
 		widget.Error = state.Error
 		set, ok := d.Assets.IndicatorSet(configWidget.Asset)
 		if !ok {
-			return Widget{}, fmt.Errorf("dashboard %q widget %q asset %q must reference assets.indicator_sets", d.ID, configWidget.ID, configWidget.Asset)
+			return Widget{}, false, fmt.Errorf("dashboard %q widget %q asset %q must reference assets.indicator_sets", d.ID, configWidget.ID, configWidget.Asset)
 		}
 		indicatorState := indicatorStateFor(state)
 		widget.Parts = appendIndicatorParts(widget.Parts, set, indicatorState)
 	case v3config.WidgetTypeGauge:
 		pkg, err := gaugePackageLoader(d.Assets.SearchPaths(), configWidget.Gauge)
 		if err != nil {
-			return Widget{}, fmt.Errorf("dashboard %q widget %q gauge %q could not load package: %w", d.ID, configWidget.ID, configWidget.Gauge, err)
+			return Widget{}, false, fmt.Errorf("dashboard %q widget %q gauge %q could not load package: %w", d.ID, configWidget.ID, configWidget.Gauge, err)
 		}
 		state := stateForSensor(pkg.Sensor, states)
+		state, movementChanged := resolveMovementState(movements, movementKey(d.ID, configWidget.ID), movementContext{
+			DashboardID: d.ID,
+			WidgetID:    configWidget.ID,
+			SensorID:    pkg.Sensor,
+			GaugeType:   pkg.Type,
+		}, state, planner, now)
 		var gaugeScene v3gauges.Scene
 		switch pkg.Type {
 		case v3gauges.TypeNumeric:
@@ -328,17 +429,118 @@ func (d Dashboard) renderWidget(configWidget v3config.WidgetConfig, states map[s
 				}
 			}
 		default:
-			return Widget{}, fmt.Errorf("dashboard %q widget %q gauge package type %q is not supported by dashboard scene runtime", d.ID, configWidget.ID, pkg.Type)
+			return Widget{}, false, fmt.Errorf("dashboard %q widget %q gauge package type %q is not supported by dashboard scene runtime", d.ID, configWidget.ID, pkg.Type)
 		}
 		if err != nil {
-			return Widget{}, fmt.Errorf("dashboard %q widget %q: %w", d.ID, configWidget.ID, err)
+			return Widget{}, false, fmt.Errorf("dashboard %q widget %q: %w", d.ID, configWidget.ID, err)
 		}
 		applyGaugeScene(&widget, gaugeScene)
+		return widget, movementChanged, nil
 	default:
-		return Widget{}, fmt.Errorf("dashboard %q widget %q type %q is not supported", d.ID, configWidget.ID, configWidget.Type)
+		return Widget{}, false, fmt.Errorf("dashboard %q widget %q type %q is not supported", d.ID, configWidget.ID, configWidget.Type)
 	}
 
-	return widget, nil
+	return widget, false, nil
+}
+
+func movementKey(dashboardID string, widgetID string) string {
+	return dashboardID + "|" + widgetID
+}
+
+func resolveMovementState(movements map[string]widgetMovementState, key string, context movementContext, source sensors.SensorState, planner movementPlanner, now time.Time) (sensors.SensorState, bool) {
+	if movements == nil {
+		return source, false
+	}
+	if source.Status != sensors.StatusOK {
+		previous, hadMovement := movements[key]
+		if hadMovement {
+			delete(movements, key)
+		}
+		return source, hadMovement && movementActive(previous)
+	}
+	movement := movements[key]
+	previous := movement
+	if !movement.HasValue {
+		movement = widgetMovementState{
+			Phase:                movementPhaseStatic,
+			PreviousDisplayValue: source.Value,
+			DisplayValue:         source.Value,
+			TargetValue:          source.Value,
+			HasValue:             true,
+		}
+	} else if source.Value != movement.TargetValue {
+		if movementActive(movement) {
+			movement = advanceMovementState(movement, now)
+		}
+		movement.PreviousDisplayValue = movement.DisplayValue
+		movement.TargetValue = source.Value
+		duration := time.Duration(0)
+		if planner != nil {
+			duration = planner(context, source, movement)
+		}
+		if duration <= 0 || movement.DisplayValue == source.Value {
+			movement.DisplayValue = source.Value
+			movement.Phase = movementPhaseStatic
+			movement.Duration = 0
+			movement.StartedAt = time.Time{}
+		} else {
+			movement.Duration = duration
+			movement.StartedAt = now
+			movement.Phase = movementPhaseValueChange
+		}
+	}
+	movement = advanceMovementState(movement, now)
+	movements[key] = movement
+	source.Value = movement.DisplayValue
+	source.TypedValue = sensors.NewNumericValue(source.Value, source.Unit)
+	return source, movementActive(movement) != movementActive(previous)
+}
+
+func advanceMovementState(movement widgetMovementState, now time.Time) widgetMovementState {
+	switch movement.Phase {
+	case movementPhaseValueChange:
+		movement.Phase = movementPhaseMoving
+	case movementPhaseMoving:
+		if movement.Duration <= 0 || now.IsZero() || !movement.HasValue {
+			movement.DisplayValue = movement.TargetValue
+			movement.Phase = movementPhaseSettled
+			return movement
+		}
+		elapsed := now.Sub(movement.StartedAt)
+		if elapsed < 0 {
+			elapsed = 0
+		}
+		progress := float64(elapsed) / float64(movement.Duration)
+		if progress >= 1 {
+			movement.DisplayValue = movement.TargetValue
+			movement.Phase = movementPhaseSettled
+			return movement
+		}
+		if progress < 0 {
+			progress = 0
+		}
+		movement.DisplayValue = movement.PreviousDisplayValue + ((movement.TargetValue - movement.PreviousDisplayValue) * progress)
+	case movementPhaseSettled:
+		movement.Phase = movementPhaseStatic
+		movement.DisplayValue = movement.TargetValue
+	}
+	return movement
+}
+
+func movementActive(movement widgetMovementState) bool {
+	switch movement.Phase {
+	case movementPhaseValueChange, movementPhaseMoving, movementPhaseSettled:
+		return true
+	default:
+		return false
+	}
+}
+
+func (r *Runtime) now() time.Time {
+	if r != nil && r.clock != nil {
+		return r.clock()
+	}
+	return time.Now()
 }
 
 func applyGaugeScene(widget *Widget, scene v3gauges.Scene) {
