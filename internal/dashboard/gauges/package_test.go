@@ -200,6 +200,37 @@ odometer:
 	}
 }
 
+func TestLoadPackageLoadsOdometerDrumSlopRealism(t *testing.T) {
+	root := makeGaugeFixtures(t)
+	packageDir := filepath.Join(root, "assets", "gauges", "odometer", "slop")
+	writeGaugeYAML(t, packageDir, `id: trip_odometer
+type: odometer
+sensor: trip_distance
+realism:
+  drum_slop: [1, -2]
+size:
+  width: 240
+  height: 80
+odometer:
+  wheels:
+    - strip: ../trip/digits.png
+      position: [10, 12]
+      window: { width: 24, height: 36 }
+    - strip: ../trip/red_digits.png
+      position: [40, 12]
+      window: { width: 24, height: 36 }
+      role: sub_unit
+`)
+
+	pkg, err := LoadPackage(packageDir)
+	if err != nil {
+		t.Fatalf("LoadPackage returned error: %v", err)
+	}
+	if len(pkg.Realism.DrumSlop) != 2 || pkg.Realism.DrumSlop[0] != 1 || pkg.Realism.DrumSlop[1] != -2 {
+		t.Fatalf("drum slop realism = %#v, want [1 -2]", pkg.Realism.DrumSlop)
+	}
+}
+
 func TestLoadPackageLoadsIndicatorGauge(t *testing.T) {
 	root := makeGaugeFixtures(t)
 	packageDir := filepath.Join(root, "assets", "gauges", "indicator", "check_engine")
@@ -427,6 +458,103 @@ value_map:
 		t.Fatal("LoadPackage returned nil error, want error")
 	}
 	assertErrorContains(t, err, "wraparound")
+}
+
+func TestLoadPackageRejectsInvalidOdometerDrumSlop(t *testing.T) {
+	tests := []struct {
+		name        string
+		realismYAML string
+		want        string
+	}{
+		{
+			name: "wrong_wheel_count",
+			realismYAML: `realism:
+  drum_slop: [1]
+`,
+			want: "exactly one offset per odometer wheel",
+		},
+		{
+			name: "too_large",
+			realismYAML: `realism:
+  drum_slop: [10, 0]
+`,
+			want: "exceeds",
+		},
+		{
+			name: "wrong_type",
+			realismYAML: `realism:
+  drum_slop: [1]
+`,
+			want: "only supported for odometer",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			root := makeGaugeFixtures(t)
+			packageDir := filepath.Join(root, "assets", "gauges", "odometer", test.name)
+			yamlText := `id: trip_odometer
+type: odometer
+sensor: trip_distance
+size:
+  width: 240
+  height: 80
+odometer:
+  wheels:
+    - strip: ../trip/digits.png
+      position: [10, 12]
+      window: { width: 24, height: 36 }
+    - strip: ../trip/red_digits.png
+      position: [40, 12]
+      window: { width: 24, height: 36 }
+      role: sub_unit
+`
+			if test.name == "wrong_type" {
+				packageDir = filepath.Join(root, "assets", "gauges", "radial", test.name)
+				yamlText = `id: bad_radial
+type: radial
+sensor: rpm
+` + test.realismYAML + `size:
+  width: 100
+  height: 100
+layers:
+  needle: ../../shared/radial/simple_rpm/needle.png
+pivot:
+  face: { x: 0.5, y: 0.5 }
+  needle: { x: 0.5, y: 0.9 }
+value_map:
+  min: 0
+  max: 100
+  start_angle: -90
+  end_angle: 90
+`
+			} else {
+				yamlText = `id: trip_odometer
+type: odometer
+sensor: trip_distance
+` + test.realismYAML + `size:
+  width: 240
+  height: 80
+odometer:
+  wheels:
+    - strip: ../trip/digits.png
+      position: [10, 12]
+      window: { width: 24, height: 36 }
+    - strip: ../trip/red_digits.png
+      position: [40, 12]
+      window: { width: 24, height: 36 }
+      role: sub_unit
+`
+			}
+			writeGaugeYAML(t, packageDir, yamlText)
+
+			_, err := LoadPackage(packageDir)
+			if err == nil {
+				t.Fatal("LoadPackage returned nil error, want error")
+			}
+			assertErrorContains(t, err, test.want)
+		})
+	}
 }
 
 func TestLoadPackageRejectsMissingBarLevelLayer(t *testing.T) {

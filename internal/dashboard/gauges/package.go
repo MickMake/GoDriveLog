@@ -86,6 +86,7 @@ type ValueMap struct {
 
 type Realism struct {
 	Wraparound *bool `yaml:"wraparound,omitempty"`
+	DrumSlop   []int `yaml:"drum_slop,omitempty"`
 }
 
 type Odometer struct {
@@ -386,6 +387,23 @@ func validateOdometer(odometer Odometer) error {
 func validateRealism(pkg Package) error {
 	if pkg.Realism.Wraparound != nil && pkg.Type != TypeOdometer {
 		return fmt.Errorf("realism wraparound is only supported for odometer gauges")
+	}
+	if len(pkg.Realism.DrumSlop) != 0 {
+		if pkg.Type != TypeOdometer {
+			return fmt.Errorf("realism drum_slop is only supported for odometer gauges")
+		}
+		if len(pkg.Realism.DrumSlop) != len(pkg.Odometer.Wheels) {
+			return fmt.Errorf("realism drum_slop must define exactly one offset per odometer wheel")
+		}
+		for index, slop := range pkg.Realism.DrumSlop {
+			maxOffset := pkg.Odometer.Wheels[index].Window.Height / 4
+			if maxOffset < 1 {
+				maxOffset = 1
+			}
+			if slop < -maxOffset || slop > maxOffset {
+				return fmt.Errorf("realism drum_slop wheel %d offset %d exceeds +/- %d", index, slop, maxOffset)
+			}
+		}
 	}
 	return nil
 }
