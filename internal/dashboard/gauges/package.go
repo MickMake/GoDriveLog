@@ -95,21 +95,31 @@ type Realism struct {
 }
 
 func (r *Realism) UnmarshalYAML(node *yaml.Node) error {
+	if node.Kind != yaml.MappingNode {
+		return fmt.Errorf("realism must be a mapping")
+	}
+	allowedKeys := map[string]bool{
+		"wraparound":      true,
+		"movement_policy": true,
+		"drum_slop":       true,
+	}
+	for index := 0; index+1 < len(node.Content); index += 2 {
+		key := node.Content[index].Value
+		if !allowedKeys[key] {
+			return fmt.Errorf("realism field %q is not supported", key)
+		}
+		if key == "drum_slop" {
+			r.DrumSlopSet = true
+		}
+	}
 	type rawRealism Realism
 	var decoded rawRealism
 	if err := node.Decode(&decoded); err != nil {
 		return err
 	}
+	drumSlopSet := r.DrumSlopSet
 	*r = Realism(decoded)
-	if node.Kind != yaml.MappingNode {
-		return nil
-	}
-	for index := 0; index+1 < len(node.Content); index += 2 {
-		if node.Content[index].Value == "drum_slop" {
-			r.DrumSlopSet = true
-			break
-		}
-	}
+	r.DrumSlopSet = drumSlopSet
 	return nil
 }
 
