@@ -1,10 +1,10 @@
 # v3.5 Implementation State
 
-Status: v3.5.4 finite movement lifecycle implemented
+Status: v3.5.5 shared movement policy implemented
 
-Current target: v3.5.5 shared movement policy
+Current target: v3.5.6 odometer eased roll
 
-Current branch: `codex/v3.5.4-finite-movement-lifecycle`
+Current branch: `codex/v3.5.5-shared-movement-policy`
 
 ## Scope
 
@@ -22,6 +22,8 @@ The final v3.5 tail also includes two small radial-only display refinements that
 - `realism.movement` supports `click` and `smooth`.
 - If `realism.movement` is omitted, it defaults to `click`.
 - `click` means the display updates directly to the next value unless another enabled realism option adds visible movement.
+- `realism.movement_policy` controls finite transition shaping and supports `immediate`, `linear`, and `ease_out`.
+- If `realism.movement_policy` is omitted, it defaults to `immediate`.
 - Existing top-level `movement` may remain supported for backwards compatibility, but new v3.5 config should use `realism.movement`.
 - Unknown realism options must fail config loading.
 - Known realism options used on unsupported gauge types must fail config loading.
@@ -89,7 +91,7 @@ Not allowed in v3.5:
 - [x] v3.5.2 odometer wraparound
 - [x] v3.5.3 odometer drum slop
 - [x] v3.5.4 finite movement lifecycle
-- [ ] v3.5.5 shared movement policy
+- [x] v3.5.5 shared movement policy
 - [ ] v3.5.6 odometer eased roll
 - [ ] v3.5.7 odometer carry-drag / 9-drag
 - [ ] v3.5.8 radial damping
