@@ -3,8 +3,12 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"math"
+	"os"
+	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 
@@ -16,6 +20,7 @@ import (
 	"github.com/MickMake/GoDriveLog/internal/sensors"
 	ebitenui "github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
+	"gopkg.in/yaml.v3"
 )
 
 type previewGaugeCandidate struct {
@@ -23,7 +28,7 @@ type previewGaugeCandidate struct {
 	Widget      v3config.WidgetConfig
 }
 
-type previewGaugeSpec struct {
+type GaugePreviewSpec struct {
 	Runtime       *v3dashboard.Runtime
 	Title         string
 	SensorID      string
@@ -59,10 +64,14 @@ type gaugePreviewController struct {
 }
 
 func runV3EbitenPreviewCommand(options dashboardPreviewOptions) error {
-	spec, err := buildGaugePreviewSpec(options)
+	spec, err := LoadGaugePreviewFile(options.ConfigPath, options.GaugeID)
 	if err != nil {
 		return err
 	}
+	if options.InitialValue != nil {
+		spec.InitialValue = clampPreviewValue(*options.InitialValue, spec.Min, spec.Max)
+	}
+	spec.Step, spec.FineStep, spec.CoarseStep = previewStepSizes(spec.Min, spec.Max, options.Step, options.FineStep, options.CoarseStep)
 
 	ctx, stop := newV3Context(0)
 	defer stop()
@@ -85,94 +94,304 @@ func runV3EbitenPreviewCommand(options dashboardPreviewOptions) error {
 		coarseStep:   spec.CoarseStep,
 		currentValue: spec.InitialValue,
 	}
-	if err := controller.renderValue(spec.InitialValue); err != nil {
-		return err
-	}
 	adapter.SetUpdateHook(controller.tick)
 
-	runErr := adapter.Run(ctx, spec.Title)
+	runErr := v3dashboard.WithGaugePackageLoader(loadPreviewGaugePackageWithSearchPaths, func() error {
+		if err := controller.renderValue(spec.InitialValue); err != nil {
+			return err
+		}
+		return adapter.Run(ctx, spec.Title)
+	})
 	stop()
 	return ignoreContextStop(runErr)
 }
 
-func buildGaugePreviewSpec(options dashboardPreviewOptions) (previewGaugeSpec, error) {
-	cfg, err := v3config.LoadFile(options.ConfigPath)
+func LoadGaugePreviewFile(path string, gaugeID string) (GaugePreviewSpec, error) {
+	configPath, cfg, err := loadGaugePreviewConfig(path)
 	if err != nil {
-		return previewGaugeSpec{}, fmt.Errorf("load dashboard preview %q: %w", options.ConfigPath, err)
+		return GaugePreviewSpec{}, err
 	}
 
 	vehicleIDs := sortedVehicleIDs(cfg.Vehicles)
 	if len(vehicleIDs) != 1 {
-		return previewGaugeSpec{}, fmt.Errorf("dashboard preview %q must define exactly one vehicle; found: %s", options.ConfigPath, strings.Join(vehicleIDs, ", "))
+		return GaugePreviewSpec{}, fmt.Errorf("dashboard preview %q must define exactly one vehicle; found: %s", configPath, strings.Join(vehicleIDs, ", "))
+	}
+	vehicleID := vehicleIDs[0]
+	selectedDashboards, err := previewSelectedDashboards(cfg, vehicleID)
+	if err != nil {
+		return GaugePreviewSpec{}, err
 	}
 
-	plan, err := v3config.Resolve(cfg, vehicleIDs[0])
+	candidate, err := selectPreviewGauge(selectedDashboards, strings.TrimSpace(gaugeID))
 	if err != nil {
-		return previewGaugeSpec{}, fmt.Errorf("resolve dashboard preview %q: %w", options.ConfigPath, err)
+		return GaugePreviewSpec{}, err
 	}
 
-	searchPaths, err := v3assets.DefaultSearchPaths(options.ConfigPath, plan.VehicleID)
+	resolvedGaugePath, searchPaths, err := resolvePreviewGaugePath(configPath, candidate.Widget.Gauge)
 	if err != nil {
-		return previewGaugeSpec{}, err
-	}
-	candidate, err := selectPreviewGauge(plan.Dashboards, strings.TrimSpace(options.GaugeID))
-	if err != nil {
-		return previewGaugeSpec{}, err
+		return GaugePreviewSpec{}, fmt.Errorf("resolve preview gauge %q: %w", previewGaugeLabel(candidate), err)
 	}
 
-	pkg, err := v3gauges.LoadPackageWithSearchPaths(searchPaths, candidate.Widget.Gauge)
+	pkg, err := v3gauges.LoadPackageForPreview(resolvedGaugePath)
 	if err != nil {
-		return previewGaugeSpec{}, fmt.Errorf("load preview gauge %q: %w", previewGaugeLabel(candidate), err)
+		return GaugePreviewSpec{}, fmt.Errorf("load preview gauge %q: %w", previewGaugeLabel(candidate), err)
 	}
 	sensorCfg, ok := cfg.Sensors[pkg.Sensor]
 	if !ok {
-		return previewGaugeSpec{}, fmt.Errorf("preview gauge %q references sensor %q which is not defined in top-level sensors", previewGaugeLabel(candidate), pkg.Sensor)
+		return GaugePreviewSpec{}, fmt.Errorf("preview gauge %q references sensor %q which is not defined in top-level sensors", previewGaugeLabel(candidate), pkg.Sensor)
 	}
 
 	minValue, maxValue, err := previewGaugeRange(sensorCfg, pkg)
 	if err != nil {
-		return previewGaugeSpec{}, fmt.Errorf("preview gauge %q: %w", previewGaugeLabel(candidate), err)
-	}
-	step, fineStep, coarseStep := previewStepSizes(minValue, maxValue, options.Step, options.FineStep, options.CoarseStep)
-	initialValue := midpoint(minValue, maxValue)
-	if options.InitialValue != nil {
-		initialValue = clampPreviewValue(*options.InitialValue, minValue, maxValue)
+		return GaugePreviewSpec{}, fmt.Errorf("preview gauge %q: %w", previewGaugeLabel(candidate), err)
 	}
 
-	registry, err := v3assets.LoadWithSearchPaths(plan.Assets, searchPaths)
+	registry, err := v3assets.LoadWithSearchPaths(cfg.Assets, searchPaths)
 	if err != nil {
-		return previewGaugeSpec{}, fmt.Errorf("load preview assets: %w", err)
+		return GaugePreviewSpec{}, fmt.Errorf("load preview assets: %w", err)
 	}
 
 	previewWidget := candidate.Widget
-	previewWidget.Position = []int{0, 0}
-	previewPlan := plan
-	previewPlan.Dashboards = []v3config.ResolvedDashboard{{
-		ID: candidate.DashboardID,
-		Config: v3config.DashboardConfig{
-			Display: candidate.DashboardID + "_preview",
-			Widgets: []v3config.WidgetConfig{previewWidget},
-		},
-	}}
-
-	runtime, err := v3dashboard.NewRuntime(previewPlan, registry)
-	if err != nil {
-		return previewGaugeSpec{}, fmt.Errorf("create preview runtime: %w", err)
+	previewWidget.Gauge = resolvedGaugePath
+	if len(previewWidget.Position) != 2 {
+		previewWidget.Position = []int{0, 0}
+	}
+	if previewWidget.Scale <= 0 {
+		previewWidget.Scale = 1
 	}
 
-	return previewGaugeSpec{
+	dashboardConfig := v3config.DashboardConfig{
+		Display: candidate.DashboardID + "_preview",
+		Size: v3config.SizeConfig{
+			Width:  previewDashboardWidth(candidate.Widget, pkg),
+			Height: previewDashboardHeight(candidate.Widget, pkg),
+		},
+		Widgets: []v3config.WidgetConfig{previewWidget},
+	}
+	if dashboardConfig.Size.Width <= 0 {
+		dashboardConfig.Size.Width = 800
+	}
+	if dashboardConfig.Size.Height <= 0 {
+		dashboardConfig.Size.Height = 480
+	}
+
+	var runtime *v3dashboard.Runtime
+	err = v3dashboard.WithGaugePackageLoader(loadPreviewGaugePackageWithSearchPaths, func() error {
+		var runtimeErr error
+		runtime, runtimeErr = v3dashboard.NewRuntime(v3config.RuntimePlan{
+			VehicleID: vehicleID,
+			Assets:    cfg.Assets,
+			Dashboards: []v3config.ResolvedDashboard{{
+				ID:     candidate.DashboardID,
+				Config: dashboardConfig,
+			}},
+		}, registry)
+		return runtimeErr
+	})
+	if err != nil {
+		return GaugePreviewSpec{}, fmt.Errorf("create preview runtime: %w", err)
+	}
+
+	return GaugePreviewSpec{
 		Runtime:       runtime,
 		Title:         fmt.Sprintf("GoDriveLog preview - %s", previewGaugeLabel(candidate)),
 		SensorID:      pkg.Sensor,
 		Unit:          sensorCfg.Unit,
 		Min:           minValue,
 		Max:           maxValue,
-		InitialValue:  initialValue,
-		Step:          step,
-		FineStep:      fineStep,
-		CoarseStep:    coarseStep,
+		InitialValue:  midpoint(minValue, maxValue),
+		Step:          0,
+		FineStep:      0,
+		CoarseStep:    0,
 		SelectedGauge: previewGaugeLabel(candidate),
 	}, nil
+}
+
+func buildGaugePreviewSpec(options dashboardPreviewOptions) (GaugePreviewSpec, error) {
+	spec, err := LoadGaugePreviewFile(options.ConfigPath, options.GaugeID)
+	if err != nil {
+		return GaugePreviewSpec{}, err
+	}
+	if options.InitialValue != nil {
+		spec.InitialValue = clampPreviewValue(*options.InitialValue, spec.Min, spec.Max)
+	}
+	spec.Step, spec.FineStep, spec.CoarseStep = previewStepSizes(spec.Min, spec.Max, options.Step, options.FineStep, options.CoarseStep)
+	return spec, nil
+}
+
+func loadGaugePreviewConfig(path string) (string, v3config.Config, error) {
+	configPath, err := filepath.Abs(filepath.Clean(path))
+	if err != nil {
+		return "", v3config.Config{}, fmt.Errorf("resolve dashboard preview %q: %w", path, err)
+	}
+	data, err := os.ReadFile(configPath)
+	if err != nil {
+		return "", v3config.Config{}, fmt.Errorf("read dashboard preview %q: %w", path, err)
+	}
+
+	var cfg v3config.Config
+	decoder := yaml.NewDecoder(bytes.NewReader(data))
+	decoder.KnownFields(true)
+	if err := decoder.Decode(&cfg); err != nil {
+		return "", v3config.Config{}, fmt.Errorf("parse dashboard preview %q: %w", path, err)
+	}
+	return configPath, cfg, nil
+}
+
+func previewSelectedDashboards(cfg v3config.Config, vehicleID string) ([]v3config.ResolvedDashboard, error) {
+	vehicle, ok := cfg.Vehicles[vehicleID]
+	if !ok {
+		return nil, fmt.Errorf("preview vehicle %q is not defined", vehicleID)
+	}
+	dashboardIDs := append([]string(nil), vehicle.Dashboards...)
+	if len(dashboardIDs) == 0 {
+		dashboardIDs = sortedDashboardIDs(cfg.Dashboards)
+	}
+	if len(dashboardIDs) == 0 {
+		return nil, fmt.Errorf("dashboard preview file does not define any dashboards")
+	}
+	selected := make([]v3config.ResolvedDashboard, 0, len(dashboardIDs))
+	for _, dashboardID := range dashboardIDs {
+		dashboardCfg, ok := cfg.Dashboards[dashboardID]
+		if !ok {
+			return nil, fmt.Errorf("preview vehicle %q references dashboard %q which is not defined", vehicleID, dashboardID)
+		}
+		selected = append(selected, v3config.ResolvedDashboard{ID: dashboardID, Config: dashboardCfg})
+	}
+	return selected, nil
+}
+
+func sortedDashboardIDs(dashboards map[string]v3config.DashboardConfig) []string {
+	ids := make([]string, 0, len(dashboards))
+	for id := range dashboards {
+		ids = append(ids, id)
+	}
+	sort.Strings(ids)
+	return ids
+}
+
+func resolvePreviewGaugePath(configPath, gaugePath string) (string, []string, error) {
+	cleanedGaugePath := strings.TrimSpace(gaugePath)
+	if cleanedGaugePath == "" {
+		return "", nil, fmt.Errorf("gauge path must not be empty")
+	}
+	previewDir := filepath.Dir(configPath)
+	searchPaths := previewGaugeSearchPaths(previewDir)
+	for _, root := range searchPaths {
+		candidate := cleanedGaugePath
+		if !filepath.IsAbs(candidate) {
+			candidate = filepath.Join(root, cleanedGaugePath)
+		}
+		resolved, ok := previewGaugePackageDir(candidate)
+		if ok {
+			return resolved, searchPaths, nil
+		}
+	}
+	if filepath.IsAbs(cleanedGaugePath) {
+		return "", searchPaths, fmt.Errorf("gauge package %q was not found", cleanedGaugePath)
+	}
+	tried := make([]string, 0, len(searchPaths))
+	for _, root := range searchPaths {
+		tried = append(tried, filepath.Join(root, cleanedGaugePath))
+	}
+	return "", searchPaths, fmt.Errorf("gauge package %q was not found in preview search paths: %s", cleanedGaugePath, strings.Join(tried, ", "))
+}
+
+func previewGaugeSearchPaths(previewDir string) []string {
+	paths := []string{}
+	if previewDir != "" {
+		paths = append(paths, previewDir)
+	}
+	if pwd, err := os.Getwd(); err == nil {
+		paths = append(paths, pwd)
+		if repoRoot := findRepoRoot(pwd); repoRoot != "" {
+			paths = append(paths, repoRoot)
+		}
+	}
+	cleaned := make([]string, 0, len(paths))
+	seen := map[string]bool{}
+	for _, path := range paths {
+		if strings.TrimSpace(path) == "" {
+			continue
+		}
+		abs, err := filepath.Abs(path)
+		if err != nil || seen[abs] {
+			continue
+		}
+		seen[abs] = true
+		cleaned = append(cleaned, abs)
+	}
+	return cleaned
+}
+
+func findRepoRoot(start string) string {
+	current := start
+	for {
+		if _, err := os.Stat(filepath.Join(current, ".git")); err == nil {
+			return current
+		}
+		parent := filepath.Dir(current)
+		if parent == current {
+			return ""
+		}
+		current = parent
+	}
+}
+
+func previewGaugePackageDir(candidate string) (string, bool) {
+	if strings.TrimSpace(candidate) == "" {
+		return "", false
+	}
+	resolved := filepath.Clean(candidate)
+	info, err := os.Stat(resolved)
+	if err == nil && !info.IsDir() && filepath.Base(resolved) == "gauge.yaml" {
+		resolved = filepath.Dir(resolved)
+	} else if err == nil && !info.IsDir() {
+		return "", false
+	}
+	if _, err := os.Stat(filepath.Join(resolved, "gauge.yaml")); err == nil {
+		abs, absErr := filepath.Abs(resolved)
+		if absErr != nil {
+			return "", false
+		}
+		return abs, true
+	}
+	return "", false
+}
+
+func previewDashboardWidth(widget v3config.WidgetConfig, pkg v3gauges.Package) int {
+	return previewDimension(widget.Position, 0, widget.Scale, pkg.Size.Width)
+}
+
+func previewDashboardHeight(widget v3config.WidgetConfig, pkg v3gauges.Package) int {
+	return previewDimension(widget.Position, 1, widget.Scale, pkg.Size.Height)
+}
+
+func previewDimension(position []int, index int, scale float64, size int) int {
+	offset := 0
+	if len(position) > index {
+		offset = position[index]
+	}
+	if scale <= 0 {
+		scale = 1
+	}
+	if size <= 0 {
+		return 0
+	}
+	return offset + int(math.Ceil(float64(size)*scale))
+}
+
+func loadPreviewGaugePackageWithSearchPaths(searchPaths []string, packageDir string) (v3gauges.Package, error) {
+	if filepath.IsAbs(packageDir) {
+		return v3gauges.LoadPackageForPreview(packageDir)
+	}
+	for _, root := range searchPaths {
+		resolved, ok := previewGaugePackageDir(filepath.Join(root, packageDir))
+		if ok {
+			return v3gauges.LoadPackageForPreview(resolved)
+		}
+	}
+	return v3gauges.LoadPackageForPreview(packageDir)
 }
 
 func selectPreviewGauge(dashboards []v3config.ResolvedDashboard, requested string) (previewGaugeCandidate, error) {

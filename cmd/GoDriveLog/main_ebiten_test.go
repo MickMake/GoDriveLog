@@ -12,6 +12,8 @@ import (
 	"time"
 
 	v3harness "github.com/MickMake/GoDriveLog/internal/dashboard/harness"
+	"github.com/MickMake/GoDriveLog/internal/dashboard/v3dashboard"
+	"github.com/MickMake/GoDriveLog/internal/sensors"
 )
 
 func TestDashboardRunDiscoversSingleVehicleConfig(t *testing.T) {
@@ -787,6 +789,71 @@ func TestBuildGaugePreviewSpecSelectsNamedGauge(t *testing.T) {
 	}
 	if spec.Min != 0 || spec.Max != 8000 {
 		t.Fatalf("range = %v..%v, want 0..8000", spec.Min, spec.Max)
+	}
+}
+
+func TestLoadGaugePreviewFileIgnoresProductionValidationAndLoadsPreviewRelativeGauge(t *testing.T) {
+	root := t.TempDir()
+	previewDir := filepath.Join(root, "examples", "preview")
+	configPath := filepath.Join(previewDir, "preview.yaml")
+	packageDir := filepath.Join(root, "preview-packages", "test_rpm")
+	writeTestRadialGaugePackage(t, packageDir)
+	writeTestConfig(t, configPath, `vehicles:
+  demo:
+    name: Preview
+    obd:
+      address: preview://manual
+    dashboards:
+      - preview
+sensors:
+  rpm:
+    type: obd
+    pid: "010C"
+    unit: rpm
+    min: 0
+    max: 8000
+    poll: 250
+dashboards:
+  preview:
+    display: preview
+    widgets:
+      - id: rpm_widget
+        type: gauge
+        gauge: ../../preview-packages/test_rpm
+        position: [0, 0]
+`)
+
+	spec, err := LoadGaugePreviewFile(configPath, "")
+	if err != nil {
+		t.Fatalf("LoadGaugePreviewFile returned error: %v", err)
+	}
+	spec.Runtime.SetState(sensors.SensorState{
+		ID:         "rpm",
+		Value:      4200,
+		TypedValue: sensors.NewNumericValue(4200, "rpm"),
+		Unit:       "rpm",
+		Min:        0,
+		Max:        8000,
+		Status:     sensors.StatusOK,
+		UpdatedAt:  time.Now(),
+	})
+	var scenes []v3dashboard.Scene
+	err = v3dashboard.WithGaugePackageLoader(loadPreviewGaugePackageWithSearchPaths, func() error {
+		var snapshotErr error
+		scenes, snapshotErr = spec.Runtime.Snapshot()
+		return snapshotErr
+	})
+	if err != nil {
+		t.Fatalf("Snapshot returned error: %v", err)
+	}
+	if len(scenes) != 1 {
+		t.Fatalf("scene count = %d, want 1", len(scenes))
+	}
+	if len(scenes[0].Widgets) != 1 {
+		t.Fatalf("widget count = %d, want 1", len(scenes[0].Widgets))
+	}
+	if scenes[0].Widgets[0].GaugePath == "" {
+		t.Fatalf("gauge path was not resolved")
 	}
 }
 

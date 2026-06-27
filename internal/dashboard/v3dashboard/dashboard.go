@@ -13,6 +13,8 @@ import (
 	"github.com/MickMake/GoDriveLog/internal/sensors"
 )
 
+var gaugePackageLoader = v3gauges.LoadPackageWithSearchPaths
+
 const (
 	PartKindBackground   = "background"
 	PartKindImage        = "image"
@@ -113,6 +115,18 @@ func NewRuntime(plan v3config.RuntimePlan, registry *v3assets.Registry) (*Runtim
 		signatures: map[string]string{},
 		segments:   map[string]v3gauges.SegmentedSelection{},
 	}, nil
+}
+
+func WithGaugePackageLoader(loader func([]string, string) (v3gauges.Package, error), fn func() error) error {
+	if loader == nil {
+		return fn()
+	}
+	previous := gaugePackageLoader
+	gaugePackageLoader = loader
+	defer func() {
+		gaugePackageLoader = previous
+	}()
+	return fn()
 }
 
 func (r *Runtime) DashboardCount() int {
@@ -278,7 +292,7 @@ func (d Dashboard) renderWidget(configWidget v3config.WidgetConfig, states map[s
 		indicatorState := indicatorStateFor(state)
 		widget.Parts = appendIndicatorParts(widget.Parts, set, indicatorState)
 	case v3config.WidgetTypeGauge:
-		pkg, err := v3gauges.LoadPackageWithSearchPaths(d.Assets.SearchPaths(), configWidget.Gauge)
+		pkg, err := gaugePackageLoader(d.Assets.SearchPaths(), configWidget.Gauge)
 		if err != nil {
 			return Widget{}, fmt.Errorf("dashboard %q widget %q gauge %q could not load package: %w", d.ID, configWidget.ID, configWidget.Gauge, err)
 		}
