@@ -967,9 +967,9 @@ layers:
 	assertErrorContains(t, err, "escapes asset tree")
 }
 
-func TestLoadPackageRejectsPackagesOutsideAssetsGauges(t *testing.T) {
+func TestLoadPackageRejectsPackagesOutsideAssetsDirectory(t *testing.T) {
 	root := makeGaugeFixtures(t)
-	packageDir := filepath.Join(root, "assets", "dashboard", "not_a_gauge")
+	packageDir := filepath.Join(root, "dashboard", "not_a_gauge")
 	writeGaugeYAML(t, packageDir, `id: bad
 type: radial
 sensor: rpm
@@ -982,7 +982,7 @@ size:
 	if err == nil {
 		t.Fatal("LoadPackage returned nil error, want error")
 	}
-	assertErrorContains(t, err, "assets/gauges")
+	assertErrorContains(t, err, "assets directory")
 }
 
 func makeGaugeFixtures(t *testing.T) string {
