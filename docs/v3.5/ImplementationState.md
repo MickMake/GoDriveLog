@@ -16,6 +16,8 @@ The final v3.5 tail also includes two small radial-only display refinements that
 
 ## Current decisions
 
+- v3.5.8 through v3.5.13 are temporarily deferred so the odometer movement stack can be completed while the implementation context is fresh.
+- The next-slice workflow should follow `Current target` when it is explicitly set, even if earlier unchecked slices remain.
 - Most v3.5 realism options live under the `realism` key.
 - `movement` is the exception: it is the single movement knob and should be accepted by any gauge type for now.
 - Keep movement config collapsed as a scalar, not a nested object.
