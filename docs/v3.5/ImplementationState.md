@@ -1,10 +1,10 @@
 # v3.5 Implementation State
 
-Status: v3.5.7 odometer carry-drag implemented
+Status: v3.5.7 odometer carry-drag implemented; continuing odometer follow-on slices before radial pass
 
-Current target: v3.5.8 radial damping
+Current target: v3.5.14 odometer snap / settle
 
-Current branch: impl/v3.5.8-radial-damping
+Current branch: `impl/v3.5.14-odometer-snap-settle`
 
 ## Scope
 
