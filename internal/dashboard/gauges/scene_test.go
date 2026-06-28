@@ -474,6 +474,32 @@ func TestOdometerSnapSettleEnabledAddsSmallForwardSettleAndReturnsToTarget(t *te
 	}
 }
 
+func TestOdometerSnapSettleDoesNotOvershootBelowZeroAtLowerBoundary(t *testing.T) {
+	pkg := loadOdometerScenePackageWithRealism(t, MovementLinear, false, false, true, nil)
+	previousOffsets, err := OdometerWheelStripOffsets(pkg, 1.0)
+	if err != nil {
+		t.Fatalf("OdometerWheelStripOffsets failed: %v", err)
+	}
+	targetOffsets, err := OdometerWheelStripOffsets(pkg, 0.0)
+	if err != nil {
+		t.Fatalf("OdometerWheelStripOffsets failed: %v", err)
+	}
+	base := cloneFloat64s(targetOffsets)
+	adjusted, err := OdometerSnapSettleWheelOffsets(pkg, previousOffsets, targetOffsets, base, 0.35)
+	if err != nil {
+		t.Fatalf("OdometerSnapSettleWheelOffsets failed: %v", err)
+	}
+
+	for index, offset := range adjusted {
+		if offset < 0 {
+			t.Fatalf("expected wheel %d settle offset to stay at or above zero, got %.2f", index, offset)
+		}
+	}
+	if !almostEqual(adjusted[1], 0) {
+		t.Fatalf("expected ones wheel at lower boundary to stay clamped to zero, got %.2f", adjusted[1])
+	}
+}
+
 func TestOdometerSceneAppliesConfiguredDrumSlopToWheelPositions(t *testing.T) {
 	pkg := loadOdometerScenePackage(t, "", false, []int{2, -1, 3})
 

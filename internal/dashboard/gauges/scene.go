@@ -343,6 +343,9 @@ func OdometerSnapSettleWheelOffsets(pkg Package, previousOffsets []float64, targ
 			direction = -1
 		}
 		adjusted[index] += direction * amplitude * settleShape
+		if adjusted[index] < 0 {
+			adjusted[index] = 0
+		}
 	}
 	return adjusted, nil
 }
