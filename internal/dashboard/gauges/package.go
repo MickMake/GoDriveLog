@@ -586,6 +586,9 @@ func findAssetRoot(packageDir string) (string, error) {
 	current := packageDir
 	for {
 		if filepath.Base(current) == "assets" {
+			return current, nil
+			/*
+			** OLD requirement that "gauges" need to be under "assets". Stoopid.
 			rel, err := filepath.Rel(current, packageDir)
 			if err == nil {
 				rel = filepath.ToSlash(rel)
@@ -593,6 +596,7 @@ func findAssetRoot(packageDir string) (string, error) {
 					return current, nil
 				}
 			}
+			*/
 		}
 		parent := filepath.Dir(current)
 		if parent == current {
@@ -600,7 +604,7 @@ func findAssetRoot(packageDir string) (string, error) {
 		}
 		current = parent
 	}
-	return "", fmt.Errorf("gauge package path %q must be under assets/gauges", packageDir)
+	return "", fmt.Errorf("gauge package path %q must be under assets directory", packageDir)
 }
 
 func isInside(root string, path string) bool {
