@@ -4,7 +4,7 @@ Status: v3.5.6b odometer movement model implemented
 
 Current target: v3.5.7 odometer carry-drag / 9-drag
 
-Current branch: `impl/v3.5.6b-odometer-movement-model`
+Current branch: `impl/v3.5.7-odometer-carry-drag`
 
 ## Scope
 
