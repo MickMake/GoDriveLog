@@ -1,10 +1,10 @@
 # v3.5 Implementation State
 
-Status: v3.5.6 odometer eased roll implemented
+Status: v3.5.6 odometer movement alignment documented
 
 Current target: v3.5.7 odometer carry-drag / 9-drag
 
-Current branch: `codex/v3.5.6-odometer-eased-roll`
+Current branch: `docs/v3.5.6-movement-alignment`
 
 ## Scope
 
@@ -16,15 +16,21 @@ The final v3.5 tail also includes two small radial-only display refinements that
 
 ## Current decisions
 
-- All v3.5 realism options live under the `realism` key.
-- Keep realism config collapsed where possible.
-- `realism.movement` is a scalar, not a nested object.
-- `realism.movement` supports `click` and `smooth`.
-- If `realism.movement` is omitted, it defaults to `click`.
-- `click` means the display updates directly to the next value unless another enabled realism option adds visible movement.
-- `realism.movement_policy` controls finite transition shaping and supports `immediate`, `linear`, and `ease_out`.
-- If `realism.movement_policy` is omitted, it defaults to `immediate`.
-- Existing top-level `movement` may remain supported for backwards compatibility, but new v3.5 config should use `realism.movement`.
+- Most v3.5 realism options live under the `realism` key.
+- `movement` is the exception: it is the single movement knob and should be accepted by any gauge type for now.
+- Keep movement config collapsed as a scalar, not a nested object.
+- Gauge types that do not yet have concrete movement behaviour may parse `movement` and use their current immediate behaviour until their movement slice defines more.
+- Odometers use `odometer.movement` as the single source of truth for odometer wheel movement.
+- Odometer `movement` supports `instant`, `linear`, `ease_out`, `bell`, `smooth`, and `click`.
+- Odometer `instant` means digit display jumps immediately to the target value with no animation.
+- Odometer `linear` means the wheel rolls from old digit position to target digit position at constant speed.
+- Odometer `ease_out` means the wheel starts fast, then slows into the target.
+- Odometer `bell` means the wheel starts slow, speeds up through the middle, then slows into the target.
+- Odometer `smooth` is recognised only, reserved for future enhancement, and should warn then fall back to `instant`.
+- Odometer `click` is recognised only, reserved for future stepped-click enhancement, and should warn then fall back to `instant`.
+- `realism.movement_policy` is obsolete for odometer movement and must not be used or recommended for odometers.
+- Existing top-level `movement` may remain supported for backwards compatibility where already present.
+- Unknown movement values must fail configuration loading clearly unless a gauge type explicitly documents a recognised fallback.
 - Unknown realism options must fail config loading.
 - Known realism options used on unsupported gauge types must fail config loading.
 - `realism.order` may optionally control the order of enabled realism behaviours.
@@ -45,7 +51,7 @@ The final v3.5 tail also includes two small radial-only display refinements that
 
 | Option | Applies to |
 |---|---|
-| `movement` | relevant gauge types |
+| `movement` | all gauge types for parsing; concrete behaviour defined per gauge type |
 | `wraparound` | odometer |
 | `drum_slop` | odometer |
 | `carry_drag` | odometer |
@@ -91,8 +97,8 @@ Not allowed in v3.5:
 - [x] v3.5.2 odometer wraparound
 - [x] v3.5.3 odometer drum slop
 - [x] v3.5.4 finite movement lifecycle
-- [x] v3.5.5 shared movement policy
-- [x] v3.5.6 odometer eased roll
+- [x] v3.5.5 shared movement policy groundwork
+- [x] v3.5.6 odometer movement alignment / eased roll
 - [ ] v3.5.7 odometer carry-drag / 9-drag
 - [ ] v3.5.8 radial damping
 - [ ] v3.5.9 radial stiction
@@ -124,7 +130,7 @@ When asked to do the next slice:
 
 Then enter the review-fix loop:
 
-12. Wait for Codex/GitHub review feedback and CI results.
+12. Wait for GitHub review feedback and CI results.
 13. If CI fails, review requests changes, or unresolved review comments require code changes:
     * inspect the feedback;
     * make the smallest safe fixes only;
