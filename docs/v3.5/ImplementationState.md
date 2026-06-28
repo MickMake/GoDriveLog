@@ -4,7 +4,7 @@ Status: v3.5.7 odometer carry-drag implemented
 
 Current target: v3.5.8 radial damping
 
-Current branch: `impl/v3.5.7-odometer-carry-drag`
+Current branch: impl/v3.5.8-radial-damping
 
 ## Scope
 
