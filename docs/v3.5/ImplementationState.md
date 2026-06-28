@@ -1,10 +1,10 @@
 # v3.5 Implementation State
 
-Status: v3.5.6 odometer movement alignment documented
+Status: v3.5.6 odometer movement alignment documented; v3.5.6b implementation pending
 
-Current target: v3.5.7 odometer carry-drag / 9-drag
+Current target: v3.5.6b implement odometer movement model
 
-Current branch: `docs/v3.5.6-movement-alignment`
+Current branch: `impl/v3.5.6b-odometer-movement-model`
 
 ## Scope
 
@@ -35,6 +35,9 @@ The final v3.5 tail also includes two small radial-only display refinements that
 - Known realism options used on unsupported gauge types must fail config loading.
 - `realism.order` may optionally control the order of enabled realism behaviours.
 - Do not rely on YAML key order to control behaviour order.
+- Odometer movement should compose internally as `route -> lead_in -> travel -> settle -> rest`.
+- The odometer phase model is internal implementation structure, not the public YAML shape.
+- Do not expose `movement.pre`, `movement.primary`, or `movement.post` unless a later docs slice explicitly changes the public config model.
 - `docs/v3.5/RealismBehaviourGuide.md` defines the intended visual feel of each realism option.
 - Gauge Preview Mode is the simple visual viewer for one gauge at a time.
 - Gauge Preview Mode CLI is `godrivelog dashboard preview <file>`.
@@ -98,7 +101,8 @@ Not allowed in v3.5:
 - [x] v3.5.3 odometer drum slop
 - [x] v3.5.4 finite movement lifecycle
 - [x] v3.5.5 shared movement policy groundwork
-- [x] v3.5.6 odometer movement alignment / eased roll
+- [x] v3.5.6a document odometer movement goal / alignment
+- [ ] v3.5.6b implement odometer movement model
 - [ ] v3.5.7 odometer carry-drag / 9-drag
 - [ ] v3.5.8 radial damping
 - [ ] v3.5.9 radial stiction
