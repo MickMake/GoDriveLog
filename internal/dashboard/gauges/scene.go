@@ -188,6 +188,19 @@ func RadialScene(pkg Package, placement Placement, state sensors.SensorState) (S
 }
 
 func OdometerScene(pkg Package, placement Placement, state sensors.SensorState) (Scene, error) {
+	state = stateForPackage(pkg.Sensor, state)
+	offsets := []float64(nil)
+	var err error
+	if state.Status == sensors.StatusOK {
+		offsets, err = OdometerWheelStripOffsets(pkg, state.Value)
+		if err != nil {
+			return Scene{}, err
+		}
+	}
+	return OdometerSceneWithWheelOffsets(pkg, placement, state, offsets)
+}
+
+func OdometerSceneWithWheelOffsets(pkg Package, placement Placement, state sensors.SensorState, offsets []float64) (Scene, error) {
 	if pkg.Type != TypeOdometer {
 		return Scene{}, fmt.Errorf("gauge package %q type %q is not odometer", pkg.ID, pkg.Type)
 	}
@@ -198,7 +211,6 @@ func OdometerScene(pkg Package, placement Placement, state sensors.SensorState) 
 		return Scene{}, fmt.Errorf("gauge package %q odometer wheels must not be empty", pkg.ID)
 	}
 
-	state = stateForPackage(pkg.Sensor, state)
 	scene := Scene{
 		PackageID:   pkg.ID,
 		PackagePath: pkg.Path,
@@ -214,14 +226,13 @@ func OdometerScene(pkg Package, placement Placement, state sensors.SensorState) 
 	}
 
 	if state.Status == sensors.StatusOK {
+		if len(offsets) != len(pkg.Odometer.Wheels) {
+			return Scene{}, fmt.Errorf("gauge package %q odometer wheel offsets must define exactly one strip offset per wheel", pkg.ID)
+		}
 		scene.Text = formatValue("%.1f", state.Value)
-		digitPlaces := odometerDigitPlaces(pkg.Odometer.Wheels)
 		wraparound := odometerWraparoundEnabled(pkg)
 		for index, wheel := range pkg.Odometer.Wheels {
-			offset, err := odometerWheelOffset(pkg.Odometer.Movement, wraparound, wheel, digitPlaces[index], state.Value)
-			if err != nil {
-				return Scene{}, fmt.Errorf("gauge package %q: %w", pkg.ID, err)
-			}
+			offset := offsets[index]
 			sourceX, sourceY := odometerWheelSource(wheel, offset)
 			position := cloneInts(wheel.Position)
 			if len(position) >= 2 {
@@ -243,6 +254,26 @@ func OdometerScene(pkg Package, placement Placement, state sensors.SensorState) 
 
 	scene.Parts = append(scene.Parts, odometerOverlayLayerParts(pkg.Layers)...)
 	return scene, nil
+}
+
+func OdometerWheelStripOffsets(pkg Package, value float64) ([]float64, error) {
+	if pkg.Type != TypeOdometer {
+		return nil, fmt.Errorf("gauge package %q type %q is not odometer", pkg.ID, pkg.Type)
+	}
+	if len(pkg.Odometer.Wheels) == 0 {
+		return nil, fmt.Errorf("gauge package %q odometer wheels must not be empty", pkg.ID)
+	}
+	digitPlaces := odometerDigitPlaces(pkg.Odometer.Wheels)
+	wraparound := odometerWraparoundEnabled(pkg)
+	offsets := make([]float64, len(pkg.Odometer.Wheels))
+	for index, wheel := range pkg.Odometer.Wheels {
+		offset, err := odometerWheelOffset(wraparound, wheel, digitPlaces[index], value)
+		if err != nil {
+			return nil, fmt.Errorf("gauge package %q: %w", pkg.ID, err)
+		}
+		offsets[index] = offset
+	}
+	return offsets, nil
 }
 
 func IndicatorScene(pkg Package, placement Placement, state sensors.SensorState) (Scene, error) {
@@ -628,13 +659,10 @@ func odometerDigitPlaces(wheels []OdometerWheel) []int {
 	return places
 }
 
-func odometerWheelOffset(movement string, wraparound bool, wheel OdometerWheel, place int, value float64) (float64, error) {
+func odometerWheelOffset(wraparound bool, wheel OdometerWheel, place int, value float64) (float64, error) {
 	position, err := odometerWheelPosition(wheel, place, value, wraparound)
 	if err != nil {
 		return 0, err
-	}
-	if movement == MovementClick {
-		position = math.Floor(position)
 	}
 	if position < 0 {
 		position = 0

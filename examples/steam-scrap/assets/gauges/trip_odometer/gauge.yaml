@@ -11,7 +11,7 @@ layers:
   glass: glass.png
 
 odometer:
-  movement: smooth
+  movement: bell
   wheels:
     - strip: digits.png
       position: [24, 28]

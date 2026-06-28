@@ -36,24 +36,28 @@ Numeric, segmented, and indicator gauges should only get baseline preview files 
 
 ## Odometer notes
 
-Odometers support `realism.movement: click` and `realism.movement: smooth`.
+Odometers use:
 
-If `realism.movement` is omitted, it defaults to `click`.
+```yaml
+odometer:
+  movement: instant | linear | ease_out | bell | smooth | click
+```
 
-Prefer feature preview files against the default mode unless the feature specifically needs both smooth and click coverage.
+For v3.5.6b:
+
+- `instant`, `linear`, `ease_out`, and `bell` are implemented.
+- `smooth` warns and falls back to `instant`.
+- `click` warns and falls back to `instant`.
+- Odometer preview/examples should not use `realism.movement_policy`.
 
 Acceptable examples:
 
 ```text
-odometer/00-baseline-click.yaml
-odometer/00-baseline-smooth.yaml
+odometer/00-baseline.yaml
 odometer/01-wraparound.yaml
-odometer/05-snap-settle-click.yaml
-odometer/99-all-options-click.yaml
-odometer/99-all-options-smooth.yaml
+odometer/03-eased-roll.yaml
+odometer/99-all-options.yaml
 ```
-
-Do not double every preview file automatically. Only add smooth/click-specific coverage where it helps visual judgement.
 
 ## Gauge Preview CLI
 
