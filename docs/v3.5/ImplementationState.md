@@ -113,7 +113,7 @@ Not allowed in v3.5:
 - [ ] v3.5.12 indicator thermal fade
 - [ ] v3.5.13 bar smoothing
 - [x] v3.5.14 odometer snap / settle
-- [ ] v3.5.15 odometer backlash
+- [x] v3.5.15 odometer backlash
 - [ ] v3.5.16 display-only hysteresis
 - [ ] v3.5.17 radial needle drop shadow
 - [ ] v3.5.18 radial calibration offset
