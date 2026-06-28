@@ -130,7 +130,7 @@ When asked to do the next slice:
 
 Then enter the review-fix loop:
 
-12. Wait for GitHub review feedback and CI results.
+12. Wait for codex GitHub review feedback and CI results.
 13. If CI fails, review requests changes, or unresolved review comments require code changes:
     * inspect the feedback;
     * make the smallest safe fixes only;
