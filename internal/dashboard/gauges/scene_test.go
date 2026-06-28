@@ -384,7 +384,7 @@ func TestOdometerSceneWraparoundDisabledKeepsLegacyResetAtBoundary(t *testing.T)
 }
 
 func TestOdometerCarryDragDisabledKeepsBaseWheelOffsets(t *testing.T) {
-	pkg := loadOdometerScenePackageWithRealism(t, MovementLinear, true, false, nil)
+	pkg := loadOdometerScenePackageWithRealism(t, MovementLinear, true, false, false, nil)
 	previousOffsets, err := OdometerWheelStripOffsets(pkg, 19.9)
 	if err != nil {
 		t.Fatalf("OdometerWheelStripOffsets failed: %v", err)
@@ -404,7 +404,7 @@ func TestOdometerCarryDragDisabledKeepsBaseWheelOffsets(t *testing.T) {
 }
 
 func TestOdometerCarryDragEnabledAdvancesHigherWheelNearRollover(t *testing.T) {
-	pkg := loadOdometerScenePackageWithRealism(t, MovementLinear, true, true, nil)
+	pkg := loadOdometerScenePackageWithRealism(t, MovementLinear, true, true, false, nil)
 	previousOffsets, err := OdometerWheelStripOffsets(pkg, 19.9)
 	if err != nil {
 		t.Fatalf("OdometerWheelStripOffsets failed: %v", err)
@@ -423,6 +423,54 @@ func TestOdometerCarryDragEnabledAdvancesHigherWheelNearRollover(t *testing.T) {
 	}
 	if !(adjusted[1] > base[1] && adjusted[1] <= targetOffsets[1]) {
 		t.Fatalf("expected carry_drag to advance ones wheel toward target, got base=%v adjusted=%v target=%v", base[1], adjusted[1], targetOffsets[1])
+	}
+}
+
+func TestOdometerSnapSettleDisabledKeepsBaseWheelOffsets(t *testing.T) {
+	pkg := loadOdometerScenePackageWithRealism(t, MovementLinear, false, false, false, nil)
+	previousOffsets, err := OdometerWheelStripOffsets(pkg, 12.0)
+	if err != nil {
+		t.Fatalf("OdometerWheelStripOffsets failed: %v", err)
+	}
+	targetOffsets, err := OdometerWheelStripOffsets(pkg, 12.9)
+	if err != nil {
+		t.Fatalf("OdometerWheelStripOffsets failed: %v", err)
+	}
+	base := cloneFloat64s(targetOffsets)
+	adjusted, err := OdometerSnapSettleWheelOffsets(pkg, previousOffsets, targetOffsets, base, 0.35)
+	if err != nil {
+		t.Fatalf("OdometerSnapSettleWheelOffsets failed: %v", err)
+	}
+	if !float64SlicesAlmostEqual(base, adjusted) {
+		t.Fatalf("expected snap_settle disabled to keep base offsets, got base=%v adjusted=%v", base, adjusted)
+	}
+}
+
+func TestOdometerSnapSettleEnabledAddsSmallForwardSettleAndReturnsToTarget(t *testing.T) {
+	pkg := loadOdometerScenePackageWithRealism(t, MovementLinear, false, false, true, nil)
+	previousOffsets, err := OdometerWheelStripOffsets(pkg, 12.0)
+	if err != nil {
+		t.Fatalf("OdometerWheelStripOffsets failed: %v", err)
+	}
+	targetOffsets, err := OdometerWheelStripOffsets(pkg, 12.9)
+	if err != nil {
+		t.Fatalf("OdometerWheelStripOffsets failed: %v", err)
+	}
+	base := cloneFloat64s(targetOffsets)
+	adjusted, err := OdometerSnapSettleWheelOffsets(pkg, previousOffsets, targetOffsets, base, 0.35)
+	if err != nil {
+		t.Fatalf("OdometerSnapSettleWheelOffsets failed: %v", err)
+	}
+	if !(adjusted[0] > targetOffsets[0] && adjusted[1] > targetOffsets[1] && adjusted[2] > targetOffsets[2]) {
+		t.Fatalf("expected snap_settle to nudge moving wheels past target, got target=%v adjusted=%v", targetOffsets, adjusted)
+	}
+
+	settled, err := OdometerSnapSettleWheelOffsets(pkg, previousOffsets, targetOffsets, base, 1)
+	if err != nil {
+		t.Fatalf("OdometerSnapSettleWheelOffsets failed: %v", err)
+	}
+	if !float64SlicesAlmostEqual(targetOffsets, settled) {
+		t.Fatalf("expected snap_settle to settle exactly on target, got target=%v settled=%v", targetOffsets, settled)
 	}
 }
 
@@ -732,14 +780,14 @@ func loadRadialScenePackage(t *testing.T) Package {
 }
 
 func loadOdometerScenePackage(t *testing.T, movement string, wraparound bool, drumSlop []int) Package {
-	return loadOdometerScenePackageWithRealism(t, movement, wraparound, false, drumSlop)
+	return loadOdometerScenePackageWithRealism(t, movement, wraparound, false, false, drumSlop)
 }
 
-func loadOdometerScenePackageWithRealism(t *testing.T, movement string, wraparound bool, carryDrag bool, drumSlop []int) Package {
+func loadOdometerScenePackageWithRealism(t *testing.T, movement string, wraparound bool, carryDrag bool, snapSettle bool, drumSlop []int) Package {
 	t.Helper()
 	root := makeGaugeFixtures(t)
 	packageDir := filepath.Join(root, "assets", "gauges", "odometer", "trip")
-	writeGaugeYAML(t, packageDir, odometerGaugeYAML(movement, wraparound, carryDrag, drumSlop))
+	writeGaugeYAML(t, packageDir, odometerGaugeYAML(movement, wraparound, carryDrag, snapSettle, drumSlop))
 	pkg, err := LoadPackage(packageDir)
 	if err != nil {
 		t.Fatalf("LoadPackage returned error: %v", err)
@@ -883,7 +931,7 @@ value_map:
 `
 }
 
-func odometerGaugeYAML(movement string, wraparound bool, carryDrag bool, drumSlop []int) string {
+func odometerGaugeYAML(movement string, wraparound bool, carryDrag bool, snapSettle bool, drumSlop []int) string {
 	movementLine := ""
 	if movement != "" {
 		movementLine = fmt.Sprintf("  movement: %s\n", movement)
@@ -894,6 +942,9 @@ func odometerGaugeYAML(movement string, wraparound bool, carryDrag bool, drumSlo
 	}
 	if carryDrag {
 		realismLines = append(realismLines, "  carry_drag: true")
+	}
+	if snapSettle {
+		realismLines = append(realismLines, "  snap_settle: true")
 	}
 	if len(drumSlop) > 0 {
 		values := make([]string, len(drumSlop))

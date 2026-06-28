@@ -57,6 +57,7 @@ odometer/00-baseline.yaml
 odometer/01-wraparound.yaml
 odometer/03-eased-roll.yaml
 odometer/04-carry-drag.yaml
+odometer/05-snap-settle.yaml
 odometer/99-all-options.yaml
 ```
 
