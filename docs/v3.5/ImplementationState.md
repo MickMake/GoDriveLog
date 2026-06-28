@@ -1,8 +1,8 @@
 # v3.5 Implementation State
 
-Status: v3.5.7 odometer carry-drag implemented; continuing odometer follow-on slices before radial pass
+Status: v3.5.14 odometer snap / settle implemented; continuing odometer follow-on slices before radial pass
 
-Current target: v3.5.14 odometer snap / settle
+Current target: v3.5.15 odometer backlash
 
 Current branch: `impl/v3.5.14-odometer-snap-settle`
 
@@ -112,7 +112,7 @@ Not allowed in v3.5:
 - [ ] v3.5.11 radial peg bounce
 - [ ] v3.5.12 indicator thermal fade
 - [ ] v3.5.13 bar smoothing
-- [ ] v3.5.14 odometer snap / settle
+- [x] v3.5.14 odometer snap / settle
 - [ ] v3.5.15 odometer backlash
 - [ ] v3.5.16 display-only hysteresis
 - [ ] v3.5.17 radial needle drop shadow

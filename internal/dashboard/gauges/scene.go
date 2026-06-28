@@ -279,6 +279,7 @@ func OdometerWheelStripOffsets(pkg Package, value float64) ([]float64, error) {
 const (
 	odometerCarryDragLeadInStart = 0.75
 	odometerCarryDragStrength    = 0.65
+	odometerSnapSettleStrength   = 0.2
 )
 
 func OdometerCarryDragWheelOffsets(pkg Package, previousValue float64, targetValue float64, previousOffsets []float64, targetOffsets []float64, baseOffsets []float64) ([]float64, error) {
@@ -310,6 +311,41 @@ func OdometerCarryDragWheelOffsets(pkg Package, previousValue float64, targetVal
 		leadProgress = clampUnit(leadProgress)
 		leadProgress = leadProgress * leadProgress * (3 - (2 * leadProgress))
 		adjusted[higherIndex] = advanceOffsetTowardTarget(adjusted[higherIndex], targetOffsets[higherIndex], leadProgress*odometerCarryDragStrength)
+	}
+	return adjusted, nil
+}
+
+func OdometerSnapSettleWheelOffsets(pkg Package, previousOffsets []float64, targetOffsets []float64, baseOffsets []float64, progress float64) ([]float64, error) {
+	if !odometerSnapSettleEnabled(pkg) || progress <= 0 {
+		return cloneFloat64s(baseOffsets), nil
+	}
+	if len(previousOffsets) != len(targetOffsets) || len(targetOffsets) != len(baseOffsets) || len(baseOffsets) != len(pkg.Odometer.Wheels) {
+		return nil, fmt.Errorf("gauge package %q snap_settle requires exactly one wheel offset per odometer wheel", pkg.ID)
+	}
+
+	adjusted := cloneFloat64s(baseOffsets)
+	settleShape := math.Sin(math.Pi*clampUnit(progress)) * (1 - clampUnit(progress))
+	if settleShape <= 0 {
+		return adjusted, nil
+	}
+
+	for index, wheel := range pkg.Odometer.Wheels {
+		delta := targetOffsets[index] - previousOffsets[index]
+		if math.Abs(delta) <= 0.001 {
+			continue
+		}
+		amplitude := math.Min(math.Abs(delta)*odometerSnapSettleStrength, float64(wheel.Window.Height)*odometerSnapSettleStrength)
+		if amplitude <= 0 {
+			continue
+		}
+		direction := 1.0
+		if delta < 0 {
+			direction = -1
+		}
+		adjusted[index] += direction * amplitude * settleShape
+		if adjusted[index] < 0 {
+			adjusted[index] = 0
+		}
 	}
 	return adjusted, nil
 }
@@ -735,6 +771,10 @@ func odometerWraparoundEnabled(pkg Package) bool {
 
 func odometerCarryDragEnabled(pkg Package) bool {
 	return pkg.Realism.CarryDrag != nil && *pkg.Realism.CarryDrag
+}
+
+func odometerSnapSettleEnabled(pkg Package) bool {
+	return pkg.Realism.SnapSettle != nil && *pkg.Realism.SnapSettle
 }
 
 func odometerDrumSlop(pkg Package, wheelIndex int) int {

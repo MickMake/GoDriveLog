@@ -335,6 +335,33 @@ odometer:
 	}
 }
 
+func TestLoadPackageLoadsOdometerSnapSettleRealism(t *testing.T) {
+	root := makeGaugeFixtures(t)
+	packageDir := filepath.Join(root, "assets", "gauges", "odometer", "snap_settle")
+	writeGaugeYAML(t, packageDir, `id: trip_odometer
+type: odometer
+sensor: trip_distance
+realism:
+  snap_settle: true
+size:
+  width: 240
+  height: 80
+odometer:
+  wheels:
+    - strip: ../trip/digits.png
+      position: [10, 12]
+      window: { width: 24, height: 36 }
+`)
+
+	pkg, err := LoadPackage(packageDir)
+	if err != nil {
+		t.Fatalf("LoadPackage returned error: %v", err)
+	}
+	if pkg.Realism.SnapSettle == nil || !*pkg.Realism.SnapSettle {
+		t.Fatalf("snap_settle realism = %#v, want true", pkg.Realism)
+	}
+}
+
 func TestLoadPackageLoadsOdometerDrumSlopRealism(t *testing.T) {
 	root := makeGaugeFixtures(t)
 	packageDir := filepath.Join(root, "assets", "gauges", "odometer", "slop")
@@ -758,6 +785,36 @@ value_map:
 		t.Fatal("LoadPackage returned nil error, want error")
 	}
 	assertErrorContains(t, err, "carry_drag")
+}
+
+func TestLoadPackageRejectsSnapSettleOnNonOdometerGauge(t *testing.T) {
+	root := makeGaugeFixtures(t)
+	packageDir := filepath.Join(root, "assets", "gauges", "radial", "snap_settle")
+	writeGaugeYAML(t, packageDir, `id: bad_radial
+type: radial
+sensor: rpm
+realism:
+  snap_settle: true
+size:
+  width: 100
+  height: 100
+layers:
+  needle: ../../shared/radial/simple_rpm/needle.png
+pivot:
+  face: { x: 0.5, y: 0.5 }
+  needle: { x: 0.5, y: 0.9 }
+value_map:
+  min: 0
+  max: 100
+  start_angle: -90
+  end_angle: 90
+`)
+
+	_, err := LoadPackage(packageDir)
+	if err == nil {
+		t.Fatal("LoadPackage returned nil error, want error")
+	}
+	assertErrorContains(t, err, "snap_settle")
 }
 
 func TestLoadPackageRejectsExplicitEmptyOdometerDrumSlop(t *testing.T) {

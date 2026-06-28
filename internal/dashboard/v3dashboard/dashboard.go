@@ -44,6 +44,7 @@ type Runtime struct {
 }
 
 const defaultOdometerMovementDuration = 200 * time.Millisecond
+const defaultOdometerSnapSettleDuration = 60 * time.Millisecond
 
 type movementPhase string
 
@@ -62,6 +63,8 @@ type widgetMovementState struct {
 	DisplayValue         float64
 	TargetValue          float64
 	Duration             time.Duration
+	TravelDuration       time.Duration
+	SettleDuration       time.Duration
 	StartedAt            time.Time
 	HasValue             bool
 	PreviousWheelOffsets []float64
@@ -575,6 +578,10 @@ func resolveOdometerMovementState(movements map[string]widgetMovementState, key 
 	} else if source.Value != movement.TargetValue {
 		if movementActive(movement) {
 			movement = advanceMovementState(movement, now)
+			movement, err = applyOdometerMovementRealism(pkg, movement, now)
+			if err != nil {
+				return source, widgetMovementState{}, false, err
+			}
 		}
 		movement.Mode = pkg.Odometer.Movement
 		movement.PreviousDisplayValue = movement.DisplayValue
@@ -590,20 +597,22 @@ func resolveOdometerMovementState(movements map[string]widgetMovementState, key 
 			movement.WheelOffsets = cloneFloat64s(targetOffsets)
 			movement.Phase = movementPhaseStatic
 			movement.Duration = 0
+			movement.TravelDuration = 0
+			movement.SettleDuration = 0
 			movement.StartedAt = time.Time{}
 		} else {
-			movement.Duration = duration
+			movement.TravelDuration = duration
+			movement.SettleDuration = odometerSnapSettleDuration(pkg, duration)
+			movement.Duration = duration + movement.SettleDuration
 			movement.StartedAt = now
 			movement.Phase = movementPhaseValueChange
 			movement.WheelOffsets = cloneFloat64s(movement.PreviousWheelOffsets)
 		}
 	}
 	movement = advanceMovementState(movement, now)
-	if movementActive(movement) && len(movement.WheelOffsets) == len(pkg.Odometer.Wheels) {
-		movement.WheelOffsets, err = v3gauges.OdometerCarryDragWheelOffsets(pkg, movement.PreviousDisplayValue, movement.TargetValue, movement.PreviousWheelOffsets, movement.TargetWheelOffsets, movement.WheelOffsets)
-		if err != nil {
-			return source, widgetMovementState{}, false, err
-		}
+	movement, err = applyOdometerMovementRealism(pkg, movement, now)
+	if err != nil {
+		return source, widgetMovementState{}, false, err
 	}
 	movements[key] = movement
 	return source, movement, movementActive(movement) != movementActive(previous), nil
@@ -639,8 +648,13 @@ func advanceMovementState(movement widgetMovementState, now time.Time) widgetMov
 			progress = 0
 		}
 		if odometerMovementInFlight(movement) {
-			progress = applyOdometerMovementCurve(progress, movement.Mode)
-			movement.WheelOffsets = interpolateWheelOffsets(movement.PreviousWheelOffsets, movement.TargetWheelOffsets, progress)
+			if odometerTravelInFlight(movement, elapsed) {
+				progress = odometerTravelProgress(movement, elapsed)
+				progress = applyOdometerMovementCurve(progress, movement.Mode)
+				movement.WheelOffsets = interpolateWheelOffsets(movement.PreviousWheelOffsets, movement.TargetWheelOffsets, progress)
+			} else {
+				movement.WheelOffsets = cloneFloat64s(movement.TargetWheelOffsets)
+			}
 			movement.DisplayValue = movement.TargetValue
 		} else {
 			progress = applyMovementPolicy(progress, movement.Policy)
@@ -680,6 +694,84 @@ func applyOdometerMovementCurve(progress float64, mode string) float64 {
 
 func odometerMovementInFlight(movement widgetMovementState) bool {
 	return len(movement.PreviousWheelOffsets) > 0 && len(movement.PreviousWheelOffsets) == len(movement.TargetWheelOffsets)
+}
+
+func applyOdometerMovementRealism(pkg v3gauges.Package, movement widgetMovementState, now time.Time) (widgetMovementState, error) {
+	if !movementActive(movement) || len(movement.WheelOffsets) != len(pkg.Odometer.Wheels) {
+		return movement, nil
+	}
+
+	var err error
+	if odometerCarryDragInFlight(movement, now) {
+		movement.WheelOffsets, err = v3gauges.OdometerCarryDragWheelOffsets(pkg, movement.PreviousDisplayValue, movement.TargetValue, movement.PreviousWheelOffsets, movement.TargetWheelOffsets, movement.WheelOffsets)
+		if err != nil {
+			return widgetMovementState{}, err
+		}
+	}
+	if settleProgress, ok := odometerSnapSettleProgress(movement, now); ok {
+		movement.WheelOffsets, err = v3gauges.OdometerSnapSettleWheelOffsets(pkg, movement.PreviousWheelOffsets, movement.TargetWheelOffsets, movement.WheelOffsets, settleProgress)
+		if err != nil {
+			return widgetMovementState{}, err
+		}
+	}
+	return movement, nil
+}
+
+func odometerSnapSettleDuration(pkg v3gauges.Package, movementDuration time.Duration) time.Duration {
+	if movementDuration <= 0 || pkg.Realism.SnapSettle == nil || !*pkg.Realism.SnapSettle {
+		return 0
+	}
+	return defaultOdometerSnapSettleDuration
+}
+
+func odometerTravelInFlight(movement widgetMovementState, elapsed time.Duration) bool {
+	if movement.TravelDuration <= 0 {
+		return false
+	}
+	return elapsed < movement.TravelDuration
+}
+
+func odometerTravelProgress(movement widgetMovementState, elapsed time.Duration) float64 {
+	if movement.TravelDuration <= 0 {
+		return 1
+	}
+	progress := float64(elapsed) / float64(movement.TravelDuration)
+	if progress < 0 {
+		return 0
+	}
+	if progress > 1 {
+		return 1
+	}
+	return progress
+}
+
+func odometerCarryDragInFlight(movement widgetMovementState, now time.Time) bool {
+	if movement.Phase != movementPhaseMoving || movement.SettleDuration <= 0 || now.IsZero() || movement.StartedAt.IsZero() {
+		return movement.Phase == movementPhaseMoving && movement.SettleDuration == 0
+	}
+	elapsed := now.Sub(movement.StartedAt)
+	if elapsed < 0 {
+		elapsed = 0
+	}
+	return elapsed < movement.TravelDuration
+}
+
+func odometerSnapSettleProgress(movement widgetMovementState, now time.Time) (float64, bool) {
+	if movement.Phase != movementPhaseMoving || movement.SettleDuration <= 0 || now.IsZero() || movement.StartedAt.IsZero() {
+		return 0, false
+	}
+	elapsed := now.Sub(movement.StartedAt)
+	if elapsed < movement.TravelDuration {
+		return 0, false
+	}
+	progress := float64(elapsed-movement.TravelDuration) / float64(movement.SettleDuration)
+	if progress <= 0 {
+		return 0, false
+	}
+	if progress >= 1 {
+		return 1, true
+	}
+	return progress, true
 }
 
 func currentWheelOffsets(movement widgetMovementState) []float64 {
