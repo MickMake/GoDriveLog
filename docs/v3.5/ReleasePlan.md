@@ -107,25 +107,27 @@ Numeric and segmented gauges do not get extra realism behaviour in v3.5 unless a
 Odometer realism should be composable:
 
 ```text
-pre-movement modifiers -> main movement -> post-movement modifiers -> static offsets
+route -> lead_in -> travel -> settle -> rest
 ```
+
+The phase model is internal implementation structure, not the public YAML shape. Public config remains feature-oriented. Do not expose `movement.pre`, `movement.primary`, or `movement.post` unless a later docs slice explicitly changes the public config model.
 
 For v3.5.6:
 
 ```text
-none -> instant / linear / ease_out / bell -> none -> existing static offsets
+default route -> none -> instant / linear / ease_out / bell -> none -> existing static offsets
 ```
 
 Future odometer slices fit around this:
 
 | Slice | Feature | Phase |
 |---|---|---|
-| v3.5.2 | `wraparound` | movement path rule |
-| v3.5.3 | `drum_slop` | static resting offset |
-| v3.5.6 | `movement` | main movement phase |
-| v3.5.7 | `carry_drag` / 9-drag | pre/overlap movement on neighbouring wheels |
-| v3.5.14 | `snap_settle` | post-movement tail |
-| v3.5.15 | `backlash` | pre/post direction-change slack |
+| v3.5.2 | `wraparound` | `route` path rule |
+| v3.5.3 | `drum_slop` | `rest` static offset |
+| v3.5.6 | `movement` | `travel` curve |
+| v3.5.7 | `carry_drag` / 9-drag | `lead_in` / overlap movement on neighbouring wheels |
+| v3.5.14 | `snap_settle` | `settle` tail |
+| v3.5.15 | `backlash` | `lead_in` / `settle` direction-change slack |
 
 The main odometer movement phase must not render by permanently feeding fractional numeric odometer values back into the source display value.
 
@@ -141,7 +143,7 @@ Good model:
 from digit position -> movement phase -> target digit position
 ```
 
-At the end of the movement phase, the handover position must be exactly the target digit position. Later post-movement effects such as `snap_settle` may start from that handover position.
+At the end of the movement phase, the handover position must be exactly the target digit position. Later settle effects such as `snap_settle` may start from that handover position.
 
 ## Realism ordering
 
@@ -186,12 +188,11 @@ overshoot
 Default odometer order:
 
 ```text
-wraparound
-carry_drag
-backlash
-movement
-snap_settle
-drum_slop
+route: wraparound
+lead_in: carry_drag, backlash
+travel: movement
+settle: snap_settle, backlash
+rest: drum_slop
 ```
 
 Default indicator order:
