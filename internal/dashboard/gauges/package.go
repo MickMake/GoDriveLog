@@ -22,6 +22,10 @@ const (
 	TypeIndicator           = "indicator"
 	TypeBar                 = "bar"
 	TypeSegmented           = "segmented"
+	MovementInstant         = "instant"
+	MovementLinear          = "linear"
+	MovementEaseOut         = "ease_out"
+	MovementBell            = "bell"
 	MovementSmooth          = "smooth"
 	MovementClick           = "click"
 	MovementPolicyImmediate = "immediate"
@@ -382,7 +386,14 @@ func normalizePackage(pkg *Package) {
 		pkg.Realism.MovementPolicy = MovementPolicyImmediate
 	}
 	if pkg.Type == TypeOdometer && strings.TrimSpace(pkg.Odometer.Movement) == "" {
-		pkg.Odometer.Movement = MovementSmooth
+		pkg.Odometer.Movement = MovementInstant
+	}
+	if pkg.Type == TypeOdometer {
+		switch pkg.Odometer.Movement {
+		case MovementSmooth, MovementClick:
+			log.Printf("gauge package %q odometer movement %q is recognised but not implemented; falling back to %q", pkg.ID, pkg.Odometer.Movement, MovementInstant)
+			pkg.Odometer.Movement = MovementInstant
+		}
 	}
 	if pkg.Type == TypeSegmented && pkg.Segmented.Hysteresis == nil {
 		defaultHysteresis := 25.0
@@ -392,7 +403,7 @@ func normalizePackage(pkg *Package) {
 
 func validateOdometer(odometer Odometer) error {
 	switch odometer.Movement {
-	case MovementSmooth, MovementClick:
+	case MovementInstant, MovementLinear, MovementEaseOut, MovementBell, MovementSmooth, MovementClick:
 	default:
 		return fmt.Errorf("odometer movement %q is not supported", odometer.Movement)
 	}
@@ -588,14 +599,14 @@ func findAssetRoot(packageDir string) (string, error) {
 		if filepath.Base(current) == "assets" {
 			return current, nil
 			/*
-			** OLD requirement that "gauges" need to be under "assets". Stoopid.
-			rel, err := filepath.Rel(current, packageDir)
-			if err == nil {
-				rel = filepath.ToSlash(rel)
-				if strings.HasPrefix(rel, "gauges/") {
-					return current, nil
+				** OLD requirement that "gauges" need to be under "assets". Stoopid.
+				rel, err := filepath.Rel(current, packageDir)
+				if err == nil {
+					rel = filepath.ToSlash(rel)
+					if strings.HasPrefix(rel, "gauges/") {
+						return current, nil
+					}
 				}
-			}
 			*/
 		}
 		parent := filepath.Dir(current)

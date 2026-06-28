@@ -1,6 +1,8 @@
 package gauges
 
 import (
+	"bytes"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -160,8 +162,8 @@ odometer:
 	if pkg.ID != "trip_odometer" || pkg.Type != TypeOdometer || pkg.Sensor != "trip_distance" {
 		t.Fatalf("package identity = %#v", pkg)
 	}
-	if pkg.Odometer.Movement != MovementSmooth {
-		t.Fatalf("movement = %q, want default smooth", pkg.Odometer.Movement)
+	if pkg.Odometer.Movement != MovementInstant {
+		t.Fatalf("movement = %q, want default instant", pkg.Odometer.Movement)
 	}
 	if pkg.Realism.MovementPolicy != MovementPolicyImmediate {
 		t.Fatalf("movement policy = %q, want default immediate", pkg.Realism.MovementPolicy)
@@ -177,6 +179,106 @@ odometer:
 	if pkg.Odometer.Wheels[1].Role != WheelRoleSubUnit || pkg.Odometer.Wheels[1].Offset[0] != 2 {
 		t.Fatalf("sub-unit wheel = %#v", pkg.Odometer.Wheels[1])
 	}
+}
+
+func TestLoadPackageAcceptsImplementedOdometerMovementValues(t *testing.T) {
+	movements := []string{
+		MovementInstant,
+		MovementLinear,
+		MovementEaseOut,
+		MovementBell,
+	}
+
+	for _, movement := range movements {
+		t.Run(movement, func(t *testing.T) {
+			root := makeGaugeFixtures(t)
+			packageDir := filepath.Join(root, "assets", "gauges", "odometer", movement)
+			writeGaugeYAML(t, packageDir, `id: trip_odometer
+type: odometer
+sensor: trip_distance
+size:
+  width: 240
+  height: 80
+odometer:
+  movement: `+movement+`
+  wheels:
+    - strip: ../trip/digits.png
+      position: [10, 12]
+      window: { width: 24, height: 36 }
+`)
+
+			pkg, err := LoadPackage(packageDir)
+			if err != nil {
+				t.Fatalf("LoadPackage returned error: %v", err)
+			}
+			if pkg.Odometer.Movement != movement {
+				t.Fatalf("movement = %q, want %q", pkg.Odometer.Movement, movement)
+			}
+		})
+	}
+}
+
+func TestLoadPackageWarnsAndFallsBackForRecognizedOdometerMovementValues(t *testing.T) {
+	tests := []string{MovementSmooth, MovementClick}
+
+	for _, movement := range tests {
+		t.Run(movement, func(t *testing.T) {
+			root := makeGaugeFixtures(t)
+			packageDir := filepath.Join(root, "assets", "gauges", "odometer", movement)
+			writeGaugeYAML(t, packageDir, `id: trip_odometer
+type: odometer
+sensor: trip_distance
+size:
+  width: 240
+  height: 80
+odometer:
+  movement: `+movement+`
+  wheels:
+    - strip: ../trip/digits.png
+      position: [10, 12]
+      window: { width: 24, height: 36 }
+`)
+
+			var pkg Package
+			logOutput := capturePackageLogs(t, func() {
+				var err error
+				pkg, err = LoadPackage(packageDir)
+				if err != nil {
+					t.Fatalf("LoadPackage returned error: %v", err)
+				}
+			})
+			if pkg.Odometer.Movement != MovementInstant {
+				t.Fatalf("movement = %q, want fallback %q", pkg.Odometer.Movement, MovementInstant)
+			}
+			if !strings.Contains(logOutput, `odometer movement "`+movement+`" is recognised but not implemented`) {
+				t.Fatalf("warning log = %q, want mention of %q fallback", logOutput, movement)
+			}
+		})
+	}
+}
+
+func TestLoadPackageRejectsUnknownOdometerMovementValue(t *testing.T) {
+	root := makeGaugeFixtures(t)
+	packageDir := filepath.Join(root, "assets", "gauges", "odometer", "unknown_movement")
+	writeGaugeYAML(t, packageDir, `id: trip_odometer
+type: odometer
+sensor: trip_distance
+size:
+  width: 240
+  height: 80
+odometer:
+  movement: wobble
+  wheels:
+    - strip: ../trip/digits.png
+      position: [10, 12]
+      window: { width: 24, height: 36 }
+`)
+
+	_, err := LoadPackage(packageDir)
+	if err == nil {
+		t.Fatal("LoadPackage returned nil error, want error")
+	}
+	assertErrorContains(t, err, `odometer movement "wobble" is not supported`)
 }
 
 func TestLoadPackageLoadsOdometerWraparoundRealism(t *testing.T) {
@@ -1054,4 +1156,19 @@ func assertErrorContains(t *testing.T, err error, want string) {
 	if !strings.Contains(err.Error(), want) {
 		t.Fatalf("error = %q, want substring %q", err.Error(), want)
 	}
+}
+
+func capturePackageLogs(t *testing.T, fn func()) string {
+	t.Helper()
+	var buffer bytes.Buffer
+	previousWriter := log.Writer()
+	previousFlags := log.Flags()
+	log.SetOutput(&buffer)
+	log.SetFlags(0)
+	defer func() {
+		log.SetOutput(previousWriter)
+		log.SetFlags(previousFlags)
+	}()
+	fn()
+	return buffer.String()
 }

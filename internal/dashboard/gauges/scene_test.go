@@ -255,8 +255,8 @@ func TestRadialSceneRejectsMissingNeedleLayer(t *testing.T) {
 	assertErrorContains(t, err, "needle")
 }
 
-func TestOdometerSceneEmitsSmoothWheelStripOffsets(t *testing.T) {
-	pkg := loadOdometerScenePackage(t, "", false, nil)
+func TestOdometerSceneEmitsBellWheelStripOffsetsAtExactTarget(t *testing.T) {
+	pkg := loadOdometerScenePackage(t, MovementBell, false, nil)
 
 	scene, err := OdometerScene(pkg, Placement{Position: []int{50, 20}, Scale: 1.25}, okGaugeState("trip_distance", 12.3))
 	if err != nil {
@@ -266,7 +266,7 @@ func TestOdometerSceneEmitsSmoothWheelStripOffsets(t *testing.T) {
 	if scene.PackageID != "test_trip_odometer" || scene.SensorID != "trip_distance" || scene.Type != TypeOdometer {
 		t.Fatalf("scene identity = %#v", scene)
 	}
-	if scene.Movement != MovementSmooth || scene.Status != sensors.StatusOK {
+	if scene.Movement != MovementBell || scene.Status != sensors.StatusOK {
 		t.Fatalf("scene movement/status = %q/%q", scene.Movement, scene.Status)
 	}
 	if scene.Position[0] != 50 || scene.Position[1] != 20 || scene.Scale != 1.25 {
@@ -280,15 +280,15 @@ func TestOdometerSceneEmitsSmoothWheelStripOffsets(t *testing.T) {
 		t.Fatalf("wheel parts = %d, want 3", len(wheels))
 	}
 	if !almostEqual(wheels[0].StripOffset, 24.6) || !almostEqual(wheels[1].StripOffset, 46) || !almostEqual(wheels[2].StripOffset, 60) {
-		t.Fatalf("smooth offsets = %.2f/%.2f/%.2f", wheels[0].StripOffset, wheels[1].StripOffset, wheels[2].StripOffset)
+		t.Fatalf("bell offsets = %.2f/%.2f/%.2f", wheels[0].StripOffset, wheels[1].StripOffset, wheels[2].StripOffset)
 	}
 	if wheels[2].Role != WheelRoleSubUnit || wheels[2].Source[0] != 2 || wheels[2].Source[1] != 64 {
 		t.Fatalf("sub-unit wheel = %#v", wheels[2])
 	}
 }
 
-func TestOdometerSceneClickMovementSnapsWheelStripOffsets(t *testing.T) {
-	pkg := loadOdometerScenePackage(t, "click", false, nil)
+func TestOdometerSceneInstantMovementUsesExactTargetOffsets(t *testing.T) {
+	pkg := loadOdometerScenePackage(t, MovementInstant, false, nil)
 
 	scene, err := OdometerScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("trip_distance", 12.9))
 	if err != nil {
@@ -299,8 +299,8 @@ func TestOdometerSceneClickMovementSnapsWheelStripOffsets(t *testing.T) {
 	if len(wheels) != 3 {
 		t.Fatalf("wheel parts = %d, want 3", len(wheels))
 	}
-	if !almostEqual(wheels[0].StripOffset, 20) || !almostEqual(wheels[1].StripOffset, 40) || !almostEqual(wheels[2].StripOffset, 180) {
-		t.Fatalf("click offsets = %.2f/%.2f/%.2f", wheels[0].StripOffset, wheels[1].StripOffset, wheels[2].StripOffset)
+	if !almostEqual(wheels[0].StripOffset, 25.8) || !almostEqual(wheels[1].StripOffset, 58) || !almostEqual(wheels[2].StripOffset, 180) {
+		t.Fatalf("instant offsets = %.2f/%.2f/%.2f", wheels[0].StripOffset, wheels[1].StripOffset, wheels[2].StripOffset)
 	}
 }
 

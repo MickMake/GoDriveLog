@@ -694,7 +694,7 @@ func TestRuntimeLoadsOdometerGaugeWidgetPackage(t *testing.T) {
 	if widget.Type != v3config.WidgetTypeGauge || widget.SensorID != "trip_distance" || widget.GaugeID != "dashboard_trip_odometer" {
 		t.Fatalf("odometer widget identity = %#v", widget)
 	}
-	if widget.Status != sensors.StatusOK || widget.Scale != 1.5 || widget.GaugeMovement != "smooth" {
+	if widget.Status != sensors.StatusOK || widget.Scale != 1.5 || widget.GaugeMovement != v3gauges.MovementBell {
 		t.Fatalf("odometer widget status/scale/movement = %#v", widget)
 	}
 	if got := gaugePartSequence(widget); got != "layer:panel,wheel_strip:0,wheel_strip:1,wheel_strip:2,layer:glass" {
@@ -706,8 +706,8 @@ func TestRuntimeLoadsOdometerGaugeWidgetPackage(t *testing.T) {
 	}
 }
 
-func TestRuntimeOdometerGaugeEasedRollUsesSharedLifecycle(t *testing.T) {
-	runtime := testOdometerMovementRuntimeWithConfig(t, v3gauges.MovementSmooth, v3gauges.MovementPolicyEaseOut)
+func TestRuntimeOdometerGaugeInstantMovementJumpsToTarget(t *testing.T) {
+	runtime := testOdometerMovementRuntimeWithConfig(t, v3gauges.MovementInstant)
 
 	start := time.Unix(100, 0)
 	_, _, err := runtime.ApplyEvent(sensors.SensorEvent{
@@ -732,18 +732,51 @@ func TestRuntimeOdometerGaugeEasedRollUsesSharedLifecycle(t *testing.T) {
 		t.Fatalf("ApplyEvent failed: %v", err)
 	}
 	if !changed {
-		t.Fatalf("expected eased odometer transition to redraw")
+		t.Fatalf("expected instant odometer update to redraw")
 	}
-	if !runtime.HasActiveMovement() {
-		t.Fatalf("expected eased odometer transition to stay active")
+	if runtime.HasActiveMovement() {
+		t.Fatalf("expected instant odometer movement to stay static")
 	}
 
 	wheels := wheelStripWidgetParts(requireWidget(t, scenes[0], "trip"))
 	if len(wheels) != 3 {
 		t.Fatalf("wheel parts = %d, want 3", len(wheels))
 	}
+	if !almostEqual(wheels[0].StripOffset, 25.8) || !almostEqual(wheels[1].StripOffset, 58.0) || !almostEqual(wheels[2].StripOffset, 180.0) {
+		t.Fatalf("expected exact target offsets, got %.2f/%.2f/%.2f", wheels[0].StripOffset, wheels[1].StripOffset, wheels[2].StripOffset)
+	}
+}
+
+func TestRuntimeOdometerGaugeLinearMovementAnimatesAndSettlesExactlyOnTarget(t *testing.T) {
+	runtime := testOdometerMovementRuntimeWithConfig(t, v3gauges.MovementLinear)
+
+	start := time.Unix(100, 0)
+	_, _, err := runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "trip_distance",
+		State:     okState("trip_distance", 12.0, "km"),
+		Timestamp: start,
+		ReadAt:    start,
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	scenes, changed, err := runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "trip_distance",
+		State:     okState("trip_distance", 12.9, "km"),
+		Timestamp: start.Add(10 * time.Millisecond),
+		ReadAt:    start.Add(10 * time.Millisecond),
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed || !runtime.HasActiveMovement() {
+		t.Fatalf("expected linear odometer movement to become active")
+	}
+	wheels := wheelStripWidgetParts(requireWidget(t, scenes[0], "trip"))
 	if !almostEqual(wheels[0].StripOffset, 24.0) || !almostEqual(wheels[1].StripOffset, 40.0) || !almostEqual(wheels[2].StripOffset, 0.0) {
-		t.Fatalf("expected transition to start from previous offsets, got %.2f/%.2f/%.2f", wheels[0].StripOffset, wheels[1].StripOffset, wheels[2].StripOffset)
+		t.Fatalf("expected movement to start from previous offsets, got %.2f/%.2f/%.2f", wheels[0].StripOffset, wheels[1].StripOffset, wheels[2].StripOffset)
 	}
 
 	scenes, changed, err = runtime.Tick(start.Add(110 * time.Millisecond))
@@ -754,13 +787,13 @@ func TestRuntimeOdometerGaugeEasedRollUsesSharedLifecycle(t *testing.T) {
 		t.Fatalf("expected mid-transition tick to redraw")
 	}
 	wheels = wheelStripWidgetParts(requireWidget(t, scenes[0], "trip"))
-	if !(wheels[0].StripOffset > 24.9 && wheels[0].StripOffset < 25.8) {
+	if !(wheels[0].StripOffset >= 24.9 && wheels[0].StripOffset < 25.8) {
 		t.Fatalf("expected tens wheel to advance between start and final offsets, got %.2f", wheels[0].StripOffset)
 	}
-	if !(wheels[1].StripOffset > 49.0 && wheels[1].StripOffset < 58.0) {
+	if !(wheels[1].StripOffset >= 49.0 && wheels[1].StripOffset < 58.0) {
 		t.Fatalf("expected ones wheel to advance between start and final offsets, got %.2f", wheels[1].StripOffset)
 	}
-	if !(wheels[2].StripOffset > 90.0 && wheels[2].StripOffset < 180.0) {
+	if !(wheels[2].StripOffset >= 90.0 && wheels[2].StripOffset < 180.0) {
 		t.Fatalf("expected tenths wheel to advance between start and final offsets, got %.2f", wheels[2].StripOffset)
 	}
 
@@ -784,81 +817,158 @@ func TestRuntimeOdometerGaugeEasedRollUsesSharedLifecycle(t *testing.T) {
 		t.Fatalf("expected cleanup tick to redraw")
 	}
 	if runtime.HasActiveMovement() {
-		t.Fatalf("expected eased odometer transition to return to static")
+		t.Fatalf("expected linear odometer transition to return to static")
 	}
 }
 
-func TestRuntimeOdometerGaugeDefaultsToImmediateRollWithoutPolicy(t *testing.T) {
-	runtime := testOdometerMovementRuntimeWithConfig(t, v3gauges.MovementSmooth, "")
+func TestRuntimeOdometerGaugeEaseOutMovementAdvancesFurtherThanLinearAtSameTick(t *testing.T) {
+	linearRuntime := testOdometerMovementRuntimeWithConfig(t, v3gauges.MovementLinear)
+	easeOutRuntime := testOdometerMovementRuntimeWithConfig(t, v3gauges.MovementEaseOut)
 
 	start := time.Unix(100, 0)
-	_, _, err := runtime.ApplyEvent(sensors.SensorEvent{
-		Kind:      sensors.EventKindValueChange,
-		SensorID:  "trip_distance",
-		State:     okState("trip_distance", 12.0, "km"),
-		Timestamp: start,
-		ReadAt:    start,
-	})
-	if err != nil {
-		t.Fatalf("ApplyEvent failed: %v", err)
+	for _, runtime := range []*Runtime{linearRuntime, easeOutRuntime} {
+		_, _, err := runtime.ApplyEvent(sensors.SensorEvent{
+			Kind:      sensors.EventKindValueChange,
+			SensorID:  "trip_distance",
+			State:     okState("trip_distance", 12.0, "km"),
+			Timestamp: start,
+			ReadAt:    start,
+		})
+		if err != nil {
+			t.Fatalf("ApplyEvent failed: %v", err)
+		}
+		_, _, err = runtime.ApplyEvent(sensors.SensorEvent{
+			Kind:      sensors.EventKindValueChange,
+			SensorID:  "trip_distance",
+			State:     okState("trip_distance", 12.9, "km"),
+			Timestamp: start.Add(10 * time.Millisecond),
+			ReadAt:    start.Add(10 * time.Millisecond),
+		})
+		if err != nil {
+			t.Fatalf("ApplyEvent failed: %v", err)
+		}
 	}
 
-	scenes, changed, err := runtime.ApplyEvent(sensors.SensorEvent{
-		Kind:      sensors.EventKindValueChange,
-		SensorID:  "trip_distance",
-		State:     okState("trip_distance", 12.9, "km"),
-		Timestamp: start.Add(10 * time.Millisecond),
-		ReadAt:    start.Add(10 * time.Millisecond),
-	})
+	linearScenes, changed, err := linearRuntime.Tick(start.Add(60 * time.Millisecond))
 	if err != nil {
-		t.Fatalf("ApplyEvent failed: %v", err)
+		t.Fatalf("Tick failed: %v", err)
 	}
 	if !changed {
-		t.Fatalf("expected immediate odometer update to redraw")
+		t.Fatalf("expected linear tick to redraw")
 	}
-	if runtime.HasActiveMovement() {
-		t.Fatalf("expected omitted movement policy to keep immediate odometer behaviour")
+	easeOutScenes, changed, err := easeOutRuntime.Tick(start.Add(60 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected ease_out tick to redraw")
+	}
+
+	linearWheels := wheelStripWidgetParts(requireWidget(t, linearScenes[0], "trip"))
+	easeOutWheels := wheelStripWidgetParts(requireWidget(t, easeOutScenes[0], "trip"))
+	if !(easeOutWheels[1].StripOffset > linearWheels[1].StripOffset) {
+		t.Fatalf("expected ease_out to advance further than linear: linear=%.2f ease_out=%.2f", linearWheels[1].StripOffset, easeOutWheels[1].StripOffset)
+	}
+}
+
+func TestRuntimeOdometerGaugeBellMovementStartsSlowerThanLinearAndSettlesExactlyOnTarget(t *testing.T) {
+	linearRuntime := testOdometerMovementRuntimeWithConfig(t, v3gauges.MovementLinear)
+	bellRuntime := testOdometerMovementRuntimeWithConfig(t, v3gauges.MovementBell)
+	start := time.Unix(100, 0)
+	for _, runtime := range []*Runtime{linearRuntime, bellRuntime} {
+		_, _, err := runtime.ApplyEvent(sensors.SensorEvent{
+			Kind:      sensors.EventKindValueChange,
+			SensorID:  "trip_distance",
+			State:     okState("trip_distance", 12.0, "km"),
+			Timestamp: start,
+			ReadAt:    start,
+		})
+		if err != nil {
+			t.Fatalf("ApplyEvent failed: %v", err)
+		}
+		_, _, err = runtime.ApplyEvent(sensors.SensorEvent{
+			Kind:      sensors.EventKindValueChange,
+			SensorID:  "trip_distance",
+			State:     okState("trip_distance", 12.9, "km"),
+			Timestamp: start.Add(10 * time.Millisecond),
+			ReadAt:    start.Add(10 * time.Millisecond),
+		})
+		if err != nil {
+			t.Fatalf("ApplyEvent failed: %v", err)
+		}
+	}
+
+	linearScenes, changed, err := linearRuntime.Tick(start.Add(60 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected linear tick to redraw")
+	}
+	bellScenes, changed, err := bellRuntime.Tick(start.Add(60 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected bell tick to redraw")
+	}
+	linearWheels := wheelStripWidgetParts(requireWidget(t, linearScenes[0], "trip"))
+	bellWheels := wheelStripWidgetParts(requireWidget(t, bellScenes[0], "trip"))
+	if !(bellWheels[1].StripOffset < linearWheels[1].StripOffset) {
+		t.Fatalf("expected bell to start slower than linear: linear=%.2f bell=%.2f", linearWheels[1].StripOffset, bellWheels[1].StripOffset)
+	}
+
+	scenes, changed, err := bellRuntime.Tick(start.Add(210 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected final bell tick to redraw")
 	}
 	wheels := wheelStripWidgetParts(requireWidget(t, scenes[0], "trip"))
 	if !almostEqual(wheels[0].StripOffset, 25.8) || !almostEqual(wheels[1].StripOffset, 58.0) || !almostEqual(wheels[2].StripOffset, 180.0) {
-		t.Fatalf("expected immediate final offsets, got %.2f/%.2f/%.2f", wheels[0].StripOffset, wheels[1].StripOffset, wheels[2].StripOffset)
+		t.Fatalf("expected final bell offsets, got %.2f/%.2f/%.2f", wheels[0].StripOffset, wheels[1].StripOffset, wheels[2].StripOffset)
 	}
 }
 
-func TestRuntimeOdometerGaugeClickModeIgnoresEasedPolicy(t *testing.T) {
-	runtime := testOdometerMovementRuntimeWithConfig(t, v3gauges.MovementClick, v3gauges.MovementPolicyEaseOut)
+func TestRuntimeOdometerGaugeRecognizedMovementFallbacksStayInstant(t *testing.T) {
+	for _, movement := range []string{v3gauges.MovementSmooth, v3gauges.MovementClick} {
+		t.Run(movement, func(t *testing.T) {
+			runtime := testOdometerMovementRuntimeWithConfig(t, movement)
 
-	start := time.Unix(100, 0)
-	_, _, err := runtime.ApplyEvent(sensors.SensorEvent{
-		Kind:      sensors.EventKindValueChange,
-		SensorID:  "trip_distance",
-		State:     okState("trip_distance", 12.0, "km"),
-		Timestamp: start,
-		ReadAt:    start,
-	})
-	if err != nil {
-		t.Fatalf("ApplyEvent failed: %v", err)
-	}
+			start := time.Unix(100, 0)
+			_, _, err := runtime.ApplyEvent(sensors.SensorEvent{
+				Kind:      sensors.EventKindValueChange,
+				SensorID:  "trip_distance",
+				State:     okState("trip_distance", 12.0, "km"),
+				Timestamp: start,
+				ReadAt:    start,
+			})
+			if err != nil {
+				t.Fatalf("ApplyEvent failed: %v", err)
+			}
 
-	scenes, changed, err := runtime.ApplyEvent(sensors.SensorEvent{
-		Kind:      sensors.EventKindValueChange,
-		SensorID:  "trip_distance",
-		State:     okState("trip_distance", 12.9, "km"),
-		Timestamp: start.Add(10 * time.Millisecond),
-		ReadAt:    start.Add(10 * time.Millisecond),
-	})
-	if err != nil {
-		t.Fatalf("ApplyEvent failed: %v", err)
-	}
-	if !changed {
-		t.Fatalf("expected click odometer update to redraw")
-	}
-	if runtime.HasActiveMovement() {
-		t.Fatalf("expected click odometer mode to stay immediate")
-	}
-	wheels := wheelStripWidgetParts(requireWidget(t, scenes[0], "trip"))
-	if !almostEqual(wheels[0].StripOffset, 20.0) || !almostEqual(wheels[1].StripOffset, 40.0) || !almostEqual(wheels[2].StripOffset, 180.0) {
-		t.Fatalf("expected click-mode snapped offsets, got %.2f/%.2f/%.2f", wheels[0].StripOffset, wheels[1].StripOffset, wheels[2].StripOffset)
+			scenes, changed, err := runtime.ApplyEvent(sensors.SensorEvent{
+				Kind:      sensors.EventKindValueChange,
+				SensorID:  "trip_distance",
+				State:     okState("trip_distance", 12.9, "km"),
+				Timestamp: start.Add(10 * time.Millisecond),
+				ReadAt:    start.Add(10 * time.Millisecond),
+			})
+			if err != nil {
+				t.Fatalf("ApplyEvent failed: %v", err)
+			}
+			if !changed {
+				t.Fatalf("expected fallback instant update to redraw")
+			}
+			if runtime.HasActiveMovement() {
+				t.Fatalf("expected fallback instant movement to stay static")
+			}
+			wheels := wheelStripWidgetParts(requireWidget(t, scenes[0], "trip"))
+			if !almostEqual(wheels[0].StripOffset, 25.8) || !almostEqual(wheels[1].StripOffset, 58.0) || !almostEqual(wheels[2].StripOffset, 180.0) {
+				t.Fatalf("expected instant fallback offsets, got %.2f/%.2f/%.2f", wheels[0].StripOffset, wheels[1].StripOffset, wheels[2].StripOffset)
+			}
+		})
 	}
 }
 
@@ -1108,10 +1218,10 @@ func makeDashboardRadialGaugePackageWithPolicy(t *testing.T, policy string) stri
 }
 
 func makeDashboardOdometerGaugePackage(t *testing.T) string {
-	return makeDashboardOdometerGaugePackageWithConfig(t, v3gauges.MovementSmooth, "")
+	return makeDashboardOdometerGaugePackageWithConfig(t, v3gauges.MovementBell)
 }
 
-func makeDashboardOdometerGaugePackageWithConfig(t *testing.T, movement string, policy string) string {
+func makeDashboardOdometerGaugePackageWithConfig(t *testing.T, movement string) string {
 	t.Helper()
 	root := t.TempDir()
 	files := []string{
@@ -1133,7 +1243,7 @@ func makeDashboardOdometerGaugePackageWithConfig(t *testing.T, movement string, 
 	if err := os.MkdirAll(packageDir, 0o755); err != nil {
 		t.Fatalf("MkdirAll: %v", err)
 	}
-	if err := os.WriteFile(filepath.Join(packageDir, "gauge.yaml"), []byte(dashboardOdometerGaugeYAML(movement, policy)), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(packageDir, "gauge.yaml"), []byte(dashboardOdometerGaugeYAML(movement)), 0o600); err != nil {
 		t.Fatalf("WriteFile: %v", err)
 	}
 	return packageDir
@@ -1289,18 +1399,14 @@ value_map:
 `
 }
 
-func dashboardOdometerGaugeYAML(movement string, policy string) string {
+func dashboardOdometerGaugeYAML(movement string) string {
 	if strings.TrimSpace(movement) == "" {
-		movement = v3gauges.MovementSmooth
-	}
-	realismBlock := ""
-	if policy != "" {
-		realismBlock = "realism:\n  movement_policy: " + policy + "\n"
+		movement = v3gauges.MovementInstant
 	}
 	return `id: dashboard_trip_odometer
 type: odometer
 sensor: trip_distance
-` + realismBlock + `size:
+size:
   width: 150
   height: 60
 layers:
@@ -1388,9 +1494,9 @@ func testRadialMovementRuntimeWithPolicy(t *testing.T, policy string) *Runtime {
 	return runtime
 }
 
-func testOdometerMovementRuntimeWithConfig(t *testing.T, movement string, policy string) *Runtime {
+func testOdometerMovementRuntimeWithConfig(t *testing.T, movement string) *Runtime {
 	t.Helper()
-	packageDir := makeDashboardOdometerGaugePackageWithConfig(t, movement, policy)
+	packageDir := makeDashboardOdometerGaugePackageWithConfig(t, movement)
 	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 1024, Height: 600}, Widgets: []v3config.WidgetConfig{{ID: "trip", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{0, 0}, Scale: 1}}}}}}
 	runtime, err := NewRuntime(plan, testAssetRegistry())
 	if err != nil {
