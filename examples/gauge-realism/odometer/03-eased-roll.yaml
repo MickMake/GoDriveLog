@@ -7,21 +7,21 @@ vehicles:
     dashboards:
       - preview
 sensors:
-  fuel_level:
+  trip_distance:
     type: obd
-    pid: "012F"
-    unit: percent
+    pid: "015A"
+    unit: km
     min: 0
-    max: 100
+    max: 999.9
     poll: 250
 dashboards:
   preview:
     display: preview
     size:
-      width: 320
-      height: 480
+      width: 640
+      height: 240
     widgets:
-      - id: fuel_bar
+      - id: trip_odometer
         type: gauge
-        gauge: ../assets/gauges/fuel_bar
+        gauge: packages/eased_roll_trip_odometer
         position: [0, 0]

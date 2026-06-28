@@ -23,5 +23,5 @@ dashboards:
     widgets:
       - id: speed_numeric
         type: gauge
-        gauge: ../../ornate-timber/assets/gauges/speed_numeric
+        gauge: ../assets/gauges/speed_numeric
         position: [0, 0]

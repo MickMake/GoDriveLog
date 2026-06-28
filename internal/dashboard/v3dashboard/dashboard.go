@@ -43,6 +43,8 @@ type Runtime struct {
 	clock           func() time.Time
 }
 
+const defaultOdometerEasedRollDuration = 200 * time.Millisecond
+
 type movementPhase string
 
 const (
@@ -68,6 +70,7 @@ type movementContext struct {
 	WidgetID    string
 	SensorID    string
 	GaugeType   string
+	GaugeMode   string
 }
 
 type movementPlanner func(movementContext, sensors.SensorState, widgetMovementState) time.Duration
@@ -144,13 +147,24 @@ func NewRuntime(plan v3config.RuntimePlan, registry *v3assets.Registry) (*Runtim
 		dashboards = append(dashboards, dashboard)
 	}
 	return &Runtime{
-		dashboards: dashboards,
-		states:     map[string]sensors.SensorState{},
-		signatures: map[string]string{},
-		segments:   map[string]v3gauges.SegmentedSelection{},
-		movements:  map[string]widgetMovementState{},
-		clock:      time.Now,
+		dashboards:      dashboards,
+		states:          map[string]sensors.SensorState{},
+		signatures:      map[string]string{},
+		segments:        map[string]v3gauges.SegmentedSelection{},
+		movements:       map[string]widgetMovementState{},
+		movementPlanner: defaultMovementPlanner,
+		clock:           time.Now,
 	}, nil
+}
+
+func defaultMovementPlanner(context movementContext, state sensors.SensorState, current widgetMovementState) time.Duration {
+	if current.Policy == "" || current.Policy == v3gauges.MovementPolicyImmediate {
+		return 0
+	}
+	if context.GaugeType == v3gauges.TypeOdometer && context.GaugeMode == v3gauges.MovementSmooth {
+		return defaultOdometerEasedRollDuration
+	}
+	return 0
 }
 
 func WithGaugePackageLoader(loader func([]string, string) (v3gauges.Package, error), fn func() error) error {
@@ -399,6 +413,7 @@ func (d Dashboard) renderWidget(configWidget v3config.WidgetConfig, states map[s
 			WidgetID:    configWidget.ID,
 			SensorID:    pkg.Sensor,
 			GaugeType:   pkg.Type,
+			GaugeMode:   pkg.Odometer.Movement,
 		}, state, pkg.Realism.MovementPolicy, planner, now)
 		var gaugeScene v3gauges.Scene
 		switch pkg.Type {
