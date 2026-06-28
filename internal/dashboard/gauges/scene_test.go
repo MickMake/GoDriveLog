@@ -383,6 +383,49 @@ func TestOdometerSceneWraparoundDisabledKeepsLegacyResetAtBoundary(t *testing.T)
 	}
 }
 
+func TestOdometerCarryDragDisabledKeepsBaseWheelOffsets(t *testing.T) {
+	pkg := loadOdometerScenePackageWithRealism(t, MovementLinear, true, false, nil)
+	previousOffsets, err := OdometerWheelStripOffsets(pkg, 19.9)
+	if err != nil {
+		t.Fatalf("OdometerWheelStripOffsets failed: %v", err)
+	}
+	targetOffsets, err := OdometerWheelStripOffsets(pkg, 20.0)
+	if err != nil {
+		t.Fatalf("OdometerWheelStripOffsets failed: %v", err)
+	}
+	base := interpolatedWheelOffsets(previousOffsets, targetOffsets, 0.85)
+	adjusted, err := OdometerCarryDragWheelOffsets(pkg, 19.9, 20.0, previousOffsets, targetOffsets, base)
+	if err != nil {
+		t.Fatalf("OdometerCarryDragWheelOffsets failed: %v", err)
+	}
+	if !float64SlicesAlmostEqual(base, adjusted) {
+		t.Fatalf("expected carry_drag disabled to keep base offsets, got base=%v adjusted=%v", base, adjusted)
+	}
+}
+
+func TestOdometerCarryDragEnabledAdvancesHigherWheelNearRollover(t *testing.T) {
+	pkg := loadOdometerScenePackageWithRealism(t, MovementLinear, true, true, nil)
+	previousOffsets, err := OdometerWheelStripOffsets(pkg, 19.9)
+	if err != nil {
+		t.Fatalf("OdometerWheelStripOffsets failed: %v", err)
+	}
+	targetOffsets, err := OdometerWheelStripOffsets(pkg, 20.0)
+	if err != nil {
+		t.Fatalf("OdometerWheelStripOffsets failed: %v", err)
+	}
+	base := interpolatedWheelOffsets(previousOffsets, targetOffsets, 0.9)
+	adjusted, err := OdometerCarryDragWheelOffsets(pkg, 19.9, 20.0, previousOffsets, targetOffsets, base)
+	if err != nil {
+		t.Fatalf("OdometerCarryDragWheelOffsets failed: %v", err)
+	}
+	if !(adjusted[0] > base[0] && adjusted[0] < targetOffsets[0]) {
+		t.Fatalf("expected carry_drag to advance tens wheel toward target, got base=%v adjusted=%v target=%v", base[0], adjusted[0], targetOffsets[0])
+	}
+	if !(adjusted[1] > base[1] && adjusted[1] <= targetOffsets[1]) {
+		t.Fatalf("expected carry_drag to advance ones wheel toward target, got base=%v adjusted=%v target=%v", base[1], adjusted[1], targetOffsets[1])
+	}
+}
+
 func TestOdometerSceneAppliesConfiguredDrumSlopToWheelPositions(t *testing.T) {
 	pkg := loadOdometerScenePackage(t, "", false, []int{2, -1, 3})
 
@@ -689,10 +732,14 @@ func loadRadialScenePackage(t *testing.T) Package {
 }
 
 func loadOdometerScenePackage(t *testing.T, movement string, wraparound bool, drumSlop []int) Package {
+	return loadOdometerScenePackageWithRealism(t, movement, wraparound, false, drumSlop)
+}
+
+func loadOdometerScenePackageWithRealism(t *testing.T, movement string, wraparound bool, carryDrag bool, drumSlop []int) Package {
 	t.Helper()
 	root := makeGaugeFixtures(t)
 	packageDir := filepath.Join(root, "assets", "gauges", "odometer", "trip")
-	writeGaugeYAML(t, packageDir, odometerGaugeYAML(movement, wraparound, drumSlop))
+	writeGaugeYAML(t, packageDir, odometerGaugeYAML(movement, wraparound, carryDrag, drumSlop))
 	pkg, err := LoadPackage(packageDir)
 	if err != nil {
 		t.Fatalf("LoadPackage returned error: %v", err)
@@ -836,7 +883,7 @@ value_map:
 `
 }
 
-func odometerGaugeYAML(movement string, wraparound bool, drumSlop []int) string {
+func odometerGaugeYAML(movement string, wraparound bool, carryDrag bool, drumSlop []int) string {
 	movementLine := ""
 	if movement != "" {
 		movementLine = fmt.Sprintf("  movement: %s\n", movement)
@@ -844,6 +891,9 @@ func odometerGaugeYAML(movement string, wraparound bool, drumSlop []int) string 
 	realismLines := []string{}
 	if wraparound {
 		realismLines = append(realismLines, "  wraparound: true")
+	}
+	if carryDrag {
+		realismLines = append(realismLines, "  carry_drag: true")
 	}
 	if len(drumSlop) > 0 {
 		values := make([]string, len(drumSlop))
@@ -879,6 +929,26 @@ odometer:
       offset: [2, 4]
       role: sub_unit
 `, realismBlock, movementLine)
+}
+
+func interpolatedWheelOffsets(previous []float64, target []float64, progress float64) []float64 {
+	offsets := make([]float64, len(previous))
+	for index := range previous {
+		offsets[index] = previous[index] + ((target[index] - previous[index]) * progress)
+	}
+	return offsets
+}
+
+func float64SlicesAlmostEqual(left []float64, right []float64) bool {
+	if len(left) != len(right) {
+		return false
+	}
+	for index := range left {
+		if !almostEqual(left[index], right[index]) {
+			return false
+		}
+	}
+	return true
 }
 
 func indicatorGaugeYAML() string {

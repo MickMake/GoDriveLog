@@ -1,0 +1,35 @@
+id: carry_drag_trip_odometer
+type: odometer
+sensor: trip_distance
+
+realism:
+  wraparound: true
+  carry_drag: true
+
+size:
+  width: 332
+  height: 118
+
+layers:
+  panel: ../trip_odometer/panel.png
+  glass: ../trip_odometer/glass.png
+
+odometer:
+  movement: bell
+  wheels:
+    - strip: ../trip_odometer/digits.png
+      position: [24, 28]
+      window: { width: 40, height: 56 }
+    - strip: ../trip_odometer/digits.png
+      position: [82, 28]
+      window: { width: 40, height: 56 }
+    - strip: ../trip_odometer/digits.png
+      position: [140, 28]
+      window: { width: 40, height: 56 }
+    - strip: ../trip_odometer/digits.png
+      position: [198, 28]
+      window: { width: 40, height: 56 }
+    - strip: ../trip_odometer/tenths.png
+      position: [256, 28]
+      window: { width: 40, height: 56 }
+      role: sub_unit
