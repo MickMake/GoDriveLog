@@ -2,7 +2,7 @@
 
 These prompts define the v3.5 slice sequence.
 
-## Usage
+## Codex Usage
 
 These prompt files are intended for ChatGPT, Codex, or a human applying the same slice rules.
 
