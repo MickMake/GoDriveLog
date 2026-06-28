@@ -291,6 +291,7 @@ func OdometerCarryDragWheelOffsets(pkg Package, previousValue float64, targetVal
 	}
 
 	adjusted := cloneFloat64s(baseOffsets)
+	wraparound := odometerWraparoundEnabled(pkg)
 	digitPlaces := odometerDigitPlaces(pkg.Odometer.Wheels)
 	for higherIndex := len(pkg.Odometer.Wheels) - 2; higherIndex >= 0; higherIndex-- {
 		lowerIndex := higherIndex + 1
@@ -302,7 +303,15 @@ func OdometerCarryDragWheelOffsets(pkg Package, previousValue float64, targetVal
 			continue
 		}
 
-		lowerProgress := odometerOffsetProgress(previousOffsets[lowerIndex], targetOffsets[lowerIndex], adjusted[lowerIndex])
+		rolloverValue, err := odometerWheelRolloverValue(pkg.Odometer.Wheels[lowerIndex], digitPlaces[lowerIndex], previousValue, targetValue)
+		if err != nil {
+			return nil, fmt.Errorf("gauge package %q: %w", pkg.ID, err)
+		}
+		rolloverOffset, err := odometerWheelOffset(wraparound, pkg.Odometer.Wheels[lowerIndex], digitPlaces[lowerIndex], rolloverValue)
+		if err != nil {
+			return nil, fmt.Errorf("gauge package %q: %w", pkg.ID, err)
+		}
+		lowerProgress := odometerOffsetProgress(previousOffsets[lowerIndex], rolloverOffset, adjusted[lowerIndex])
 		if lowerProgress <= odometerCarryDragLeadInStart {
 			continue
 		}
@@ -869,6 +878,19 @@ func odometerWheelRollover(wheel OdometerWheel, place int, previousValue float64
 		return false, err
 	}
 	return targetPosition < previousPosition, nil
+}
+
+func odometerWheelRolloverValue(wheel OdometerWheel, place int, previousValue float64, targetValue float64) (float64, error) {
+	if targetValue <= previousValue {
+		return previousValue, fmt.Errorf("odometer wheel rollover requires increasing value transition")
+	}
+	if odometerWheelRole(wheel) == WheelRoleSubUnit {
+		return math.Floor(math.Abs(previousValue)) + 1, nil
+	}
+	if place < 0 {
+		return 0, fmt.Errorf("odometer wheel place must not be negative")
+	}
+	return (math.Floor(math.Abs(previousValue)/math.Pow10(place+1)) + 1) * math.Pow10(place+1), nil
 }
 
 func odometerOffsetAdvancesForward(previous float64, target float64) bool {

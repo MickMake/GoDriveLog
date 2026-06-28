@@ -426,6 +426,36 @@ func TestOdometerCarryDragEnabledAdvancesHigherWheelNearRollover(t *testing.T) {
 	}
 }
 
+func TestOdometerCarryDragStraddlingUpdateStartsBeforeLowerWheelPassesRollover(t *testing.T) {
+	pkg := loadOdometerScenePackageWithRealism(t, MovementLinear, true, true, false, nil)
+	previousOffsets, err := OdometerWheelStripOffsets(pkg, 19.8)
+	if err != nil {
+		t.Fatalf("OdometerWheelStripOffsets failed: %v", err)
+	}
+	targetOffsets, err := OdometerWheelStripOffsets(pkg, 20.2)
+	if err != nil {
+		t.Fatalf("OdometerWheelStripOffsets failed: %v", err)
+	}
+	base := interpolatedWheelOffsets(previousOffsets, targetOffsets, 0.45)
+	adjusted, err := OdometerCarryDragWheelOffsets(pkg, 19.8, 20.2, previousOffsets, targetOffsets, base)
+	if err != nil {
+		t.Fatalf("OdometerCarryDragWheelOffsets failed: %v", err)
+	}
+	rolloverOffset, err := odometerWheelOffset(true, pkg.Odometer.Wheels[1], odometerDigitPlaces(pkg.Odometer.Wheels)[1], 20.0)
+	if err != nil {
+		t.Fatalf("odometerWheelOffset failed: %v", err)
+	}
+	if !(base[1] < rolloverOffset) {
+		t.Fatalf("expected lower wheel to still be approaching rollover, got base ones offset %.2f with rollover %.2f", base[1], rolloverOffset)
+	}
+	if !(adjusted[0] > base[0]) {
+		t.Fatalf("expected carry_drag to advance tens wheel before rollover on straddling update, got base=%v adjusted=%v", base[0], adjusted[0])
+	}
+	if !(adjusted[1] >= base[1]) {
+		t.Fatalf("expected lower wheel base offset to stay monotonic, got base=%v adjusted=%v", base[1], adjusted[1])
+	}
+}
+
 func TestOdometerSnapSettleDisabledKeepsBaseWheelOffsets(t *testing.T) {
 	pkg := loadOdometerScenePackageWithRealism(t, MovementLinear, false, false, false, nil)
 	previousOffsets, err := OdometerWheelStripOffsets(pkg, 12.0)
