@@ -307,6 +307,9 @@ func OdometerCarryDragWheelOffsets(pkg Package, previousValue float64, targetVal
 		if err != nil {
 			return nil, fmt.Errorf("gauge package %q: %w", pkg.ID, err)
 		}
+		if odometerWheelCrossesMultipleRollovers(pkg.Odometer.Wheels[lowerIndex], digitPlaces[lowerIndex], previousValue, targetValue, rolloverValue) {
+			continue
+		}
 		rolloverOffset, err := odometerWheelOffset(wraparound, pkg.Odometer.Wheels[lowerIndex], digitPlaces[lowerIndex], rolloverValue)
 		if err != nil {
 			return nil, fmt.Errorf("gauge package %q: %w", pkg.ID, err)
@@ -891,6 +894,19 @@ func odometerWheelRolloverValue(wheel OdometerWheel, place int, previousValue fl
 		return 0, fmt.Errorf("odometer wheel place must not be negative")
 	}
 	return (math.Floor(math.Abs(previousValue)/math.Pow10(place+1)) + 1) * math.Pow10(place+1), nil
+}
+
+func odometerWheelCrossesMultipleRollovers(wheel OdometerWheel, place int, previousValue float64, targetValue float64, firstRolloverValue float64) bool {
+	if targetValue <= previousValue {
+		return false
+	}
+	if odometerWheelRole(wheel) == WheelRoleSubUnit {
+		return targetValue >= firstRolloverValue+1
+	}
+	if place < 0 {
+		return false
+	}
+	return targetValue >= firstRolloverValue+math.Pow10(place+1)
 }
 
 func odometerOffsetAdvancesForward(previous float64, target float64) bool {

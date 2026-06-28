@@ -1061,6 +1061,71 @@ func TestRuntimeOdometerGaugeCarryDragStraddlingUpdatePullsHigherWheelBeforeRoll
 	}
 }
 
+func TestRuntimeOdometerGaugeCarryDragSparseMultiRolloverUpdateDoesNotYankHigherWheelAheadAndStillSettlesExactlyOnTarget(t *testing.T) {
+	baseRuntime := testOdometerMovementRuntimeWithRealism(t, v3gauges.MovementLinear, true, false, false)
+	carryRuntime := testOdometerMovementRuntimeWithRealism(t, v3gauges.MovementLinear, true, true, false)
+
+	start := time.Unix(100, 0)
+	for _, runtime := range []*Runtime{baseRuntime, carryRuntime} {
+		_, _, err := runtime.ApplyEvent(sensors.SensorEvent{
+			Kind:      sensors.EventKindValueChange,
+			SensorID:  "trip_distance",
+			State:     okState("trip_distance", 20.8, "km"),
+			Timestamp: start,
+			ReadAt:    start,
+		})
+		if err != nil {
+			t.Fatalf("ApplyEvent failed: %v", err)
+		}
+		_, _, err = runtime.ApplyEvent(sensors.SensorEvent{
+			Kind:      sensors.EventKindValueChange,
+			SensorID:  "trip_distance",
+			State:     okState("trip_distance", 31.2, "km"),
+			Timestamp: start.Add(10 * time.Millisecond),
+			ReadAt:    start.Add(10 * time.Millisecond),
+		})
+		if err != nil {
+			t.Fatalf("ApplyEvent failed: %v", err)
+		}
+	}
+
+	baseScenes, changed, err := baseRuntime.Tick(start.Add(50 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected base sparse carry_drag tick to redraw")
+	}
+	carryScenes, changed, err := carryRuntime.Tick(start.Add(50 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected carry sparse carry_drag tick to redraw")
+	}
+
+	baseWheels := wheelStripWidgetParts(requireWidget(t, baseScenes[0], "trip"))
+	carryWheels := wheelStripWidgetParts(requireWidget(t, carryScenes[0], "trip"))
+	if !almostEqual(carryWheels[0].StripOffset, baseWheels[0].StripOffset) {
+		t.Fatalf("expected sparse multi-rollover update to avoid early tens drag: base=%.2f carry=%.2f", baseWheels[0].StripOffset, carryWheels[0].StripOffset)
+	}
+	if !almostEqual(carryWheels[1].StripOffset, baseWheels[1].StripOffset) {
+		t.Fatalf("expected sparse multi-rollover update to avoid early ones drag: base=%.2f carry=%.2f", baseWheels[1].StripOffset, carryWheels[1].StripOffset)
+	}
+
+	finalScenes, changed, err := carryRuntime.Tick(start.Add(210 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected final sparse carry-drag tick to redraw")
+	}
+	finalWheels := wheelStripWidgetParts(requireWidget(t, finalScenes[0], "trip"))
+	if !almostEqual(finalWheels[0].StripOffset, 62.4) || !almostEqual(finalWheels[1].StripOffset, 624.0) || !almostEqual(finalWheels[2].StripOffset, 6240.0) {
+		t.Fatalf("expected sparse multi-rollover update to settle exactly on target, got %.2f/%.2f/%.2f", finalWheels[0].StripOffset, finalWheels[1].StripOffset, finalWheels[2].StripOffset)
+	}
+}
+
 func TestRuntimeOdometerGaugeSnapSettleAddsShortTailAndSettlesExactlyOnTarget(t *testing.T) {
 	baseRuntime := testOdometerMovementRuntimeWithRealism(t, v3gauges.MovementLinear, false, false, false)
 	settleRuntime := testOdometerMovementRuntimeWithRealism(t, v3gauges.MovementLinear, false, false, true)

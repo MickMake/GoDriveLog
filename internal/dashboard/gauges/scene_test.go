@@ -456,6 +456,26 @@ func TestOdometerCarryDragStraddlingUpdateStartsBeforeLowerWheelPassesRollover(t
 	}
 }
 
+func TestOdometerCarryDragSkipsMultiRolloverSpanForWheelPair(t *testing.T) {
+	pkg := loadOdometerScenePackageWithRealism(t, MovementLinear, true, true, false, nil)
+	previousOffsets, err := OdometerWheelStripOffsets(pkg, 20.8)
+	if err != nil {
+		t.Fatalf("OdometerWheelStripOffsets failed: %v", err)
+	}
+	targetOffsets, err := OdometerWheelStripOffsets(pkg, 31.2)
+	if err != nil {
+		t.Fatalf("OdometerWheelStripOffsets failed: %v", err)
+	}
+	base := interpolatedWheelOffsets(previousOffsets, targetOffsets, 0.2)
+	adjusted, err := OdometerCarryDragWheelOffsets(pkg, 20.8, 31.2, previousOffsets, targetOffsets, base)
+	if err != nil {
+		t.Fatalf("OdometerCarryDragWheelOffsets failed: %v", err)
+	}
+	if !float64SlicesAlmostEqual(base, adjusted) {
+		t.Fatalf("expected multi-rollover carry_drag span to skip pair drag, got base=%v adjusted=%v", base, adjusted)
+	}
+}
+
 func TestOdometerSnapSettleDisabledKeepsBaseWheelOffsets(t *testing.T) {
 	pkg := loadOdometerScenePackageWithRealism(t, MovementLinear, false, false, false, nil)
 	previousOffsets, err := OdometerWheelStripOffsets(pkg, 12.0)
