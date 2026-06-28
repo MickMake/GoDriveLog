@@ -23,5 +23,5 @@ dashboards:
     widgets:
       - id: rpm_segmented
         type: gauge
-        gauge: ../../ornate-timber/assets/gauges/rpm_segmented
+        gauge: ../assets/gauges/rpm_segmented
         position: [0, 0]

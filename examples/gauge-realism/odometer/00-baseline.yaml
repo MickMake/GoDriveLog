@@ -23,5 +23,5 @@ dashboards:
     widgets:
       - id: trip_odometer
         type: gauge
-        gauge: ../../steam-scrap/assets/gauges/trip_odometer
+        gauge: ../assets/gauges/trip_odometer
         position: [0, 0]

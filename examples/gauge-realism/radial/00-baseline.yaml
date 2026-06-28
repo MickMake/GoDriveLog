@@ -23,5 +23,5 @@ dashboards:
     widgets:
       - id: radial_rpm
         type: gauge
-        gauge: ../../ornate-timber/assets/gauges/radial_rpm
+        gauge: ../assets/gauges/radial_rpm
         position: [0, 0]

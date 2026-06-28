@@ -23,5 +23,5 @@ dashboards:
     widgets:
       - id: fuel_bar
         type: gauge
-        gauge: ../../ornate-timber/assets/gauges/fuel_bar
+        gauge: ../assets/gauges/fuel_bar
         position: [0, 0]

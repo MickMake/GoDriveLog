@@ -23,5 +23,5 @@ dashboards:
     widgets:
       - id: check_engine_indicator
         type: gauge
-        gauge: ../../ornate-timber/assets/gauges/check_engine_indicator
+        gauge: ../assets/gauges/check_engine_indicator
         position: [0, 0]
