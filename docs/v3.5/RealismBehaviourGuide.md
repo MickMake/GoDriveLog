@@ -16,35 +16,104 @@ The goal is believable gauge behaviour: small, clear details that make gauges fe
 
 ## `movement`
 
-Applies to: relevant gauge types.
+Applies to: all gauge types for parsing; concrete behaviour is defined per gauge type.
 
-### `click`
+`movement` is the single movement knob. It should remain a collapsed scalar, not a nested policy object.
+
+Gauge types that do not yet have concrete movement behaviour may accept `movement` and keep their current immediate display behaviour until a later slice defines more. Do not invent broad physics or idle animation to make unsupported gauge types look busy.
+
+### Odometer movement values
+
+Odometers use:
+
+```yaml
+odometer:
+  movement: instant | linear | ease_out | bell | smooth | click
+```
+
+#### `instant`
 
 **Visual intent:**
 
-The gauge display updates directly to the next displayed value unless another enabled realism option adds visible movement.
+The digit display updates directly to the target value with no visible animation.
 
 **Good result:**
 
-The display feels crisp and stable. It should suit gauges that step between positions or values.
+The reading changes immediately and settles exactly on the target value.
 
 **Bad result:**
 
-The display unexpectedly drifts, eases, or animates when no other realism option asks it to.
+The wheel drifts, eases, leaves a fractional resting offset, or continues ticking after the value has changed.
 
-### `smooth`
+#### `linear`
 
 **Visual intent:**
 
-The gauge display may interpolate continuously where the gauge type supports continuous movement.
+The wheel rolls from the previous digit position to the target digit position at constant speed.
 
 **Good result:**
 
-The display visibly moves between values in a clean, controlled way.
+The movement is plain, deterministic, readable, and settles exactly on the target digit position.
 
 **Bad result:**
 
-The display keeps moving after it should have settled, or creates movement on gauge types that cannot sensibly show it.
+The movement changes speed unexpectedly, rolls the long way without a path rule asking for it, or settles between digits.
+
+#### `ease_out`
+
+**Visual intent:**
+
+The wheel starts moving quickly, then slows into the target.
+
+**Good result:**
+
+The wheel feels mechanically eased without becoming theatrical. At completion it lands exactly on the target digit position.
+
+**Bad result:**
+
+The wheel eases so slowly that it feels sluggish, fails to settle, or leaves a fractional display state behind.
+
+#### `bell`
+
+**Visual intent:**
+
+The wheel starts slow, speeds up through the middle, then slows into the target. This is a bell-curve velocity / smoothstep-style movement.
+
+**Good result:**
+
+The roll feels smooth and mechanical while still being simple and bounded.
+
+**Bad result:**
+
+The movement feels springy, bouncy, or like a physics simulation. Bell movement is not snap/settle, backlash, or carry-drag.
+
+#### `smooth`
+
+**Visual intent:**
+
+Recognised only for odometers in this slice. Reserved for future enhancement.
+
+**Good result:**
+
+The configuration emits a clear warning and falls back to `instant`.
+
+**Bad result:**
+
+The system silently treats `smooth` as a real odometer movement mode, or invents generic smoothing without a documented slice.
+
+#### `click`
+
+**Visual intent:**
+
+Recognised only for odometers in this slice. Reserved for future stepped-click enhancement.
+
+**Good result:**
+
+The configuration emits a clear warning and falls back to `instant`.
+
+**Bad result:**
+
+The system silently treats `click` as a real odometer movement mode, or implements stepped clicking early.
 
 ## `wraparound`
 

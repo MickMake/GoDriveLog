@@ -30,36 +30,52 @@ Do not break the v3.4 gauge type model:
 
 ## Realism configuration doctrine
 
-All v3.5 realism options live under the `realism` key.
+Most v3.5 realism options live under the `realism` key.
 
-Keep the config collapsed where possible. Simple options may be booleans or scalars. Expand an option only when it needs settings.
+`movement` is the exception. It is the single scalar movement knob and should be accepted by any gauge type for now. Gauge types that do not yet have concrete movement behaviour may parse `movement` and use their current immediate behaviour until a later slice defines more.
 
-Preferred shape:
+Keep config collapsed where possible. Simple options may be booleans or scalars. Expand an option only when it needs settings.
+
+Odometer movement shape:
 
 ```yaml
+odometer:
+  movement: bell
+
 realism:
-  movement: click
   wraparound: true
-  damping:
-    duration_ms: 300
+  drum_slop:
+    offsets: [0.0, 0.03, -0.02]
 ```
 
-`realism.movement` is the base movement mode. It is a collapsed scalar, not a nested object.
+Odometer `movement` controls the main odometer wheel movement phase.
 
-Allowed movement values are:
+Allowed odometer movement values are:
 
-- `click`
+- `instant`
+- `linear`
+- `ease_out`
+- `bell`
 - `smooth`
+- `click`
 
-If omitted, `movement` defaults to `click`.
+Odometer `instant` means the digit display jumps immediately to the target value with no animation.
 
-`click` means the display updates directly to the next value with no visible transition unless another enabled realism option adds one.
+Odometer `linear` means the wheel rolls from the old digit position to the target digit position at constant speed.
 
-`smooth` means the display may interpolate continuously where that gauge type supports it.
+Odometer `ease_out` means the wheel starts fast, then slows into the target.
 
-The existing top-level `movement` field may remain supported for backwards compatibility, but new v3.5 configuration should use `realism.movement`.
+Odometer `bell` means the wheel starts slow, speeds up through the middle, then slows into the target.
 
-Unknown realism options must fail configuration loading with a clear error. Known realism options used on unsupported gauge types must also fail. Invalid `movement` values and invalid `realism.order` entries must fail.
+Odometer `smooth` is recognised only, reserved for future enhancement, and should warn then fall back to `instant`.
+
+Odometer `click` is recognised only, reserved for future stepped-click enhancement, and should warn then fall back to `instant`.
+
+`realism.movement_policy` is obsolete for odometer movement. Do not use or recommend it for odometers.
+
+Existing top-level `movement` may remain supported for backwards compatibility where already present.
+
+Unknown realism options must fail configuration loading with a clear error. Known realism options used on unsupported gauge types must also fail. Unknown movement values must fail configuration loading unless a gauge type explicitly documents a recognised fallback. Invalid `realism.order` entries must fail.
 
 Realism options affect display behaviour only. They must not mutate source values, logs, exported values, configured ranges, or input data.
 
@@ -69,7 +85,7 @@ These options are in scope for v3.5 and should be defined, not parked:
 
 | Option | Applies to | Summary |
 |---|---|---|
-| `movement` | relevant gauge types | Base display movement mode, default `click`, optional `smooth`. |
+| `movement` | all gauge types for parsing; concrete behaviour defined per gauge type | Single scalar movement knob. Odometer defines `instant`, `linear`, `ease_out`, `bell`, recognised `smooth`, and recognised `click`. |
 | `wraparound` | odometer | Roll cleanly through digit strip boundaries, especially `9 -> 0`. |
 | `drum_slop` | odometer | Static per-wheel alignment imperfection. |
 | `carry_drag` | odometer | Higher digit creeps during lower digit rollover. |
@@ -86,6 +102,49 @@ These options are in scope for v3.5 and should be defined, not parked:
 
 Numeric and segmented gauges do not get extra realism behaviour in v3.5 unless a later slice explicitly adds it. Indicator gauges support `thermal_fade`. These gauge types may still have baseline preview files.
 
+## Odometer movement phase model
+
+Odometer realism should be composable:
+
+```text
+route -> lead_in -> travel -> settle -> rest
+```
+
+The phase model is internal implementation structure, not the public YAML shape. Public config remains feature-oriented. Do not expose `movement.pre`, `movement.primary`, or `movement.post` unless a later docs slice explicitly changes the public config model.
+
+For v3.5.6:
+
+```text
+default route -> none -> instant / linear / ease_out / bell -> none -> existing static offsets
+```
+
+Future odometer slices fit around this:
+
+| Slice | Feature | Phase |
+|---|---|---|
+| v3.5.2 | `wraparound` | `route` path rule |
+| v3.5.3 | `drum_slop` | `rest` static offset |
+| v3.5.6 | `movement` | `travel` curve |
+| v3.5.7 | `carry_drag` / 9-drag | `lead_in` / overlap movement on neighbouring wheels |
+| v3.5.14 | `snap_settle` | `settle` tail |
+| v3.5.15 | `backlash` | `lead_in` / `settle` direction-change slack |
+
+The main odometer movement phase must not render by permanently feeding fractional numeric odometer values back into the source display value.
+
+Bad model:
+
+```text
+displayValue = 5998.5
+```
+
+Good model:
+
+```text
+from digit position -> movement phase -> target digit position
+```
+
+At the end of the movement phase, the handover position must be exactly the target digit position. Later settle effects such as `snap_settle` may start from that handover position.
+
 ## Realism ordering
 
 `realism.order` may optionally define the order in which enabled realism behaviours are applied.
@@ -94,7 +153,6 @@ Example:
 
 ```yaml
 realism:
-  movement: smooth
   order:
     - hysteresis
     - stiction
@@ -130,11 +188,11 @@ overshoot
 Default odometer order:
 
 ```text
-wraparound
-carry_drag
-backlash
-snap_settle
-drum_slop
+route: wraparound
+lead_in: carry_drag, backlash
+travel: movement
+settle: snap_settle, backlash
+rest: drum_slop
 ```
 
 Default indicator order:
@@ -243,8 +301,8 @@ Numeric and segmented gauges should only get baseline previews in v3.5 unless a 
 | v3.5.2 | Odometer wraparound | Roll through digit strip boundaries cleanly. |
 | v3.5.3 | Odometer drum slop | Add fixed per-wheel alignment offsets. |
 | v3.5.4 | Finite movement lifecycle | Add static -> changed -> moving -> settled lifecycle. |
-| v3.5.5 | Shared movement policy | Add simple policies such as immediate, linear, ease_out if still needed after `realism.movement`. |
-| v3.5.6 | Odometer eased roll | Apply finite easing to odometer wheel movement. |
+| v3.5.5 | Shared movement groundwork | Add reusable lifecycle helpers for finite movement; `realism.movement_policy` is not used for odometer movement. |
+| v3.5.6 | Odometer movement | Define and apply the main odometer wheel movement phase. |
 | v3.5.7 | Odometer carry-drag | Make higher digits creep during lower digit rollover. |
 | v3.5.8 | Radial damping | Add lagged needle response. |
 | v3.5.9 | Radial stiction | Add thresholded movement release for sticky needles. |
