@@ -93,6 +93,7 @@ type ValueMap struct {
 
 type Realism struct {
 	Wraparound     *bool  `yaml:"wraparound,omitempty"`
+	CarryDrag      *bool  `yaml:"carry_drag,omitempty"`
 	MovementPolicy string `yaml:"movement_policy,omitempty"`
 	DrumSlop       []int  `yaml:"drum_slop,omitempty"`
 	DrumSlopSet    bool   `yaml:"-"`
@@ -104,6 +105,7 @@ func (r *Realism) UnmarshalYAML(node *yaml.Node) error {
 	}
 	allowedKeys := map[string]bool{
 		"wraparound":      true,
+		"carry_drag":      true,
 		"movement_policy": true,
 		"drum_slop":       true,
 	}
@@ -440,6 +442,9 @@ func validateRealism(pkg Package) error {
 	}
 	if pkg.Realism.Wraparound != nil && pkg.Type != TypeOdometer {
 		return fmt.Errorf("realism wraparound is only supported for odometer gauges")
+	}
+	if pkg.Realism.CarryDrag != nil && pkg.Type != TypeOdometer {
+		return fmt.Errorf("realism carry_drag is only supported for odometer gauges")
 	}
 	if pkg.Realism.DrumSlopSet {
 		if pkg.Type != TypeOdometer {

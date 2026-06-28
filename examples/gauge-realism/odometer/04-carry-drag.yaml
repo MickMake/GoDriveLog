@@ -1,0 +1,27 @@
+vehicles:
+  demo:
+    name: Gauge Preview
+    obd:
+      address: preview://manual
+      timeout: 1000
+    dashboards:
+      - preview
+sensors:
+  trip_distance:
+    type: obd
+    pid: "015A"
+    unit: km
+    min: 19.8
+    max: 20.2
+    poll: 250
+dashboards:
+  preview:
+    display: preview
+    size:
+      width: 640
+      height: 240
+    widgets:
+      - id: trip_odometer
+        type: gauge
+        gauge: ../assets/gauges/carry_drag_trip_odometer
+        position: [0, 0]

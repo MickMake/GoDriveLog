@@ -599,6 +599,12 @@ func resolveOdometerMovementState(movements map[string]widgetMovementState, key 
 		}
 	}
 	movement = advanceMovementState(movement, now)
+	if movementActive(movement) && len(movement.WheelOffsets) == len(pkg.Odometer.Wheels) {
+		movement.WheelOffsets, err = v3gauges.OdometerCarryDragWheelOffsets(pkg, movement.PreviousDisplayValue, movement.TargetValue, movement.PreviousWheelOffsets, movement.TargetWheelOffsets, movement.WheelOffsets)
+		if err != nil {
+			return source, widgetMovementState{}, false, err
+		}
+	}
 	movements[key] = movement
 	return source, movement, movementActive(movement) != movementActive(previous), nil
 }

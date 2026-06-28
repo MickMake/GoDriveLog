@@ -276,6 +276,44 @@ func OdometerWheelStripOffsets(pkg Package, value float64) ([]float64, error) {
 	return offsets, nil
 }
 
+const (
+	odometerCarryDragLeadInStart = 0.75
+	odometerCarryDragStrength    = 0.65
+)
+
+func OdometerCarryDragWheelOffsets(pkg Package, previousValue float64, targetValue float64, previousOffsets []float64, targetOffsets []float64, baseOffsets []float64) ([]float64, error) {
+	if !odometerCarryDragEnabled(pkg) || targetValue <= previousValue {
+		return cloneFloat64s(baseOffsets), nil
+	}
+	if len(previousOffsets) != len(targetOffsets) || len(targetOffsets) != len(baseOffsets) || len(baseOffsets) != len(pkg.Odometer.Wheels) {
+		return nil, fmt.Errorf("gauge package %q carry_drag requires exactly one wheel offset per odometer wheel", pkg.ID)
+	}
+
+	adjusted := cloneFloat64s(baseOffsets)
+	digitPlaces := odometerDigitPlaces(pkg.Odometer.Wheels)
+	for higherIndex := len(pkg.Odometer.Wheels) - 2; higherIndex >= 0; higherIndex-- {
+		lowerIndex := higherIndex + 1
+		rollover, err := odometerWheelRollover(pkg.Odometer.Wheels[lowerIndex], digitPlaces[lowerIndex], previousValue, targetValue)
+		if err != nil {
+			return nil, fmt.Errorf("gauge package %q: %w", pkg.ID, err)
+		}
+		if !rollover || !odometerOffsetAdvancesForward(previousOffsets[lowerIndex], targetOffsets[lowerIndex]) || !odometerOffsetAdvancesForward(previousOffsets[higherIndex], targetOffsets[higherIndex]) {
+			continue
+		}
+
+		lowerProgress := odometerOffsetProgress(previousOffsets[lowerIndex], targetOffsets[lowerIndex], adjusted[lowerIndex])
+		if lowerProgress <= odometerCarryDragLeadInStart {
+			continue
+		}
+
+		leadProgress := (lowerProgress - odometerCarryDragLeadInStart) / (1 - odometerCarryDragLeadInStart)
+		leadProgress = clampUnit(leadProgress)
+		leadProgress = leadProgress * leadProgress * (3 - (2 * leadProgress))
+		adjusted[higherIndex] = advanceOffsetTowardTarget(adjusted[higherIndex], targetOffsets[higherIndex], leadProgress*odometerCarryDragStrength)
+	}
+	return adjusted, nil
+}
+
 func IndicatorScene(pkg Package, placement Placement, state sensors.SensorState) (Scene, error) {
 	if pkg.Type != TypeIndicator {
 		return Scene{}, fmt.Errorf("gauge package %q type %q is not indicator", pkg.ID, pkg.Type)
@@ -695,6 +733,10 @@ func odometerWraparoundEnabled(pkg Package) bool {
 	return pkg.Realism.Wraparound != nil && *pkg.Realism.Wraparound
 }
 
+func odometerCarryDragEnabled(pkg Package) bool {
+	return pkg.Realism.CarryDrag != nil && *pkg.Realism.CarryDrag
+}
+
 func odometerDrumSlop(pkg Package, wheelIndex int) int {
 	if wheelIndex < 0 || wheelIndex >= len(pkg.Realism.DrumSlop) {
 		return 0
@@ -759,6 +801,13 @@ func cloneInts(values []int) []int {
 	return append([]int(nil), values...)
 }
 
+func cloneFloat64s(values []float64) []float64 {
+	if values == nil {
+		return nil
+	}
+	return append([]float64(nil), values...)
+}
+
 func cloneIntSlices(values [][]int) [][]int {
 	if values == nil {
 		return nil
@@ -768,6 +817,43 @@ func cloneIntSlices(values [][]int) [][]int {
 		cloned[i] = cloneInts(value)
 	}
 	return cloned
+}
+
+func odometerWheelRollover(wheel OdometerWheel, place int, previousValue float64, targetValue float64) (bool, error) {
+	previousPosition, err := odometerWheelPosition(wheel, place, previousValue, false)
+	if err != nil {
+		return false, err
+	}
+	targetPosition, err := odometerWheelPosition(wheel, place, targetValue, false)
+	if err != nil {
+		return false, err
+	}
+	return targetPosition < previousPosition, nil
+}
+
+func odometerOffsetAdvancesForward(previous float64, target float64) bool {
+	return target > previous
+}
+
+func odometerOffsetProgress(previous float64, target float64, current float64) float64 {
+	if target <= previous {
+		return 0
+	}
+	return clampUnit((current - previous) / (target - previous))
+}
+
+func advanceOffsetTowardTarget(current float64, target float64, factor float64) float64 {
+	return current + ((target - current) * clampUnit(factor))
+}
+
+func clampUnit(value float64) float64 {
+	if value < 0 {
+		return 0
+	}
+	if value > 1 {
+		return 1
+	}
+	return value
 }
 
 func formatIntSlice(values []int) string {

@@ -1,8 +1,8 @@
 # v3.5 Implementation State
 
-Status: v3.5.6b odometer movement model implemented
+Status: v3.5.7 odometer carry-drag implemented
 
-Current target: v3.5.7 odometer carry-drag / 9-drag
+Current target: v3.5.8 radial damping
 
 Current branch: `impl/v3.5.7-odometer-carry-drag`
 
@@ -103,7 +103,7 @@ Not allowed in v3.5:
 - [x] v3.5.5 shared movement policy groundwork
 - [x] v3.5.6a document odometer movement goal / alignment
 - [x] v3.5.6b implement odometer movement model
-- [ ] v3.5.7 odometer carry-drag / 9-drag
+- [x] v3.5.7 odometer carry-drag / 9-drag
 - [ ] v3.5.8 radial damping
 - [ ] v3.5.9 radial stiction
 - [ ] v3.5.10 radial/bar overshoot

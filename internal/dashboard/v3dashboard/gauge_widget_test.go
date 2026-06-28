@@ -931,6 +931,71 @@ func TestRuntimeOdometerGaugeBellMovementStartsSlowerThanLinearAndSettlesExactly
 	}
 }
 
+func TestRuntimeOdometerGaugeCarryDragAdvancesHigherWheelNearRolloverAndSettlesExactlyOnTarget(t *testing.T) {
+	baseRuntime := testOdometerMovementRuntimeWithRealism(t, v3gauges.MovementLinear, true, false)
+	carryRuntime := testOdometerMovementRuntimeWithRealism(t, v3gauges.MovementLinear, true, true)
+
+	start := time.Unix(100, 0)
+	for _, runtime := range []*Runtime{baseRuntime, carryRuntime} {
+		_, _, err := runtime.ApplyEvent(sensors.SensorEvent{
+			Kind:      sensors.EventKindValueChange,
+			SensorID:  "trip_distance",
+			State:     okState("trip_distance", 19.9, "km"),
+			Timestamp: start,
+			ReadAt:    start,
+		})
+		if err != nil {
+			t.Fatalf("ApplyEvent failed: %v", err)
+		}
+		_, _, err = runtime.ApplyEvent(sensors.SensorEvent{
+			Kind:      sensors.EventKindValueChange,
+			SensorID:  "trip_distance",
+			State:     okState("trip_distance", 20.0, "km"),
+			Timestamp: start.Add(10 * time.Millisecond),
+			ReadAt:    start.Add(10 * time.Millisecond),
+		})
+		if err != nil {
+			t.Fatalf("ApplyEvent failed: %v", err)
+		}
+	}
+
+	baseScenes, changed, err := baseRuntime.Tick(start.Add(170 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected base rollover tick to redraw")
+	}
+	carryScenes, changed, err := carryRuntime.Tick(start.Add(170 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected carry-drag rollover tick to redraw")
+	}
+
+	baseWheels := wheelStripWidgetParts(requireWidget(t, baseScenes[0], "trip"))
+	carryWheels := wheelStripWidgetParts(requireWidget(t, carryScenes[0], "trip"))
+	if !(carryWheels[0].StripOffset > baseWheels[0].StripOffset) {
+		t.Fatalf("expected carry_drag to advance tens wheel further than base: base=%.2f carry=%.2f", baseWheels[0].StripOffset, carryWheels[0].StripOffset)
+	}
+	if !(carryWheels[1].StripOffset > baseWheels[1].StripOffset) {
+		t.Fatalf("expected carry_drag to advance ones wheel further than base: base=%.2f carry=%.2f", baseWheels[1].StripOffset, carryWheels[1].StripOffset)
+	}
+
+	finalScenes, changed, err := carryRuntime.Tick(start.Add(210 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected final carry-drag tick to redraw")
+	}
+	finalWheels := wheelStripWidgetParts(requireWidget(t, finalScenes[0], "trip"))
+	if !almostEqual(finalWheels[0].StripOffset, 40.0) || !almostEqual(finalWheels[1].StripOffset, 400.0) || !almostEqual(finalWheels[2].StripOffset, 4000.0) {
+		t.Fatalf("expected carry-drag to settle exactly on rollover target, got %.2f/%.2f/%.2f", finalWheels[0].StripOffset, finalWheels[1].StripOffset, finalWheels[2].StripOffset)
+	}
+}
+
 func TestRuntimeOdometerGaugeRecognizedMovementFallbacksStayInstant(t *testing.T) {
 	for _, movement := range []string{v3gauges.MovementSmooth, v3gauges.MovementClick} {
 		t.Run(movement, func(t *testing.T) {
@@ -1218,10 +1283,14 @@ func makeDashboardRadialGaugePackageWithPolicy(t *testing.T, policy string) stri
 }
 
 func makeDashboardOdometerGaugePackage(t *testing.T) string {
-	return makeDashboardOdometerGaugePackageWithConfig(t, v3gauges.MovementBell)
+	return makeDashboardOdometerGaugePackageWithRealism(t, v3gauges.MovementBell, false, false)
 }
 
 func makeDashboardOdometerGaugePackageWithConfig(t *testing.T, movement string) string {
+	return makeDashboardOdometerGaugePackageWithRealism(t, movement, false, false)
+}
+
+func makeDashboardOdometerGaugePackageWithRealism(t *testing.T, movement string, wraparound bool, carryDrag bool) string {
 	t.Helper()
 	root := t.TempDir()
 	files := []string{
@@ -1243,7 +1312,7 @@ func makeDashboardOdometerGaugePackageWithConfig(t *testing.T, movement string) 
 	if err := os.MkdirAll(packageDir, 0o755); err != nil {
 		t.Fatalf("MkdirAll: %v", err)
 	}
-	if err := os.WriteFile(filepath.Join(packageDir, "gauge.yaml"), []byte(dashboardOdometerGaugeYAML(movement)), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(packageDir, "gauge.yaml"), []byte(dashboardOdometerGaugeYAML(movement, wraparound, carryDrag)), 0o600); err != nil {
 		t.Fatalf("WriteFile: %v", err)
 	}
 	return packageDir
@@ -1399,14 +1468,25 @@ value_map:
 `
 }
 
-func dashboardOdometerGaugeYAML(movement string) string {
+func dashboardOdometerGaugeYAML(movement string, wraparound bool, carryDrag bool) string {
 	if strings.TrimSpace(movement) == "" {
 		movement = v3gauges.MovementInstant
+	}
+	realismLines := []string{}
+	if wraparound {
+		realismLines = append(realismLines, "  wraparound: true")
+	}
+	if carryDrag {
+		realismLines = append(realismLines, "  carry_drag: true")
+	}
+	realismBlock := ""
+	if len(realismLines) > 0 {
+		realismBlock = "realism:\n" + strings.Join(realismLines, "\n") + "\n"
 	}
 	return `id: dashboard_trip_odometer
 type: odometer
 sensor: trip_distance
-size:
+` + realismBlock + `size:
   width: 150
   height: 60
 layers:
@@ -1495,8 +1575,12 @@ func testRadialMovementRuntimeWithPolicy(t *testing.T, policy string) *Runtime {
 }
 
 func testOdometerMovementRuntimeWithConfig(t *testing.T, movement string) *Runtime {
+	return testOdometerMovementRuntimeWithRealism(t, movement, false, false)
+}
+
+func testOdometerMovementRuntimeWithRealism(t *testing.T, movement string, wraparound bool, carryDrag bool) *Runtime {
 	t.Helper()
-	packageDir := makeDashboardOdometerGaugePackageWithConfig(t, movement)
+	packageDir := makeDashboardOdometerGaugePackageWithRealism(t, movement, wraparound, carryDrag)
 	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 1024, Height: 600}, Widgets: []v3config.WidgetConfig{{ID: "trip", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{0, 0}, Scale: 1}}}}}}
 	runtime, err := NewRuntime(plan, testAssetRegistry())
 	if err != nil {
