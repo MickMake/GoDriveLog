@@ -10,11 +10,11 @@ size:
   height: 360
 
 layers:
-  background: ../../../assets/gauges/radial_rpm/background.png
-  face: ../../../assets/gauges/radial_rpm/face.png
-  ticks: ../../../assets/gauges/radial_rpm/ticks.png
-  needle: ../../../assets/gauges/radial_rpm/needle.png
-  overlay: ../../../assets/gauges/radial_rpm/overlay.png
+  background: background.png
+  face: face.png
+  ticks: ticks.png
+  needle: needle.png
+  overlay: overlay.png
 
 pivot:
   face: { x: 0.5, y: 0.5 }
