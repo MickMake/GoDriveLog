@@ -11,25 +11,25 @@ size:
   height: 118
 
 layers:
-  panel: ../trip_odometer/panel.png
-  glass: ../trip_odometer/glass.png
+  panel: ../panel.png
+  glass: ../glass.png
 
 odometer:
   movement: bell
   wheels:
-    - strip: ../trip_odometer/digits.png
+    - strip: ../digits.png
       position: [24, 28]
       window: { width: 40, height: 56 }
-    - strip: ../trip_odometer/digits.png
+    - strip: ../digits.png
       position: [82, 28]
       window: { width: 40, height: 56 }
-    - strip: ../trip_odometer/digits.png
+    - strip: ../digits.png
       position: [140, 28]
       window: { width: 40, height: 56 }
-    - strip: ../trip_odometer/digits.png
+    - strip: ../digits.png
       position: [198, 28]
       window: { width: 40, height: 56 }
-    - strip: ../trip_odometer/tenths.png
+    - strip: ../tenths.png
       position: [256, 28]
       window: { width: 40, height: 56 }
       role: sub_unit

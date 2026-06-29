@@ -1,24 +1,28 @@
 id: snap_settle_trip_odometer
 type: odometer
 sensor: trip_distance
+
 realism:
   snap_settle: true
+
 size:
   width: 640
   height: 240
+
 layers:
-  panel: ../trip_odometer/panel.png
-  glass: ../trip_odometer/glass.png
+  panel: ../panel.png
+  glass: ../glass.png
+
 odometer:
   movement: linear
   wheels:
-    - strip: ../trip_odometer/digits.png
+    - strip: ../digits.png
       position: [156, 88]
       window: { width: 64, height: 96 }
-    - strip: ../trip_odometer/digits.png
+    - strip: ../digits.png
       position: [226, 88]
       window: { width: 64, height: 96 }
-    - strip: ../trip_odometer/tenths.png
+    - strip: ../tenths.png
       position: [322, 88]
       window: { width: 64, height: 96 }
       role: sub_unit

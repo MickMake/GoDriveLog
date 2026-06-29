@@ -23,5 +23,5 @@ dashboards:
     widgets:
       - id: trip_odometer
         type: gauge
-        gauge: ../assets/gauges/eased_roll_trip_odometer
+        gauge: assets/03-eased-roll
         position: [0, 0]
