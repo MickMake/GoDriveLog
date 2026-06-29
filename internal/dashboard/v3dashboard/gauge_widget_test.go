@@ -871,6 +871,54 @@ func TestRuntimeOdometerGaugeEaseOutMovementAdvancesFurtherThanLinearAtSameTick(
 	}
 }
 
+func TestRuntimeOdometerGaugeEaseOutRolloverMapsDigitZeroAfterNine(t *testing.T) {
+	runtime := testOdometerMovementRuntimeWithConfig(t, v3gauges.MovementEaseOut)
+
+	start := time.Unix(100, 0)
+	_, _, err := runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "trip_distance",
+		State:     okState("trip_distance", 0.9, "km"),
+		Timestamp: start,
+		ReadAt:    start,
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+
+	scenes, changed, err := runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "trip_distance",
+		State:     okState("trip_distance", 1.0, "km"),
+		Timestamp: start.Add(10 * time.Millisecond),
+		ReadAt:    start.Add(10 * time.Millisecond),
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected ease_out rollover update to redraw")
+	}
+
+	initialWheels := wheelStripWidgetParts(requireWidget(t, scenes[0], "trip"))
+	if initialWheels[2].Source[1] != 180 {
+		t.Fatalf("expected initial tenths wheel to show digit 9, got sourceY=%d", initialWheels[2].Source[1])
+	}
+
+	scenes, changed, err = runtime.Tick(start.Add(210 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected final ease_out rollover tick to redraw")
+	}
+
+	finalWheels := wheelStripWidgetParts(requireWidget(t, scenes[0], "trip"))
+	if finalWheels[2].Source[1] != 0 {
+		t.Fatalf("expected ease_out rollover to render digit 0 after 9, got sourceY=%d", finalWheels[2].Source[1])
+	}
+}
+
 func TestRuntimeOdometerGaugeBellMovementStartsSlowerThanLinearAndSettlesExactlyOnTarget(t *testing.T) {
 	linearRuntime := testOdometerMovementRuntimeWithConfig(t, v3gauges.MovementLinear)
 	bellRuntime := testOdometerMovementRuntimeWithConfig(t, v3gauges.MovementBell)

@@ -897,7 +897,15 @@ func odometerDrumSlop(pkg Package, wheelIndex int) int {
 
 func odometerWheelSource(wheel OdometerWheel, stripOffset float64) (int, int) {
 	sourceX := 0
-	sourceY := int(math.Floor(stripOffset))
+	sourceY := 0
+	if wheel.Window.Height > 0 {
+		slotHeight := float64(wheel.Window.Height)
+		virtualSlot := stripOffset / slotHeight
+		slotIndex := int(math.Floor(virtualSlot))
+		slotRemainder := stripOffset - (float64(slotIndex) * slotHeight)
+		sourceDigit := positiveMod(slotIndex, 10)
+		sourceY = int(math.Floor((float64(sourceDigit) * slotHeight) + slotRemainder))
+	}
 	if len(wheel.Offset) >= 2 {
 		sourceX += wheel.Offset[0]
 		sourceY += wheel.Offset[1]
@@ -1038,6 +1046,17 @@ func clampUnit(value float64) float64 {
 		return 1
 	}
 	return value
+}
+
+func positiveMod(value int, modulus int) int {
+	if modulus <= 0 {
+		return 0
+	}
+	result := value % modulus
+	if result < 0 {
+		result += modulus
+	}
+	return result
 }
 
 func formatIntSlice(values []int) string {

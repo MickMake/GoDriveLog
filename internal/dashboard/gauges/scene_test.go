@@ -466,6 +466,30 @@ func TestOdometerInterpolatedWheelOffsetsUseInfiniteBackwardRoutingAcrossZeroToN
 	}
 }
 
+func TestOdometerWheelSourceMapsVirtualSlotTenToDigitZero(t *testing.T) {
+	wheel := OdometerWheel{Window: Size{Width: 12, Height: 20}}
+	_, sourceY := odometerWheelSource(wheel, 200)
+	if sourceY != 0 {
+		t.Fatalf("expected virtual slot 10 to map to source digit 0, got sourceY=%d", sourceY)
+	}
+}
+
+func TestOdometerWheelSourceMapsVirtualSlotElevenToDigitOne(t *testing.T) {
+	wheel := OdometerWheel{Window: Size{Width: 12, Height: 20}}
+	_, sourceY := odometerWheelSource(wheel, 220)
+	if sourceY != 20 {
+		t.Fatalf("expected virtual slot 11 to map to source digit 1, got sourceY=%d", sourceY)
+	}
+}
+
+func TestOdometerWheelSourceMapsVirtualSlotNegativeOneToDigitNine(t *testing.T) {
+	wheel := OdometerWheel{Window: Size{Width: 12, Height: 20}}
+	_, sourceY := odometerWheelSource(wheel, -20)
+	if sourceY != 180 {
+		t.Fatalf("expected virtual slot -1 to map to source digit 9, got sourceY=%d", sourceY)
+	}
+}
+
 func TestOdometerCarryDragDisabledKeepsBaseWheelOffsets(t *testing.T) {
 	pkg := loadOdometerScenePackageWithRealism(t, MovementLinear, true, false, false, nil)
 	previousOffsets, err := OdometerWheelStripOffsets(pkg, 19.9)
