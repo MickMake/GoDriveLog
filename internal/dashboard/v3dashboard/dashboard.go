@@ -604,7 +604,7 @@ func resolveOdometerMovementState(movements map[string]widgetMovementState, key 
 			movement.SettleDuration = 0
 			movement.StartedAt = time.Time{}
 		} else {
-			movement.TravelWheelOffsets, err = odometerTravelWheelOffsets(pkg, movement.PreviousWheelOffsets, movement.TargetWheelOffsets)
+			movement.TravelWheelOffsets, err = v3gauges.OdometerTravelWheelOffsets(pkg, movement.PreviousDisplayValue, movement.TargetValue, movement.PreviousWheelOffsets, movement.TargetWheelOffsets)
 			if err != nil {
 				return source, widgetMovementState{}, false, err
 			}
@@ -710,26 +710,6 @@ func odometerTravelTargetOffsets(movement widgetMovementState) []float64 {
 	return movement.TargetWheelOffsets
 }
 
-func odometerTravelWheelOffsets(pkg v3gauges.Package, previousOffsets []float64, targetOffsets []float64) ([]float64, error) {
-	if len(previousOffsets) != len(targetOffsets) || len(targetOffsets) != len(pkg.Odometer.Wheels) {
-		return nil, fmt.Errorf("dashboard odometer movement requires exactly one wheel offset per odometer wheel")
-	}
-	travel := cloneFloat64s(targetOffsets)
-	if pkg.Realism.Wraparound == nil || !*pkg.Realism.Wraparound {
-		return travel, nil
-	}
-	for index, wheel := range pkg.Odometer.Wheels {
-		if wheel.Window.Height <= 0 {
-			return nil, fmt.Errorf("gauge package %q odometer wheel window height must be positive", pkg.ID)
-		}
-		span := float64(wheel.Window.Height * 10)
-		if targetOffsets[index] < previousOffsets[index] {
-			travel[index] += span
-		}
-	}
-	return travel, nil
-}
-
 func applyOdometerMovementRealism(pkg v3gauges.Package, movement widgetMovementState, now time.Time) (widgetMovementState, error) {
 	if !movementActive(movement) || len(movement.WheelOffsets) != len(pkg.Odometer.Wheels) {
 		return movement, nil
@@ -743,7 +723,7 @@ func applyOdometerMovementRealism(pkg v3gauges.Package, movement widgetMovementS
 		}
 	}
 	if settleProgress, ok := odometerSnapSettleProgress(movement, now); ok {
-		movement.WheelOffsets, err = v3gauges.OdometerSnapSettleWheelOffsets(pkg, movement.PreviousWheelOffsets, movement.TargetWheelOffsets, movement.WheelOffsets, settleProgress)
+		movement.WheelOffsets, err = v3gauges.OdometerSnapSettleWheelOffsets(pkg, movement.PreviousDisplayValue, movement.TargetValue, movement.PreviousWheelOffsets, movement.TargetWheelOffsets, movement.WheelOffsets, settleProgress)
 		if err != nil {
 			return widgetMovementState{}, err
 		}
