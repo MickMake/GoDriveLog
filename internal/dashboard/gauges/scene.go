@@ -63,6 +63,14 @@ type ScenePart struct {
 	StripOffset float64
 	Wraparound  bool
 	Role        string
+	WheelSlices []WheelSlice
+}
+
+type WheelSlice struct {
+	Digit   int
+	Source  []int
+	Height  int
+	OffsetY int
 }
 
 func NumericScene(pkg Package, placement Placement, state sensors.SensorState) (Scene, error) {
@@ -230,9 +238,9 @@ func OdometerSceneWithWheelOffsets(pkg Package, placement Placement, state senso
 			return Scene{}, fmt.Errorf("gauge package %q odometer wheel offsets must define exactly one strip offset per wheel", pkg.ID)
 		}
 		scene.Text = formatValue("%.1f", state.Value)
-		wraparound := odometerWraparoundEnabled(pkg)
 		for index, wheel := range pkg.Odometer.Wheels {
 			offset := offsets[index]
+			slices := odometerWheelSlices(wheel, offset)
 			sourceX, sourceY := odometerWheelSource(wheel, offset)
 			position := cloneInts(wheel.Position)
 			if len(position) >= 2 {
@@ -246,8 +254,9 @@ func OdometerSceneWithWheelOffsets(pkg Package, placement Placement, state senso
 				Source:      []int{sourceX, sourceY},
 				Window:      wheel.Window,
 				StripOffset: offset,
-				Wraparound:  wraparound,
+				Wraparound:  odometerWheelCircular(),
 				Role:        odometerWheelRole(wheel),
+				WheelSlices: cloneWheelSlices(slices),
 			})
 		}
 	}
@@ -275,11 +284,11 @@ func OdometerWheelStripOffsets(pkg Package, value float64) ([]float64, error) {
 	return offsets, nil
 }
 
-func OdometerInterpolatedWheelOffsets(pkg Package, previousOffsets []float64, targetOffsets []float64, progress float64) ([]float64, error) {
+func OdometerInterpolatedWheelOffsets(pkg Package, previousValue float64, targetValue float64, previousOffsets []float64, targetOffsets []float64, progress float64) ([]float64, error) {
 	if len(previousOffsets) != len(targetOffsets) || len(targetOffsets) != len(pkg.Odometer.Wheels) {
 		return nil, fmt.Errorf("gauge package %q interpolated odometer offsets require exactly one wheel offset per odometer wheel", pkg.ID)
 	}
-	routedTargets, err := odometerRoutedTargetOffsets(pkg, previousOffsets, targetOffsets)
+	routedTargets, err := OdometerTravelWheelOffsets(pkg, previousValue, targetValue, previousOffsets, targetOffsets)
 	if err != nil {
 		return nil, err
 	}
@@ -288,6 +297,10 @@ func OdometerInterpolatedWheelOffsets(pkg Package, previousOffsets []float64, ta
 		interpolated[index] = previousOffsets[index] + ((routedTargets[index] - previousOffsets[index]) * progress)
 	}
 	return interpolated, nil
+}
+
+func OdometerTravelWheelOffsets(pkg Package, previousValue float64, targetValue float64, previousOffsets []float64, targetOffsets []float64) ([]float64, error) {
+	return odometerRoutedTargetOffsets(pkg, previousValue, targetValue, previousOffsets, targetOffsets)
 }
 
 const (
@@ -306,7 +319,7 @@ func OdometerCarryDragWheelOffsets(pkg Package, previousValue float64, targetVal
 
 	adjusted := cloneFloat64s(baseOffsets)
 	digitPlaces := odometerDigitPlaces(pkg.Odometer.Wheels)
-	routedTargets, err := odometerRoutedTargetOffsets(pkg, previousOffsets, targetOffsets)
+	routedTargets, err := odometerRoutedTargetOffsets(pkg, previousValue, targetValue, previousOffsets, targetOffsets)
 	if err != nil {
 		return nil, err
 	}
@@ -331,7 +344,7 @@ func OdometerCarryDragWheelOffsets(pkg Package, previousValue float64, targetVal
 		if err != nil {
 			return nil, fmt.Errorf("gauge package %q: %w", pkg.ID, err)
 		}
-		rolloverOffset, err = odometerRoutedTargetOffset(pkg.Odometer.Wheels[lowerIndex], odometerWraparoundEnabled(pkg), previousOffsets[lowerIndex], rolloverOffset)
+		rolloverOffset, err = odometerRoutedTargetOffset(pkg.Odometer.Wheels[lowerIndex], previousValue, targetValue, previousOffsets[lowerIndex], rolloverOffset)
 		if err != nil {
 			return nil, fmt.Errorf("gauge package %q: %w", pkg.ID, err)
 		}
@@ -352,7 +365,7 @@ func OdometerCarryDragWheelOffsets(pkg Package, previousValue float64, targetVal
 	return adjusted, nil
 }
 
-func OdometerSnapSettleWheelOffsets(pkg Package, previousOffsets []float64, targetOffsets []float64, baseOffsets []float64, progress float64) ([]float64, error) {
+func OdometerSnapSettleWheelOffsets(pkg Package, previousValue float64, targetValue float64, previousOffsets []float64, targetOffsets []float64, baseOffsets []float64, progress float64) ([]float64, error) {
 	if !odometerSnapSettleEnabled(pkg) || progress <= 0 {
 		return cloneFloat64s(baseOffsets), nil
 	}
@@ -365,7 +378,7 @@ func OdometerSnapSettleWheelOffsets(pkg Package, previousOffsets []float64, targ
 	if settleShape <= 0 {
 		return adjusted, nil
 	}
-	routedTargets, err := odometerRoutedTargetOffsets(pkg, previousOffsets, targetOffsets)
+	routedTargets, err := odometerRoutedTargetOffsets(pkg, previousValue, targetValue, previousOffsets, targetOffsets)
 	if err != nil {
 		return nil, err
 	}
@@ -786,24 +799,28 @@ func odometerDiscreteWheelOffset(wheel OdometerWheel, place int, value float64) 
 }
 
 func odometerWheelDigit(wheel OdometerWheel, place int, value float64) (int, error) {
-	absolute := math.Abs(value)
+	scaledTenths := int(math.Round(math.Abs(value) * 10))
+
 	if odometerWheelRole(wheel) == WheelRoleSubUnit {
-		return int(math.Floor(absolute*10)) % 10, nil
+		return scaledTenths % 10, nil
 	}
+
 	if place < 0 {
 		return 0, fmt.Errorf("odometer wheel place must not be negative")
 	}
-	return int(math.Floor(absolute/math.Pow10(place))) % 10, nil
+
+	whole := scaledTenths / 10
+	divisor := int(math.Pow10(place))
+	return (whole / divisor) % 10, nil
 }
 
-func odometerRoutedTargetOffsets(pkg Package, previousOffsets []float64, targetOffsets []float64) ([]float64, error) {
+func odometerRoutedTargetOffsets(pkg Package, previousValue float64, targetValue float64, previousOffsets []float64, targetOffsets []float64) ([]float64, error) {
 	if len(previousOffsets) != len(targetOffsets) || len(targetOffsets) != len(pkg.Odometer.Wheels) {
 		return nil, fmt.Errorf("gauge package %q routed odometer targets require exactly one wheel offset per odometer wheel", pkg.ID)
 	}
 	routed := cloneFloat64s(targetOffsets)
-	wraparound := odometerWraparoundEnabled(pkg)
 	for index, wheel := range pkg.Odometer.Wheels {
-		offset, err := odometerRoutedTargetOffset(wheel, wraparound, previousOffsets[index], targetOffsets[index])
+		offset, err := odometerRoutedTargetOffset(wheel, previousValue, targetValue, previousOffsets[index], targetOffsets[index])
 		if err != nil {
 			return nil, err
 		}
@@ -812,18 +829,26 @@ func odometerRoutedTargetOffsets(pkg Package, previousOffsets []float64, targetO
 	return routed, nil
 }
 
-func odometerRoutedTargetOffset(wheel OdometerWheel, wraparound bool, previousOffset float64, targetOffset float64) (float64, error) {
-	if !wraparound {
+func odometerRoutedTargetOffset(wheel OdometerWheel, previousValue float64, targetValue float64, previousOffset float64, targetOffset float64) (float64, error) {
+	if almostEqual(previousValue, targetValue) {
 		return targetOffset, nil
 	}
 	span, err := odometerWheelSpan(wheel)
 	if err != nil {
 		return 0, err
 	}
-	if targetOffset < previousOffset {
-		return targetOffset + span, nil
+	if targetValue > previousValue {
+		routed := targetOffset
+		for routed < previousOffset {
+			routed += span
+		}
+		return routed, nil
 	}
-	return targetOffset, nil
+	routed := targetOffset
+	for routed > previousOffset {
+		routed -= span
+	}
+	return routed, nil
 }
 
 func odometerWheelSpan(wheel OdometerWheel) (float64, error) {
@@ -865,8 +890,9 @@ func odometerWheelPosition(wheel OdometerWheel, place int, value float64, wrapar
 	return math.Mod(absolute/divisor, 10), nil
 }
 
-func odometerWraparoundEnabled(pkg Package) bool {
-	return pkg.Realism.Wraparound != nil && *pkg.Realism.Wraparound
+func odometerWheelCircular() bool {
+	// Odometer wheels are circular by definition; realism.wraparound is compatibility-only.
+	return true
 }
 
 func odometerCarryDragEnabled(pkg Package) bool {
@@ -885,13 +911,56 @@ func odometerDrumSlop(pkg Package, wheelIndex int) int {
 }
 
 func odometerWheelSource(wheel OdometerWheel, stripOffset float64) (int, int) {
-	sourceX := 0
-	sourceY := int(math.Floor(stripOffset))
+	slices := odometerWheelSlices(wheel, stripOffset)
+	if len(slices) > 0 && len(slices[0].Source) >= 2 {
+		return slices[0].Source[0], slices[0].Source[1]
+	}
+	sourceX, sourceY := 0, 0
 	if len(wheel.Offset) >= 2 {
-		sourceX += wheel.Offset[0]
-		sourceY += wheel.Offset[1]
+		sourceX = wheel.Offset[0]
+		sourceY = wheel.Offset[1]
 	}
 	return sourceX, sourceY
+}
+
+func odometerWheelSlices(wheel OdometerWheel, stripOffset float64) []WheelSlice {
+	if wheel.Window.Width <= 0 || wheel.Window.Height <= 0 {
+		return nil
+	}
+	sourceX, sourceYOffset := 0, 0
+	if len(wheel.Offset) >= 2 {
+		sourceX = wheel.Offset[0]
+		sourceYOffset = wheel.Offset[1]
+	}
+	slotHeight := float64(wheel.Window.Height)
+	virtualSlot := stripOffset / slotHeight
+	slotIndex := int(math.Floor(virtualSlot))
+	slotRemainder := stripOffset - (float64(slotIndex) * slotHeight)
+	sourceOffset := int(math.Floor(slotRemainder))
+	if sourceOffset < 0 {
+		sourceOffset = 0
+	}
+	if sourceOffset >= wheel.Window.Height {
+		sourceOffset = wheel.Window.Height - 1
+	}
+	currentDigit := positiveMod(slotIndex, 10)
+	slices := []WheelSlice{{
+		Digit:   currentDigit,
+		Source:  []int{sourceX, (currentDigit * wheel.Window.Height) + sourceYOffset + sourceOffset},
+		Height:  wheel.Window.Height - sourceOffset,
+		OffsetY: 0,
+	}}
+	if sourceOffset == 0 {
+		return slices
+	}
+	nextDigit := positiveMod(slotIndex+1, 10)
+	slices = append(slices, WheelSlice{
+		Digit:   nextDigit,
+		Source:  []int{sourceX, (nextDigit * wheel.Window.Height) + sourceYOffset},
+		Height:  sourceOffset,
+		OffsetY: wheel.Window.Height - sourceOffset,
+	})
+	return slices
 }
 
 func odometerWheelRole(wheel OdometerWheel) string {
@@ -946,6 +1015,22 @@ func cloneFloat64s(values []float64) []float64 {
 		return nil
 	}
 	return append([]float64(nil), values...)
+}
+
+func cloneWheelSlices(values []WheelSlice) []WheelSlice {
+	if values == nil {
+		return nil
+	}
+	cloned := make([]WheelSlice, len(values))
+	for index, value := range values {
+		cloned[index] = WheelSlice{
+			Digit:   value.Digit,
+			Source:  cloneInts(value.Source),
+			Height:  value.Height,
+			OffsetY: value.OffsetY,
+		}
+	}
+	return cloned
 }
 
 func cloneIntSlices(values [][]int) [][]int {
@@ -1027,6 +1112,17 @@ func clampUnit(value float64) float64 {
 		return 1
 	}
 	return value
+}
+
+func positiveMod(value int, modulus int) int {
+	if modulus <= 0 {
+		return 0
+	}
+	result := value % modulus
+	if result < 0 {
+		result += modulus
+	}
+	return result
 }
 
 func formatIntSlice(values []int) string {

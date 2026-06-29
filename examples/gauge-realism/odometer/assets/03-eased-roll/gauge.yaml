@@ -2,9 +2,6 @@ id: trip_odometer
 type: odometer
 sensor: trip_distance
 
-realism:
-  ease_out: true
-
 size:
   width: 332
   height: 118
@@ -14,7 +11,7 @@ layers:
   glass: ../glass.png
 
 odometer:
-  movement: bell
+  movement: ease_out
   wheels:
     - strip: ../digits.png
       position: [24, 28]

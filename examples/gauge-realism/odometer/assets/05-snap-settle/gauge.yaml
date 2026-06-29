@@ -6,23 +6,29 @@ realism:
   snap_settle: true
 
 size:
-  width: 640
-  height: 240
+  width: 332
+  height: 118
 
 layers:
   panel: ../panel.png
   glass: ../glass.png
 
 odometer:
-  movement: linear
+  movement: bell
   wheels:
     - strip: ../digits.png
-      position: [156, 88]
-      window: { width: 64, height: 96 }
+      position: [24, 28]
+      window: { width: 40, height: 56 }
     - strip: ../digits.png
-      position: [226, 88]
-      window: { width: 64, height: 96 }
+      position: [82, 28]
+      window: { width: 40, height: 56 }
+    - strip: ../digits.png
+      position: [140, 28]
+      window: { width: 40, height: 56 }
+    - strip: ../digits.png
+      position: [198, 28]
+      window: { width: 40, height: 56 }
     - strip: ../tenths.png
-      position: [322, 88]
-      window: { width: 64, height: 96 }
+      position: [256, 28]
+      window: { width: 40, height: 56 }
       role: sub_unit

@@ -275,6 +275,26 @@ func (a *Adapter) renderWidgetParts(dashboardID string, widget v3dashboard.Widge
 			continue
 		}
 		x, y := partPosition(baseX, baseY, asset, widgetScale, part)
+		if part.Kind == v3dashboard.PartKindWheelStrip && len(part.WheelSlices) > 0 {
+			for _, slice := range part.WheelSlices {
+				if slice.Height <= 0 || len(slice.Source) < 2 {
+					continue
+				}
+				parts = append(parts, renderedPart{
+					asset: asset,
+					x:     x,
+					y:     y + (float64(slice.OffsetY) * widgetScale),
+					scale: widgetScale,
+					source: image.Rect(
+						slice.Source[0],
+						slice.Source[1],
+						slice.Source[0]+part.Window.Width,
+						slice.Source[1]+slice.Height,
+					),
+				})
+			}
+			continue
+		}
 		parts = append(parts, renderedPart{asset: asset, x: x, y: y, scale: widgetScale, source: partSourceRect(part), wraparound: part.Wraparound})
 	}
 	return parts, nil

@@ -304,6 +304,46 @@ func TestOdometerSceneUsesDiscreteDigitSlotsForEveryWheel(t *testing.T) {
 	}
 }
 
+func TestOdometerWheelStripOffsetsOnlyChangeAffectedDigits(t *testing.T) {
+	pkg := loadFourWheelOdometerScenePackage(t)
+
+	first, err := OdometerWheelStripOffsets(pkg, 123.4)
+	if err != nil {
+		t.Fatalf("OdometerWheelStripOffsets failed: %v", err)
+	}
+	second, err := OdometerWheelStripOffsets(pkg, 123.5)
+	if err != nil {
+		t.Fatalf("OdometerWheelStripOffsets failed: %v", err)
+	}
+	if !almostEqual(second[0], first[0]) || !almostEqual(second[1], first[1]) || !almostEqual(second[2], first[2]) || !almostEqual(second[3], 100) {
+		t.Fatalf("expected 123.4 -> 123.5 to change only sub-unit wheel, got %v -> %v", first, second)
+	}
+
+	third, err := OdometerWheelStripOffsets(pkg, 123.9)
+	if err != nil {
+		t.Fatalf("OdometerWheelStripOffsets failed: %v", err)
+	}
+	fourth, err := OdometerWheelStripOffsets(pkg, 124.0)
+	if err != nil {
+		t.Fatalf("OdometerWheelStripOffsets failed: %v", err)
+	}
+	if !almostEqual(fourth[0], third[0]) || !almostEqual(fourth[1], third[1]) || !almostEqual(fourth[2], 80) || !almostEqual(fourth[3], 0) {
+		t.Fatalf("expected 123.9 -> 124.0 to change ones and sub-unit only, got %v -> %v", third, fourth)
+	}
+
+	fifth, err := OdometerWheelStripOffsets(pkg, 129.9)
+	if err != nil {
+		t.Fatalf("OdometerWheelStripOffsets failed: %v", err)
+	}
+	sixth, err := OdometerWheelStripOffsets(pkg, 130.0)
+	if err != nil {
+		t.Fatalf("OdometerWheelStripOffsets failed: %v", err)
+	}
+	if !almostEqual(sixth[0], fifth[0]) || !almostEqual(sixth[1], 60) || !almostEqual(sixth[2], 0) || !almostEqual(sixth[3], 0) {
+		t.Fatalf("expected 129.9 -> 130.0 to change tens, ones, and sub-unit only, got %v -> %v", fifth, sixth)
+	}
+}
+
 func TestOdometerSceneInstantMovementUsesExactTargetOffsets(t *testing.T) {
 	pkg := loadOdometerScenePackage(t, MovementInstant, false, nil)
 
@@ -354,49 +394,131 @@ func TestOdometerSceneSignatureChangesWithSmoothOffset(t *testing.T) {
 	}
 }
 
-func TestOdometerSceneWraparoundKeepsBoundaryRolloverContinuous(t *testing.T) {
-	pkg := loadOdometerScenePackage(t, "", true, nil)
+func TestOdometerSceneAlwaysUsesCircularWheelRendering(t *testing.T) {
+	withConfig := loadOdometerScenePackage(t, "", true, nil)
+	withoutConfig := loadOdometerScenePackage(t, "", false, nil)
 
-	scene, err := OdometerScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("trip_distance", 10.0))
+	withScene, err := OdometerScene(withConfig, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("trip_distance", 10.0))
+	if err != nil {
+		t.Fatalf("OdometerScene returned error: %v", err)
+	}
+	withoutScene, err := OdometerScene(withoutConfig, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("trip_distance", 10.0))
 	if err != nil {
 		t.Fatalf("OdometerScene returned error: %v", err)
 	}
 
-	wheels := wheelStripParts(scene)
-	if len(wheels) != 3 {
-		t.Fatalf("wheel parts = %d, want 3", len(wheels))
+	withWheels := wheelStripParts(withScene)
+	withoutWheels := wheelStripParts(withoutScene)
+	if len(withWheels) != len(withoutWheels) {
+		t.Fatalf("wheel parts mismatch = %d vs %d", len(withWheels), len(withoutWheels))
 	}
-	if !wheels[1].Wraparound || !wheels[2].Wraparound {
-		t.Fatalf("expected wraparound wheel parts, got %#v", wheels)
-	}
-	if !almostEqual(wheels[1].StripOffset, 0) || wheels[1].Source[1] != 0 {
-		t.Fatalf("ones rollover offset/source = %.2f/%d, want 0/0", wheels[1].StripOffset, wheels[1].Source[1])
-	}
-	if !almostEqual(wheels[2].StripOffset, 0) || wheels[2].Source[1] != 4 {
-		t.Fatalf("tenths rollover offset/source = %.2f/%d, want 0/4", wheels[2].StripOffset, wheels[2].Source[1])
+	for index := range withWheels {
+		if !withWheels[index].Wraparound || !withoutWheels[index].Wraparound {
+			t.Fatalf("expected all odometer wheels to render with circular wraparound, got with=%#v without=%#v", withWheels, withoutWheels)
+		}
+		if !almostEqual(withWheels[index].StripOffset, withoutWheels[index].StripOffset) || withWheels[index].Source[1] != withoutWheels[index].Source[1] {
+			t.Fatalf("expected wraparound config to be a compatibility no-op, got with=%#v without=%#v", withWheels[index], withoutWheels[index])
+		}
 	}
 }
 
-func TestOdometerSceneWraparoundDisabledKeepsLegacyResetAtBoundary(t *testing.T) {
-	pkg := loadOdometerScenePackage(t, "", false, nil)
-
-	scene, err := OdometerScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("trip_distance", 10.0))
+func TestOdometerInterpolatedWheelOffsetsUseInfiniteForwardRoutingAcrossNineToZero(t *testing.T) {
+	pkg := loadOdometerScenePackage(t, MovementLinear, false, nil)
+	previousOffsets, err := OdometerWheelStripOffsets(pkg, 0.9)
 	if err != nil {
-		t.Fatalf("OdometerScene returned error: %v", err)
+		t.Fatalf("OdometerWheelStripOffsets failed: %v", err)
 	}
+	targetOffsets, err := OdometerWheelStripOffsets(pkg, 1.0)
+	if err != nil {
+		t.Fatalf("OdometerWheelStripOffsets failed: %v", err)
+	}
+	mid, err := OdometerInterpolatedWheelOffsets(pkg, 0.9, 1.0, previousOffsets, targetOffsets, 0.5)
+	if err != nil {
+		t.Fatalf("OdometerInterpolatedWheelOffsets failed: %v", err)
+	}
+	if !(mid[2] > previousOffsets[2]) {
+		t.Fatalf("expected forward 9 -> 0 to keep moving forward on the virtual strip, got prev=%.2f mid=%.2f target=%.2f", previousOffsets[2], mid[2], targetOffsets[2])
+	}
+	if !almostEqual(mid[2], 190) {
+		t.Fatalf("expected forward 9 -> 0 midpoint to route through virtual slot 10, got %.2f", mid[2])
+	}
+}
 
-	wheels := wheelStripParts(scene)
-	if len(wheels) != 3 {
-		t.Fatalf("wheel parts = %d, want 3", len(wheels))
+func TestOdometerInterpolatedWheelOffsetsUseInfiniteBackwardRoutingAcrossZeroToNine(t *testing.T) {
+	pkg := loadOdometerScenePackage(t, MovementLinear, false, nil)
+	previousOffsets, err := OdometerWheelStripOffsets(pkg, 1.0)
+	if err != nil {
+		t.Fatalf("OdometerWheelStripOffsets failed: %v", err)
 	}
-	if wheels[1].Wraparound || wheels[2].Wraparound {
-		t.Fatalf("expected legacy non-wrap wheel parts, got %#v", wheels)
+	targetOffsets, err := OdometerWheelStripOffsets(pkg, 0.9)
+	if err != nil {
+		t.Fatalf("OdometerWheelStripOffsets failed: %v", err)
 	}
-	if !almostEqual(wheels[1].StripOffset, 0) || wheels[1].Source[1] != 0 {
-		t.Fatalf("ones rollover offset/source = %.2f/%d, want 0/0", wheels[1].StripOffset, wheels[1].Source[1])
+	mid, err := OdometerInterpolatedWheelOffsets(pkg, 1.0, 0.9, previousOffsets, targetOffsets, 0.5)
+	if err != nil {
+		t.Fatalf("OdometerInterpolatedWheelOffsets failed: %v", err)
 	}
-	if !almostEqual(wheels[2].StripOffset, 0) || wheels[2].Source[1] != 4 {
-		t.Fatalf("tenths rollover offset/source = %.2f/%d, want 0/4", wheels[2].StripOffset, wheels[2].Source[1])
+	if !(mid[2] < previousOffsets[2]) {
+		t.Fatalf("expected backward 0 -> 9 to keep moving backward on the virtual strip, got prev=%.2f mid=%.2f target=%.2f", previousOffsets[2], mid[2], targetOffsets[2])
+	}
+	if !almostEqual(mid[2], -10) {
+		t.Fatalf("expected backward 0 -> 9 midpoint to route through virtual slot -1, got %.2f", mid[2])
+	}
+}
+
+func TestOdometerWheelSourceMapsVirtualSlotTenToDigitZero(t *testing.T) {
+	wheel := OdometerWheel{Window: Size{Width: 12, Height: 20}}
+	_, sourceY := odometerWheelSource(wheel, 200)
+	if sourceY != 0 {
+		t.Fatalf("expected virtual slot 10 to map to source digit 0, got sourceY=%d", sourceY)
+	}
+}
+
+func TestOdometerWheelSourceMapsVirtualSlotElevenToDigitOne(t *testing.T) {
+	wheel := OdometerWheel{Window: Size{Width: 12, Height: 20}}
+	_, sourceY := odometerWheelSource(wheel, 220)
+	if sourceY != 20 {
+		t.Fatalf("expected virtual slot 11 to map to source digit 1, got sourceY=%d", sourceY)
+	}
+}
+
+func TestOdometerWheelSourceMapsVirtualSlotNegativeOneToDigitNine(t *testing.T) {
+	wheel := OdometerWheel{Window: Size{Width: 12, Height: 20}}
+	_, sourceY := odometerWheelSource(wheel, -20)
+	if sourceY != 180 {
+		t.Fatalf("expected virtual slot -1 to map to source digit 9, got sourceY=%d", sourceY)
+	}
+}
+
+func TestOdometerWheelSlicesRenderAdjacentDigitsForVirtualSlotOnePointFive(t *testing.T) {
+	wheel := OdometerWheel{Window: Size{Width: 12, Height: 20}}
+	slices := odometerWheelSlices(wheel, 30)
+	if got := wheelSliceDigits(slices); !intSlicesEqual(got, []int{1, 2}) {
+		t.Fatalf("expected virtual slot 1.5 to render digits 1 and 2, got %v", got)
+	}
+}
+
+func TestOdometerWheelSlicesRenderAdjacentDigitsForVirtualSlotEightPointFive(t *testing.T) {
+	wheel := OdometerWheel{Window: Size{Width: 12, Height: 20}}
+	slices := odometerWheelSlices(wheel, 170)
+	if got := wheelSliceDigits(slices); !intSlicesEqual(got, []int{8, 9}) {
+		t.Fatalf("expected virtual slot 8.5 to render digits 8 and 9, got %v", got)
+	}
+}
+
+func TestOdometerWheelSlicesRenderAdjacentDigitsForVirtualSlotNinePointFive(t *testing.T) {
+	wheel := OdometerWheel{Window: Size{Width: 12, Height: 20}}
+	slices := odometerWheelSlices(wheel, 190)
+	if got := wheelSliceDigits(slices); !intSlicesEqual(got, []int{9, 0}) {
+		t.Fatalf("expected virtual slot 9.5 to render digits 9 and 0, got %v", got)
+	}
+}
+
+func TestOdometerWheelSlicesRenderAdjacentDigitsForVirtualSlotNegativeHalf(t *testing.T) {
+	wheel := OdometerWheel{Window: Size{Width: 12, Height: 20}}
+	slices := odometerWheelSlices(wheel, -10)
+	if got := wheelSliceDigits(slices); !intSlicesEqual(got, []int{9, 0}) {
+		t.Fatalf("expected virtual slot -0.5 to render digits 9 and 0, got %v", got)
 	}
 }
 
@@ -410,7 +532,7 @@ func TestOdometerCarryDragDisabledKeepsBaseWheelOffsets(t *testing.T) {
 	if err != nil {
 		t.Fatalf("OdometerWheelStripOffsets failed: %v", err)
 	}
-	base, err := OdometerInterpolatedWheelOffsets(pkg, previousOffsets, targetOffsets, 0.85)
+	base, err := OdometerInterpolatedWheelOffsets(pkg, 19.9, 20.0, previousOffsets, targetOffsets, 0.85)
 	if err != nil {
 		t.Fatalf("OdometerInterpolatedWheelOffsets failed: %v", err)
 	}
@@ -433,7 +555,7 @@ func TestOdometerCarryDragEnabledAdvancesHigherWheelNearRollover(t *testing.T) {
 	if err != nil {
 		t.Fatalf("OdometerWheelStripOffsets failed: %v", err)
 	}
-	base, err := OdometerInterpolatedWheelOffsets(pkg, previousOffsets, targetOffsets, 0.9)
+	base, err := OdometerInterpolatedWheelOffsets(pkg, 19.9, 20.0, previousOffsets, targetOffsets, 0.9)
 	if err != nil {
 		t.Fatalf("OdometerInterpolatedWheelOffsets failed: %v", err)
 	}
@@ -459,7 +581,7 @@ func TestOdometerCarryDragStraddlingUpdateStartsBeforeLowerWheelPassesRollover(t
 	if err != nil {
 		t.Fatalf("OdometerWheelStripOffsets failed: %v", err)
 	}
-	base, err := OdometerInterpolatedWheelOffsets(pkg, previousOffsets, targetOffsets, 0.45)
+	base, err := OdometerInterpolatedWheelOffsets(pkg, 19.8, 20.2, previousOffsets, targetOffsets, 0.45)
 	if err != nil {
 		t.Fatalf("OdometerInterpolatedWheelOffsets failed: %v", err)
 	}
@@ -493,7 +615,7 @@ func TestOdometerCarryDragSkipsMultiRolloverSpanForWheelPair(t *testing.T) {
 	if err != nil {
 		t.Fatalf("OdometerWheelStripOffsets failed: %v", err)
 	}
-	base, err := OdometerInterpolatedWheelOffsets(pkg, previousOffsets, targetOffsets, 0.2)
+	base, err := OdometerInterpolatedWheelOffsets(pkg, 20.8, 31.2, previousOffsets, targetOffsets, 0.2)
 	if err != nil {
 		t.Fatalf("OdometerInterpolatedWheelOffsets failed: %v", err)
 	}
@@ -517,7 +639,7 @@ func TestOdometerSnapSettleDisabledKeepsBaseWheelOffsets(t *testing.T) {
 		t.Fatalf("OdometerWheelStripOffsets failed: %v", err)
 	}
 	base := cloneFloat64s(targetOffsets)
-	adjusted, err := OdometerSnapSettleWheelOffsets(pkg, previousOffsets, targetOffsets, base, 0.35)
+	adjusted, err := OdometerSnapSettleWheelOffsets(pkg, 12.0, 12.9, previousOffsets, targetOffsets, base, 0.35)
 	if err != nil {
 		t.Fatalf("OdometerSnapSettleWheelOffsets failed: %v", err)
 	}
@@ -537,7 +659,7 @@ func TestOdometerSnapSettleEnabledAddsSmallForwardSettleAndReturnsToTarget(t *te
 		t.Fatalf("OdometerWheelStripOffsets failed: %v", err)
 	}
 	base := cloneFloat64s(targetOffsets)
-	adjusted, err := OdometerSnapSettleWheelOffsets(pkg, previousOffsets, targetOffsets, base, 0.35)
+	adjusted, err := OdometerSnapSettleWheelOffsets(pkg, 12.0, 12.9, previousOffsets, targetOffsets, base, 0.35)
 	if err != nil {
 		t.Fatalf("OdometerSnapSettleWheelOffsets failed: %v", err)
 	}
@@ -548,7 +670,7 @@ func TestOdometerSnapSettleEnabledAddsSmallForwardSettleAndReturnsToTarget(t *te
 		t.Fatalf("expected unchanged wheels to stay on exact target slots, got target=%v adjusted=%v", targetOffsets, adjusted)
 	}
 
-	settled, err := OdometerSnapSettleWheelOffsets(pkg, previousOffsets, targetOffsets, base, 1)
+	settled, err := OdometerSnapSettleWheelOffsets(pkg, 12.0, 12.9, previousOffsets, targetOffsets, base, 1)
 	if err != nil {
 		t.Fatalf("OdometerSnapSettleWheelOffsets failed: %v", err)
 	}
@@ -568,7 +690,7 @@ func TestOdometerSnapSettleDoesNotOvershootBelowZeroAtLowerBoundary(t *testing.T
 		t.Fatalf("OdometerWheelStripOffsets failed: %v", err)
 	}
 	base := cloneFloat64s(targetOffsets)
-	adjusted, err := OdometerSnapSettleWheelOffsets(pkg, previousOffsets, targetOffsets, base, 0.35)
+	adjusted, err := OdometerSnapSettleWheelOffsets(pkg, 1.0, 0.0, previousOffsets, targetOffsets, base, 0.35)
 	if err != nil {
 		t.Fatalf("OdometerSnapSettleWheelOffsets failed: %v", err)
 	}
@@ -1255,6 +1377,26 @@ func wheelStripParts(scene Scene) []ScenePart {
 		}
 	}
 	return parts
+}
+
+func wheelSliceDigits(slices []WheelSlice) []int {
+	digits := make([]int, len(slices))
+	for index, slice := range slices {
+		digits[index] = slice.Digit
+	}
+	return digits
+}
+
+func intSlicesEqual(left []int, right []int) bool {
+	if len(left) != len(right) {
+		return false
+	}
+	for index := range left {
+		if left[index] != right[index] {
+			return false
+		}
+	}
+	return true
 }
 
 func sceneCharacters(scene Scene) string {

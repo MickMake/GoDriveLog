@@ -871,6 +871,114 @@ func TestRuntimeOdometerGaugeEaseOutMovementAdvancesFurtherThanLinearAtSameTick(
 	}
 }
 
+func TestRuntimeOdometerGaugeEaseOutRolloverMapsDigitZeroAfterNine(t *testing.T) {
+	runtime := testOdometerMovementRuntimeWithConfig(t, v3gauges.MovementEaseOut)
+
+	start := time.Unix(100, 0)
+	_, _, err := runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "trip_distance",
+		State:     okState("trip_distance", 0.9, "km"),
+		Timestamp: start,
+		ReadAt:    start,
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+
+	scenes, changed, err := runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "trip_distance",
+		State:     okState("trip_distance", 1.0, "km"),
+		Timestamp: start.Add(10 * time.Millisecond),
+		ReadAt:    start.Add(10 * time.Millisecond),
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected ease_out rollover update to redraw")
+	}
+
+	initialWheels := wheelStripWidgetParts(requireWidget(t, scenes[0], "trip"))
+	if got := wheelPartSliceDigits(initialWheels[2]); !intSlicesEqual(got, []int{9}) {
+		t.Fatalf("expected initial tenths wheel to show digit 9, got digits=%v", got)
+	}
+
+	scenes, changed, err = runtime.Tick(start.Add(110 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected mid ease_out rollover tick to redraw")
+	}
+
+	midWheels := wheelStripWidgetParts(requireWidget(t, scenes[0], "trip"))
+	if got := wheelPartSliceDigits(midWheels[2]); !intSlicesEqual(got, []int{9, 0}) {
+		t.Fatalf("expected ease_out rollover to render digits 9 and 0 during movement, got %v", got)
+	}
+}
+
+func TestRuntimeOdometerGaugeFractionalSlicesUseSameAdjacentDigitsAcrossMovementModes(t *testing.T) {
+	testCases := []struct {
+		name         string
+		startValue   float64
+		targetValue  float64
+		expectedPair []int
+	}{
+		{name: "tenths_1_to_2", startValue: 123.1, targetValue: 123.2, expectedPair: []int{1, 2}},
+		{name: "tenths_8_to_9", startValue: 123.8, targetValue: 123.9, expectedPair: []int{8, 9}},
+		{name: "tenths_9_to_0", startValue: 123.9, targetValue: 124.0, expectedPair: []int{9, 0}},
+	}
+	movements := []string{v3gauges.MovementLinear, v3gauges.MovementEaseOut, v3gauges.MovementBell}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			for _, movement := range movements {
+				t.Run(movement, func(t *testing.T) {
+					runtime := testOdometerMovementRuntimeWithConfig(t, movement)
+					start := time.Unix(100, 0)
+
+					_, _, err := runtime.ApplyEvent(sensors.SensorEvent{
+						Kind:      sensors.EventKindValueChange,
+						SensorID:  "trip_distance",
+						State:     okState("trip_distance", tc.startValue, "km"),
+						Timestamp: start,
+						ReadAt:    start,
+					})
+					if err != nil {
+						t.Fatalf("ApplyEvent failed: %v", err)
+					}
+
+					_, _, err = runtime.ApplyEvent(sensors.SensorEvent{
+						Kind:      sensors.EventKindValueChange,
+						SensorID:  "trip_distance",
+						State:     okState("trip_distance", tc.targetValue, "km"),
+						Timestamp: start.Add(10 * time.Millisecond),
+						ReadAt:    start.Add(10 * time.Millisecond),
+					})
+					if err != nil {
+						t.Fatalf("ApplyEvent failed: %v", err)
+					}
+
+					scenes, changed, err := runtime.Tick(start.Add(110 * time.Millisecond))
+					if err != nil {
+						t.Fatalf("Tick failed: %v", err)
+					}
+					if !changed {
+						t.Fatalf("expected %s mid-transition tick to redraw", movement)
+					}
+
+					wheels := wheelStripWidgetParts(requireWidget(t, scenes[0], "trip"))
+					if got := wheelPartSliceDigits(wheels[2]); !intSlicesEqual(got, tc.expectedPair) {
+						t.Fatalf("expected %s to render adjacent digits %v, got %v", movement, tc.expectedPair, got)
+					}
+				})
+			}
+		})
+	}
+}
+
 func TestRuntimeOdometerGaugeBellMovementStartsSlowerThanLinearAndSettlesExactlyOnTarget(t *testing.T) {
 	linearRuntime := testOdometerMovementRuntimeWithConfig(t, v3gauges.MovementLinear)
 	bellRuntime := testOdometerMovementRuntimeWithConfig(t, v3gauges.MovementBell)
@@ -1830,6 +1938,26 @@ func wheelStripWidgetParts(widget Widget) []Part {
 		}
 	}
 	return parts
+}
+
+func wheelPartSliceDigits(part Part) []int {
+	digits := make([]int, len(part.WheelSlices))
+	for index, slice := range part.WheelSlices {
+		digits[index] = slice.Digit
+	}
+	return digits
+}
+
+func intSlicesEqual(left []int, right []int) bool {
+	if len(left) != len(right) {
+		return false
+	}
+	for index := range left {
+		if left[index] != right[index] {
+			return false
+		}
+	}
+	return true
 }
 
 func firstGaugeLayerPart(widget Widget, layer string) Part {
