@@ -1,10 +1,10 @@
 # v3.5 Implementation State
 
-Status: v3.5.14 odometer snap / settle implemented; continuing odometer follow-on slices before radial pass
+Status: v3.5.8 radial damping implemented; radial follow-on slices remain pending
 
-Current target: v3.5.15 odometer backlash
+Current target: v3.5.9 radial stiction
 
-Current branch: `impl/v3.5.14-odometer-snap-settle`
+Current branch: `codex/v3.5.8-radial-damping`
 
 ## Scope
 
@@ -106,7 +106,7 @@ Not allowed in v3.5:
 - [x] v3.5.6a document odometer movement goal / alignment
 - [x] v3.5.6b implement odometer movement model
 - [x] v3.5.7 odometer carry-drag / 9-drag
-- [ ] v3.5.8 radial damping
+- [x] v3.5.8 radial damping
 - [ ] v3.5.9 radial stiction
 - [ ] v3.5.10 radial/bar overshoot
 - [ ] v3.5.11 radial peg bounce

@@ -667,6 +667,50 @@ value_map:
 	}
 }
 
+func TestLoadPackageAcceptsRadialDamping(t *testing.T) {
+	for _, enabled := range []bool{false, true} {
+		name := "disabled"
+		if enabled {
+			name = "enabled"
+		}
+		t.Run(name, func(t *testing.T) {
+			root := makeGaugeFixtures(t)
+			packageDir := filepath.Join(root, "assets", "gauges", "radial", name)
+			value := "false"
+			if enabled {
+				value = "true"
+			}
+			writeGaugeYAML(t, packageDir, `id: damping_radial
+type: radial
+sensor: rpm
+realism:
+  damping: `+value+`
+size:
+  width: 100
+  height: 100
+layers:
+  needle: ../../shared/radial/simple_rpm/needle.png
+pivot:
+  face: { x: 0.5, y: 0.5 }
+  needle: { x: 0.5, y: 0.9 }
+value_map:
+  min: 0
+  max: 100
+  start_angle: -90
+  end_angle: 90
+`)
+
+			pkg, err := LoadPackage(packageDir)
+			if err != nil {
+				t.Fatalf("LoadPackage returned error: %v", err)
+			}
+			if pkg.Realism.Damping == nil || *pkg.Realism.Damping != enabled {
+				t.Fatalf("damping = %#v, want %v", pkg.Realism.Damping, enabled)
+			}
+		})
+	}
+}
+
 func TestLoadPackageRejectsInvalidSharedMovementPolicy(t *testing.T) {
 	root := makeGaugeFixtures(t)
 	packageDir := filepath.Join(root, "assets", "gauges", "radial", "bad_policy")
@@ -815,6 +859,38 @@ value_map:
 		t.Fatal("LoadPackage returned nil error, want error")
 	}
 	assertErrorContains(t, err, "snap_settle")
+}
+
+func TestLoadPackageRejectsDampingOnNonRadialGauge(t *testing.T) {
+	root := makeGaugeFixtures(t)
+	packageDir := filepath.Join(root, "assets", "gauges", "bar", "damping")
+	writeGaugeYAML(t, packageDir, `id: bad_bar
+type: bar
+sensor: coolant_temperature
+realism:
+  damping: true
+size:
+  width: 100
+  height: 100
+layers:
+  panel: panel.png
+  level: level.png
+value_map:
+  min: 40
+  max: 120
+  clamp: true
+bar:
+  mode: level
+  axis: vertical
+  origin: bottom
+  bounds: [10, 10, 20, 60]
+`)
+
+	_, err := LoadPackage(packageDir)
+	if err == nil {
+		t.Fatal("LoadPackage returned nil error, want error")
+	}
+	assertErrorContains(t, err, "damping")
 }
 
 func TestLoadPackageRejectsExplicitEmptyOdometerDrumSlop(t *testing.T) {
