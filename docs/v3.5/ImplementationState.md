@@ -1,10 +1,10 @@
 # v3.5 Implementation State
 
-Status: v3.5.8 radial damping implemented; radial follow-on slices remain pending
+Status: v3.5.9 radial stiction implemented; radial follow-on slices remain pending
 
-Current target: v3.5.9 radial stiction
+Current target: v3.5.10 radial/bar overshoot
 
-Current branch: `codex/v3.5.8-radial-damping`
+Current branch: `codex/v3.5.9-radial-stiction`
 
 ## Scope
 
@@ -107,7 +107,7 @@ Not allowed in v3.5:
 - [x] v3.5.6b implement odometer movement model
 - [x] v3.5.7 odometer carry-drag / 9-drag
 - [x] v3.5.8 radial damping
-- [ ] v3.5.9 radial stiction
+- [x] v3.5.9 radial stiction
 - [ ] v3.5.10 radial/bar overshoot
 - [ ] v3.5.11 radial peg bounce
 - [ ] v3.5.12 indicator thermal fade
