@@ -45,6 +45,7 @@ type Runtime struct {
 
 const defaultOdometerMovementDuration = 200 * time.Millisecond
 const defaultOdometerSnapSettleDuration = 60 * time.Millisecond
+const defaultRadialDampingDuration = 200 * time.Millisecond
 
 type movementPhase string
 
@@ -59,6 +60,7 @@ type widgetMovementState struct {
 	Phase                movementPhase
 	Policy               string
 	Mode                 string
+	DampingEnabled       bool
 	PreviousDisplayValue float64
 	DisplayValue         float64
 	TargetValue          float64
@@ -167,6 +169,9 @@ func NewRuntime(plan v3config.RuntimePlan, registry *v3assets.Registry) (*Runtim
 }
 
 func defaultMovementPlanner(context movementContext, state sensors.SensorState, current widgetMovementState) time.Duration {
+	if context.GaugeType == v3gauges.TypeRadial && current.DampingEnabled {
+		return defaultRadialDampingDuration
+	}
 	if context.GaugeType == v3gauges.TypeOdometer {
 		switch context.GaugeMode {
 		case v3gauges.MovementLinear, v3gauges.MovementEaseOut, v3gauges.MovementBell:
@@ -437,7 +442,8 @@ func (d Dashboard) renderWidget(configWidget v3config.WidgetConfig, states map[s
 				return Widget{}, false, fmt.Errorf("dashboard %q widget %q: %w", d.ID, configWidget.ID, err)
 			}
 		} else {
-			state, movementChanged = resolveMovementState(movements, movementKey(d.ID, configWidget.ID), context, state, pkg.Realism.MovementPolicy, planner, now)
+			damping := pkg.Realism.Damping != nil && *pkg.Realism.Damping
+			state, movementChanged = resolveMovementState(movements, movementKey(d.ID, configWidget.ID), context, state, pkg.Realism.MovementPolicy, damping, planner, now)
 		}
 		var gaugeScene v3gauges.Scene
 		switch pkg.Type {
@@ -491,13 +497,11 @@ func movementKey(dashboardID string, widgetID string) string {
 	return dashboardID + "|" + widgetID
 }
 
-func resolveMovementState(movements map[string]widgetMovementState, key string, context movementContext, source sensors.SensorState, policy string, planner movementPlanner, now time.Time) (sensors.SensorState, bool) {
+func resolveMovementState(movements map[string]widgetMovementState, key string, context movementContext, source sensors.SensorState, policy string, damping bool, planner movementPlanner, now time.Time) (sensors.SensorState, bool) {
 	if movements == nil {
 		return source, false
 	}
-	if strings.TrimSpace(policy) == "" {
-		policy = v3gauges.MovementPolicyImmediate
-	}
+	policy = effectiveMovementPolicy(context.GaugeType, policy, damping)
 	if source.Status != sensors.StatusOK {
 		previous, hadMovement := movements[key]
 		if hadMovement {
@@ -512,6 +516,7 @@ func resolveMovementState(movements map[string]widgetMovementState, key string, 
 			Phase:                movementPhaseStatic,
 			Policy:               policy,
 			Mode:                 context.GaugeMode,
+			DampingEnabled:       damping,
 			PreviousDisplayValue: source.Value,
 			DisplayValue:         source.Value,
 			TargetValue:          source.Value,
@@ -522,6 +527,7 @@ func resolveMovementState(movements map[string]widgetMovementState, key string, 
 			movement = advanceMovementState(movement, now)
 		}
 		movement.Policy = policy
+		movement.DampingEnabled = damping
 		movement.PreviousDisplayValue = movement.DisplayValue
 		movement.TargetValue = source.Value
 		duration := time.Duration(0)
@@ -544,6 +550,22 @@ func resolveMovementState(movements map[string]widgetMovementState, key string, 
 	source.Value = movement.DisplayValue
 	source.TypedValue = sensors.NewNumericValue(source.Value, source.Unit)
 	return source, movementActive(movement) != movementActive(previous)
+}
+
+func effectiveMovementPolicy(gaugeType string, policy string, damping bool) string {
+	policy = strings.TrimSpace(policy)
+	if policy == "" {
+		policy = v3gauges.MovementPolicyImmediate
+	}
+	if gaugeType == v3gauges.TypeRadial {
+		if !damping {
+			return v3gauges.MovementPolicyImmediate
+		}
+		if policy == v3gauges.MovementPolicyImmediate {
+			return v3gauges.MovementPolicyLinear
+		}
+	}
+	return policy
 }
 
 func resolveOdometerMovementState(movements map[string]widgetMovementState, key string, context movementContext, pkg v3gauges.Package, source sensors.SensorState, planner movementPlanner, now time.Time) (sensors.SensorState, widgetMovementState, bool, error) {
