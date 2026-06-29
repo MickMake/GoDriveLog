@@ -742,7 +742,7 @@ func TestRuntimeOdometerGaugeInstantMovementJumpsToTarget(t *testing.T) {
 	if len(wheels) != 3 {
 		t.Fatalf("wheel parts = %d, want 3", len(wheels))
 	}
-	if !almostEqual(wheels[0].StripOffset, 25.8) || !almostEqual(wheels[1].StripOffset, 58.0) || !almostEqual(wheels[2].StripOffset, 180.0) {
+	if !almostEqual(wheels[0].StripOffset, 20.0) || !almostEqual(wheels[1].StripOffset, 40.0) || !almostEqual(wheels[2].StripOffset, 180.0) {
 		t.Fatalf("expected exact target offsets, got %.2f/%.2f/%.2f", wheels[0].StripOffset, wheels[1].StripOffset, wheels[2].StripOffset)
 	}
 }
@@ -775,7 +775,7 @@ func TestRuntimeOdometerGaugeLinearMovementAnimatesAndSettlesExactlyOnTarget(t *
 		t.Fatalf("expected linear odometer movement to become active")
 	}
 	wheels := wheelStripWidgetParts(requireWidget(t, scenes[0], "trip"))
-	if !almostEqual(wheels[0].StripOffset, 24.0) || !almostEqual(wheels[1].StripOffset, 40.0) || !almostEqual(wheels[2].StripOffset, 0.0) {
+	if !almostEqual(wheels[0].StripOffset, 20.0) || !almostEqual(wheels[1].StripOffset, 40.0) || !almostEqual(wheels[2].StripOffset, 0.0) {
 		t.Fatalf("expected movement to start from previous offsets, got %.2f/%.2f/%.2f", wheels[0].StripOffset, wheels[1].StripOffset, wheels[2].StripOffset)
 	}
 
@@ -787,11 +787,11 @@ func TestRuntimeOdometerGaugeLinearMovementAnimatesAndSettlesExactlyOnTarget(t *
 		t.Fatalf("expected mid-transition tick to redraw")
 	}
 	wheels = wheelStripWidgetParts(requireWidget(t, scenes[0], "trip"))
-	if !(wheels[0].StripOffset >= 24.9 && wheels[0].StripOffset < 25.8) {
-		t.Fatalf("expected tens wheel to advance between start and final offsets, got %.2f", wheels[0].StripOffset)
+	if !almostEqual(wheels[0].StripOffset, 20.0) {
+		t.Fatalf("expected unchanged tens wheel to stay on its exact slot, got %.2f", wheels[0].StripOffset)
 	}
-	if !(wheels[1].StripOffset >= 49.0 && wheels[1].StripOffset < 58.0) {
-		t.Fatalf("expected ones wheel to advance between start and final offsets, got %.2f", wheels[1].StripOffset)
+	if !almostEqual(wheels[1].StripOffset, 40.0) {
+		t.Fatalf("expected unchanged ones wheel to stay on its exact slot, got %.2f", wheels[1].StripOffset)
 	}
 	if !(wheels[2].StripOffset >= 90.0 && wheels[2].StripOffset < 180.0) {
 		t.Fatalf("expected tenths wheel to advance between start and final offsets, got %.2f", wheels[2].StripOffset)
@@ -805,7 +805,7 @@ func TestRuntimeOdometerGaugeLinearMovementAnimatesAndSettlesExactlyOnTarget(t *
 		t.Fatalf("expected final tick to redraw")
 	}
 	wheels = wheelStripWidgetParts(requireWidget(t, scenes[0], "trip"))
-	if !almostEqual(wheels[0].StripOffset, 25.8) || !almostEqual(wheels[1].StripOffset, 58.0) || !almostEqual(wheels[2].StripOffset, 180.0) {
+	if !almostEqual(wheels[0].StripOffset, 20.0) || !almostEqual(wheels[1].StripOffset, 40.0) || !almostEqual(wheels[2].StripOffset, 180.0) {
 		t.Fatalf("expected final settled offsets, got %.2f/%.2f/%.2f", wheels[0].StripOffset, wheels[1].StripOffset, wheels[2].StripOffset)
 	}
 
@@ -866,8 +866,8 @@ func TestRuntimeOdometerGaugeEaseOutMovementAdvancesFurtherThanLinearAtSameTick(
 
 	linearWheels := wheelStripWidgetParts(requireWidget(t, linearScenes[0], "trip"))
 	easeOutWheels := wheelStripWidgetParts(requireWidget(t, easeOutScenes[0], "trip"))
-	if !(easeOutWheels[1].StripOffset > linearWheels[1].StripOffset) {
-		t.Fatalf("expected ease_out to advance further than linear: linear=%.2f ease_out=%.2f", linearWheels[1].StripOffset, easeOutWheels[1].StripOffset)
+	if !(easeOutWheels[2].StripOffset > linearWheels[2].StripOffset) {
+		t.Fatalf("expected ease_out to advance further than linear on the moving wheel: linear=%.2f ease_out=%.2f", linearWheels[2].StripOffset, easeOutWheels[2].StripOffset)
 	}
 }
 
@@ -914,8 +914,8 @@ func TestRuntimeOdometerGaugeBellMovementStartsSlowerThanLinearAndSettlesExactly
 	}
 	linearWheels := wheelStripWidgetParts(requireWidget(t, linearScenes[0], "trip"))
 	bellWheels := wheelStripWidgetParts(requireWidget(t, bellScenes[0], "trip"))
-	if !(bellWheels[1].StripOffset < linearWheels[1].StripOffset) {
-		t.Fatalf("expected bell to start slower than linear: linear=%.2f bell=%.2f", linearWheels[1].StripOffset, bellWheels[1].StripOffset)
+	if !(bellWheels[2].StripOffset < linearWheels[2].StripOffset) {
+		t.Fatalf("expected bell to start slower than linear on the moving wheel: linear=%.2f bell=%.2f", linearWheels[2].StripOffset, bellWheels[2].StripOffset)
 	}
 
 	scenes, changed, err := bellRuntime.Tick(start.Add(210 * time.Millisecond))
@@ -926,7 +926,7 @@ func TestRuntimeOdometerGaugeBellMovementStartsSlowerThanLinearAndSettlesExactly
 		t.Fatalf("expected final bell tick to redraw")
 	}
 	wheels := wheelStripWidgetParts(requireWidget(t, scenes[0], "trip"))
-	if !almostEqual(wheels[0].StripOffset, 25.8) || !almostEqual(wheels[1].StripOffset, 58.0) || !almostEqual(wheels[2].StripOffset, 180.0) {
+	if !almostEqual(wheels[0].StripOffset, 20.0) || !almostEqual(wheels[1].StripOffset, 40.0) || !almostEqual(wheels[2].StripOffset, 180.0) {
 		t.Fatalf("expected final bell offsets, got %.2f/%.2f/%.2f", wheels[0].StripOffset, wheels[1].StripOffset, wheels[2].StripOffset)
 	}
 }
@@ -991,7 +991,7 @@ func TestRuntimeOdometerGaugeCarryDragAdvancesHigherWheelNearRolloverAndSettlesE
 		t.Fatalf("expected final carry-drag tick to redraw")
 	}
 	finalWheels := wheelStripWidgetParts(requireWidget(t, finalScenes[0], "trip"))
-	if !almostEqual(finalWheels[0].StripOffset, 40.0) || !almostEqual(finalWheels[1].StripOffset, 400.0) || !almostEqual(finalWheels[2].StripOffset, 4000.0) {
+	if !almostEqual(finalWheels[0].StripOffset, 40.0) || !almostEqual(finalWheels[1].StripOffset, 0.0) || !almostEqual(finalWheels[2].StripOffset, 0.0) {
 		t.Fatalf("expected carry-drag to settle exactly on rollover target, got %.2f/%.2f/%.2f", finalWheels[0].StripOffset, finalWheels[1].StripOffset, finalWheels[2].StripOffset)
 	}
 }
@@ -1041,7 +1041,7 @@ func TestRuntimeOdometerGaugeCarryDragStraddlingUpdatePullsHigherWheelBeforeRoll
 
 	baseWheels := wheelStripWidgetParts(requireWidget(t, baseScenes[0], "trip"))
 	carryWheels := wheelStripWidgetParts(requireWidget(t, carryScenes[0], "trip"))
-	if !(baseWheels[1].StripOffset < 400.0) {
+	if !(baseWheels[1].StripOffset < 200.0) {
 		t.Fatalf("expected lower wheel to still be approaching rollover, got base ones offset %.2f", baseWheels[1].StripOffset)
 	}
 	if !(carryWheels[0].StripOffset > baseWheels[0].StripOffset) {
@@ -1056,7 +1056,7 @@ func TestRuntimeOdometerGaugeCarryDragStraddlingUpdatePullsHigherWheelBeforeRoll
 		t.Fatalf("expected final carry-drag straddling tick to redraw")
 	}
 	finalWheels := wheelStripWidgetParts(requireWidget(t, finalScenes[0], "trip"))
-	if !almostEqual(finalWheels[0].StripOffset, 40.4) || !almostEqual(finalWheels[1].StripOffset, 404.0) || !almostEqual(finalWheels[2].StripOffset, 4040.0) {
+	if !almostEqual(finalWheels[0].StripOffset, 40.0) || !almostEqual(finalWheels[1].StripOffset, 0.0) || !almostEqual(finalWheels[2].StripOffset, 40.0) {
 		t.Fatalf("expected carry-drag straddling update to settle exactly on target, got %.2f/%.2f/%.2f", finalWheels[0].StripOffset, finalWheels[1].StripOffset, finalWheels[2].StripOffset)
 	}
 }
@@ -1121,7 +1121,7 @@ func TestRuntimeOdometerGaugeCarryDragSparseMultiRolloverUpdateDoesNotYankHigher
 		t.Fatalf("expected final sparse carry-drag tick to redraw")
 	}
 	finalWheels := wheelStripWidgetParts(requireWidget(t, finalScenes[0], "trip"))
-	if !almostEqual(finalWheels[0].StripOffset, 62.4) || !almostEqual(finalWheels[1].StripOffset, 624.0) || !almostEqual(finalWheels[2].StripOffset, 6240.0) {
+	if !almostEqual(finalWheels[0].StripOffset, 60.0) || !almostEqual(finalWheels[1].StripOffset, 20.0) || !almostEqual(finalWheels[2].StripOffset, 40.0) {
 		t.Fatalf("expected sparse multi-rollover update to settle exactly on target, got %.2f/%.2f/%.2f", finalWheels[0].StripOffset, finalWheels[1].StripOffset, finalWheels[2].StripOffset)
 	}
 }
@@ -1174,11 +1174,11 @@ func TestRuntimeOdometerGaugeSnapSettleAddsShortTailAndSettlesExactlyOnTarget(t 
 
 	baseWheels := wheelStripWidgetParts(requireWidget(t, baseScenes[0], "trip"))
 	settleWheels := wheelStripWidgetParts(requireWidget(t, settleScenes[0], "trip"))
-	if !(settleWheels[0].StripOffset > baseWheels[0].StripOffset) {
-		t.Fatalf("expected snap_settle to nudge tens wheel beyond target: base=%.2f settle=%.2f", baseWheels[0].StripOffset, settleWheels[0].StripOffset)
+	if !almostEqual(settleWheels[0].StripOffset, baseWheels[0].StripOffset) {
+		t.Fatalf("expected snap_settle to leave unchanged tens wheel alone: base=%.2f settle=%.2f", baseWheels[0].StripOffset, settleWheels[0].StripOffset)
 	}
-	if !(settleWheels[1].StripOffset > baseWheels[1].StripOffset) {
-		t.Fatalf("expected snap_settle to nudge ones wheel beyond target: base=%.2f settle=%.2f", baseWheels[1].StripOffset, settleWheels[1].StripOffset)
+	if !almostEqual(settleWheels[1].StripOffset, baseWheels[1].StripOffset) {
+		t.Fatalf("expected snap_settle to leave unchanged ones wheel alone: base=%.2f settle=%.2f", baseWheels[1].StripOffset, settleWheels[1].StripOffset)
 	}
 	if !(settleWheels[2].StripOffset > baseWheels[2].StripOffset) {
 		t.Fatalf("expected snap_settle to nudge tenths wheel beyond target: base=%.2f settle=%.2f", baseWheels[2].StripOffset, settleWheels[2].StripOffset)
@@ -1192,7 +1192,7 @@ func TestRuntimeOdometerGaugeSnapSettleAddsShortTailAndSettlesExactlyOnTarget(t 
 		t.Fatalf("expected final snap_settle tick to redraw")
 	}
 	finalWheels := wheelStripWidgetParts(requireWidget(t, finalScenes[0], "trip"))
-	if !almostEqual(finalWheels[0].StripOffset, 25.8) || !almostEqual(finalWheels[1].StripOffset, 58.0) || !almostEqual(finalWheels[2].StripOffset, 180.0) {
+	if !almostEqual(finalWheels[0].StripOffset, 20.0) || !almostEqual(finalWheels[1].StripOffset, 40.0) || !almostEqual(finalWheels[2].StripOffset, 180.0) {
 		t.Fatalf("expected snap_settle to settle exactly on target, got %.2f/%.2f/%.2f", finalWheels[0].StripOffset, finalWheels[1].StripOffset, finalWheels[2].StripOffset)
 	}
 
@@ -1242,7 +1242,7 @@ func TestRuntimeOdometerGaugeRecognizedMovementFallbacksStayInstant(t *testing.T
 				t.Fatalf("expected fallback instant movement to stay static")
 			}
 			wheels := wheelStripWidgetParts(requireWidget(t, scenes[0], "trip"))
-			if !almostEqual(wheels[0].StripOffset, 25.8) || !almostEqual(wheels[1].StripOffset, 58.0) || !almostEqual(wheels[2].StripOffset, 180.0) {
+			if !almostEqual(wheels[0].StripOffset, 20.0) || !almostEqual(wheels[1].StripOffset, 40.0) || !almostEqual(wheels[2].StripOffset, 180.0) {
 				t.Fatalf("expected instant fallback offsets, got %.2f/%.2f/%.2f", wheels[0].StripOffset, wheels[1].StripOffset, wheels[2].StripOffset)
 			}
 		})

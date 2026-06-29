@@ -264,16 +264,30 @@ func OdometerWheelStripOffsets(pkg Package, value float64) ([]float64, error) {
 		return nil, fmt.Errorf("gauge package %q odometer wheels must not be empty", pkg.ID)
 	}
 	digitPlaces := odometerDigitPlaces(pkg.Odometer.Wheels)
-	wraparound := odometerWraparoundEnabled(pkg)
 	offsets := make([]float64, len(pkg.Odometer.Wheels))
 	for index, wheel := range pkg.Odometer.Wheels {
-		offset, err := odometerWheelOffset(wraparound, wheel, digitPlaces[index], value)
+		offset, err := odometerDiscreteWheelOffset(wheel, digitPlaces[index], value)
 		if err != nil {
 			return nil, fmt.Errorf("gauge package %q: %w", pkg.ID, err)
 		}
 		offsets[index] = offset
 	}
 	return offsets, nil
+}
+
+func OdometerInterpolatedWheelOffsets(pkg Package, previousOffsets []float64, targetOffsets []float64, progress float64) ([]float64, error) {
+	if len(previousOffsets) != len(targetOffsets) || len(targetOffsets) != len(pkg.Odometer.Wheels) {
+		return nil, fmt.Errorf("gauge package %q interpolated odometer offsets require exactly one wheel offset per odometer wheel", pkg.ID)
+	}
+	routedTargets, err := odometerRoutedTargetOffsets(pkg, previousOffsets, targetOffsets)
+	if err != nil {
+		return nil, err
+	}
+	interpolated := make([]float64, len(previousOffsets))
+	for index := range previousOffsets {
+		interpolated[index] = previousOffsets[index] + ((routedTargets[index] - previousOffsets[index]) * progress)
+	}
+	return interpolated, nil
 }
 
 const (
@@ -291,15 +305,18 @@ func OdometerCarryDragWheelOffsets(pkg Package, previousValue float64, targetVal
 	}
 
 	adjusted := cloneFloat64s(baseOffsets)
-	wraparound := odometerWraparoundEnabled(pkg)
 	digitPlaces := odometerDigitPlaces(pkg.Odometer.Wheels)
+	routedTargets, err := odometerRoutedTargetOffsets(pkg, previousOffsets, targetOffsets)
+	if err != nil {
+		return nil, err
+	}
 	for higherIndex := len(pkg.Odometer.Wheels) - 2; higherIndex >= 0; higherIndex-- {
 		lowerIndex := higherIndex + 1
 		rollover, err := odometerWheelRollover(pkg.Odometer.Wheels[lowerIndex], digitPlaces[lowerIndex], previousValue, targetValue)
 		if err != nil {
 			return nil, fmt.Errorf("gauge package %q: %w", pkg.ID, err)
 		}
-		if !rollover || !odometerOffsetAdvancesForward(previousOffsets[lowerIndex], targetOffsets[lowerIndex]) || !odometerOffsetAdvancesForward(previousOffsets[higherIndex], targetOffsets[higherIndex]) {
+		if !rollover || !odometerOffsetAdvancesForward(previousOffsets[lowerIndex], routedTargets[lowerIndex]) || !odometerOffsetAdvancesForward(previousOffsets[higherIndex], routedTargets[higherIndex]) {
 			continue
 		}
 
@@ -310,11 +327,19 @@ func OdometerCarryDragWheelOffsets(pkg Package, previousValue float64, targetVal
 		if odometerWheelCrossesMultipleRollovers(pkg.Odometer.Wheels[lowerIndex], digitPlaces[lowerIndex], previousValue, targetValue, rolloverValue) {
 			continue
 		}
-		rolloverOffset, err := odometerWheelOffset(wraparound, pkg.Odometer.Wheels[lowerIndex], digitPlaces[lowerIndex], rolloverValue)
+		rolloverOffset, err := odometerDiscreteWheelOffset(pkg.Odometer.Wheels[lowerIndex], digitPlaces[lowerIndex], rolloverValue)
 		if err != nil {
 			return nil, fmt.Errorf("gauge package %q: %w", pkg.ID, err)
 		}
-		lowerProgress := odometerOffsetProgress(previousOffsets[lowerIndex], rolloverOffset, adjusted[lowerIndex])
+		rolloverOffset, err = odometerRoutedTargetOffset(pkg.Odometer.Wheels[lowerIndex], odometerWraparoundEnabled(pkg), previousOffsets[lowerIndex], rolloverOffset)
+		if err != nil {
+			return nil, fmt.Errorf("gauge package %q: %w", pkg.ID, err)
+		}
+		lowerProgress := odometerOffsetProgress(previousOffsets[lowerIndex], routedTargets[lowerIndex], adjusted[lowerIndex])
+		rolloverProgress := odometerValueProgress(previousValue, targetValue, rolloverValue)
+		if rolloverProgress > 0 && rolloverProgress < 1 {
+			lowerProgress = clampUnit(lowerProgress / rolloverProgress)
+		}
 		if lowerProgress <= odometerCarryDragLeadInStart {
 			continue
 		}
@@ -322,7 +347,7 @@ func OdometerCarryDragWheelOffsets(pkg Package, previousValue float64, targetVal
 		leadProgress := (lowerProgress - odometerCarryDragLeadInStart) / (1 - odometerCarryDragLeadInStart)
 		leadProgress = clampUnit(leadProgress)
 		leadProgress = leadProgress * leadProgress * (3 - (2 * leadProgress))
-		adjusted[higherIndex] = advanceOffsetTowardTarget(adjusted[higherIndex], targetOffsets[higherIndex], leadProgress*odometerCarryDragStrength)
+		adjusted[higherIndex] = advanceOffsetTowardTarget(adjusted[higherIndex], routedTargets[higherIndex], leadProgress*odometerCarryDragStrength)
 	}
 	return adjusted, nil
 }
@@ -340,9 +365,13 @@ func OdometerSnapSettleWheelOffsets(pkg Package, previousOffsets []float64, targ
 	if settleShape <= 0 {
 		return adjusted, nil
 	}
+	routedTargets, err := odometerRoutedTargetOffsets(pkg, previousOffsets, targetOffsets)
+	if err != nil {
+		return nil, err
+	}
 
 	for index, wheel := range pkg.Odometer.Wheels {
-		delta := targetOffsets[index] - previousOffsets[index]
+		delta := routedTargets[index] - previousOffsets[index]
 		if math.Abs(delta) <= 0.001 {
 			continue
 		}
@@ -745,6 +774,65 @@ func odometerDigitPlaces(wheels []OdometerWheel) []int {
 	return places
 }
 
+func odometerDiscreteWheelOffset(wheel OdometerWheel, place int, value float64) (float64, error) {
+	if wheel.Window.Height <= 0 {
+		return 0, fmt.Errorf("odometer wheel window height must be positive")
+	}
+	digit, err := odometerWheelDigit(wheel, place, value)
+	if err != nil {
+		return 0, err
+	}
+	return float64(digit * wheel.Window.Height), nil
+}
+
+func odometerWheelDigit(wheel OdometerWheel, place int, value float64) (int, error) {
+	absolute := math.Abs(value)
+	if odometerWheelRole(wheel) == WheelRoleSubUnit {
+		return int(math.Floor(absolute*10)) % 10, nil
+	}
+	if place < 0 {
+		return 0, fmt.Errorf("odometer wheel place must not be negative")
+	}
+	return int(math.Floor(absolute/math.Pow10(place))) % 10, nil
+}
+
+func odometerRoutedTargetOffsets(pkg Package, previousOffsets []float64, targetOffsets []float64) ([]float64, error) {
+	if len(previousOffsets) != len(targetOffsets) || len(targetOffsets) != len(pkg.Odometer.Wheels) {
+		return nil, fmt.Errorf("gauge package %q routed odometer targets require exactly one wheel offset per odometer wheel", pkg.ID)
+	}
+	routed := cloneFloat64s(targetOffsets)
+	wraparound := odometerWraparoundEnabled(pkg)
+	for index, wheel := range pkg.Odometer.Wheels {
+		offset, err := odometerRoutedTargetOffset(wheel, wraparound, previousOffsets[index], targetOffsets[index])
+		if err != nil {
+			return nil, err
+		}
+		routed[index] = offset
+	}
+	return routed, nil
+}
+
+func odometerRoutedTargetOffset(wheel OdometerWheel, wraparound bool, previousOffset float64, targetOffset float64) (float64, error) {
+	if !wraparound {
+		return targetOffset, nil
+	}
+	span, err := odometerWheelSpan(wheel)
+	if err != nil {
+		return 0, err
+	}
+	if targetOffset < previousOffset {
+		return targetOffset + span, nil
+	}
+	return targetOffset, nil
+}
+
+func odometerWheelSpan(wheel OdometerWheel) (float64, error) {
+	if wheel.Window.Height <= 0 {
+		return 0, fmt.Errorf("odometer wheel window height must be positive")
+	}
+	return float64(wheel.Window.Height * 10), nil
+}
+
 func odometerWheelOffset(wraparound bool, wheel OdometerWheel, place int, value float64) (float64, error) {
 	position, err := odometerWheelPosition(wheel, place, value, wraparound)
 	if err != nil {
@@ -918,6 +1006,13 @@ func odometerOffsetProgress(previous float64, target float64, current float64) f
 		return 0
 	}
 	return clampUnit((current - previous) / (target - previous))
+}
+
+func odometerValueProgress(previousValue float64, targetValue float64, currentValue float64) float64 {
+	if targetValue <= previousValue {
+		return 0
+	}
+	return clampUnit((currentValue - previousValue) / (targetValue - previousValue))
 }
 
 func advanceOffsetTowardTarget(current float64, target float64, factor float64) float64 {
