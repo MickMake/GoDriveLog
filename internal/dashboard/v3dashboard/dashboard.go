@@ -138,6 +138,7 @@ type Part struct {
 	StripOffset float64
 	Wraparound  bool
 	Role        string
+	WheelSlices []v3gauges.WheelSlice
 }
 
 // NewRuntime builds the selected-dashboard runtime from an already resolved
@@ -994,9 +995,26 @@ func gaugeSceneParts(scene v3gauges.Scene) []Part {
 			StripOffset: scenePart.StripOffset,
 			Wraparound:  scenePart.Wraparound,
 			Role:        scenePart.Role,
+			WheelSlices: cloneWheelSlices(scenePart.WheelSlices),
 		})
 	}
 	return parts
+}
+
+func cloneWheelSlices(values []v3gauges.WheelSlice) []v3gauges.WheelSlice {
+	if values == nil {
+		return nil
+	}
+	cloned := make([]v3gauges.WheelSlice, len(values))
+	for index, value := range values {
+		cloned[index] = v3gauges.WheelSlice{
+			Digit:   value.Digit,
+			Source:  append([]int(nil), value.Source...),
+			Height:  value.Height,
+			OffsetY: value.OffsetY,
+		}
+	}
+	return cloned
 }
 
 func barParts(set v3assets.BarSet, widget v3config.WidgetConfig, state sensors.SensorState, dashboardID string) ([]Part, error) {

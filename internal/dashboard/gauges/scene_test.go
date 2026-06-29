@@ -490,6 +490,38 @@ func TestOdometerWheelSourceMapsVirtualSlotNegativeOneToDigitNine(t *testing.T) 
 	}
 }
 
+func TestOdometerWheelSlicesRenderAdjacentDigitsForVirtualSlotOnePointFive(t *testing.T) {
+	wheel := OdometerWheel{Window: Size{Width: 12, Height: 20}}
+	slices := odometerWheelSlices(wheel, 30)
+	if got := wheelSliceDigits(slices); !intSlicesEqual(got, []int{1, 2}) {
+		t.Fatalf("expected virtual slot 1.5 to render digits 1 and 2, got %v", got)
+	}
+}
+
+func TestOdometerWheelSlicesRenderAdjacentDigitsForVirtualSlotEightPointFive(t *testing.T) {
+	wheel := OdometerWheel{Window: Size{Width: 12, Height: 20}}
+	slices := odometerWheelSlices(wheel, 170)
+	if got := wheelSliceDigits(slices); !intSlicesEqual(got, []int{8, 9}) {
+		t.Fatalf("expected virtual slot 8.5 to render digits 8 and 9, got %v", got)
+	}
+}
+
+func TestOdometerWheelSlicesRenderAdjacentDigitsForVirtualSlotNinePointFive(t *testing.T) {
+	wheel := OdometerWheel{Window: Size{Width: 12, Height: 20}}
+	slices := odometerWheelSlices(wheel, 190)
+	if got := wheelSliceDigits(slices); !intSlicesEqual(got, []int{9, 0}) {
+		t.Fatalf("expected virtual slot 9.5 to render digits 9 and 0, got %v", got)
+	}
+}
+
+func TestOdometerWheelSlicesRenderAdjacentDigitsForVirtualSlotNegativeHalf(t *testing.T) {
+	wheel := OdometerWheel{Window: Size{Width: 12, Height: 20}}
+	slices := odometerWheelSlices(wheel, -10)
+	if got := wheelSliceDigits(slices); !intSlicesEqual(got, []int{9, 0}) {
+		t.Fatalf("expected virtual slot -0.5 to render digits 9 and 0, got %v", got)
+	}
+}
+
 func TestOdometerCarryDragDisabledKeepsBaseWheelOffsets(t *testing.T) {
 	pkg := loadOdometerScenePackageWithRealism(t, MovementLinear, true, false, false, nil)
 	previousOffsets, err := OdometerWheelStripOffsets(pkg, 19.9)
@@ -1345,6 +1377,26 @@ func wheelStripParts(scene Scene) []ScenePart {
 		}
 	}
 	return parts
+}
+
+func wheelSliceDigits(slices []WheelSlice) []int {
+	digits := make([]int, len(slices))
+	for index, slice := range slices {
+		digits[index] = slice.Digit
+	}
+	return digits
+}
+
+func intSlicesEqual(left []int, right []int) bool {
+	if len(left) != len(right) {
+		return false
+	}
+	for index := range left {
+		if left[index] != right[index] {
+			return false
+		}
+	}
+	return true
 }
 
 func sceneCharacters(scene Scene) string {

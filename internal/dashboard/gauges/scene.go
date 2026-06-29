@@ -63,6 +63,14 @@ type ScenePart struct {
 	StripOffset float64
 	Wraparound  bool
 	Role        string
+	WheelSlices []WheelSlice
+}
+
+type WheelSlice struct {
+	Digit   int
+	Source  []int
+	Height  int
+	OffsetY int
 }
 
 func NumericScene(pkg Package, placement Placement, state sensors.SensorState) (Scene, error) {
@@ -232,6 +240,7 @@ func OdometerSceneWithWheelOffsets(pkg Package, placement Placement, state senso
 		scene.Text = formatValue("%.1f", state.Value)
 		for index, wheel := range pkg.Odometer.Wheels {
 			offset := offsets[index]
+			slices := odometerWheelSlices(wheel, offset)
 			sourceX, sourceY := odometerWheelSource(wheel, offset)
 			position := cloneInts(wheel.Position)
 			if len(position) >= 2 {
@@ -247,6 +256,7 @@ func OdometerSceneWithWheelOffsets(pkg Package, placement Placement, state senso
 				StripOffset: offset,
 				Wraparound:  odometerWheelCircular(),
 				Role:        odometerWheelRole(wheel),
+				WheelSlices: cloneWheelSlices(slices),
 			})
 		}
 	}
@@ -896,21 +906,56 @@ func odometerDrumSlop(pkg Package, wheelIndex int) int {
 }
 
 func odometerWheelSource(wheel OdometerWheel, stripOffset float64) (int, int) {
-	sourceX := 0
-	sourceY := 0
-	if wheel.Window.Height > 0 {
-		slotHeight := float64(wheel.Window.Height)
-		virtualSlot := stripOffset / slotHeight
-		slotIndex := int(math.Floor(virtualSlot))
-		slotRemainder := stripOffset - (float64(slotIndex) * slotHeight)
-		sourceDigit := positiveMod(slotIndex, 10)
-		sourceY = int(math.Floor((float64(sourceDigit) * slotHeight) + slotRemainder))
+	slices := odometerWheelSlices(wheel, stripOffset)
+	if len(slices) > 0 && len(slices[0].Source) >= 2 {
+		return slices[0].Source[0], slices[0].Source[1]
 	}
+	sourceX, sourceY := 0, 0
 	if len(wheel.Offset) >= 2 {
-		sourceX += wheel.Offset[0]
-		sourceY += wheel.Offset[1]
+		sourceX = wheel.Offset[0]
+		sourceY = wheel.Offset[1]
 	}
 	return sourceX, sourceY
+}
+
+func odometerWheelSlices(wheel OdometerWheel, stripOffset float64) []WheelSlice {
+	if wheel.Window.Width <= 0 || wheel.Window.Height <= 0 {
+		return nil
+	}
+	sourceX, sourceYOffset := 0, 0
+	if len(wheel.Offset) >= 2 {
+		sourceX = wheel.Offset[0]
+		sourceYOffset = wheel.Offset[1]
+	}
+	slotHeight := float64(wheel.Window.Height)
+	virtualSlot := stripOffset / slotHeight
+	slotIndex := int(math.Floor(virtualSlot))
+	slotRemainder := stripOffset - (float64(slotIndex) * slotHeight)
+	sourceOffset := int(math.Floor(slotRemainder))
+	if sourceOffset < 0 {
+		sourceOffset = 0
+	}
+	if sourceOffset >= wheel.Window.Height {
+		sourceOffset = wheel.Window.Height - 1
+	}
+	currentDigit := positiveMod(slotIndex, 10)
+	slices := []WheelSlice{{
+		Digit:   currentDigit,
+		Source:  []int{sourceX, (currentDigit * wheel.Window.Height) + sourceYOffset + sourceOffset},
+		Height:  wheel.Window.Height - sourceOffset,
+		OffsetY: 0,
+	}}
+	if sourceOffset == 0 {
+		return slices
+	}
+	nextDigit := positiveMod(slotIndex+1, 10)
+	slices = append(slices, WheelSlice{
+		Digit:   nextDigit,
+		Source:  []int{sourceX, (nextDigit * wheel.Window.Height) + sourceYOffset},
+		Height:  sourceOffset,
+		OffsetY: wheel.Window.Height - sourceOffset,
+	})
+	return slices
 }
 
 func odometerWheelRole(wheel OdometerWheel) string {
@@ -965,6 +1010,22 @@ func cloneFloat64s(values []float64) []float64 {
 		return nil
 	}
 	return append([]float64(nil), values...)
+}
+
+func cloneWheelSlices(values []WheelSlice) []WheelSlice {
+	if values == nil {
+		return nil
+	}
+	cloned := make([]WheelSlice, len(values))
+	for index, value := range values {
+		cloned[index] = WheelSlice{
+			Digit:   value.Digit,
+			Source:  cloneInts(value.Source),
+			Height:  value.Height,
+			OffsetY: value.OffsetY,
+		}
+	}
+	return cloned
 }
 
 func cloneIntSlices(values [][]int) [][]int {
