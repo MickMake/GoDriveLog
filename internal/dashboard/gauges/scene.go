@@ -799,14 +799,19 @@ func odometerDiscreteWheelOffset(wheel OdometerWheel, place int, value float64) 
 }
 
 func odometerWheelDigit(wheel OdometerWheel, place int, value float64) (int, error) {
-	absolute := math.Abs(value)
+	scaledTenths := int(math.Round(math.Abs(value) * 10))
+
 	if odometerWheelRole(wheel) == WheelRoleSubUnit {
-		return int(math.Floor(absolute*10)) % 10, nil
+		return scaledTenths % 10, nil
 	}
+
 	if place < 0 {
 		return 0, fmt.Errorf("odometer wheel place must not be negative")
 	}
-	return int(math.Floor(absolute/math.Pow10(place))) % 10, nil
+
+	whole := scaledTenths / 10
+	divisor := int(math.Pow10(place))
+	return (whole / divisor) % 10, nil
 }
 
 func odometerRoutedTargetOffsets(pkg Package, previousValue float64, targetValue float64, previousOffsets []float64, targetOffsets []float64) ([]float64, error) {
