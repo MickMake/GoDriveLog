@@ -1,10 +1,10 @@
-id: carry_drag_trip_odometer
+id: trip_odometer
 type: odometer
 sensor: trip_distance
 
 realism:
   wraparound: true
-  carry_drag: true
+  drum_slop: [0, 1, -1, 1, 0]
 
 size:
   width: 332

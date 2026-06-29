@@ -1,4 +1,4 @@
-id: snap_settle_trip_odometer
+id: trip_odometer
 type: odometer
 sensor: trip_distance
 

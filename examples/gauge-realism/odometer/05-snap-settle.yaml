@@ -11,8 +11,8 @@ sensors:
     type: obd
     pid: "015A"
     unit: km
-    min: 12.0
-    max: 12.9
+    min: 0000.0
+    max: 9999.9
     poll: 250
 dashboards:
   preview:

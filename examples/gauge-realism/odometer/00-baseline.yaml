@@ -12,7 +12,7 @@ sensors:
     pid: "015A"
     unit: km
     min: 0
-    max: 999.9
+    max: 9999.9
     poll: 250
 dashboards:
   preview:

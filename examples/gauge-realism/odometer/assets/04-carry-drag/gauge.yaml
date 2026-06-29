@@ -1,9 +1,8 @@
-id: carry_drag_trip_odometer
+id: trip_odometer
 type: odometer
 sensor: trip_distance
 
 realism:
-  wraparound: true
   carry_drag: true
 
 size:
