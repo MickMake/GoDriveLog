@@ -234,7 +234,7 @@ func TestRuntimeRadialGaugeWidgetSceneSignatureChangesWithAngle(t *testing.T) {
 }
 
 func TestRuntimeGaugeMovementLifecycle(t *testing.T) {
-	packageDir := makeDashboardRadialGaugePackageWithRealism(t, v3gauges.MovementPolicyLinear, true, nil, nil)
+	packageDir := makeDashboardRadialGaugePackageWithRealism(t, v3gauges.MovementPolicyLinear, true, nil, nil, false)
 	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 1024, Height: 600}, Widgets: []v3config.WidgetConfig{{ID: "rpm", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{0, 0}, Scale: 1}}}}}}
 	runtime, err := NewRuntime(plan, testAssetRegistry())
 	if err != nil {
@@ -375,7 +375,7 @@ func TestRuntimeGaugeMovementLifecycle(t *testing.T) {
 }
 
 func TestRuntimeGaugeMovementUsesEventTimestamp(t *testing.T) {
-	runtime := testRadialMovementRuntimeWithRealism(t, v3gauges.MovementPolicyLinear, true, nil, nil)
+	runtime := testRadialMovementRuntimeWithRealism(t, v3gauges.MovementPolicyLinear, true, nil, nil, false)
 	wallClock := time.Unix(500, 0)
 	runtime.clock = func() time.Time { return wallClock }
 	runtime.movementPlanner = func(context movementContext, state sensors.SensorState, current widgetMovementState) time.Duration {
@@ -416,7 +416,7 @@ func TestRuntimeGaugeMovementUsesEventTimestamp(t *testing.T) {
 }
 
 func TestRuntimeGaugeMovementFallsBackToReadAt(t *testing.T) {
-	runtime := testRadialMovementRuntimeWithRealism(t, v3gauges.MovementPolicyLinear, true, nil, nil)
+	runtime := testRadialMovementRuntimeWithRealism(t, v3gauges.MovementPolicyLinear, true, nil, nil, false)
 	wallClock := time.Unix(500, 0)
 	runtime.clock = func() time.Time { return wallClock }
 	runtime.movementPlanner = func(context movementContext, state sensors.SensorState, current widgetMovementState) time.Duration {
@@ -456,7 +456,7 @@ func TestRuntimeGaugeMovementFallsBackToReadAt(t *testing.T) {
 }
 
 func TestRuntimeGaugeMovementFallsBackToRuntimeClock(t *testing.T) {
-	runtime := testRadialMovementRuntimeWithRealism(t, v3gauges.MovementPolicyLinear, true, nil, nil)
+	runtime := testRadialMovementRuntimeWithRealism(t, v3gauges.MovementPolicyLinear, true, nil, nil, false)
 	wallClock := time.Unix(500, 0)
 	runtime.clock = func() time.Time { return wallClock }
 	runtime.movementPlanner = func(context movementContext, state sensors.SensorState, current widgetMovementState) time.Duration {
@@ -494,7 +494,7 @@ func TestRuntimeGaugeMovementFallsBackToRuntimeClock(t *testing.T) {
 }
 
 func TestRuntimeGaugeMovementRetargetsFromAdvancedDisplayPosition(t *testing.T) {
-	runtime := testRadialMovementRuntimeWithRealism(t, v3gauges.MovementPolicyLinear, true, nil, nil)
+	runtime := testRadialMovementRuntimeWithRealism(t, v3gauges.MovementPolicyLinear, true, nil, nil, false)
 	runtime.movementPlanner = func(context movementContext, state sensors.SensorState, current widgetMovementState) time.Duration {
 		return 200 * time.Millisecond
 	}
@@ -685,7 +685,7 @@ func TestRuntimeRadialGaugeDampingAnimatesWithDefaultLinearCurve(t *testing.T) {
 
 func TestRuntimeRadialGaugeStictionBelowThresholdHoldsDisplay(t *testing.T) {
 	threshold := 200.0
-	runtime := testRadialMovementRuntimeWithRealism(t, "", false, &threshold, nil)
+	runtime := testRadialMovementRuntimeWithRealism(t, "", false, &threshold, nil, false)
 
 	start := time.Unix(100, 0)
 	_, _, err := runtime.ApplyEvent(sensors.SensorEvent{
@@ -723,7 +723,7 @@ func TestRuntimeRadialGaugeStictionBelowThresholdHoldsDisplay(t *testing.T) {
 
 func TestRuntimeRadialGaugeStictionReleasesAboveThreshold(t *testing.T) {
 	threshold := 200.0
-	runtime := testRadialMovementRuntimeWithRealism(t, "", false, &threshold, nil)
+	runtime := testRadialMovementRuntimeWithRealism(t, "", false, &threshold, nil, false)
 
 	start := time.Unix(100, 0)
 	_, _, err := runtime.ApplyEvent(sensors.SensorEvent{
@@ -845,7 +845,7 @@ func TestRuntimeRadialGaugeOvershootDefaultDisabledDoesNotPassTarget(t *testing.
 
 func TestRuntimeRadialGaugeOvershootAnimatesWithoutDamping(t *testing.T) {
 	overshoot := &v3gauges.OvershootConfig{}
-	runtime := testRadialMovementRuntimeWithRealism(t, "", false, nil, overshoot)
+	runtime := testRadialMovementRuntimeWithRealism(t, "", false, nil, overshoot, false)
 	start := time.Unix(100, 0)
 
 	_, _, err := runtime.ApplyEvent(sensors.SensorEvent{
@@ -914,7 +914,7 @@ func TestRuntimeRadialGaugeOvershootModerateChangeTriggersWithLowerMinChangeRati
 		Ratio:          &ratio,
 		MinChangeRatio: &minChangeRatio,
 	}
-	runtime := testRadialMovementRuntimeWithRealism(t, "", false, nil, overshoot)
+	runtime := testRadialMovementRuntimeWithRealism(t, "", false, nil, overshoot, false)
 	start := time.Unix(100, 0)
 
 	_, _, err := runtime.ApplyEvent(sensors.SensorEvent{
@@ -948,7 +948,7 @@ func TestRuntimeRadialGaugeOvershootModerateChangeTriggersWithLowerMinChangeRati
 
 func TestRuntimeRadialGaugeOvershootStaysBoundedAndSettlesOnTarget(t *testing.T) {
 	overshoot := &v3gauges.OvershootConfig{}
-	runtime := testRadialMovementRuntimeWithRealism(t, "", true, nil, overshoot)
+	runtime := testRadialMovementRuntimeWithRealism(t, "", true, nil, overshoot, false)
 	start := time.Unix(100, 0)
 	runtime.movementPlanner = func(context movementContext, state sensors.SensorState, current widgetMovementState) time.Duration {
 		return 300 * time.Millisecond
@@ -1034,7 +1034,7 @@ func TestRuntimeRadialGaugeOvershootOscillatesAcrossTargetAndSettles(t *testing.
 		SettleCycles:   &settleCycles,
 		SettleDamping:  &settleDamping,
 	}
-	runtime := testRadialMovementRuntimeWithRealism(t, "", false, nil, overshoot)
+	runtime := testRadialMovementRuntimeWithRealism(t, "", false, nil, overshoot, false)
 	start := time.Unix(100, 0)
 	runtime.movementPlanner = func(context movementContext, state sensors.SensorState, current widgetMovementState) time.Duration {
 		return 300 * time.Millisecond
@@ -1113,9 +1113,218 @@ func TestRuntimeRadialGaugeOvershootOscillatesAcrossTargetAndSettles(t *testing.
 	}
 }
 
+func TestRuntimeRadialGaugePegBounceDefaultDisabledSettlesImmediatelyAtStop(t *testing.T) {
+	runtime := testRadialMovementRuntimeWithRealism(t, "", false, nil, nil, false)
+	start := time.Unix(100, 0)
+
+	_, _, err := runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "rpm",
+		State:     okState("rpm", 2000, "rpm"),
+		Timestamp: start,
+		ReadAt:    start,
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	_, _, err = runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "rpm",
+		State:     okState("rpm", 7000, "rpm"),
+		Timestamp: start.Add(10 * time.Millisecond),
+		ReadAt:    start.Add(10 * time.Millisecond),
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+
+	movement := runtime.movements[movementKey("primary", "rpm")]
+	if movement.PegBounceEnabled || movement.Phase != movementPhaseStatic || movement.DisplayValue != 7000 {
+		t.Fatalf("expected default stop movement without peg bounce, got %#v", movement)
+	}
+}
+
+func TestRuntimeRadialGaugePegBounceAtMaxStopSettlesBackToLimit(t *testing.T) {
+	runtime := testRadialMovementRuntimeWithRealism(t, "", false, nil, nil, true)
+	start := time.Unix(100, 0)
+	runtime.movementPlanner = func(context movementContext, state sensors.SensorState, current widgetMovementState) time.Duration {
+		return 300 * time.Millisecond
+	}
+
+	_, _, err := runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "rpm",
+		State:     okState("rpm", 2000, "rpm"),
+		Timestamp: start,
+		ReadAt:    start,
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	_, changed, err := runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "rpm",
+		State:     okState("rpm", 7000, "rpm"),
+		Timestamp: start.Add(10 * time.Millisecond),
+		ReadAt:    start.Add(10 * time.Millisecond),
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed || !runtime.HasActiveMovement() {
+		t.Fatalf("expected peg bounce at max stop to animate")
+	}
+
+	movement := runtime.movements[movementKey("primary", "rpm")]
+	if !movement.PegBounceEnabled || movement.TargetValue != 7000 || movement.PegBounceStopValue != 7000 || movement.PegBounceReboundValue >= 7000 {
+		t.Fatalf("expected max-stop peg bounce to schedule inward rebound, got %#v", movement)
+	}
+
+	scenes, changed, err := runtime.Tick(start.Add(270 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected max-stop peg bounce settle tick to redraw")
+	}
+	movement = runtime.movements[movementKey("primary", "rpm")]
+	if movement.DisplayValue >= 7000 || movement.DisplayValue <= movement.PegBounceReboundValue {
+		t.Fatalf("expected max-stop peg bounce to rebound slightly below the stop, got %#v", movement)
+	}
+	if got := requireWidget(t, scenes[0], "rpm").GaugeAngle; got >= 135 || got <= 120 {
+		t.Fatalf("expected max-stop peg bounce angle near the stop, got %v", got)
+	}
+
+	_, changed, err = runtime.Tick(start.Add(320 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected max-stop peg bounce completion tick to redraw")
+	}
+	movement = runtime.movements[movementKey("primary", "rpm")]
+	if movement.DisplayValue != 7000 || movement.TargetValue != 7000 || movement.Phase != movementPhaseSettled {
+		t.Fatalf("expected max-stop peg bounce to settle exactly at the stop, got %#v", movement)
+	}
+}
+
+func TestRuntimeRadialGaugePegBounceAtMinStopSettlesBackToLimit(t *testing.T) {
+	runtime := testRadialMovementRuntimeWithRealism(t, "", false, nil, nil, true)
+	start := time.Unix(100, 0)
+	runtime.movementPlanner = func(context movementContext, state sensors.SensorState, current widgetMovementState) time.Duration {
+		return 300 * time.Millisecond
+	}
+
+	_, _, err := runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "rpm",
+		State:     okState("rpm", 5000, "rpm"),
+		Timestamp: start,
+		ReadAt:    start,
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	_, _, err = runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "rpm",
+		State:     okState("rpm", 0, "rpm"),
+		Timestamp: start.Add(10 * time.Millisecond),
+		ReadAt:    start.Add(10 * time.Millisecond),
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+
+	_, changed, err := runtime.Tick(start.Add(270 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected min-stop peg bounce settle tick to redraw")
+	}
+	movement := runtime.movements[movementKey("primary", "rpm")]
+	if movement.PegBounceStopValue != 0 || movement.PegBounceReboundValue <= 0 || movement.DisplayValue <= 0 {
+		t.Fatalf("expected min-stop peg bounce to rebound above zero, got %#v", movement)
+	}
+
+	_, changed, err = runtime.Tick(start.Add(320 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected min-stop peg bounce completion tick to redraw")
+	}
+	movement = runtime.movements[movementKey("primary", "rpm")]
+	if movement.DisplayValue != 0 || movement.TargetValue != 0 || movement.Phase != movementPhaseSettled {
+		t.Fatalf("expected min-stop peg bounce to settle exactly at the stop, got %#v", movement)
+	}
+}
+
+func TestRuntimeRadialGaugePegBounceDoesNotTriggerForInRangeTarget(t *testing.T) {
+	runtime := testRadialMovementRuntimeWithRealism(t, "", false, nil, nil, true)
+	start := time.Unix(100, 0)
+	runtime.movementPlanner = func(context movementContext, state sensors.SensorState, current widgetMovementState) time.Duration {
+		return 300 * time.Millisecond
+	}
+
+	_, _, err := runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "rpm",
+		State:     okState("rpm", 2000, "rpm"),
+		Timestamp: start,
+		ReadAt:    start,
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	_, changed, err := runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "rpm",
+		State:     okState("rpm", 6000, "rpm"),
+		Timestamp: start.Add(10 * time.Millisecond),
+		ReadAt:    start.Add(10 * time.Millisecond),
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected in-range peg bounce movement to animate linearly")
+	}
+
+	movement := runtime.movements[movementKey("primary", "rpm")]
+	if !movement.PegBounceEnabled || movement.PegBounceReboundValue != 0 || movement.PegBounceStopValue != 0 {
+		t.Fatalf("expected in-range movement to avoid scheduling peg bounce, got %#v", movement)
+	}
+
+	_, changed, err = runtime.Tick(start.Add(200 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected in-range peg bounce tick to redraw")
+	}
+	movement = runtime.movements[movementKey("primary", "rpm")]
+	if movement.DisplayValue <= 2000 || movement.DisplayValue >= 6000 {
+		t.Fatalf("expected ordinary in-range movement without stop bounce, got %#v", movement)
+	}
+
+	_, changed, err = runtime.Tick(start.Add(320 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected in-range movement completion tick to redraw")
+	}
+	movement = runtime.movements[movementKey("primary", "rpm")]
+	if movement.DisplayValue != 6000 || movement.TargetValue != 6000 || movement.Phase != movementPhaseSettled {
+		t.Fatalf("expected in-range movement to settle exactly on target, got %#v", movement)
+	}
+}
+
 func TestRuntimeGaugeMovementEaseOutPolicyAdvancesFurtherThanLinear(t *testing.T) {
-	linearRuntime := testRadialMovementRuntimeWithRealism(t, v3gauges.MovementPolicyLinear, true, nil, nil)
-	easeOutRuntime := testRadialMovementRuntimeWithRealism(t, v3gauges.MovementPolicyEaseOut, true, nil, nil)
+	linearRuntime := testRadialMovementRuntimeWithRealism(t, v3gauges.MovementPolicyLinear, true, nil, nil, false)
+	easeOutRuntime := testRadialMovementRuntimeWithRealism(t, v3gauges.MovementPolicyEaseOut, true, nil, nil, false)
 
 	for _, runtime := range []*Runtime{linearRuntime, easeOutRuntime} {
 		runtime.movementPlanner = func(context movementContext, state sensors.SensorState, current widgetMovementState) time.Duration {
@@ -2063,10 +2272,10 @@ func makeDashboardRadialGaugePackage(t *testing.T) string {
 }
 
 func makeDashboardRadialGaugePackageWithPolicy(t *testing.T, policy string) string {
-	return makeDashboardRadialGaugePackageWithRealism(t, policy, false, nil, nil)
+	return makeDashboardRadialGaugePackageWithRealism(t, policy, false, nil, nil, false)
 }
 
-func makeDashboardRadialGaugePackageWithRealism(t *testing.T, policy string, damping bool, stiction *float64, overshoot *v3gauges.OvershootConfig) string {
+func makeDashboardRadialGaugePackageWithRealism(t *testing.T, policy string, damping bool, stiction *float64, overshoot *v3gauges.OvershootConfig, pegBounce bool) string {
 	t.Helper()
 	root := t.TempDir()
 	files := []string{
@@ -2089,7 +2298,7 @@ func makeDashboardRadialGaugePackageWithRealism(t *testing.T, policy string, dam
 	if err := os.MkdirAll(packageDir, 0o755); err != nil {
 		t.Fatalf("MkdirAll: %v", err)
 	}
-	if err := os.WriteFile(filepath.Join(packageDir, "gauge.yaml"), []byte(dashboardRadialGaugeYAML(policy, damping, stiction, overshoot)), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(packageDir, "gauge.yaml"), []byte(dashboardRadialGaugeYAML(policy, damping, stiction, overshoot, pegBounce)), 0o600); err != nil {
 		t.Fatalf("WriteFile: %v", err)
 	}
 	return packageDir
@@ -2252,13 +2461,16 @@ digits:
 %s`, count, format, count, positions.String())
 }
 
-func dashboardRadialGaugeYAML(policy string, damping bool, stiction *float64, overshoot *v3gauges.OvershootConfig) string {
+func dashboardRadialGaugeYAML(policy string, damping bool, stiction *float64, overshoot *v3gauges.OvershootConfig, pegBounce bool) string {
 	realismLines := []string{}
 	if stiction != nil {
 		realismLines = append(realismLines, fmt.Sprintf("  stiction: %.0f", *stiction))
 	}
 	if damping {
 		realismLines = append(realismLines, "  damping: true")
+	}
+	if pegBounce {
+		realismLines = append(realismLines, "  peg_bounce: true")
 	}
 	if overshoot != nil {
 		if overshoot.Ratio == nil &&
@@ -2424,16 +2636,16 @@ func testRadialMovementRuntime(t *testing.T) *Runtime {
 }
 
 func testRadialMovementRuntimeWithPolicy(t *testing.T, policy string) *Runtime {
-	return testRadialMovementRuntimeWithRealism(t, policy, false, nil, nil)
+	return testRadialMovementRuntimeWithRealism(t, policy, false, nil, nil, false)
 }
 
 func testRadialMovementRuntimeWithDamping(t *testing.T, damping bool) *Runtime {
-	return testRadialMovementRuntimeWithRealism(t, "", damping, nil, nil)
+	return testRadialMovementRuntimeWithRealism(t, "", damping, nil, nil, false)
 }
 
-func testRadialMovementRuntimeWithRealism(t *testing.T, policy string, damping bool, stiction *float64, overshoot *v3gauges.OvershootConfig) *Runtime {
+func testRadialMovementRuntimeWithRealism(t *testing.T, policy string, damping bool, stiction *float64, overshoot *v3gauges.OvershootConfig, pegBounce bool) *Runtime {
 	t.Helper()
-	packageDir := makeDashboardRadialGaugePackageWithRealism(t, policy, damping, stiction, overshoot)
+	packageDir := makeDashboardRadialGaugePackageWithRealism(t, policy, damping, stiction, overshoot, pegBounce)
 	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 1024, Height: 600}, Widgets: []v3config.WidgetConfig{{ID: "rpm", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{0, 0}, Scale: 1}}}}}}
 	runtime, err := NewRuntime(plan, testAssetRegistry())
 	if err != nil {

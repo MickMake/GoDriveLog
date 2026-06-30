@@ -52,6 +52,7 @@ const defaultRadialOvershootMaxSpanRatio = 0.04
 const defaultRadialOvershootExtremeMarginRatio = 0.10
 const defaultRadialOvershootSettleCycles = 1.75
 const defaultRadialOvershootSettleDamping = 4.5
+const defaultRadialPegBounceSpanRatio = 0.015
 
 type movementPhase string
 
@@ -68,6 +69,7 @@ type widgetMovementState struct {
 	Mode                   string
 	DampingEnabled         bool
 	OvershootEnabled       bool
+	PegBounceEnabled       bool
 	OvershootSettleMode    string
 	OvershootSettleCycles  float64
 	OvershootSettleDamping float64
@@ -75,6 +77,8 @@ type widgetMovementState struct {
 	OvershootTargetValue   float64
 	OvershootMinValue      float64
 	OvershootMaxValue      float64
+	PegBounceStopValue     float64
+	PegBounceReboundValue  float64
 	PreviousDisplayValue   float64
 	DisplayValue           float64
 	TargetValue            float64
@@ -184,7 +188,7 @@ func NewRuntime(plan v3config.RuntimePlan, registry *v3assets.Registry) (*Runtim
 
 func defaultMovementPlanner(context movementContext, state sensors.SensorState, current widgetMovementState) time.Duration {
 	if context.GaugeType == v3gauges.TypeRadial {
-		if current.DampingEnabled || current.OvershootEnabled {
+		if current.DampingEnabled || current.OvershootEnabled || current.PegBounceEnabled {
 			return defaultRadialDampingDuration
 		}
 		return 0
@@ -464,7 +468,8 @@ func (d Dashboard) renderWidget(configWidget v3config.WidgetConfig, states map[s
 			if pkg.Realism.Stiction != nil {
 				stiction = *pkg.Realism.Stiction
 			}
-			state, movementChanged = resolveMovementState(movements, movementKey(d.ID, configWidget.ID), context, state, pkg.Realism.MovementPolicy, damping, stiction, pkg.Realism.Overshoot, pkg.ValueMap, planner, now)
+			pegBounce := pkg.Realism.PegBounce != nil && *pkg.Realism.PegBounce
+			state, movementChanged = resolveMovementState(movements, movementKey(d.ID, configWidget.ID), context, state, pkg.Realism.MovementPolicy, damping, stiction, pkg.Realism.Overshoot, pegBounce, pkg.ValueMap, planner, now)
 		}
 		var gaugeScene v3gauges.Scene
 		switch pkg.Type {
@@ -518,11 +523,15 @@ func movementKey(dashboardID string, widgetID string) string {
 	return dashboardID + "|" + widgetID
 }
 
-func resolveMovementState(movements map[string]widgetMovementState, key string, context movementContext, source sensors.SensorState, policy string, damping bool, stiction float64, overshoot *v3gauges.OvershootConfig, valueMap v3gauges.ValueMap, planner movementPlanner, now time.Time) (sensors.SensorState, bool) {
+func resolveMovementState(movements map[string]widgetMovementState, key string, context movementContext, source sensors.SensorState, policy string, damping bool, stiction float64, overshoot *v3gauges.OvershootConfig, pegBounce bool, valueMap v3gauges.ValueMap, planner movementPlanner, now time.Time) (sensors.SensorState, bool) {
 	if movements == nil {
 		return source, false
 	}
-	policy = effectiveMovementPolicy(context.GaugeType, policy, damping, overshoot != nil)
+	displayTarget := source.Value
+	if context.GaugeType == v3gauges.TypeRadial {
+		displayTarget = radialDisplayTarget(source.Value, valueMap)
+	}
+	policy = effectiveMovementPolicy(context.GaugeType, policy, damping, overshoot != nil, pegBounce)
 	if source.Status != sensors.StatusOK {
 		previous, hadMovement := movements[key]
 		if hadMovement {
@@ -539,65 +548,77 @@ func resolveMovementState(movements map[string]widgetMovementState, key string, 
 			Mode:                   context.GaugeMode,
 			DampingEnabled:         damping,
 			OvershootEnabled:       overshoot != nil,
+			PegBounceEnabled:       pegBounce,
 			OvershootSettleMode:    radialOvershootSettleMode(overshoot),
 			OvershootSettleCycles:  radialOvershootSettleCycles(overshoot),
 			OvershootSettleDamping: radialOvershootSettleDamping(overshoot),
 			StictionThreshold:      stiction,
-			OvershootTargetValue:   source.Value,
+			OvershootTargetValue:   displayTarget,
 			OvershootMinValue:      valueMap.Min,
 			OvershootMaxValue:      valueMap.Max,
-			PreviousDisplayValue:   source.Value,
-			DisplayValue:           source.Value,
-			TargetValue:            source.Value,
+			PreviousDisplayValue:   displayTarget,
+			DisplayValue:           displayTarget,
+			TargetValue:            displayTarget,
 			HasValue:               true,
 		}
-	} else if source.Value != movement.TargetValue {
+	} else if displayTarget != movement.TargetValue {
 		if movementActive(movement) {
 			movement = advanceMovementState(movement, now)
 		}
 		movement.Policy = policy
 		movement.DampingEnabled = damping
 		movement.OvershootEnabled = overshoot != nil
+		movement.PegBounceEnabled = pegBounce
 		movement.OvershootSettleMode = radialOvershootSettleMode(overshoot)
 		movement.OvershootSettleCycles = radialOvershootSettleCycles(overshoot)
 		movement.OvershootSettleDamping = radialOvershootSettleDamping(overshoot)
 		movement.StictionThreshold = stiction
-		movement.OvershootTargetValue = source.Value
+		movement.OvershootTargetValue = displayTarget
 		movement.OvershootMinValue = valueMap.Min
 		movement.OvershootMaxValue = valueMap.Max
-		if stictionShouldHold(context, movement, source.Value) {
-			movement.TargetValue = source.Value
+		if stictionShouldHold(context, movement, displayTarget) {
+			movement.TargetValue = displayTarget
 			movement.Phase = movementPhaseStatic
 			movement.Duration = 0
 			movement.TravelDuration = 0
 			movement.SettleDuration = 0
 			movement.StartedAt = time.Time{}
+			movement.PegBounceStopValue = 0
+			movement.PegBounceReboundValue = 0
 			movements[key] = movement
 			source.Value = movement.DisplayValue
 			source.TypedValue = sensors.NewNumericValue(source.Value, source.Unit)
 			return source, movementActive(movement) != movementActive(previous)
 		}
 		movement.PreviousDisplayValue = movement.DisplayValue
-		movement.TargetValue = source.Value
+		movement.TargetValue = displayTarget
 		duration := time.Duration(0)
 		if planner != nil {
 			duration = planner(context, source, movement)
 		}
 		movement.OvershootTargetValue = radialOvershootTarget(movement.PreviousDisplayValue, movement.TargetValue, valueMap, overshoot)
-		if duration <= 0 || movement.DisplayValue == source.Value || movement.Policy == v3gauges.MovementPolicyImmediate {
-			movement.DisplayValue = source.Value
+		movement.PegBounceStopValue, movement.PegBounceReboundValue = radialPegBounceValues(movement.PreviousDisplayValue, movement.TargetValue, valueMap, pegBounce)
+		if duration <= 0 || movement.DisplayValue == displayTarget || movement.Policy == v3gauges.MovementPolicyImmediate {
+			movement.DisplayValue = displayTarget
 			movement.Phase = movementPhaseStatic
 			movement.Duration = 0
 			movement.TravelDuration = 0
 			movement.SettleDuration = 0
 			movement.StartedAt = time.Time{}
+			movement.PegBounceStopValue = 0
+			movement.PegBounceReboundValue = 0
 		} else {
 			movement.Duration = duration
-			movement.TravelDuration = radialOvershootTravelDuration(movement.OvershootTargetValue, movement.TargetValue, duration, movement.OvershootSettleMode)
-			if movement.TravelDuration > 0 {
+			if movement.TargetValue == movement.PegBounceStopValue && movement.PegBounceReboundValue != movement.PegBounceStopValue {
+				movement.TravelDuration = radialPegBounceTravelDuration(duration)
 				movement.SettleDuration = duration - movement.TravelDuration
 			} else {
-				movement.SettleDuration = 0
+				movement.TravelDuration = radialOvershootTravelDuration(movement.OvershootTargetValue, movement.TargetValue, duration, movement.OvershootSettleMode)
+				if movement.TravelDuration > 0 {
+					movement.SettleDuration = duration - movement.TravelDuration
+				} else {
+					movement.SettleDuration = 0
+				}
 			}
 			movement.StartedAt = now
 			movement.Phase = movementPhaseValueChange
@@ -620,13 +641,13 @@ func stictionShouldHold(context movementContext, movement widgetMovementState, t
 	return math.Abs(target-movement.DisplayValue) < movement.StictionThreshold
 }
 
-func effectiveMovementPolicy(gaugeType string, policy string, damping bool, overshoot bool) string {
+func effectiveMovementPolicy(gaugeType string, policy string, damping bool, overshoot bool, pegBounce bool) string {
 	policy = strings.TrimSpace(policy)
 	if policy == "" {
 		policy = v3gauges.MovementPolicyImmediate
 	}
 	if gaugeType == v3gauges.TypeRadial {
-		if !damping && !overshoot {
+		if !damping && !overshoot && !pegBounce {
 			return v3gauges.MovementPolicyImmediate
 		}
 		if policy == v3gauges.MovementPolicyImmediate {
@@ -756,6 +777,8 @@ func advanceMovementState(movement widgetMovementState, now time.Time) widgetMov
 			movement.DisplayValue = movement.TargetValue
 		} else if radialOvershootInFlight(movement) {
 			movement.DisplayValue = advanceRadialOvershootDisplayValue(movement, elapsed)
+		} else if radialPegBounceInFlight(movement) {
+			movement.DisplayValue = advanceRadialPegBounceDisplayValue(movement, elapsed)
 		} else {
 			progress = applyMovementPolicy(progress, movement.Policy)
 			movement.DisplayValue = movement.PreviousDisplayValue + ((movement.TargetValue - movement.PreviousDisplayValue) * progress)
@@ -865,8 +888,63 @@ func radialOvershootTravelDuration(overshootTarget float64, target float64, dura
 	return travel
 }
 
+func radialDisplayTarget(value float64, valueMap v3gauges.ValueMap) float64 {
+	if !valueMap.Clamp || valueMap.Max <= valueMap.Min {
+		return value
+	}
+	if value < valueMap.Min {
+		return valueMap.Min
+	}
+	if value > valueMap.Max {
+		return valueMap.Max
+	}
+	return value
+}
+
+func radialPegBounceValues(previous float64, target float64, valueMap v3gauges.ValueMap, enabled bool) (float64, float64) {
+	if !enabled || !valueMap.Clamp || valueMap.Max <= valueMap.Min {
+		return 0, 0
+	}
+	stopValue := 0.0
+	inwardDirection := 0.0
+	switch target {
+	case valueMap.Min:
+		stopValue = valueMap.Min
+		inwardDirection = 1
+	case valueMap.Max:
+		stopValue = valueMap.Max
+		inwardDirection = -1
+	default:
+		return 0, 0
+	}
+	previous = radialDisplayTarget(previous, valueMap)
+	amplitude := math.Min((valueMap.Max-valueMap.Min)*defaultRadialPegBounceSpanRatio, math.Abs(previous-stopValue)*0.35)
+	if amplitude <= 0 {
+		return 0, 0
+	}
+	return stopValue, stopValue + (inwardDirection * amplitude)
+}
+
+func radialPegBounceTravelDuration(duration time.Duration) time.Duration {
+	if duration <= 1 {
+		return duration
+	}
+	travel := (duration * 3) / 4
+	if travel <= 0 {
+		return duration
+	}
+	if travel >= duration {
+		return duration - 1
+	}
+	return travel
+}
+
 func radialOvershootInFlight(movement widgetMovementState) bool {
 	return movement.TravelDuration > 0 && movement.SettleDuration > 0 && movement.OvershootTargetValue != movement.TargetValue
+}
+
+func radialPegBounceInFlight(movement widgetMovementState) bool {
+	return movement.TravelDuration > 0 && movement.SettleDuration > 0 && movement.TargetValue == movement.PegBounceStopValue && movement.PegBounceReboundValue != movement.PegBounceStopValue
 }
 
 func advanceRadialOvershootDisplayValue(movement widgetMovementState, elapsed time.Duration) float64 {
@@ -916,6 +994,29 @@ func radialOvershootOscillationDisplayValue(movement widgetMovementState, progre
 		normalized = -1
 	}
 	return movement.TargetValue + (amplitude * normalized)
+}
+
+func advanceRadialPegBounceDisplayValue(movement widgetMovementState, elapsed time.Duration) float64 {
+	if movement.TravelDuration <= 0 || movement.SettleDuration <= 0 {
+		return movement.TargetValue
+	}
+	if elapsed < movement.TravelDuration {
+		progress := float64(elapsed) / float64(movement.TravelDuration)
+		progress = applyMovementPolicy(progress, movement.Policy)
+		return movement.PreviousDisplayValue + ((movement.PegBounceStopValue - movement.PreviousDisplayValue) * progress)
+	}
+	settleElapsed := elapsed - movement.TravelDuration
+	if settleElapsed < 0 {
+		settleElapsed = 0
+	}
+	progress := float64(settleElapsed) / float64(movement.SettleDuration)
+	if progress < 0 {
+		progress = 0
+	}
+	if progress > 1 {
+		progress = 1
+	}
+	return movement.PegBounceStopValue + ((movement.PegBounceReboundValue - movement.PegBounceStopValue) * math.Sin(math.Pi*progress))
 }
 
 func clampRadialOvershootDisplayValue(value float64, movement widgetMovementState) float64 {
