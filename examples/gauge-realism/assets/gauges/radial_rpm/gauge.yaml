@@ -8,10 +8,10 @@ size:
 
 layers:
   background: background.png
-  face: face.png
-  ticks: ticks.png
-  needle: needle.png
-  overlay: overlay.png
+  face: assets/face.png
+  ticks: assets/ticks.png
+  needle: assets/needle.png
+  overlay: assets/glass.png
 
 pivot:
   face: { x: 0.5, y: 0.5 }
