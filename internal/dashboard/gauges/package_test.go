@@ -743,6 +743,84 @@ value_map:
 	}
 }
 
+func TestLoadPackageAcceptsRadialOvershoot(t *testing.T) {
+	root := makeGaugeFixtures(t)
+	packageDir := filepath.Join(root, "assets", "gauges", "radial", "overshoot")
+	writeGaugeYAML(t, packageDir, `id: overshoot_radial
+type: radial
+sensor: rpm
+realism:
+  overshoot:
+    ratio: 0.18
+    min_change_ratio: 0.05
+    max_span_ratio: 0.08
+    settle_mode: oscillate
+    settle_cycles: 1.75
+    settle_damping: 4.5
+    allow_extremes: true
+size:
+  width: 100
+  height: 100
+layers:
+  needle: ../../shared/radial/simple_rpm/needle.png
+pivot:
+  face: { x: 0.5, y: 0.5 }
+  needle: { x: 0.5, y: 0.9 }
+value_map:
+  min: 0
+  max: 1000
+  start_angle: -90
+  end_angle: 90
+`)
+
+	pkg, err := LoadPackage(packageDir)
+	if err != nil {
+		t.Fatalf("LoadPackage returned error: %v", err)
+	}
+	if pkg.Realism.Overshoot == nil ||
+		pkg.Realism.Overshoot.Ratio == nil || *pkg.Realism.Overshoot.Ratio != 0.18 ||
+		pkg.Realism.Overshoot.MinChangeRatio == nil || *pkg.Realism.Overshoot.MinChangeRatio != 0.05 ||
+		pkg.Realism.Overshoot.MaxSpanRatio == nil || *pkg.Realism.Overshoot.MaxSpanRatio != 0.08 ||
+		pkg.Realism.Overshoot.SettleMode != OvershootSettleOscillate ||
+		pkg.Realism.Overshoot.SettleCycles == nil || *pkg.Realism.Overshoot.SettleCycles != 1.75 ||
+		pkg.Realism.Overshoot.SettleDamping == nil || *pkg.Realism.Overshoot.SettleDamping != 4.5 ||
+		!pkg.Realism.Overshoot.AllowExtremes {
+		t.Fatalf("overshoot = %#v, want expanded oscillating config", pkg.Realism.Overshoot)
+	}
+}
+
+func TestLoadPackageRejectsUnknownRadialOvershootKey(t *testing.T) {
+	root := makeGaugeFixtures(t)
+	packageDir := filepath.Join(root, "assets", "gauges", "radial", "bad_overshoot_key")
+	writeGaugeYAML(t, packageDir, `id: bad_overshoot_radial
+type: radial
+sensor: rpm
+realism:
+  overshoot:
+    raito: 0.2
+size:
+  width: 100
+  height: 100
+layers:
+  needle: ../../shared/radial/simple_rpm/needle.png
+pivot:
+  face: { x: 0.5, y: 0.5 }
+  needle: { x: 0.5, y: 0.9 }
+value_map:
+  min: 0
+  max: 1000
+  start_angle: -90
+  end_angle: 90
+`)
+
+	_, err := LoadPackage(packageDir)
+	if err == nil {
+		t.Fatal("LoadPackage returned nil error, want error")
+	}
+	assertErrorContains(t, err, "realism overshoot field")
+	assertErrorContains(t, err, "raito")
+}
+
 func TestLoadPackageRejectsInvalidSharedMovementPolicy(t *testing.T) {
 	root := makeGaugeFixtures(t)
 	packageDir := filepath.Join(root, "assets", "gauges", "radial", "bad_policy")
@@ -1000,6 +1078,173 @@ sensor: coolant_temperature
 realism:
   stiction: ` + test.stiction + `
 size:
+  width: 100
+  height: 100
+layers:
+  panel: panel.png
+  level: level.png
+` + test.valueMap
+			}
+			writeGaugeYAML(t, packageDir, yamlText)
+
+			_, err := LoadPackage(packageDir)
+			if err == nil {
+				t.Fatal("LoadPackage returned nil error, want error")
+			}
+			assertErrorContains(t, err, test.want)
+		})
+	}
+}
+
+func TestLoadPackageRejectsInvalidRadialOvershoot(t *testing.T) {
+	tests := []struct {
+		name        string
+		packageType string
+		overshoot   string
+		valueMap    string
+		want        string
+	}{
+		{
+			name:        "non_radial",
+			packageType: "bar",
+			overshoot: `overshoot:
+    ratio: 0.12
+`,
+			valueMap: `value_map:
+  min: 40
+  max: 120
+  clamp: true
+bar:
+  mode: level
+  axis: vertical
+  origin: bottom
+  bounds: [10, 10, 20, 60]
+`,
+			want: "only supported for radial",
+		},
+		{
+			name:        "zero_ratio",
+			packageType: "radial",
+			overshoot: `overshoot:
+    ratio: 0
+`,
+			valueMap: `value_map:
+  min: 0
+  max: 1000
+  start_angle: -90
+  end_angle: 90
+`,
+			want: "greater than zero",
+		},
+		{
+			name:        "too_large",
+			packageType: "radial",
+			overshoot: `overshoot:
+    ratio: 0.5
+`,
+			valueMap: `value_map:
+  min: 0
+  max: 1000
+  start_angle: -90
+  end_angle: 90
+`,
+			want: "exceeds maximum",
+		},
+		{
+			name:        "negative_min_change_ratio",
+			packageType: "radial",
+			overshoot: `overshoot:
+    min_change_ratio: -0.1
+`,
+			valueMap: `value_map:
+  min: 0
+  max: 1000
+  start_angle: -90
+  end_angle: 90
+`,
+			want: "min_change_ratio must be greater than or equal to zero",
+		},
+		{
+			name:        "zero_max_span_ratio",
+			packageType: "radial",
+			overshoot: `overshoot:
+    max_span_ratio: 0
+`,
+			valueMap: `value_map:
+  min: 0
+  max: 1000
+  start_angle: -90
+  end_angle: 90
+`,
+			want: "max_span_ratio must be greater than zero",
+		},
+		{
+			name:        "bad_settle_mode",
+			packageType: "radial",
+			overshoot: `overshoot:
+    settle_mode: springy
+`,
+			valueMap: `value_map:
+  min: 0
+  max: 1000
+  start_angle: -90
+  end_angle: 90
+`,
+			want: "settle_mode",
+		},
+		{
+			name:        "zero_settle_cycles",
+			packageType: "radial",
+			overshoot: `overshoot:
+    settle_cycles: 0
+`,
+			valueMap: `value_map:
+  min: 0
+  max: 1000
+  start_angle: -90
+  end_angle: 90
+`,
+			want: "settle_cycles must be greater than zero",
+		},
+		{
+			name:        "zero_settle_damping",
+			packageType: "radial",
+			overshoot: `overshoot:
+    settle_damping: 0
+`,
+			valueMap: `value_map:
+  min: 0
+  max: 1000
+  start_angle: -90
+  end_angle: 90
+`,
+			want: "settle_damping must be greater than zero",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			root := makeGaugeFixtures(t)
+			packageDir := filepath.Join(root, "assets", "gauges", test.packageType, test.name)
+			yamlText := `id: bad_` + test.packageType + `
+type: ` + test.packageType + `
+sensor: rpm
+realism:
+  ` + test.overshoot + `size:
+  width: 100
+  height: 100
+layers:
+  needle: ../../shared/radial/simple_rpm/needle.png
+pivot:
+  face: { x: 0.5, y: 0.5 }
+  needle: { x: 0.5, y: 0.9 }
+` + test.valueMap
+			if test.packageType == "bar" {
+				yamlText = `id: bad_bar
+type: bar
+sensor: coolant_temperature
+realism:
+  ` + test.overshoot + `size:
   width: 100
   height: 100
 layers:
