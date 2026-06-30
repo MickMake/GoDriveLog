@@ -907,6 +907,45 @@ func TestRuntimeRadialGaugeOvershootAnimatesWithoutDamping(t *testing.T) {
 	}
 }
 
+func TestRuntimeRadialGaugeOvershootModerateChangeTriggersWithLowerMinChangeRatio(t *testing.T) {
+	minChangeRatio := 0.05
+	ratio := 0.18
+	overshoot := &v3gauges.OvershootConfig{
+		Ratio:          &ratio,
+		MinChangeRatio: &minChangeRatio,
+	}
+	runtime := testRadialMovementRuntimeWithRealism(t, "", false, nil, overshoot)
+	start := time.Unix(100, 0)
+
+	_, _, err := runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "rpm",
+		State:     okState("rpm", 2000, "rpm"),
+		Timestamp: start,
+		ReadAt:    start,
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	_, changed, err := runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "rpm",
+		State:     okState("rpm", 2500, "rpm"),
+		Timestamp: start.Add(10 * time.Millisecond),
+		ReadAt:    start.Add(10 * time.Millisecond),
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected lower overshoot threshold to activate movement")
+	}
+	movement := runtime.movements[movementKey("primary", "rpm")]
+	if movement.OvershootTargetValue <= 2500 {
+		t.Fatalf("expected moderate change to schedule overshoot above target, got %#v", movement)
+	}
+}
+
 func TestRuntimeRadialGaugeOvershootStaysBoundedAndSettlesOnTarget(t *testing.T) {
 	overshoot := &v3gauges.OvershootConfig{}
 	runtime := testRadialMovementRuntimeWithRealism(t, "", true, nil, overshoot)
@@ -978,6 +1017,99 @@ func TestRuntimeRadialGaugeOvershootStaysBoundedAndSettlesOnTarget(t *testing.T)
 	}
 	if runtime.HasActiveMovement() {
 		t.Fatalf("expected overshoot movement to return to static after cleanup")
+	}
+}
+
+func TestRuntimeRadialGaugeOvershootOscillatesAcrossTargetAndSettles(t *testing.T) {
+	ratio := 0.20
+	minChangeRatio := 0.05
+	maxSpanRatio := 0.08
+	settleCycles := 1.75
+	settleDamping := 4.5
+	overshoot := &v3gauges.OvershootConfig{
+		Ratio:          &ratio,
+		MinChangeRatio: &minChangeRatio,
+		MaxSpanRatio:   &maxSpanRatio,
+		SettleMode:     v3gauges.OvershootSettleOscillate,
+		SettleCycles:   &settleCycles,
+		SettleDamping:  &settleDamping,
+	}
+	runtime := testRadialMovementRuntimeWithRealism(t, "", false, nil, overshoot)
+	start := time.Unix(100, 0)
+	runtime.movementPlanner = func(context movementContext, state sensors.SensorState, current widgetMovementState) time.Duration {
+		return 300 * time.Millisecond
+	}
+
+	_, _, err := runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "rpm",
+		State:     okState("rpm", 2000, "rpm"),
+		Timestamp: start,
+		ReadAt:    start,
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	_, _, err = runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "rpm",
+		State:     okState("rpm", 2500, "rpm"),
+		Timestamp: start.Add(10 * time.Millisecond),
+		ReadAt:    start.Add(10 * time.Millisecond),
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+
+	_, changed, err := runtime.Tick(start.Add(140 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected oscillating overshoot travel tick to redraw")
+	}
+	travelMovement := runtime.movements[movementKey("primary", "rpm")]
+	if travelMovement.DisplayValue <= 2500 {
+		t.Fatalf("expected travel phase above target, got %#v", travelMovement)
+	}
+
+	_, changed, err = runtime.Tick(start.Add(190 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected oscillating overshoot crossback tick to redraw")
+	}
+	crossbackMovement := runtime.movements[movementKey("primary", "rpm")]
+	if crossbackMovement.DisplayValue >= 2500 {
+		t.Fatalf("expected oscillating settle phase to cross below target, got %#v", crossbackMovement)
+	}
+
+	_, changed, err = runtime.Tick(start.Add(240 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected later oscillating settle tick to redraw")
+	}
+	laterMovement := runtime.movements[movementKey("primary", "rpm")]
+	if laterMovement.DisplayValue <= 2500 {
+		t.Fatalf("expected oscillation to swing back above target, got %#v", laterMovement)
+	}
+	if math.Abs(laterMovement.DisplayValue-2500) >= math.Abs(crossbackMovement.DisplayValue-2500) {
+		t.Fatalf("expected later oscillation to diminish in magnitude, got crossback=%#v later=%#v", crossbackMovement, laterMovement)
+	}
+
+	_, changed, err = runtime.Tick(start.Add(320 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected oscillating settle completion tick to redraw")
+	}
+	finalMovement := runtime.movements[movementKey("primary", "rpm")]
+	if finalMovement.DisplayValue != 2500 || finalMovement.TargetValue != 2500 || finalMovement.Phase != movementPhaseSettled {
+		t.Fatalf("expected oscillating overshoot to settle exactly on target, got %#v", finalMovement)
 	}
 }
 
@@ -2129,12 +2261,33 @@ func dashboardRadialGaugeYAML(policy string, damping bool, stiction *float64, ov
 		realismLines = append(realismLines, "  damping: true")
 	}
 	if overshoot != nil {
-		if overshoot.Ratio == nil && !overshoot.AllowExtremes {
+		if overshoot.Ratio == nil &&
+			overshoot.MinChangeRatio == nil &&
+			overshoot.MaxSpanRatio == nil &&
+			overshoot.SettleMode == "" &&
+			overshoot.SettleCycles == nil &&
+			overshoot.SettleDamping == nil &&
+			!overshoot.AllowExtremes {
 			realismLines = append(realismLines, "  overshoot: {}")
 		} else {
 			realismLines = append(realismLines, "  overshoot:")
 			if overshoot.Ratio != nil {
 				realismLines = append(realismLines, fmt.Sprintf("    ratio: %.2f", *overshoot.Ratio))
+			}
+			if overshoot.MinChangeRatio != nil {
+				realismLines = append(realismLines, fmt.Sprintf("    min_change_ratio: %.2f", *overshoot.MinChangeRatio))
+			}
+			if overshoot.MaxSpanRatio != nil {
+				realismLines = append(realismLines, fmt.Sprintf("    max_span_ratio: %.2f", *overshoot.MaxSpanRatio))
+			}
+			if overshoot.SettleMode != "" {
+				realismLines = append(realismLines, "    settle_mode: "+overshoot.SettleMode)
+			}
+			if overshoot.SettleCycles != nil {
+				realismLines = append(realismLines, fmt.Sprintf("    settle_cycles: %.2f", *overshoot.SettleCycles))
+			}
+			if overshoot.SettleDamping != nil {
+				realismLines = append(realismLines, fmt.Sprintf("    settle_damping: %.2f", *overshoot.SettleDamping))
 			}
 			if overshoot.AllowExtremes {
 				realismLines = append(realismLines, "    allow_extremes: true")

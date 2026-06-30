@@ -3,9 +3,14 @@ type: radial
 sensor: rpm
 
 realism:
-  damping: true
   overshoot:
-    ratio: 0.12
+    ratio: 0.20
+    min_change_ratio: 0.05
+    max_span_ratio: 0.08
+    settle_mode: oscillate
+    settle_cycles: 1.75
+    settle_damping: 4.5
+    allow_extremes: true
 
 size:
   width: 1195

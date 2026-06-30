@@ -751,7 +751,12 @@ type: radial
 sensor: rpm
 realism:
   overshoot:
-    ratio: 0.12
+    ratio: 0.18
+    min_change_ratio: 0.05
+    max_span_ratio: 0.08
+    settle_mode: oscillate
+    settle_cycles: 1.75
+    settle_damping: 4.5
     allow_extremes: true
 size:
   width: 100
@@ -772,8 +777,15 @@ value_map:
 	if err != nil {
 		t.Fatalf("LoadPackage returned error: %v", err)
 	}
-	if pkg.Realism.Overshoot == nil || pkg.Realism.Overshoot.Ratio == nil || *pkg.Realism.Overshoot.Ratio != 0.12 || !pkg.Realism.Overshoot.AllowExtremes {
-		t.Fatalf("overshoot = %#v, want ratio 0.12 allow_extremes true", pkg.Realism.Overshoot)
+	if pkg.Realism.Overshoot == nil ||
+		pkg.Realism.Overshoot.Ratio == nil || *pkg.Realism.Overshoot.Ratio != 0.18 ||
+		pkg.Realism.Overshoot.MinChangeRatio == nil || *pkg.Realism.Overshoot.MinChangeRatio != 0.05 ||
+		pkg.Realism.Overshoot.MaxSpanRatio == nil || *pkg.Realism.Overshoot.MaxSpanRatio != 0.08 ||
+		pkg.Realism.Overshoot.SettleMode != OvershootSettleOscillate ||
+		pkg.Realism.Overshoot.SettleCycles == nil || *pkg.Realism.Overshoot.SettleCycles != 1.75 ||
+		pkg.Realism.Overshoot.SettleDamping == nil || *pkg.Realism.Overshoot.SettleDamping != 4.5 ||
+		!pkg.Realism.Overshoot.AllowExtremes {
+		t.Fatalf("overshoot = %#v, want expanded oscillating config", pkg.Realism.Overshoot)
 	}
 }
 
@@ -1137,6 +1149,76 @@ bar:
   end_angle: 90
 `,
 			want: "exceeds maximum",
+		},
+		{
+			name:        "negative_min_change_ratio",
+			packageType: "radial",
+			overshoot: `overshoot:
+    min_change_ratio: -0.1
+`,
+			valueMap: `value_map:
+  min: 0
+  max: 1000
+  start_angle: -90
+  end_angle: 90
+`,
+			want: "min_change_ratio must be greater than or equal to zero",
+		},
+		{
+			name:        "zero_max_span_ratio",
+			packageType: "radial",
+			overshoot: `overshoot:
+    max_span_ratio: 0
+`,
+			valueMap: `value_map:
+  min: 0
+  max: 1000
+  start_angle: -90
+  end_angle: 90
+`,
+			want: "max_span_ratio must be greater than zero",
+		},
+		{
+			name:        "bad_settle_mode",
+			packageType: "radial",
+			overshoot: `overshoot:
+    settle_mode: springy
+`,
+			valueMap: `value_map:
+  min: 0
+  max: 1000
+  start_angle: -90
+  end_angle: 90
+`,
+			want: "settle_mode",
+		},
+		{
+			name:        "zero_settle_cycles",
+			packageType: "radial",
+			overshoot: `overshoot:
+    settle_cycles: 0
+`,
+			valueMap: `value_map:
+  min: 0
+  max: 1000
+  start_angle: -90
+  end_angle: 90
+`,
+			want: "settle_cycles must be greater than zero",
+		},
+		{
+			name:        "zero_settle_damping",
+			packageType: "radial",
+			overshoot: `overshoot:
+    settle_damping: 0
+`,
+			valueMap: `value_map:
+  min: 0
+  max: 1000
+  start_angle: -90
+  end_angle: 90
+`,
+			want: "settle_damping must be greater than zero",
 		},
 	}
 

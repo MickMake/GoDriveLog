@@ -50,6 +50,8 @@ const defaultRadialOvershootRatio = 0.12
 const defaultRadialOvershootMinChangeRatio = 0.15
 const defaultRadialOvershootMaxSpanRatio = 0.04
 const defaultRadialOvershootExtremeMarginRatio = 0.10
+const defaultRadialOvershootSettleCycles = 1.75
+const defaultRadialOvershootSettleDamping = 4.5
 
 type movementPhase string
 
@@ -61,25 +63,30 @@ const (
 )
 
 type widgetMovementState struct {
-	Phase                movementPhase
-	Policy               string
-	Mode                 string
-	DampingEnabled       bool
-	OvershootEnabled     bool
-	StictionThreshold    float64
-	OvershootTargetValue float64
-	PreviousDisplayValue float64
-	DisplayValue         float64
-	TargetValue          float64
-	Duration             time.Duration
-	TravelDuration       time.Duration
-	SettleDuration       time.Duration
-	StartedAt            time.Time
-	HasValue             bool
-	PreviousWheelOffsets []float64
-	WheelOffsets         []float64
-	TravelWheelOffsets   []float64
-	TargetWheelOffsets   []float64
+	Phase                  movementPhase
+	Policy                 string
+	Mode                   string
+	DampingEnabled         bool
+	OvershootEnabled       bool
+	OvershootSettleMode    string
+	OvershootSettleCycles  float64
+	OvershootSettleDamping float64
+	StictionThreshold      float64
+	OvershootTargetValue   float64
+	OvershootMinValue      float64
+	OvershootMaxValue      float64
+	PreviousDisplayValue   float64
+	DisplayValue           float64
+	TargetValue            float64
+	Duration               time.Duration
+	TravelDuration         time.Duration
+	SettleDuration         time.Duration
+	StartedAt              time.Time
+	HasValue               bool
+	PreviousWheelOffsets   []float64
+	WheelOffsets           []float64
+	TravelWheelOffsets     []float64
+	TargetWheelOffsets     []float64
 }
 
 type movementContext struct {
@@ -527,17 +534,22 @@ func resolveMovementState(movements map[string]widgetMovementState, key string, 
 	previous := movement
 	if !movement.HasValue {
 		movement = widgetMovementState{
-			Phase:                movementPhaseStatic,
-			Policy:               policy,
-			Mode:                 context.GaugeMode,
-			DampingEnabled:       damping,
-			OvershootEnabled:     overshoot != nil,
-			StictionThreshold:    stiction,
-			OvershootTargetValue: source.Value,
-			PreviousDisplayValue: source.Value,
-			DisplayValue:         source.Value,
-			TargetValue:          source.Value,
-			HasValue:             true,
+			Phase:                  movementPhaseStatic,
+			Policy:                 policy,
+			Mode:                   context.GaugeMode,
+			DampingEnabled:         damping,
+			OvershootEnabled:       overshoot != nil,
+			OvershootSettleMode:    radialOvershootSettleMode(overshoot),
+			OvershootSettleCycles:  radialOvershootSettleCycles(overshoot),
+			OvershootSettleDamping: radialOvershootSettleDamping(overshoot),
+			StictionThreshold:      stiction,
+			OvershootTargetValue:   source.Value,
+			OvershootMinValue:      valueMap.Min,
+			OvershootMaxValue:      valueMap.Max,
+			PreviousDisplayValue:   source.Value,
+			DisplayValue:           source.Value,
+			TargetValue:            source.Value,
+			HasValue:               true,
 		}
 	} else if source.Value != movement.TargetValue {
 		if movementActive(movement) {
@@ -546,8 +558,13 @@ func resolveMovementState(movements map[string]widgetMovementState, key string, 
 		movement.Policy = policy
 		movement.DampingEnabled = damping
 		movement.OvershootEnabled = overshoot != nil
+		movement.OvershootSettleMode = radialOvershootSettleMode(overshoot)
+		movement.OvershootSettleCycles = radialOvershootSettleCycles(overshoot)
+		movement.OvershootSettleDamping = radialOvershootSettleDamping(overshoot)
 		movement.StictionThreshold = stiction
 		movement.OvershootTargetValue = source.Value
+		movement.OvershootMinValue = valueMap.Min
+		movement.OvershootMaxValue = valueMap.Max
 		if stictionShouldHold(context, movement, source.Value) {
 			movement.TargetValue = source.Value
 			movement.Phase = movementPhaseStatic
@@ -576,7 +593,7 @@ func resolveMovementState(movements map[string]widgetMovementState, key string, 
 			movement.StartedAt = time.Time{}
 		} else {
 			movement.Duration = duration
-			movement.TravelDuration = radialOvershootTravelDuration(movement.OvershootTargetValue, movement.TargetValue, duration)
+			movement.TravelDuration = radialOvershootTravelDuration(movement.OvershootTargetValue, movement.TargetValue, duration, movement.OvershootSettleMode)
 			if movement.TravelDuration > 0 {
 				movement.SettleDuration = duration - movement.TravelDuration
 			} else {
@@ -763,14 +780,10 @@ func radialOvershootTarget(previous float64, target float64, valueMap v3gauges.V
 	}
 	delta := target - previous
 	absDelta := math.Abs(delta)
-	if absDelta < span*defaultRadialOvershootMinChangeRatio {
+	if absDelta < span*radialOvershootMinChangeRatio(overshoot) {
 		return target
 	}
-	ratio := defaultRadialOvershootRatio
-	if overshoot.Ratio != nil {
-		ratio = *overshoot.Ratio
-	}
-	distance := math.Min(absDelta*ratio, span*defaultRadialOvershootMaxSpanRatio)
+	distance := math.Min(absDelta*radialOvershootRatio(overshoot), span*radialOvershootMaxSpanRatio(overshoot))
 	if distance <= 0 {
 		return target
 	}
@@ -793,11 +806,56 @@ func radialOvershootTarget(previous float64, target float64, valueMap v3gauges.V
 	return candidate
 }
 
-func radialOvershootTravelDuration(overshootTarget float64, target float64, duration time.Duration) time.Duration {
+func radialOvershootRatio(overshoot *v3gauges.OvershootConfig) float64 {
+	if overshoot != nil && overshoot.Ratio != nil {
+		return *overshoot.Ratio
+	}
+	return defaultRadialOvershootRatio
+}
+
+func radialOvershootMinChangeRatio(overshoot *v3gauges.OvershootConfig) float64 {
+	if overshoot != nil && overshoot.MinChangeRatio != nil {
+		return *overshoot.MinChangeRatio
+	}
+	return defaultRadialOvershootMinChangeRatio
+}
+
+func radialOvershootMaxSpanRatio(overshoot *v3gauges.OvershootConfig) float64 {
+	if overshoot != nil && overshoot.MaxSpanRatio != nil {
+		return *overshoot.MaxSpanRatio
+	}
+	return defaultRadialOvershootMaxSpanRatio
+}
+
+func radialOvershootSettleMode(overshoot *v3gauges.OvershootConfig) string {
+	if overshoot == nil || strings.TrimSpace(overshoot.SettleMode) == "" {
+		return v3gauges.OvershootSettleSmooth
+	}
+	return overshoot.SettleMode
+}
+
+func radialOvershootSettleCycles(overshoot *v3gauges.OvershootConfig) float64 {
+	if overshoot != nil && overshoot.SettleCycles != nil {
+		return *overshoot.SettleCycles
+	}
+	return defaultRadialOvershootSettleCycles
+}
+
+func radialOvershootSettleDamping(overshoot *v3gauges.OvershootConfig) float64 {
+	if overshoot != nil && overshoot.SettleDamping != nil {
+		return *overshoot.SettleDamping
+	}
+	return defaultRadialOvershootSettleDamping
+}
+
+func radialOvershootTravelDuration(overshootTarget float64, target float64, duration time.Duration, settleMode string) time.Duration {
 	if duration <= 0 || overshootTarget == target {
 		return 0
 	}
 	travel := (duration * 2) / 3
+	if settleMode == v3gauges.OvershootSettleOscillate {
+		travel = duration / 2
+	}
 	if travel <= 0 {
 		return duration
 	}
@@ -831,8 +889,45 @@ func advanceRadialOvershootDisplayValue(movement widgetMovementState, elapsed ti
 	if progress > 1 {
 		progress = 1
 	}
+	if movement.OvershootSettleMode == v3gauges.OvershootSettleOscillate {
+		return clampRadialOvershootDisplayValue(radialOvershootOscillationDisplayValue(movement, progress), movement)
+	}
 	progress = progress * progress * (3 - (2 * progress))
-	return movement.OvershootTargetValue + ((movement.TargetValue - movement.OvershootTargetValue) * progress)
+	return clampRadialOvershootDisplayValue(movement.OvershootTargetValue+((movement.TargetValue-movement.OvershootTargetValue)*progress), movement)
+}
+
+func radialOvershootOscillationDisplayValue(movement widgetMovementState, progress float64) float64 {
+	amplitude := movement.OvershootTargetValue - movement.TargetValue
+	if amplitude == 0 {
+		return movement.TargetValue
+	}
+	angle := 2 * math.Pi * movement.OvershootSettleCycles * progress
+	endValue := math.Exp(-movement.OvershootSettleDamping) * math.Cos(2*math.Pi*movement.OvershootSettleCycles)
+	denominator := 1 - endValue
+	if denominator == 0 {
+		return movement.TargetValue
+	}
+	oscillation := math.Exp(-movement.OvershootSettleDamping*progress) * math.Cos(angle)
+	normalized := (oscillation - endValue) / denominator
+	if normalized > 1 {
+		normalized = 1
+	}
+	if normalized < -1 {
+		normalized = -1
+	}
+	return movement.TargetValue + (amplitude * normalized)
+}
+
+func clampRadialOvershootDisplayValue(value float64, movement widgetMovementState) float64 {
+	if movement.OvershootMinValue < movement.OvershootMaxValue {
+		if value < movement.OvershootMinValue {
+			return movement.OvershootMinValue
+		}
+		if value > movement.OvershootMaxValue {
+			return movement.OvershootMaxValue
+		}
+	}
+	return value
 }
 
 func applyMovementPolicy(progress float64, policy string) float64 {

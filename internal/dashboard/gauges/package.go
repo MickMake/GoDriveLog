@@ -16,26 +16,28 @@ import (
 )
 
 const (
-	dashboardConfigEnvVar   = "GODRIVELOG_CONFIG_PATH"
-	TypeNumeric             = "numeric"
-	TypeRadial              = "radial"
-	TypeOdometer            = "odometer"
-	TypeIndicator           = "indicator"
-	TypeBar                 = "bar"
-	TypeSegmented           = "segmented"
-	MovementInstant         = "instant"
-	MovementLinear          = "linear"
-	MovementEaseOut         = "ease_out"
-	MovementBell            = "bell"
-	MovementSmooth          = "smooth"
-	MovementClick           = "click"
-	MovementPolicyImmediate = "immediate"
-	MovementPolicyLinear    = "linear"
-	MovementPolicyEaseOut   = "ease_out"
-	WheelRoleDigit          = "digit"
-	WheelRoleSubUnit        = "sub_unit"
-	defaultOvershootRatio   = 0.12
-	maxOvershootRatio       = 0.25
+	dashboardConfigEnvVar    = "GODRIVELOG_CONFIG_PATH"
+	TypeNumeric              = "numeric"
+	TypeRadial               = "radial"
+	TypeOdometer             = "odometer"
+	TypeIndicator            = "indicator"
+	TypeBar                  = "bar"
+	TypeSegmented            = "segmented"
+	MovementInstant          = "instant"
+	MovementLinear           = "linear"
+	MovementEaseOut          = "ease_out"
+	MovementBell             = "bell"
+	MovementSmooth           = "smooth"
+	MovementClick            = "click"
+	MovementPolicyImmediate  = "immediate"
+	MovementPolicyLinear     = "linear"
+	MovementPolicyEaseOut    = "ease_out"
+	OvershootSettleSmooth    = "smooth"
+	OvershootSettleOscillate = "oscillate"
+	WheelRoleDigit           = "digit"
+	WheelRoleSubUnit         = "sub_unit"
+	defaultOvershootRatio    = 0.12
+	maxOvershootRatio        = 0.25
 )
 
 type Package struct {
@@ -95,8 +97,13 @@ type ValueMap struct {
 }
 
 type OvershootConfig struct {
-	Ratio         *float64 `yaml:"ratio,omitempty"`
-	AllowExtremes bool     `yaml:"allow_extremes,omitempty"`
+	Ratio          *float64 `yaml:"ratio,omitempty"`
+	MinChangeRatio *float64 `yaml:"min_change_ratio,omitempty"`
+	MaxSpanRatio   *float64 `yaml:"max_span_ratio,omitempty"`
+	SettleMode     string   `yaml:"settle_mode,omitempty"`
+	SettleCycles   *float64 `yaml:"settle_cycles,omitempty"`
+	SettleDamping  *float64 `yaml:"settle_damping,omitempty"`
+	AllowExtremes  bool     `yaml:"allow_extremes,omitempty"`
 }
 
 func (o *OvershootConfig) UnmarshalYAML(node *yaml.Node) error {
@@ -104,8 +111,13 @@ func (o *OvershootConfig) UnmarshalYAML(node *yaml.Node) error {
 		return fmt.Errorf("realism overshoot must be a mapping")
 	}
 	allowedKeys := map[string]bool{
-		"ratio":          true,
-		"allow_extremes": true,
+		"ratio":            true,
+		"min_change_ratio": true,
+		"max_span_ratio":   true,
+		"settle_mode":      true,
+		"settle_cycles":    true,
+		"settle_damping":   true,
+		"allow_extremes":   true,
 	}
 	for index := 0; index+1 < len(node.Content); index += 2 {
 		key := node.Content[index].Value
@@ -526,6 +538,47 @@ func validateRealism(pkg Package) error {
 			}
 			if ratio > maxOvershootRatio {
 				return fmt.Errorf("realism overshoot ratio %v exceeds maximum %v", ratio, maxOvershootRatio)
+			}
+		}
+		if pkg.Realism.Overshoot.MinChangeRatio != nil {
+			minChangeRatio := *pkg.Realism.Overshoot.MinChangeRatio
+			if math.IsNaN(minChangeRatio) || math.IsInf(minChangeRatio, 0) {
+				return fmt.Errorf("realism overshoot min_change_ratio must be finite")
+			}
+			if minChangeRatio < 0 {
+				return fmt.Errorf("realism overshoot min_change_ratio must be greater than or equal to zero")
+			}
+		}
+		if pkg.Realism.Overshoot.MaxSpanRatio != nil {
+			maxSpanRatio := *pkg.Realism.Overshoot.MaxSpanRatio
+			if math.IsNaN(maxSpanRatio) || math.IsInf(maxSpanRatio, 0) {
+				return fmt.Errorf("realism overshoot max_span_ratio must be finite")
+			}
+			if maxSpanRatio <= 0 {
+				return fmt.Errorf("realism overshoot max_span_ratio must be greater than zero")
+			}
+		}
+		switch pkg.Realism.Overshoot.SettleMode {
+		case "", OvershootSettleSmooth, OvershootSettleOscillate:
+		default:
+			return fmt.Errorf("realism overshoot settle_mode %q is not supported", pkg.Realism.Overshoot.SettleMode)
+		}
+		if pkg.Realism.Overshoot.SettleCycles != nil {
+			settleCycles := *pkg.Realism.Overshoot.SettleCycles
+			if math.IsNaN(settleCycles) || math.IsInf(settleCycles, 0) {
+				return fmt.Errorf("realism overshoot settle_cycles must be finite")
+			}
+			if settleCycles <= 0 {
+				return fmt.Errorf("realism overshoot settle_cycles must be greater than zero")
+			}
+		}
+		if pkg.Realism.Overshoot.SettleDamping != nil {
+			settleDamping := *pkg.Realism.Overshoot.SettleDamping
+			if math.IsNaN(settleDamping) || math.IsInf(settleDamping, 0) {
+				return fmt.Errorf("realism overshoot settle_damping must be finite")
+			}
+			if settleDamping <= 0 {
+				return fmt.Errorf("realism overshoot settle_damping must be greater than zero")
 			}
 		}
 	}
