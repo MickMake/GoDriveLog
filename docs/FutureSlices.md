@@ -189,3 +189,197 @@ Possible future slice:
 ```text
 v3.5.x value zones / warning-danger assets
 ```
+
+## Canonical GoDriveLog Event Log
+
+Status: desired
+
+Promote the current JSONL event logger output into a formal, versioned GoDriveLog-owned event log format.
+
+The native working log format should be newline-delimited JSON with one event per line. This is the format GoDriveLog core writes, validates, and replays. Other formats should be converted into this format rather than being supported directly inside the runtime.
+
+Proposed file naming:
+
+```text
+*.gdl.jsonl
+*.gdl.meta.json
+```
+
+Proposed event schema marker:
+
+```json
+{"schema":"godrivelog.event.v1"}
+```
+
+Rules:
+
+- Treat GoDriveLog JSONL as the canonical event log, not as incidental logger output.
+- Add a schema marker or schema version to every event record.
+- Keep one complete event per line.
+- Preserve the existing event-oriented shape: kind, sensor id, timestamps, status, typed value, previous status, and error.
+- JSONL events should represent sensor events, not rendered dashboard state.
+- Do not use CSV, MDF4, BLF, Parquet, ROS bag, or any other external format as the native runtime log format.
+- Industry or third-party formats may be supported by converters, importers, or exporters outside the core runtime.
+- Keep logs inspectable, appendable, streamable, and replayable.
+- Maintain backwards compatibility or provide a clear migration path if the existing JSONL shape changes.
+
+Possible future slice:
+
+```text
+v3.x canonical event log v1
+```
+
+## Session metadata sidecar
+
+Status: desired
+
+Add a session metadata sidecar next to each GoDriveLog event log.
+
+The sidecar should capture enough context to replay, validate, or interpret a log later, even if the active dashboard config has changed.
+
+Proposed shape:
+
+```json
+{
+  "schema": "godrivelog.session.v1",
+  "vehicle_id": "caddy",
+  "vehicle_name": "VW Caddy 2019 SWB",
+  "started_at": "...",
+  "ended_at": "...",
+  "config_path": "...",
+  "config_sha": "...",
+  "sensors": {
+    "rpm": {
+      "pid": "010C",
+      "unit": "rpm",
+      "min": 0,
+      "max": 8000
+    }
+  }
+}
+```
+
+Rules:
+
+- Keep high-volume sensor events in the `.gdl.jsonl` file.
+- Keep session-level context in `.gdl.meta.json`.
+- Do not duplicate full session metadata onto every event line.
+- Capture enough sensor mapping information to support replay and conversion audits.
+- Treat the sidecar as optional for reading older logs but preferred for new logs.
+
+Possible future slice:
+
+```text
+v3.x session metadata sidecar
+```
+
+## JSONL dashboard replay
+
+Status: desired
+
+Add a replay mode that consumes GoDriveLog event logs and feeds recorded events back into the dashboard runtime.
+
+This is a core development and validation feature. It allows a real OBD session to be captured once and replayed repeatedly without the vehicle attached.
+
+Proposed command shape:
+
+```text
+godrivelog dashboard replay --config dashboard.yaml --log drive.gdl.jsonl
+```
+
+Replay path:
+
+```text
+.gdl.jsonl -> SensorEvent stream -> dashboard runtime -> renderer
+```
+
+Rules:
+
+- Replay recorded sensor events directly; do not pretend JSONL is an OBD adapter.
+- Do not mutate the live OBD polling path.
+- Preserve `event_at` and `read_at` semantics when rebuilding events.
+- Replay should feed the same dashboard boundary used by live runtime rendering.
+- Replay should not write new source sensor values unless explicitly configured to log replay output.
+- Replay should be deterministic for the same input log, dashboard config, and replay options.
+- Preview mode remains separate: preview is manual one-gauge testing; replay is recorded event-stream playback.
+
+Useful options:
+
+```text
+--speed 1.0      # original timing
+--speed 2.0      # double speed
+--speed 0        # no sleeps / fastest possible
+--from <time>    # optional later slice
+--to <time>      # optional later slice
+--loop           # optional later slice
+```
+
+Possible future slice:
+
+```text
+v3.x JSONL dashboard replay
+```
+
+## JSONL log validation
+
+Status: desired
+
+Add a validator for GoDriveLog event logs before replay or conversion.
+
+Proposed command shape:
+
+```text
+godrivelog logs validate drive.gdl.jsonl
+```
+
+Rules:
+
+- Validate that every line is valid JSON.
+- Validate known schema markers.
+- Validate required fields.
+- Validate timestamps are parseable.
+- Validate typed value objects.
+- Validate status/error semantics.
+- Warn, rather than fail, on non-monotonic timestamps unless a later spec requires strict ordering.
+- Produce useful line-numbered errors for converter/debugging work.
+
+Possible future slice:
+
+```text
+v3.x GoDriveLog log validator
+```
+
+## External converter boundary
+
+Status: desired
+
+Keep foreign-format conversion outside GoDriveLog core runtime.
+
+Converters should live under `tools/converters` and convert external telemetry/log formats into canonical GoDriveLog event logs.
+
+Proposed layout:
+
+```text
+tools/
+  converters/
+    README.md
+    csv-to-gdl-jsonl/
+    racechrono-to-gdl-jsonl/
+    decoded-can-csv-to-gdl-jsonl/
+```
+
+Rules:
+
+- GoDriveLog core should understand GoDriveLog event logs, not every external telemetry format.
+- Foreign formats convert into `.gdl.jsonl` plus optional `.gdl.meta.json`.
+- Converters may understand CSV, RaceChrono, Torque Pro, decoded CAN CSV, racing datasets, or other third-party formats.
+- Converter-specific mapping files are allowed and encouraged.
+- Do not add converter dependencies to the dashboard runtime.
+- Do not let a one-off converter become a production runtime dependency.
+- Import mapping should be explicit enough to preserve sensor ids, units, timestamps, and source provenance.
+
+Possible future slice:
+
+```text
+v3.x tools/converters boundary
+```
