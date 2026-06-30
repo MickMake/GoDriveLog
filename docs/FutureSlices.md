@@ -37,6 +37,111 @@ Possible future slice:
 v3.5.x bar overshoot
 ```
 
+## Radial movement options
+
+Status: desired
+
+Radial gauges should eventually support the scalar `movement` options that already exist for gauge movement selection, while preserving current behaviour as the compatibility default.
+
+Proposed movement meanings for radial gauges:
+
+- `instant`: current radial behaviour; immediately render the needle at the target angle with no interpolation.
+- `linear`: interpolate the displayed needle angle from the previous displayed angle to the target angle at constant progress.
+- `bell`: interpolate with a slow start, faster middle, and slow end.
+
+Rules:
+
+- `instant` must preserve existing radial semantics.
+- Movement must be display-only.
+- Movement must animate displayed angle/position only; it must not mutate source values, logs, exported values, configured ranges, or input data.
+- Do not pre-render or cache unbounded intermediate needle images.
+- Prefer small per-gauge transition state such as previous angle, target angle, elapsed time, duration, movement mode, and active/inactive state.
+- Keep needle geometry and image assets reusable; rotate or transform at render time rather than generating a frame cache.
+- Do not combine this with damping, stiction, overshoot, peg bounce, needle trail, or peak hold unless a later slice explicitly defines composition.
+
+Possible future slice:
+
+```text
+v3.5.x radial movement options
+```
+
+## Radial needle trail
+
+Status: desired
+
+Add optional radial-only `realism.needle_trail` support.
+
+Needle trail renders a bounded history of previous displayed needle positions as fading ghost needles. It is a visual afterimage effect, not a movement curve.
+
+Proposed config shape:
+
+```yaml
+realism:
+  needle_trail:
+    length: 12
+    decay_ms: 500
+```
+
+Options:
+
+- `length`: maximum number of historical displayed needle positions retained. Default: `12`.
+- `decay_ms`: time in milliseconds for retained trail samples to fade out. Default: `500`.
+
+Rules:
+
+- Radial-only.
+- Disabled by default.
+- Display-only.
+- Must not mutate source values, logs, exported values, configured ranges, or input data.
+- Store only a bounded history of displayed needle angles/positions and timestamps.
+- Trail samples should fade and be discarded deterministically.
+- Do not store an unbounded render history.
+- Do not place this under `movement`; `movement` selects the travel curve, while `needle_trail` is a render-history effect.
+
+Possible future slice:
+
+```text
+v3.5.19 radial needle trail
+```
+
+## Radial peak hold
+
+Status: desired
+
+Add optional radial-only `realism.peak_hold` support.
+
+Peak hold displays a secondary marker or needle at the highest displayed value reached. It is an instrument display feature, not a source value change.
+
+Proposed config shape:
+
+```yaml
+realism:
+  peak_hold:
+    hold_ms: 0
+    decay_ms: 1000
+```
+
+Options:
+
+- `hold_ms`: how long to hold the peak after the displayed needle stops increasing. `0` means hold indefinitely.
+- `decay_ms`: optional time for the peak marker to release/return after the hold expires.
+
+Rules:
+
+- Radial-only.
+- Disabled by default.
+- Display-only.
+- Must not mutate source values, logs, exported values, configured ranges, or input data.
+- Peak tracking should use displayed value/angle semantics defined by the later implementation prompt.
+- If decay is enabled, release should be bounded and deterministic.
+- Do not place this under `movement`; `movement` selects the travel curve, while `peak_hold` is a display marker/history feature.
+
+Possible future slice:
+
+```text
+v3.5.20 radial peak hold
+```
+
 ## Value zones / warning-danger assets
 
 Status: desired
