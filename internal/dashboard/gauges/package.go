@@ -34,6 +34,8 @@ const (
 	MovementPolicyEaseOut   = "ease_out"
 	WheelRoleDigit          = "digit"
 	WheelRoleSubUnit        = "sub_unit"
+	defaultOvershootRatio   = 0.12
+	maxOvershootRatio       = 0.25
 )
 
 type Package struct {
@@ -92,15 +94,21 @@ type ValueMap struct {
 	Clamp      bool    `yaml:"clamp"`
 }
 
+type OvershootConfig struct {
+	Ratio         *float64 `yaml:"ratio,omitempty"`
+	AllowExtremes bool     `yaml:"allow_extremes,omitempty"`
+}
+
 type Realism struct {
-	Wraparound     *bool    `yaml:"wraparound,omitempty"`
-	CarryDrag      *bool    `yaml:"carry_drag,omitempty"`
-	SnapSettle     *bool    `yaml:"snap_settle,omitempty"`
-	Damping        *bool    `yaml:"damping,omitempty"`
-	Stiction       *float64 `yaml:"stiction,omitempty"`
-	MovementPolicy string   `yaml:"movement_policy,omitempty"`
-	DrumSlop       []int    `yaml:"drum_slop,omitempty"`
-	DrumSlopSet    bool     `yaml:"-"`
+	Wraparound     *bool            `yaml:"wraparound,omitempty"`
+	CarryDrag      *bool            `yaml:"carry_drag,omitempty"`
+	SnapSettle     *bool            `yaml:"snap_settle,omitempty"`
+	Damping        *bool            `yaml:"damping,omitempty"`
+	Stiction       *float64         `yaml:"stiction,omitempty"`
+	Overshoot      *OvershootConfig `yaml:"overshoot,omitempty"`
+	MovementPolicy string           `yaml:"movement_policy,omitempty"`
+	DrumSlop       []int            `yaml:"drum_slop,omitempty"`
+	DrumSlopSet    bool             `yaml:"-"`
 }
 
 func (r *Realism) UnmarshalYAML(node *yaml.Node) error {
@@ -113,6 +121,7 @@ func (r *Realism) UnmarshalYAML(node *yaml.Node) error {
 		"snap_settle":     true,
 		"damping":         true,
 		"stiction":        true,
+		"overshoot":       true,
 		"movement_policy": true,
 		"drum_slop":       true,
 	}
@@ -475,6 +484,26 @@ func validateRealism(pkg Package) error {
 		}
 		if *pkg.Realism.Stiction > span {
 			return fmt.Errorf("realism stiction %v exceeds radial value_map span %v", *pkg.Realism.Stiction, span)
+		}
+	}
+	if pkg.Realism.Overshoot != nil {
+		if pkg.Type != TypeRadial {
+			return fmt.Errorf("realism overshoot is only supported for radial gauges")
+		}
+		if pkg.ValueMap.Max <= pkg.ValueMap.Min {
+			return fmt.Errorf("realism overshoot requires a valid radial value_map range")
+		}
+		if pkg.Realism.Overshoot.Ratio != nil {
+			ratio := *pkg.Realism.Overshoot.Ratio
+			if math.IsNaN(ratio) || math.IsInf(ratio, 0) {
+				return fmt.Errorf("realism overshoot ratio must be finite")
+			}
+			if ratio <= 0 {
+				return fmt.Errorf("realism overshoot ratio must be greater than zero")
+			}
+			if ratio > maxOvershootRatio {
+				return fmt.Errorf("realism overshoot ratio %v exceeds maximum %v", ratio, maxOvershootRatio)
+			}
 		}
 	}
 	if pkg.Realism.DrumSlopSet {
