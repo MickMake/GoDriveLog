@@ -99,6 +99,29 @@ type OvershootConfig struct {
 	AllowExtremes bool     `yaml:"allow_extremes,omitempty"`
 }
 
+func (o *OvershootConfig) UnmarshalYAML(node *yaml.Node) error {
+	if node.Kind != yaml.MappingNode {
+		return fmt.Errorf("realism overshoot must be a mapping")
+	}
+	allowedKeys := map[string]bool{
+		"ratio":          true,
+		"allow_extremes": true,
+	}
+	for index := 0; index+1 < len(node.Content); index += 2 {
+		key := node.Content[index].Value
+		if !allowedKeys[key] {
+			return fmt.Errorf("realism overshoot field %q is not supported", key)
+		}
+	}
+	type rawOvershootConfig OvershootConfig
+	var decoded rawOvershootConfig
+	if err := node.Decode(&decoded); err != nil {
+		return err
+	}
+	*o = OvershootConfig(decoded)
+	return nil
+}
+
 type Realism struct {
 	Wraparound     *bool            `yaml:"wraparound,omitempty"`
 	CarryDrag      *bool            `yaml:"carry_drag,omitempty"`

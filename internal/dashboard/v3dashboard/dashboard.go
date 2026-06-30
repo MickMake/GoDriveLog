@@ -65,6 +65,7 @@ type widgetMovementState struct {
 	Policy               string
 	Mode                 string
 	DampingEnabled       bool
+	OvershootEnabled     bool
 	StictionThreshold    float64
 	OvershootTargetValue float64
 	PreviousDisplayValue float64
@@ -175,8 +176,11 @@ func NewRuntime(plan v3config.RuntimePlan, registry *v3assets.Registry) (*Runtim
 }
 
 func defaultMovementPlanner(context movementContext, state sensors.SensorState, current widgetMovementState) time.Duration {
-	if context.GaugeType == v3gauges.TypeRadial && current.DampingEnabled {
-		return defaultRadialDampingDuration
+	if context.GaugeType == v3gauges.TypeRadial {
+		if current.DampingEnabled || current.OvershootEnabled {
+			return defaultRadialDampingDuration
+		}
+		return 0
 	}
 	if context.GaugeType == v3gauges.TypeOdometer {
 		switch context.GaugeMode {
@@ -527,6 +531,7 @@ func resolveMovementState(movements map[string]widgetMovementState, key string, 
 			Policy:               policy,
 			Mode:                 context.GaugeMode,
 			DampingEnabled:       damping,
+			OvershootEnabled:     overshoot != nil,
 			StictionThreshold:    stiction,
 			OvershootTargetValue: source.Value,
 			PreviousDisplayValue: source.Value,
@@ -540,6 +545,7 @@ func resolveMovementState(movements map[string]widgetMovementState, key string, 
 		}
 		movement.Policy = policy
 		movement.DampingEnabled = damping
+		movement.OvershootEnabled = overshoot != nil
 		movement.StictionThreshold = stiction
 		movement.OvershootTargetValue = source.Value
 		if stictionShouldHold(context, movement, source.Value) {

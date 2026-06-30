@@ -843,6 +843,70 @@ func TestRuntimeRadialGaugeOvershootDefaultDisabledDoesNotPassTarget(t *testing.
 	}
 }
 
+func TestRuntimeRadialGaugeOvershootAnimatesWithoutDamping(t *testing.T) {
+	overshoot := &v3gauges.OvershootConfig{}
+	runtime := testRadialMovementRuntimeWithRealism(t, "", false, nil, overshoot)
+	start := time.Unix(100, 0)
+
+	_, _, err := runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "rpm",
+		State:     okState("rpm", 0, "rpm"),
+		Timestamp: start,
+		ReadAt:    start,
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	_, changed, err := runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "rpm",
+		State:     okState("rpm", 3500, "rpm"),
+		Timestamp: start.Add(10 * time.Millisecond),
+		ReadAt:    start.Add(10 * time.Millisecond),
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected overshoot-only radial movement to become active")
+	}
+	movement := runtime.movements[movementKey("primary", "rpm")]
+	if movement.DampingEnabled {
+		t.Fatalf("expected overshoot-only movement to keep damping disabled: %#v", movement)
+	}
+	if !movement.OvershootEnabled || movement.Duration <= 0 || movement.Phase != movementPhaseMoving {
+		t.Fatalf("expected overshoot-only movement to schedule animation: %#v", movement)
+	}
+
+	scenes, changed, err := runtime.Tick(start.Add(140 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected overshoot-only tick to redraw")
+	}
+	movement = runtime.movements[movementKey("primary", "rpm")]
+	if movement.DisplayValue <= 3500 || movement.DisplayValue > 7000 {
+		t.Fatalf("expected overshoot-only movement above target and within range, got %#v", movement)
+	}
+	if got := requireWidget(t, scenes[0], "rpm").GaugeAngle; got <= 0 || got > 135 {
+		t.Fatalf("expected overshoot-only angle between target and max stop, got %v", got)
+	}
+
+	_, changed, err = runtime.Tick(start.Add(230 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected overshoot-only settle tick to redraw")
+	}
+	movement = runtime.movements[movementKey("primary", "rpm")]
+	if movement.DisplayValue != 3500 || movement.TargetValue != 3500 || movement.Phase != movementPhaseSettled {
+		t.Fatalf("expected overshoot-only movement to settle exactly on target, got %#v", movement)
+	}
+}
+
 func TestRuntimeRadialGaugeOvershootStaysBoundedAndSettlesOnTarget(t *testing.T) {
 	overshoot := &v3gauges.OvershootConfig{}
 	runtime := testRadialMovementRuntimeWithRealism(t, "", true, nil, overshoot)
