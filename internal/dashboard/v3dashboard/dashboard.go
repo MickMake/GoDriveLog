@@ -573,7 +573,7 @@ func stictionShouldHold(context movementContext, movement widgetMovementState, t
 	if context.GaugeType != v3gauges.TypeRadial || movement.StictionThreshold <= 0 {
 		return false
 	}
-	if movementActive(movement) {
+	if movementActive(movement) && movement.Phase != movementPhaseSettled {
 		return false
 	}
 	return math.Abs(target-movement.DisplayValue) < movement.StictionThreshold
