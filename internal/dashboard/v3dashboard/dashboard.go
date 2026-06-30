@@ -53,6 +53,8 @@ const defaultRadialOvershootExtremeMarginRatio = 0.10
 const defaultRadialOvershootSettleCycles = 1.75
 const defaultRadialOvershootSettleDamping = 4.5
 const defaultRadialPegBounceSpanRatio = 0.015
+const defaultRadialPegBounceMinTravelDuration = 60 * time.Millisecond
+const defaultRadialPegBounceMinSettleDuration = 90 * time.Millisecond
 
 type movementPhase string
 
@@ -608,11 +610,11 @@ func resolveMovementState(movements map[string]widgetMovementState, key string, 
 			movement.PegBounceStopValue = 0
 			movement.PegBounceReboundValue = 0
 		} else {
-			movement.Duration = duration
 			if movement.TargetValue == movement.PegBounceStopValue && movement.PegBounceReboundValue != movement.PegBounceStopValue {
-				movement.TravelDuration = radialPegBounceTravelDuration(duration)
-				movement.SettleDuration = duration - movement.TravelDuration
+				movement.TravelDuration, movement.SettleDuration = radialPegBounceDurations(duration)
+				movement.Duration = movement.TravelDuration + movement.SettleDuration
 			} else {
+				movement.Duration = duration
 				movement.TravelDuration = radialOvershootTravelDuration(movement.OvershootTargetValue, movement.TargetValue, duration, movement.OvershootSettleMode)
 				if movement.TravelDuration > 0 {
 					movement.SettleDuration = duration - movement.TravelDuration
@@ -925,18 +927,19 @@ func radialPegBounceValues(previous float64, target float64, valueMap v3gauges.V
 	return stopValue, stopValue + (inwardDirection * amplitude)
 }
 
-func radialPegBounceTravelDuration(duration time.Duration) time.Duration {
-	if duration <= 1 {
-		return duration
+func radialPegBounceDurations(duration time.Duration) (time.Duration, time.Duration) {
+	if duration <= 0 {
+		return 0, 0
 	}
-	travel := (duration * 3) / 4
-	if travel <= 0 {
-		return duration
+	settle := duration / 4
+	if settle < defaultRadialPegBounceMinSettleDuration {
+		settle = defaultRadialPegBounceMinSettleDuration
 	}
-	if travel >= duration {
-		return duration - 1
+	travel := duration - settle
+	if travel < defaultRadialPegBounceMinTravelDuration {
+		travel = defaultRadialPegBounceMinTravelDuration
 	}
-	return travel
+	return travel, settle
 }
 
 func radialOvershootInFlight(movement widgetMovementState) bool {

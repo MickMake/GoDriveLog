@@ -1179,6 +1179,12 @@ func TestRuntimeRadialGaugePegBounceAtMaxStopSettlesBackToLimit(t *testing.T) {
 	if !movement.PegBounceEnabled || movement.TargetValue != 7000 || movement.PegBounceStopValue != 7000 || movement.PegBounceReboundValue >= 7000 {
 		t.Fatalf("expected max-stop peg bounce to schedule inward rebound, got %#v", movement)
 	}
+	if movement.SettleDuration < defaultRadialPegBounceMinSettleDuration {
+		t.Fatalf("expected visible peg-bounce settle duration, got %#v", movement)
+	}
+	if movement.PegBounceStopValue-movement.PegBounceReboundValue > (7000*defaultRadialPegBounceSpanRatio)+0.001 {
+		t.Fatalf("expected bounded max-stop peg-bounce amplitude, got %#v", movement)
+	}
 
 	scenes, changed, err := runtime.Tick(start.Add(270 * time.Millisecond))
 	if err != nil {
@@ -1246,6 +1252,9 @@ func TestRuntimeRadialGaugePegBounceAtMinStopSettlesBackToLimit(t *testing.T) {
 	movement := runtime.movements[movementKey("primary", "rpm")]
 	if movement.PegBounceStopValue != 0 || movement.PegBounceReboundValue <= 0 || movement.DisplayValue <= 0 {
 		t.Fatalf("expected min-stop peg bounce to rebound above zero, got %#v", movement)
+	}
+	if movement.PegBounceReboundValue-movement.PegBounceStopValue > (7000*defaultRadialPegBounceSpanRatio)+0.001 {
+		t.Fatalf("expected bounded min-stop peg-bounce amplitude, got %#v", movement)
 	}
 
 	_, changed, err = runtime.Tick(start.Add(320 * time.Millisecond))
@@ -1319,6 +1328,52 @@ func TestRuntimeRadialGaugePegBounceDoesNotTriggerForInRangeTarget(t *testing.T)
 	movement = runtime.movements[movementKey("primary", "rpm")]
 	if movement.DisplayValue != 6000 || movement.TargetValue != 6000 || movement.Phase != movementPhaseSettled {
 		t.Fatalf("expected in-range movement to settle exactly on target, got %#v", movement)
+	}
+}
+
+func TestRuntimeRadialGaugePegBounceExtendsShortMovementForVisibleSettle(t *testing.T) {
+	runtime := testRadialMovementRuntimeWithRealism(t, "", false, nil, nil, true)
+	start := time.Unix(100, 0)
+	runtime.movementPlanner = func(context movementContext, state sensors.SensorState, current widgetMovementState) time.Duration {
+		return 120 * time.Millisecond
+	}
+
+	_, _, err := runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "rpm",
+		State:     okState("rpm", 2000, "rpm"),
+		Timestamp: start,
+		ReadAt:    start,
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	_, changed, err := runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "rpm",
+		State:     okState("rpm", 7000, "rpm"),
+		Timestamp: start.Add(10 * time.Millisecond),
+		ReadAt:    start.Add(10 * time.Millisecond),
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected short planned peg-bounce movement to animate")
+	}
+
+	movement := runtime.movements[movementKey("primary", "rpm")]
+	if movement.TravelDuration < defaultRadialPegBounceMinTravelDuration {
+		t.Fatalf("expected guarded peg-bounce travel duration, got %#v", movement)
+	}
+	if movement.SettleDuration < defaultRadialPegBounceMinSettleDuration {
+		t.Fatalf("expected guarded peg-bounce settle duration, got %#v", movement)
+	}
+	if movement.Duration != movement.TravelDuration+movement.SettleDuration {
+		t.Fatalf("expected peg-bounce duration to match guarded phases, got %#v", movement)
+	}
+	if movement.Duration <= 120*time.Millisecond {
+		t.Fatalf("expected guarded peg-bounce movement to extend short planner duration, got %#v", movement)
 	}
 }
 
