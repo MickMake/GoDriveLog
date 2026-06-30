@@ -61,6 +61,7 @@ type widgetMovementState struct {
 	Policy               string
 	Mode                 string
 	DampingEnabled       bool
+	StictionThreshold    float64
 	PreviousDisplayValue float64
 	DisplayValue         float64
 	TargetValue          float64
@@ -443,7 +444,11 @@ func (d Dashboard) renderWidget(configWidget v3config.WidgetConfig, states map[s
 			}
 		} else {
 			damping := pkg.Realism.Damping != nil && *pkg.Realism.Damping
-			state, movementChanged = resolveMovementState(movements, movementKey(d.ID, configWidget.ID), context, state, pkg.Realism.MovementPolicy, damping, planner, now)
+			stiction := 0.0
+			if pkg.Realism.Stiction != nil {
+				stiction = *pkg.Realism.Stiction
+			}
+			state, movementChanged = resolveMovementState(movements, movementKey(d.ID, configWidget.ID), context, state, pkg.Realism.MovementPolicy, damping, stiction, planner, now)
 		}
 		var gaugeScene v3gauges.Scene
 		switch pkg.Type {
@@ -497,7 +502,7 @@ func movementKey(dashboardID string, widgetID string) string {
 	return dashboardID + "|" + widgetID
 }
 
-func resolveMovementState(movements map[string]widgetMovementState, key string, context movementContext, source sensors.SensorState, policy string, damping bool, planner movementPlanner, now time.Time) (sensors.SensorState, bool) {
+func resolveMovementState(movements map[string]widgetMovementState, key string, context movementContext, source sensors.SensorState, policy string, damping bool, stiction float64, planner movementPlanner, now time.Time) (sensors.SensorState, bool) {
 	if movements == nil {
 		return source, false
 	}
@@ -517,6 +522,7 @@ func resolveMovementState(movements map[string]widgetMovementState, key string, 
 			Policy:               policy,
 			Mode:                 context.GaugeMode,
 			DampingEnabled:       damping,
+			StictionThreshold:    stiction,
 			PreviousDisplayValue: source.Value,
 			DisplayValue:         source.Value,
 			TargetValue:          source.Value,
@@ -528,6 +534,17 @@ func resolveMovementState(movements map[string]widgetMovementState, key string, 
 		}
 		movement.Policy = policy
 		movement.DampingEnabled = damping
+		movement.StictionThreshold = stiction
+		if stictionShouldHold(context, movement, source.Value) {
+			movement.TargetValue = source.Value
+			movement.Phase = movementPhaseStatic
+			movement.Duration = 0
+			movement.StartedAt = time.Time{}
+			movements[key] = movement
+			source.Value = movement.DisplayValue
+			source.TypedValue = sensors.NewNumericValue(source.Value, source.Unit)
+			return source, movementActive(movement) != movementActive(previous)
+		}
 		movement.PreviousDisplayValue = movement.DisplayValue
 		movement.TargetValue = source.Value
 		duration := time.Duration(0)
@@ -550,6 +567,16 @@ func resolveMovementState(movements map[string]widgetMovementState, key string, 
 	source.Value = movement.DisplayValue
 	source.TypedValue = sensors.NewNumericValue(source.Value, source.Unit)
 	return source, movementActive(movement) != movementActive(previous)
+}
+
+func stictionShouldHold(context movementContext, movement widgetMovementState, target float64) bool {
+	if context.GaugeType != v3gauges.TypeRadial || movement.StictionThreshold <= 0 {
+		return false
+	}
+	if movementActive(movement) {
+		return false
+	}
+	return math.Abs(target-movement.DisplayValue) < movement.StictionThreshold
 }
 
 func effectiveMovementPolicy(gaugeType string, policy string, damping bool) string {

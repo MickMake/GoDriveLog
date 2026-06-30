@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -92,13 +93,14 @@ type ValueMap struct {
 }
 
 type Realism struct {
-	Wraparound     *bool  `yaml:"wraparound,omitempty"`
-	CarryDrag      *bool  `yaml:"carry_drag,omitempty"`
-	SnapSettle     *bool  `yaml:"snap_settle,omitempty"`
-	Damping        *bool  `yaml:"damping,omitempty"`
-	MovementPolicy string `yaml:"movement_policy,omitempty"`
-	DrumSlop       []int  `yaml:"drum_slop,omitempty"`
-	DrumSlopSet    bool   `yaml:"-"`
+	Wraparound     *bool    `yaml:"wraparound,omitempty"`
+	CarryDrag      *bool    `yaml:"carry_drag,omitempty"`
+	SnapSettle     *bool    `yaml:"snap_settle,omitempty"`
+	Damping        *bool    `yaml:"damping,omitempty"`
+	Stiction       *float64 `yaml:"stiction,omitempty"`
+	MovementPolicy string   `yaml:"movement_policy,omitempty"`
+	DrumSlop       []int    `yaml:"drum_slop,omitempty"`
+	DrumSlopSet    bool     `yaml:"-"`
 }
 
 func (r *Realism) UnmarshalYAML(node *yaml.Node) error {
@@ -110,6 +112,7 @@ func (r *Realism) UnmarshalYAML(node *yaml.Node) error {
 		"carry_drag":      true,
 		"snap_settle":     true,
 		"damping":         true,
+		"stiction":        true,
 		"movement_policy": true,
 		"drum_slop":       true,
 	}
@@ -455,6 +458,24 @@ func validateRealism(pkg Package) error {
 	}
 	if pkg.Realism.Damping != nil && pkg.Type != TypeRadial {
 		return fmt.Errorf("realism damping is only supported for radial gauges")
+	}
+	if pkg.Realism.Stiction != nil {
+		if pkg.Type != TypeRadial {
+			return fmt.Errorf("realism stiction is only supported for radial gauges")
+		}
+		if math.IsNaN(*pkg.Realism.Stiction) || math.IsInf(*pkg.Realism.Stiction, 0) {
+			return fmt.Errorf("realism stiction must be a finite threshold")
+		}
+		if *pkg.Realism.Stiction <= 0 {
+			return fmt.Errorf("realism stiction must be greater than zero")
+		}
+		span := pkg.ValueMap.Max - pkg.ValueMap.Min
+		if span <= 0 {
+			return fmt.Errorf("realism stiction requires a valid radial value_map range")
+		}
+		if *pkg.Realism.Stiction > span {
+			return fmt.Errorf("realism stiction %v exceeds radial value_map span %v", *pkg.Realism.Stiction, span)
+		}
 	}
 	if pkg.Realism.DrumSlopSet {
 		if pkg.Type != TypeOdometer {
