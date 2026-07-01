@@ -993,6 +993,118 @@ value_map:
 	}
 }
 
+func TestLoadPackageAcceptsRadialCalibrationOffset(t *testing.T) {
+	root := makeGaugeFixtures(t)
+	packageDir := filepath.Join(root, "assets", "gauges", "radial", "calibration_offset")
+	writeGaugeYAML(t, packageDir, `id: calibration_offset_radial
+type: radial
+sensor: rpm
+realism:
+  calibration_offset: 3.5
+size:
+  width: 100
+  height: 100
+layers:
+  needle: ../../shared/radial/simple_rpm/needle.png
+pivot:
+  face: { x: 0.5, y: 0.5 }
+  needle: { x: 0.5, y: 0.9 }
+value_map:
+  min: 0
+  max: 1000
+  start_angle: -90
+  end_angle: 90
+  clamp: true
+`)
+
+	pkg, err := LoadPackage(packageDir)
+	if err != nil {
+		t.Fatalf("LoadPackage returned error: %v", err)
+	}
+	if pkg.Realism.CalibrationOffset == nil || *pkg.Realism.CalibrationOffset != 3.5 {
+		t.Fatalf("calibration_offset = %#v, want 3.5", pkg.Realism.CalibrationOffset)
+	}
+}
+
+func TestLoadPackageRejectsInvalidRadialCalibrationOffset(t *testing.T) {
+	tests := []struct {
+		name              string
+		packageType       string
+		calibrationOffset string
+		want              string
+	}{
+		{
+			name:              "non_radial",
+			packageType:       "bar",
+			calibrationOffset: "3.5",
+			want:              "only supported for radial",
+		},
+		{
+			name:              "non_finite",
+			packageType:       "radial",
+			calibrationOffset: ".inf",
+			want:              "must be finite",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			root := makeGaugeFixtures(t)
+			packageDir := filepath.Join(root, "assets", "gauges", test.packageType, "bad_calibration_offset_"+test.name)
+			yamlText := `id: bad_` + test.packageType + `
+type: ` + test.packageType + `
+sensor: rpm
+realism:
+  calibration_offset: ` + test.calibrationOffset + `
+size:
+  width: 100
+  height: 100
+layers:
+  needle: ../../shared/radial/simple_rpm/needle.png
+pivot:
+  face: { x: 0.5, y: 0.5 }
+  needle: { x: 0.5, y: 0.9 }
+value_map:
+  min: 0
+  max: 1000
+  start_angle: -90
+  end_angle: 90
+  clamp: true
+`
+			if test.packageType == "bar" {
+				yamlText = `id: bad_bar
+type: bar
+sensor: coolant_temperature
+realism:
+  calibration_offset: ` + test.calibrationOffset + `
+size:
+  width: 100
+  height: 100
+layers:
+  panel: panel.png
+  level: level.png
+bar:
+  mode: level
+  axis: vertical
+  origin: bottom
+  bounds: [10, 10, 20, 60]
+value_map:
+  min: 40
+  max: 120
+  clamp: true
+`
+			}
+			writeGaugeYAML(t, packageDir, yamlText)
+
+			_, err := LoadPackage(packageDir)
+			if err == nil {
+				t.Fatal("LoadPackage returned nil error, want error")
+			}
+			assertErrorContains(t, err, test.want)
+		})
+	}
+}
+
 func TestLoadPackageRejectsInvalidRadialPegBounce(t *testing.T) {
 	tests := []struct {
 		name        string

@@ -232,6 +232,34 @@ func TestRuntimeRadialGaugeWidgetIncludesNeedleShadowBeforeNeedle(t *testing.T) 
 	}
 }
 
+func TestRuntimeRadialGaugeWidgetCalibrationOffsetChangesOnlyDisplayedAngle(t *testing.T) {
+	offset := 12.0
+	packageDir := makeDashboardRadialGaugePackageWithCalibrationOffset(t, &offset)
+	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 1024, Height: 600}, Widgets: []v3config.WidgetConfig{{ID: "rpm", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{0, 0}, Scale: 1}}}}}}
+	runtime, err := NewRuntime(plan, testAssetRegistry())
+	if err != nil {
+		t.Fatalf("NewRuntime failed: %v", err)
+	}
+
+	input := okState("rpm", 3500, "rpm")
+	runtime.SetState(input)
+	scenes, err := runtime.Snapshot()
+	if err != nil {
+		t.Fatalf("Snapshot failed: %v", err)
+	}
+	widget := requireWidget(t, scenes[0], "rpm")
+	needle := firstPartKind(widget, PartKindNeedle)
+	if !almostEqual(widget.GaugeAngle, 12) {
+		t.Fatalf("widget gauge angle = %v, want 12", widget.GaugeAngle)
+	}
+	if !almostEqual(needle.Angle, 12) {
+		t.Fatalf("needle angle = %v, want 12", needle.Angle)
+	}
+	if stored := runtime.states["rpm"].Value; !almostEqual(stored, 3500) {
+		t.Fatalf("stored sensor value = %v, want 3500", stored)
+	}
+}
+
 func TestRuntimeRadialGaugeWidgetSceneSignatureChangesWithAngle(t *testing.T) {
 	packageDir := makeDashboardRadialGaugePackage(t)
 	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 1024, Height: 600}, Widgets: []v3config.WidgetConfig{{ID: "rpm", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{0, 0}, Scale: 1}}}}}}
@@ -2348,14 +2376,18 @@ func makeDashboardRadialGaugePackageWithPolicy(t *testing.T, policy string) stri
 }
 
 func makeDashboardRadialGaugePackageWithRealism(t *testing.T, policy string, damping bool, stiction *float64, overshoot *v3gauges.OvershootConfig, pegBounce bool) string {
-	return makeDashboardRadialGaugePackageWithExtendedRealism(t, policy, damping, stiction, overshoot, pegBounce, nil, nil)
+	return makeDashboardRadialGaugePackageWithExtendedRealism(t, policy, damping, stiction, overshoot, pegBounce, nil, nil, nil)
 }
 
 func makeDashboardRadialGaugePackageWithNeedleShadow(t *testing.T, offset []int, alpha *float64) string {
-	return makeDashboardRadialGaugePackageWithExtendedRealism(t, "", false, nil, nil, false, offset, alpha)
+	return makeDashboardRadialGaugePackageWithExtendedRealism(t, "", false, nil, nil, false, offset, alpha, nil)
 }
 
-func makeDashboardRadialGaugePackageWithExtendedRealism(t *testing.T, policy string, damping bool, stiction *float64, overshoot *v3gauges.OvershootConfig, pegBounce bool, shadowOffset []int, shadowAlpha *float64) string {
+func makeDashboardRadialGaugePackageWithCalibrationOffset(t *testing.T, calibrationOffset *float64) string {
+	return makeDashboardRadialGaugePackageWithExtendedRealism(t, "", false, nil, nil, false, nil, nil, calibrationOffset)
+}
+
+func makeDashboardRadialGaugePackageWithExtendedRealism(t *testing.T, policy string, damping bool, stiction *float64, overshoot *v3gauges.OvershootConfig, pegBounce bool, shadowOffset []int, shadowAlpha *float64, calibrationOffset *float64) string {
 	t.Helper()
 	root := t.TempDir()
 	files := []string{
@@ -2378,7 +2410,7 @@ func makeDashboardRadialGaugePackageWithExtendedRealism(t *testing.T, policy str
 	if err := os.MkdirAll(packageDir, 0o755); err != nil {
 		t.Fatalf("MkdirAll: %v", err)
 	}
-	if err := os.WriteFile(filepath.Join(packageDir, "gauge.yaml"), []byte(dashboardRadialGaugeYAML(policy, damping, stiction, overshoot, pegBounce, shadowOffset, shadowAlpha)), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(packageDir, "gauge.yaml"), []byte(dashboardRadialGaugeYAML(policy, damping, stiction, overshoot, pegBounce, shadowOffset, shadowAlpha, calibrationOffset)), 0o600); err != nil {
 		t.Fatalf("WriteFile: %v", err)
 	}
 	return packageDir
@@ -2541,7 +2573,7 @@ digits:
 %s`, count, format, count, positions.String())
 }
 
-func dashboardRadialGaugeYAML(policy string, damping bool, stiction *float64, overshoot *v3gauges.OvershootConfig, pegBounce bool, shadowOffset []int, shadowAlpha *float64) string {
+func dashboardRadialGaugeYAML(policy string, damping bool, stiction *float64, overshoot *v3gauges.OvershootConfig, pegBounce bool, shadowOffset []int, shadowAlpha *float64, calibrationOffset *float64) string {
 	realismLines := []string{}
 	if stiction != nil {
 		realismLines = append(realismLines, fmt.Sprintf("  stiction: %.0f", *stiction))
@@ -2592,6 +2624,9 @@ func dashboardRadialGaugeYAML(policy string, damping bool, stiction *float64, ov
 		if shadowAlpha != nil {
 			realismLines = append(realismLines, fmt.Sprintf("    alpha: %.3f", *shadowAlpha))
 		}
+	}
+	if calibrationOffset != nil {
+		realismLines = append(realismLines, fmt.Sprintf("  calibration_offset: %.3f", *calibrationOffset))
 	}
 	if policy != "" {
 		realismLines = append(realismLines, "  movement_policy: "+policy)

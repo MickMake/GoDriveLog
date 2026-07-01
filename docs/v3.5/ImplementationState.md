@@ -1,10 +1,10 @@
 # v3.5 Implementation State
 
-Status: v3.5.17 radial needle drop shadow implemented; deferred and later v3.5 realism slices remain pending
+Status: v3.5.18 radial calibration offset implemented; all non-deferred planned v3.5 slices are complete
 
-Current target: v3.5.12 indicator thermal fade
+Current target: deferred slices only (`v3.5.12`, `v3.5.13`, `v3.5.16`)
 
-Current branch: `codex/v3.5.17-radial-needle-drop-shadow`
+Current branch: `codex/v3.5.18-radial-calibration-offset`
 
 ## Scope
 
@@ -49,6 +49,7 @@ The final v3.5 tail also includes two small radial-only display refinements that
 - Each gauge type may also have one deliberate `99-all-options` preview file.
 - Radial needle shadow is a static renderer feature, not dynamic parallax or lighting.
 - Radial calibration offset is display-only and must not change input values.
+- The non-deferred v3.5 slice list is now complete; remaining unchecked slices are explicitly deferred.
 - Hysteresis applies only to radial and bar gauges in v3.5.
 - Indicator gauges support `thermal_fade` in v3.5.
 
@@ -116,7 +117,7 @@ Not allowed in v3.5:
 - [x] v3.5.15 odometer backlash
 - [ ] v3.5.16 display-only hysteresis
 - [x] v3.5.17 radial needle drop shadow
-- [ ] v3.5.18 radial calibration offset
+- [x] v3.5.18 radial calibration offset
 
 ## Next-slice workflow
 

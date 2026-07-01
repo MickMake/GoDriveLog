@@ -182,6 +182,7 @@ func RadialScene(pkg Package, placement Placement, state sensors.SensorState) (S
 		if err != nil {
 			return Scene{}, fmt.Errorf("gauge package %q: %w", pkg.ID, err)
 		}
+		angle = radialCalibrationAngle(angle, pkg.ValueMap, pkg.Realism.CalibrationOffset)
 		scene.Angle = angle
 		if pkg.Realism.NeedleShadow != nil && needleShadowEnabled(pkg.Realism.NeedleShadow) {
 			scene.Parts = append(scene.Parts, ScenePart{
@@ -592,6 +593,22 @@ func radialAngle(valueMap ValueMap, value float64) (float64, error) {
 	}
 	ratio := (mappedValue - valueMap.Min) / (valueMap.Max - valueMap.Min)
 	return valueMap.StartAngle + ratio*(valueMap.EndAngle-valueMap.StartAngle), nil
+}
+
+func radialCalibrationAngle(angle float64, valueMap ValueMap, offset *float64) float64 {
+	if offset == nil || *offset == 0 {
+		return angle
+	}
+	adjusted := angle + *offset
+	minAngle := math.Min(valueMap.StartAngle, valueMap.EndAngle)
+	maxAngle := math.Max(valueMap.StartAngle, valueMap.EndAngle)
+	if adjusted < minAngle {
+		return minAngle
+	}
+	if adjusted > maxAngle {
+		return maxAngle
+	}
+	return adjusted
 }
 
 func barNormalizedPercent(valueMap ValueMap, value float64) (float64, error) {
