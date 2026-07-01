@@ -23,6 +23,7 @@ Effort is rough **Codex hours**, assuming the v3 dashboard/gauge code is already
 | 11 | Near / performance polish | Needle Animation Performance | `gauge/radial`, animation loop, renderer, Pi4 performance | 3-6 | [`gauge-radial-animation-performance.md`](gauge-radial-animation-performance.md) |
 | 12 | Later / gauge realism | Gauge power lifecycle | `gauge/radial`, `gauge/bar`, indicator, numeric, odometer, dashboard runtime, ACC/power events | 6-10 | [`gauge-power-lifecycle.md`](gauge-power-lifecycle.md) |
 | 13 | Later / gauge realism | Gauge lighting mode | `gauge/radial`, `gauge/bar`, indicator, numeric, odometer, dashboard runtime, lights-state events, alternate asset sets | 4-7 | [`gauge-lighting-mode.md`](gauge-lighting-mode.md) |
+| 14 | Later / gauge realism | Gauge imperfections | `gauge/radial`, `gauge/bar`, indicator, numeric, display artefacts, mechanical wear, electrical artefacts | 7-12 | [`gauge-imperfections.md`](gauge-imperfections.md) |
 
 A few notes from the table:
 
