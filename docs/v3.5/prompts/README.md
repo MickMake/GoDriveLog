@@ -12,11 +12,13 @@ If the user says any of the following:
 - "do the next slice"
 - "continue v3.5"
 - "start the next v3.5 slice"
+- "implement v3.5.x"
+
 
 the agent must:
 
 1. Read `docs/v3.5/ImplementationState.md`.
-2. Find the first unchecked slice.
+2. Find the current target or first unchecked allowed slice.
 3. Read `docs/v3.5/ReleasePlan.md`.
 4. Read `docs/v3.5/RealismBehaviourGuide.md`.
 5. Read the matching prompt file under `docs/v3.5/prompts/`.
@@ -24,6 +26,8 @@ the agent must:
 7. Update implementation state and relevant docs.
 8. Do not implement later slices early.
 9. After the slice is complete, follow the finalisation / PR cycle in `docs/v3.5/ImplementationState.md`.
+
+When the user names a specific version such as `implement v3.5.18`, use the matching prompt file below and confirm it is allowed by `docs/v3.5/ImplementationState.md` before making code changes.
 
 ## Prompt files
 
@@ -47,8 +51,9 @@ the agent must:
 - `v3.5.14-odometer-snap-settle.md`
 - `v3.5.15-odometer-backlash.md`
 - `v3.5.16-display-only-hysteresis.md`
-- `v3.5.17-radial-needle-drop-shadow.md`
-- `v3.5.18-radial-calibration-offset.md`
+- `v3.5.17-radial-needle-drop-shadow.md` - radial needle shadow plus display-only calibration offset
+- `v3.5.18-radial-stat-markers-min-max.md`
+- `v3.5.19-radial-stat-markers-average.md`
 
 ## Shared rules
 
