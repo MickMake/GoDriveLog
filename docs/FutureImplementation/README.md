@@ -20,7 +20,7 @@ Effort is rough **Codex hours**, assuming the v3 dashboard/gauge code is already
 | 8 | Medium / high value dev tool | JSONL dashboard replay | dashboard runtime, logs, replay CLI | 6-10 | [`dashboard-jsonl-replay.md`](dashboard-jsonl-replay.md) |
 | 9 | Near / bounded utility | JSONL log validation | logs, CLI, schema validation | 3-5 | [`logger-jsonl-log-validation.md`](logger-jsonl-log-validation.md) |
 | 10 | Later / architecture boundary | External converter boundary | `tools/converters`, import/export architecture | 3-6 | [`tools-converters-external-converter-boundary.md`](tools-converters-external-converter-boundary.md) |
-| 11 | Near / performance polish | Needle Animation Performance | `gauge/radial`, animation loop, renderer, Pi4 performance | 3-6 | [`gauge-radial-needle-animation-performance.md`](gauge-radial-needle-animation-performance.md) |
+| 11 | Near / performance polish | Needle Animation Performance | `gauge/radial`, animation loop, renderer, Pi4 performance | 3-6 | [`gauge-radial-animation-performance.md`](gauge-radial-animation-performance.md) |
 
 A few notes from the table:
 
