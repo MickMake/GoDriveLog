@@ -1,10 +1,10 @@
 # v3.5 Implementation State
 
-Status: v3.5.17 radial needle drop shadow implemented; deferred and later v3.5 realism slices remain pending
+Status: v3.5.18 radial calibration offset implemented; v3.5.12, v3.5.13, and v3.5.16 remain pending
 
 Current target: v3.5.12 indicator thermal fade
 
-Current branch: `codex/v3.5.17-radial-needle-drop-shadow`
+Current branch: `codex/v3.5.18-radial-calibration-offset`
 
 ## Scope
 
@@ -16,7 +16,7 @@ The final v3.5 tail also includes two small radial-only display refinements that
 
 ## Current decisions
 
-- v3.5.8 through v3.5.13 are temporarily deferred so the odometer movement stack can be completed while the implementation context is fresh.
+- v3.5.8 through v3.5.13 were temporarily deferred so the odometer movement stack could be completed while the implementation context was fresh; v3.5.12, v3.5.13, and v3.5.16 remain pending and should now be implemented in checklist order.
 - The next-slice workflow should follow `Current target` when it is explicitly set, even if earlier unchecked slices remain.
 - Most v3.5 realism options live under the `realism` key.
 - `movement` is the exception: it is the single movement knob and should be accepted by any gauge type for now.
@@ -116,7 +116,7 @@ Not allowed in v3.5:
 - [x] v3.5.15 odometer backlash
 - [ ] v3.5.16 display-only hysteresis
 - [x] v3.5.17 radial needle drop shadow
-- [ ] v3.5.18 radial calibration offset
+- [x] v3.5.18 radial calibration offset
 
 ## Next-slice workflow
 

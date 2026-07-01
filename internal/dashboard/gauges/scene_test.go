@@ -11,6 +11,21 @@ import (
 	"github.com/MickMake/GoDriveLog/internal/sensors"
 )
 
+func TestRadialSceneCalibrationOffsetDoesNotClampWhenValueMapClampFalse(t *testing.T) {
+	offset := 25.0
+	pkg := loadRadialScenePackageWithCalibrationOffset(t, &offset)
+	pkg.ValueMap.Clamp = false
+
+	scene, err := RadialScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("rpm", 9999))
+	if err != nil {
+		t.Fatalf("RadialScene returned error: %v", err)
+	}
+
+if scene.Angle <= 135 {
+	t.Fatalf("unclamped calibration angle = %v, want above dial max", scene.Angle)
+}
+}
+
 func TestNumericSceneUsesPackageOwnedFormatPositionsAndStaticLayers(t *testing.T) {
 	pkg := loadNumericScenePackage(t, 4, "%04.0f")
 
@@ -230,6 +245,77 @@ func TestRadialSceneAddsNeedleShadowBeforeNeedleWhenConfigured(t *testing.T) {
 	}
 	if !almostEqual(scene.Angle, needle.Angle) {
 		t.Fatalf("scene angle = %v, want needle angle %v", scene.Angle, needle.Angle)
+	}
+}
+
+func TestRadialSceneCalibrationOffsetZeroPreservesAngle(t *testing.T) {
+	zero := 0.0
+	basePkg := loadRadialScenePackage(t)
+	offsetPkg := loadRadialScenePackageWithCalibrationOffset(t, &zero)
+
+	baseScene, err := RadialScene(basePkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("rpm", 3500))
+	if err != nil {
+		t.Fatalf("RadialScene returned error: %v", err)
+	}
+	offsetScene, err := RadialScene(offsetPkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("rpm", 3500))
+	if err != nil {
+		t.Fatalf("RadialScene returned error: %v", err)
+	}
+
+	if !almostEqual(baseScene.Angle, offsetScene.Angle) {
+		t.Fatalf("zero calibration offset changed angle: base=%v offset=%v", baseScene.Angle, offsetScene.Angle)
+	}
+}
+
+func TestRadialSceneCalibrationOffsetAppliesPositiveAndNegativeDegrees(t *testing.T) {
+	positiveOffset := 12.0
+	negativeOffset := -9.0
+	positivePkg := loadRadialScenePackageWithCalibrationOffset(t, &positiveOffset)
+	negativePkg := loadRadialScenePackageWithCalibrationOffset(t, &negativeOffset)
+
+	positiveScene, err := RadialScene(positivePkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("rpm", 3500))
+	if err != nil {
+		t.Fatalf("RadialScene returned error: %v", err)
+	}
+	negativeScene, err := RadialScene(negativePkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("rpm", 3500))
+	if err != nil {
+		t.Fatalf("RadialScene returned error: %v", err)
+	}
+
+	if !almostEqual(positiveScene.Angle, 12) {
+		t.Fatalf("positive calibration angle = %v, want 12", positiveScene.Angle)
+	}
+	if !almostEqual(negativeScene.Angle, -9) {
+		t.Fatalf("negative calibration angle = %v, want -9", negativeScene.Angle)
+	}
+	if !almostEqual(firstPart(positiveScene, ScenePartKindNeedle).Angle, positiveScene.Angle) {
+		t.Fatalf("positive needle angle = %v, want scene angle %v", firstPart(positiveScene, ScenePartKindNeedle).Angle, positiveScene.Angle)
+	}
+	if !almostEqual(firstPart(negativeScene, ScenePartKindNeedle).Angle, negativeScene.Angle) {
+		t.Fatalf("negative needle angle = %v, want scene angle %v", firstPart(negativeScene, ScenePartKindNeedle).Angle, negativeScene.Angle)
+	}
+}
+
+func TestRadialSceneCalibrationOffsetClampsToDialBounds(t *testing.T) {
+	positiveOffset := 25.0
+	negativeOffset := -25.0
+	highPkg := loadRadialScenePackageWithCalibrationOffset(t, &positiveOffset)
+	lowPkg := loadRadialScenePackageWithCalibrationOffset(t, &negativeOffset)
+
+	highScene, err := RadialScene(highPkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("rpm", 9999))
+	if err != nil {
+		t.Fatalf("RadialScene returned error: %v", err)
+	}
+	lowScene, err := RadialScene(lowPkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("rpm", -100))
+	if err != nil {
+		t.Fatalf("RadialScene returned error: %v", err)
+	}
+
+	if !almostEqual(highScene.Angle, 135) {
+		t.Fatalf("high clamped angle = %v, want 135", highScene.Angle)
+	}
+	if !almostEqual(lowScene.Angle, -135) {
+		t.Fatalf("low clamped angle = %v, want -135", lowScene.Angle)
 	}
 }
 
@@ -1026,14 +1112,22 @@ func loadNumericScenePackage(t *testing.T, count int, format string) Package {
 }
 
 func loadRadialScenePackage(t *testing.T) Package {
-	return loadRadialScenePackageWithNeedleShadow(t, nil, nil)
+	return loadRadialScenePackageWithRealism(t, nil, nil, nil)
 }
 
 func loadRadialScenePackageWithNeedleShadow(t *testing.T, offset []int, alpha *float64) Package {
+	return loadRadialScenePackageWithRealism(t, offset, alpha, nil)
+}
+
+func loadRadialScenePackageWithCalibrationOffset(t *testing.T, calibrationOffset *float64) Package {
+	return loadRadialScenePackageWithRealism(t, nil, nil, calibrationOffset)
+}
+
+func loadRadialScenePackageWithRealism(t *testing.T, offset []int, alpha *float64, calibrationOffset *float64) Package {
 	t.Helper()
 	root := makeGaugeFixtures(t)
 	packageDir := filepath.Join(root, "assets", "gauges", "radial", "simple_rpm")
-	writeGaugeYAML(t, packageDir, radialGaugeYAML(offset, alpha))
+	writeGaugeYAML(t, packageDir, radialGaugeYAML(offset, alpha, calibrationOffset))
 	pkg, err := LoadPackage(packageDir)
 	if err != nil {
 		t.Fatalf("LoadPackage returned error: %v", err)
@@ -1180,14 +1274,21 @@ digits:
 %s`, count, format, count, positions.String())
 }
 
-func radialGaugeYAML(offset []int, alpha *float64) string {
-	realismBlock := ""
+func radialGaugeYAML(offset []int, alpha *float64, calibrationOffset *float64) string {
+	realismLines := []string{}
 	if len(offset) == 2 {
-		realismBlock = "realism:\n  needle_shadow:\n"
-		realismBlock += fmt.Sprintf("    offset: [%d, %d]\n", offset[0], offset[1])
+		realismLines = append(realismLines, "  needle_shadow:")
+		realismLines = append(realismLines, fmt.Sprintf("    offset: [%d, %d]", offset[0], offset[1]))
 		if alpha != nil {
-			realismBlock += fmt.Sprintf("    alpha: %.3f\n", *alpha)
+			realismLines = append(realismLines, fmt.Sprintf("    alpha: %.3f", *alpha))
 		}
+	}
+	if calibrationOffset != nil {
+		realismLines = append(realismLines, fmt.Sprintf("  calibration_offset: %.3f", *calibrationOffset))
+	}
+	realismBlock := ""
+	if len(realismLines) > 0 {
+		realismBlock = "realism:\n" + strings.Join(realismLines, "\n") + "\n"
 	}
 	return `id: simple_radial_rpm
 type: radial

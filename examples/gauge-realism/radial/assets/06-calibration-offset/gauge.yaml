@@ -1,0 +1,28 @@
+id: ornate_timber_radial_rpm
+type: radial
+sensor: rpm
+
+realism:
+  calibration_offset: 4.0
+
+size:
+  width: 1195
+  height: 1207
+
+layers:
+  background: ../bezel.png
+  face: ../face.png
+  ticks: ../ticks.png
+  needle: ../needle.png
+  overlay: ../glass.png
+
+pivot:
+  face: { x: 0.5, y: 0.5 }
+  needle: { x: 0.5, y: 0.5 }
+
+value_map:
+  min: 0
+  max: 8000
+  start_angle: -120
+  end_angle: 120
+  clamp: true

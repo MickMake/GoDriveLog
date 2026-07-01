@@ -164,17 +164,18 @@ func (n *NeedleShadowConfig) UnmarshalYAML(node *yaml.Node) error {
 }
 
 type Realism struct {
-	Wraparound     *bool               `yaml:"wraparound,omitempty"`
-	CarryDrag      *bool               `yaml:"carry_drag,omitempty"`
-	SnapSettle     *bool               `yaml:"snap_settle,omitempty"`
-	Damping        *bool               `yaml:"damping,omitempty"`
-	Stiction       *float64            `yaml:"stiction,omitempty"`
-	Overshoot      *OvershootConfig    `yaml:"overshoot,omitempty"`
-	PegBounce      *bool               `yaml:"peg_bounce,omitempty"`
-	NeedleShadow   *NeedleShadowConfig `yaml:"needle_shadow,omitempty"`
-	MovementPolicy string              `yaml:"movement_policy,omitempty"`
-	DrumSlop       []int               `yaml:"drum_slop,omitempty"`
-	DrumSlopSet    bool                `yaml:"-"`
+	Wraparound        *bool               `yaml:"wraparound,omitempty"`
+	CarryDrag         *bool               `yaml:"carry_drag,omitempty"`
+	SnapSettle        *bool               `yaml:"snap_settle,omitempty"`
+	Damping           *bool               `yaml:"damping,omitempty"`
+	Stiction          *float64            `yaml:"stiction,omitempty"`
+	Overshoot         *OvershootConfig    `yaml:"overshoot,omitempty"`
+	PegBounce         *bool               `yaml:"peg_bounce,omitempty"`
+	NeedleShadow      *NeedleShadowConfig `yaml:"needle_shadow,omitempty"`
+	CalibrationOffset *float64            `yaml:"calibration_offset,omitempty"`
+	MovementPolicy    string              `yaml:"movement_policy,omitempty"`
+	DrumSlop          []int               `yaml:"drum_slop,omitempty"`
+	DrumSlopSet       bool                `yaml:"-"`
 }
 
 func (r *Realism) UnmarshalYAML(node *yaml.Node) error {
@@ -182,16 +183,17 @@ func (r *Realism) UnmarshalYAML(node *yaml.Node) error {
 		return fmt.Errorf("realism must be a mapping")
 	}
 	allowedKeys := map[string]bool{
-		"wraparound":      true,
-		"carry_drag":      true,
-		"snap_settle":     true,
-		"damping":         true,
-		"stiction":        true,
-		"overshoot":       true,
-		"peg_bounce":      true,
-		"needle_shadow":   true,
-		"movement_policy": true,
-		"drum_slop":       true,
+		"wraparound":         true,
+		"carry_drag":         true,
+		"snap_settle":        true,
+		"damping":            true,
+		"stiction":           true,
+		"overshoot":          true,
+		"peg_bounce":         true,
+		"needle_shadow":      true,
+		"calibration_offset": true,
+		"movement_policy":    true,
+		"drum_slop":          true,
 	}
 	for index := 0; index+1 < len(node.Content); index += 2 {
 		key := node.Content[index].Value
@@ -642,6 +644,15 @@ func validateRealism(pkg Package) error {
 			if alpha < 0 || alpha > 1 {
 				return fmt.Errorf("realism needle_shadow alpha must be between 0 and 1")
 			}
+		}
+	}
+	if pkg.Realism.CalibrationOffset != nil {
+		if pkg.Type != TypeRadial {
+			return fmt.Errorf("realism calibration_offset is only supported for radial gauges")
+		}
+		offset := *pkg.Realism.CalibrationOffset
+		if math.IsNaN(offset) || math.IsInf(offset, 0) {
+			return fmt.Errorf("realism calibration_offset must be finite")
 		}
 	}
 	if pkg.Realism.DrumSlopSet {
