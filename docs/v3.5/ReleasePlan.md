@@ -11,7 +11,8 @@ v3.5 improves how gauges behave when values change. It focuses on:
 - static imperfection that does not require a frame tick;
 - finite movement responses after value changes;
 - small deterministic display effects that need renderer support;
-- simple preview support so each behaviour can be judged by eye.
+- simple preview support so each behaviour can be judged by eye;
+- rolling-window radial stat markers.
 
 Use `docs/v3.5/RealismBehaviourGuide.md` for the intended visual feel of each realism option.
 
@@ -59,7 +60,7 @@ Allowed odometer movement values are:
 - `smooth`
 - `click`
 
-Odometer `instant` means the digit display jumps immediately to the target value with no animation.
+Odometer `instant` means the digit display jumps immediately to the target value with no visible animation.
 
 Odometer `linear` means the wheel rolls from the old digit position to the target digit position at constant speed.
 
@@ -99,8 +100,9 @@ These options are in scope for v3.5 and should be defined, not parked:
 | `thermal_fade` | indicator | Soft incandescent-style on/off response. |
 | `needle_shadow` | radial | Optional offset/tinted copy of the rotating needle for visual depth. |
 | `calibration_offset` | radial | Optional display-only degree offset for imperfect needle alignment. |
+| `stat_markers` | radial in v3.5; bar later | Rolling-window min/max/average display markers. |
 
-Numeric and segmented gauges do not get extra realism behaviour in v3.5 unless a later slice explicitly adds it. Indicator gauges support `thermal_fade`. These gauge types may still have baseline preview files.
+Numeric and segmented gauges do not get extra realism behaviour in v3.5 unless a later slice explicitly adds it. Indicator gauges support `thermal_fade`. Bar gauge stat markers are deliberately left for a later slice even though the `stat_markers` concept is gauge-family friendly.
 
 ## Odometer movement phase model
 
@@ -174,8 +176,11 @@ damping
 overshoot
 peg_bounce
 calibration_offset
+stat_markers
 needle_shadow
 ```
+
+`stat_markers` track stable displayed radial values after normal value mapping and `calibration_offset`, but must not capture temporary overshoot or peg-bounce excursions. Marker rendering is above the live needle and below foreground/overlay/bezel layers.
 
 Default bar order:
 
@@ -313,12 +318,13 @@ Numeric and segmented gauges should only get baseline previews in v3.5 unless a 
 | v3.5.14 | Odometer snap/settle | Add mechanical snap into digit position. |
 | v3.5.15 | Odometer backlash | Add direction-change slack/settle. |
 | v3.5.16 | Display-only hysteresis | Add direction-dependent displayed offset for radial and bar gauges only. |
-| v3.5.17 | Radial needle drop shadow | Draw an optional offset/tinted copy of the rotating needle behind the real needle. |
-| v3.5.18 | Radial calibration offset | Add an optional display-only degree offset for imperfect needle alignment. |
+| v3.5.17 | Radial needle visual polish | Draw an optional shadow behind the radial needle and apply an optional display-only calibration offset. |
+| v3.5.18 | Radial stat markers min/max | Add rolling-window radial min/max markers using `needle_min.png` and `needle_max.png`. |
+| v3.5.19 | Radial stat marker average | Add rolling-window radial average marker using `needle_average.png`. |
 
 ## Parked for later
 
-These are good ideas, but not v3.5:
+These are good ideas, but not part of the current v3.5 tail unless a later prompt explicitly promotes them:
 
 - idle needle vibration;
 - gas/nixie flicker;
@@ -327,4 +333,5 @@ These are good ideas, but not v3.5:
 - brownout dip;
 - lazy power-off/capacitive bleed-down;
 - dynamic parallax or gyro/light-driven visual effects;
+- bar gauge stat markers;
 - asset-only presentation work that does not need code changes.
