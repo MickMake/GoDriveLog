@@ -35,9 +35,26 @@ Examples:
 
 - `window: 1h` means use stable displayed values from the last hour.
 - `window: 24h` means use stable displayed values from the last day.
-- `window: 0` means use all stable displayed values since runtime start.
 
-Keep marker history bounded by the configured rolling window. Do not store unbounded history except for the explicit `window: 0` runtime-start case, and keep that case intentionally simple.
+`window` must be a positive finite duration.
+
+Invalid examples:
+
+```yaml
+realism:
+  stat_markers:
+    window: 0
+```
+
+```yaml
+realism:
+  stat_markers:
+    window: -1h
+```
+
+Do not use `window: 0` to mean runtime-start history or remember forever. Unbounded stat marker history is not supported.
+
+Keep marker history bounded by the configured rolling window. Reject zero, negative, missing, or unparseable windows during config validation.
 
 ## Radial rendering
 
@@ -105,6 +122,7 @@ Bar stat markers should:
 - Display-only.
 - Preserve current gauge rendering when `realism.stat_markers` is absent or all markers are disabled.
 - Keep source values, logs, exported values, configured ranges, and input data unchanged.
+- Require a positive finite window for enabled stat markers.
 - Keep retained history bounded by the configured rolling window.
 - Marker assets must remain visually distinguishable from the live needle, bar fill, or live value indicator.
 - Add visual inspection fixtures that make min, max, and average markers easy to judge by eye.
@@ -116,6 +134,7 @@ Bar stat markers should:
 - Do not implement trip or session-lifetime windows unless a later spec explicitly defines them.
 - Do not use `needle_peak.png` for this feature.
 - Do not place stat markers under `movement`.
+- Do not allow `window: 0`, negative windows, or unbounded stat marker history.
 - Do not mutate source values, logs, exports, configured ranges, or input data.
 - Do not render markers over foreground, overlay, bezel, frame, or cover layers.
 
