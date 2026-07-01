@@ -92,10 +92,10 @@ These options are in scope for v3.5 and should be defined, not parked:
 | `snap_settle` | odometer | Mechanical snap into final digit position with a small settle. |
 | `backlash` | odometer | Direction-change slack/settle. |
 | `hysteresis` | radial, bar | Direction-dependent displayed offset without changing the source value. |
-| `stiction` | radial | Sticky needle threshold behaviour. |
+| `stiction` | radial, bar | Sticky threshold behaviour before visible movement releases. |
 | `damping` | radial, bar | Lagged/smoothed response to value changes. |
 | `overshoot` | radial, bar | Bounded pass-and-settle movement. |
-| `peg_bounce` | radial | Tiny bounded bounce at configured min/max physical stops. |
+| `peg_bounce` | radial, bar | Tiny bounded bounce at configured min/max stops. For bars this is end-stop bounce on fill/reveal extent. |
 | `thermal_fade` | indicator | Soft incandescent-style on/off response. |
 | `needle_shadow` | radial | Optional offset/tinted copy of the rotating needle for visual depth. |
 | `calibration_offset` | radial | Optional display-only degree offset for imperfect needle alignment. |
@@ -145,6 +145,18 @@ from digit position -> movement phase -> target digit position
 
 At the end of the movement phase, the handover position must be exactly the target digit position. Later settle effects such as `snap_settle` may start from that handover position.
 
+## Bar movement model
+
+Bar realism should work in displayed fill/reveal extent, not by mutating source values or configured ranges.
+
+For bar gauges:
+
+```text
+source value -> target fill/reveal extent -> finite movement behaviour -> rendered fill/reveal extent
+```
+
+Radial implementations may be used as references for timing, lifecycle, transition shape, and clamping where sensible. They must not be copied as angle/needle rendering logic. Bar render output is an extent, clip, reveal, or transform appropriate to the existing bar renderer.
+
 ## Realism ordering
 
 `realism.order` may optionally define the order in which enabled realism behaviours are applied.
@@ -181,8 +193,10 @@ Default bar order:
 
 ```text
 hysteresis
+stiction
 damping
 overshoot
+peg_bounce
 ```
 
 Default odometer order:
@@ -306,15 +320,19 @@ Numeric and segmented gauges should only get baseline previews in v3.5 unless a 
 | v3.5.7 | Odometer carry-drag | Make higher digits creep during lower digit rollover. |
 | v3.5.8 | Radial damping | Add lagged needle response. |
 | v3.5.9 | Radial stiction | Add thresholded movement release for sticky needles. |
-| v3.5.10 | Radial/bar overshoot | Add bounded pass-and-settle movement. |
-| v3.5.11 | Radial peg bounce | Add tiny bounce on min/max physical stops. |
+| v3.5.10 | Radial overshoot | Add bounded radial pass-and-settle movement. |
+| v3.5.11 | Radial peg bounce | Add tiny bounce on radial min/max physical stops. |
 | v3.5.12 | Indicator thermal fade | Add asymmetric incandescent-style on/off response. |
 | v3.5.13 | Bar smoothing | Add smoothed bar movement and optional rise/fall timing. |
 | v3.5.14 | Odometer snap/settle | Add mechanical snap into digit position. |
 | v3.5.15 | Odometer backlash | Add direction-change slack/settle. |
-| v3.5.16 | Display-only hysteresis | Add direction-dependent displayed offset for radial and bar gauges only. |
+| v3.5.16 | Radial display-only hysteresis | Add direction-dependent displayed offset for radial gauges. |
 | v3.5.17 | Radial needle drop shadow | Draw an optional offset/tinted copy of the rotating needle behind the real needle. |
 | v3.5.18 | Radial calibration offset | Add an optional display-only degree offset for imperfect needle alignment. |
+| v3.5.19 | Bar overshoot | Add the missing bounded pass-and-settle movement for bar fill/reveal extent. |
+| v3.5.20 | Bar hysteresis | Add direction-dependent displayed offset for bar fill/reveal extent. |
+| v3.5.21 | Bar stiction | Add thresholded movement release for sticky bar fill/reveal extent. |
+| v3.5.22 | Bar peg bounce | Add end-stop bounce for bar fill/reveal extent using `realism.peg_bounce`. |
 
 ## Parked for later
 

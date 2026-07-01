@@ -49,6 +49,10 @@ the agent must:
 - `v3.5.16-display-only-hysteresis.md`
 - `v3.5.17-radial-needle-drop-shadow.md`
 - `v3.5.18-radial-calibration-offset.md`
+- `v3.5.19-bar-overshoot.md`
+- `v3.5.20-bar-hysteresis.md`
+- `v3.5.21-bar-stiction.md`
+- `v3.5.22-bar-peg-bounce.md`
 
 ## Shared rules
 

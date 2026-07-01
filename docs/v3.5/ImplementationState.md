@@ -1,10 +1,10 @@
 # v3.5 Implementation State
 
-Status: v3.5.12 indicator thermal fade implemented; v3.5.13 and v3.5.16 remain pending
+Status: v3.5.12 indicator thermal fade implemented; v3.5.13, v3.5.16, and v3.5.19 through v3.5.22 remain pending
 
 Current target: v3.5.13 bar smoothing
 
-Current branch: `codex/v3.5.12-indicator-thermal-fade`
+Current branch: `v3.5-bar-realism-docs`
 
 ## Scope
 
@@ -16,7 +16,11 @@ The final v3.5 tail also includes two small radial-only display refinements that
 
 ## Current decisions
 
-- v3.5.8 through v3.5.13 were temporarily deferred so the odometer movement stack could be completed while the implementation context was fresh; v3.5.12, v3.5.13, and v3.5.16 remain pending and should now be implemented in checklist order.
+- v3.5.8 through v3.5.13 were temporarily deferred so the odometer movement stack could be completed while the implementation context was fresh; v3.5.12, v3.5.13, v3.5.16, and v3.5.19 through v3.5.22 remain pending and should now be implemented in checklist order.
+- v3.5.10 was intended to cover radial and bar overshoot, but implementation only covered radial behaviour; v3.5.19 adds the missing bar overshoot slice.
+- v3.5.16 covers radial display-only hysteresis. Bar hysteresis is split into v3.5.20 so the bar implementation can stay small and inspectable.
+- Bar stiction is split into v3.5.21. It may reuse radial transition ideas, but it applies to bar fill/reveal extent, not needle angle.
+- Bar `peg_bounce` is split into v3.5.22. The config key remains `realism.peg_bounce`; for bars it means end-stop bounce on the displayed fill/reveal extent.
 - The next-slice workflow should follow `Current target` when it is explicitly set, even if earlier unchecked slices remain.
 - Most v3.5 realism options live under the `realism` key.
 - `movement` is the exception: it is the single movement knob and should be accepted by any gauge type for now.
@@ -63,10 +67,10 @@ The final v3.5 tail also includes two small radial-only display refinements that
 | `snap_settle` | odometer |
 | `backlash` | odometer |
 | `hysteresis` | radial, bar |
-| `stiction` | radial |
+| `stiction` | radial, bar |
 | `damping` | radial, bar |
 | `overshoot` | radial, bar |
-| `peg_bounce` | radial |
+| `peg_bounce` | radial, bar |
 | `thermal_fade` | indicator |
 | `needle_shadow` | radial |
 | `calibration_offset` | radial |
@@ -108,15 +112,19 @@ Not allowed in v3.5:
 - [x] v3.5.7 odometer carry-drag / 9-drag
 - [x] v3.5.8 radial damping
 - [x] v3.5.9 radial stiction
-- [x] v3.5.10 radial/bar overshoot
+- [x] v3.5.10 radial overshoot
 - [x] v3.5.11 radial peg bounce
 - [x] v3.5.12 indicator thermal fade
 - [ ] v3.5.13 bar smoothing
 - [x] v3.5.14 odometer snap / settle
 - [x] v3.5.15 odometer backlash
-- [ ] v3.5.16 display-only hysteresis
+- [ ] v3.5.16 radial display-only hysteresis
 - [x] v3.5.17 radial needle drop shadow
 - [x] v3.5.18 radial calibration offset
+- [ ] v3.5.19 bar overshoot
+- [ ] v3.5.20 bar hysteresis
+- [ ] v3.5.21 bar stiction
+- [ ] v3.5.22 bar peg bounce
 
 ## Next-slice workflow
 
