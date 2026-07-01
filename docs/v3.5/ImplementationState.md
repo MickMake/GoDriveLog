@@ -1,10 +1,10 @@
 # v3.5 Implementation State
 
-Status: v3.5.11 radial peg bounce implemented; later v3.5 realism slices remain pending
+Status: v3.5.11 radial peg bounce implemented; v3.5.17+ radial visual/stat-marker tail prepared; deferred v3.5 realism slices remain pending
 
-Current target: v3.5.12 indicator thermal fade
+Current target: v3.5.17 radial needle visual polish
 
-Current branch: `codex/v3.5.11-radial-peg-bounce`
+Current branch: `docs-v3.5-stat-markers-prompts`
 
 ## Scope
 
@@ -12,11 +12,11 @@ v3.5 is the gauge realism pass.
 
 It adds believable gauge behaviour without changing the v3.4 gauge family model. The intent is to make gauges look more like real mechanisms when values change, while avoiding perpetual ambient effects.
 
-The final v3.5 tail also includes two small radial-only display refinements that need renderer support: an optional needle drop shadow and an optional display-only calibration offset.
+The final v3.5 tail now includes small radial-only display refinements that need renderer/state support: optional needle drop shadow, optional display-only calibration offset, and rolling-window radial stat markers.
 
 ## Current decisions
 
-- v3.5.8 through v3.5.13 are temporarily deferred so the odometer movement stack can be completed while the implementation context is fresh.
+- v3.5.12, v3.5.13, and v3.5.16 are temporarily deferred so the radial visual/stat-marker tail can be completed while the implementation context is fresh.
 - The next-slice workflow should follow `Current target` when it is explicitly set, even if earlier unchecked slices remain.
 - Most v3.5 realism options live under the `realism` key.
 - `movement` is the exception: it is the single movement knob and should be accepted by any gauge type for now.
@@ -49,6 +49,14 @@ The final v3.5 tail also includes two small radial-only display refinements that
 - Each gauge type may also have one deliberate `99-all-options` preview file.
 - Radial needle shadow is a static renderer feature, not dynamic parallax or lighting.
 - Radial calibration offset is display-only and must not change input values.
+- Radial `stat_markers` are display-only rolling-window markers and must not change input values, logs, exports, configured ranges, or source data.
+- Radial `stat_markers` use the `realism.stat_markers` config key.
+- `stat_markers.window` defines the trailing time range used to calculate enabled markers.
+- `stat_markers.window: 0` means keep all stable displayed samples since runtime start.
+- v3.5.18 implements radial `stat_markers.min` and `stat_markers.max` only.
+- v3.5.19 implements radial `stat_markers.average` only.
+- v3.5 stat marker assets are `needle_min.png`, `needle_max.png`, and `needle_average.png`.
+- v3.5 stat markers are radial-only; bar gauge stat markers are a later feature unless a later slice explicitly promotes them.
 - Hysteresis applies only to radial and bar gauges in v3.5.
 - Indicator gauges support `thermal_fade` in v3.5.
 
@@ -70,6 +78,7 @@ The final v3.5 tail also includes two small radial-only display refinements that
 | `thermal_fade` | indicator |
 | `needle_shadow` | radial |
 | `calibration_offset` | radial |
+| `stat_markers` | radial in v3.5; bar later |
 
 ## Scope boundaries
 
@@ -80,7 +89,8 @@ Allowed in v3.5:
 - Gauge Preview Mode;
 - deterministic, bounded behaviour;
 - display-only realism options;
-- small radial-only display refinements that need renderer support.
+- small radial-only display refinements that need renderer support;
+- rolling-window radial stat markers.
 
 Not allowed in v3.5:
 
@@ -115,35 +125,37 @@ Not allowed in v3.5:
 - [x] v3.5.14 odometer snap / settle
 - [x] v3.5.15 odometer backlash
 - [ ] v3.5.16 display-only hysteresis
-- [ ] v3.5.17 radial needle drop shadow
-- [ ] v3.5.18 radial calibration offset
+- [ ] v3.5.17 radial needle visual polish
+- [ ] v3.5.18 radial stat markers min/max
+- [ ] v3.5.19 radial stat marker average
 
 ## Next-slice workflow
 
 When asked to do the next slice:
 
 1. Read this file.
-2. Find the first unchecked slice.
+2. Use `Current target` if it is explicitly set; otherwise find the first unchecked allowed slice.
 3. Read docs/v3.5/ReleasePlan.md.
-4. Read the matching prompt in docs/v3.5/prompts/.
-5. Make only that slice’s changes.
-6. Update this checklist and any relevant docs.
-7. Do not implement later slices early.
-8. Run the relevant local tests/checks.
-9. Commit the completed slice with a clear message.
-10. Push the branch to GitHub.
-11. Raise a pull request against main.
+4. Read docs/v3.5/RealismBehaviourGuide.md.
+5. Read the matching prompt in docs/v3.5/prompts/.
+6. Make only that slice’s changes.
+7. Update this checklist and any relevant docs.
+8. Do not implement later slices early.
+9. Run the relevant local tests/checks.
+10. Commit the completed slice with a clear message.
+11. Push the branch to GitHub.
+12. Raise a pull request against main.
 
 Then enter the review-fix loop:
 
-12. Wait for codex GitHub review feedback and CI results.
-13. If CI fails, review requests changes, or unresolved review comments require code changes:
+13. Wait for codex GitHub review feedback and CI results.
+14. If CI fails, review requests changes, or unresolved review comments require code changes:
     * inspect the feedback;
     * make the smallest safe fixes only;
     * do not refactor unrelated code;
     * rerun relevant tests/checks;
     * commit and push the fixes.
-14. Repeat the review-fix loop at most 3 times.
+15. Repeat the review-fix loop at most 3 times.
 
 Stop when either:
 
