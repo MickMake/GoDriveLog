@@ -2199,8 +2199,167 @@ func TestRuntimeLoadsIndicatorGaugeWidgetPackage(t *testing.T) {
 	if widget.Status != sensors.StatusOK || widget.Scale != 1.5 {
 		t.Fatalf("indicator widget status/scale = %#v", widget)
 	}
-	if got := gaugePartSequence(widget); got != "layer:bezel,layer:on,layer:glass" {
+	if got := gaugePartSequence(widget); got != "layer:bezel,layer:face,layer:on,layer:glass" {
 		t.Fatalf("indicator part sequence = %q", got)
+	}
+}
+
+func TestRuntimeIndicatorThermalFadeDisabledRemainsImmediate(t *testing.T) {
+	packageDir := makeDashboardIndicatorGaugePackage(t)
+	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 320, Height: 240}, Widgets: []v3config.WidgetConfig{{ID: "check_engine", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{0, 0}, Scale: 1}}}}}}
+	runtime, err := NewRuntime(plan, testAssetRegistry())
+	if err != nil {
+		t.Fatalf("NewRuntime failed: %v", err)
+	}
+
+	_, changed, err := runtime.ApplyEvent(sensorEvent("check_engine", okState("check_engine", 1, "")))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected immediate indicator change to redraw")
+	}
+	if runtime.HasActiveMovement() {
+		t.Fatalf("expected disabled thermal fade to stay static")
+	}
+	scenes, err := runtime.Snapshot()
+	if err != nil {
+		t.Fatalf("Snapshot failed: %v", err)
+	}
+	on := firstGaugeLayerPart(requireWidget(t, scenes[0], "check_engine"), "on")
+	if !almostEqual(on.Alpha, 0) {
+		t.Fatalf("expected immediate on layer to use default opaque alpha, got %v", on.Alpha)
+	}
+}
+
+func TestRuntimeIndicatorThermalFadeOnTransition(t *testing.T) {
+	rise, fall := 100, 240
+	packageDir := makeDashboardIndicatorGaugePackageWithThermalFade(t, &rise, &fall)
+	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 320, Height: 240}, Widgets: []v3config.WidgetConfig{{ID: "check_engine", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{0, 0}, Scale: 1}}}}}}
+	runtime, err := NewRuntime(plan, testAssetRegistry())
+	if err != nil {
+		t.Fatalf("NewRuntime failed: %v", err)
+	}
+
+	now := time.Unix(200, 0)
+	runtime.clock = func() time.Time { return now }
+	runtime.SetState(okState("check_engine", 0, ""))
+	if _, err := runtime.Snapshot(); err != nil {
+		t.Fatalf("Snapshot failed: %v", err)
+	}
+	_, changed, err := runtime.ApplyEvent(sensorEventAt("check_engine", okState("check_engine", 1, ""), now))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected thermal fade start to mark the widget changed")
+	}
+	if !runtime.HasActiveMovement() {
+		t.Fatalf("expected thermal fade on transition to stay active")
+	}
+	scenes, err := runtime.Snapshot()
+	if err != nil {
+		t.Fatalf("Snapshot failed: %v", err)
+	}
+	startWidget := requireWidget(t, scenes[0], "check_engine")
+	if got := gaugePartSequence(startWidget); got != "layer:bezel,layer:face,layer:off,layer:glass" {
+		t.Fatalf("expected fade start to begin from the cold lamp face, got %q", got)
+	}
+
+	midScenes, changed, err := runtime.Tick(now.Add(50 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected mid-fade tick to redraw")
+	}
+	midWidget := requireWidget(t, midScenes[0], "check_engine")
+	if got := gaugePartSequence(midWidget); got != "layer:bezel,layer:face,layer:off,layer:on,layer:glass" {
+		t.Fatalf("expected mid-fade layers to include off and on, got %q", got)
+	}
+	on := firstGaugeLayerPart(midWidget, "on")
+	if !(on.Alpha > 0 && on.Alpha < 1) {
+		t.Fatalf("expected mid-fade alpha in (0,1), got %v", on.Alpha)
+	}
+
+	finalScenes, changed, err := runtime.Tick(now.Add(100 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected final fade tick to redraw")
+	}
+	finalWidget := requireWidget(t, finalScenes[0], "check_engine")
+	if got := gaugePartSequence(finalWidget); got != "layer:bezel,layer:face,layer:on,layer:glass" {
+		t.Fatalf("expected final on layers, got %q", got)
+	}
+	if !almostEqual(firstGaugeLayerPart(finalWidget, "on").Alpha, 1) {
+		t.Fatalf("expected final on alpha to settle at 1, got %v", firstGaugeLayerPart(finalWidget, "on").Alpha)
+	}
+	if runtime.HasActiveMovement() {
+		t.Fatalf("expected thermal fade to stop ticking once settled on")
+	}
+}
+
+func TestRuntimeIndicatorThermalFadeOffTransition(t *testing.T) {
+	rise, fall := 100, 240
+	packageDir := makeDashboardIndicatorGaugePackageWithThermalFade(t, &rise, &fall)
+	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 320, Height: 240}, Widgets: []v3config.WidgetConfig{{ID: "check_engine", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{0, 0}, Scale: 1}}}}}}
+	runtime, err := NewRuntime(plan, testAssetRegistry())
+	if err != nil {
+		t.Fatalf("NewRuntime failed: %v", err)
+	}
+
+	now := time.Unix(300, 0)
+	runtime.clock = func() time.Time { return now }
+	runtime.SetState(okState("check_engine", 1, ""))
+	if _, err := runtime.Snapshot(); err != nil {
+		t.Fatalf("Snapshot failed: %v", err)
+	}
+
+	_, changed, err := runtime.ApplyEvent(sensorEventAt("check_engine", okState("check_engine", 0, ""), now))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected thermal fade off transition to mark the widget changed")
+	}
+	if !runtime.HasActiveMovement() {
+		t.Fatalf("expected thermal fade off transition to stay active")
+	}
+
+	midScenes, changed, err := runtime.Tick(now.Add(120 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected mid-fade-off tick to redraw")
+	}
+	midWidget := requireWidget(t, midScenes[0], "check_engine")
+	if got := gaugePartSequence(midWidget); got != "layer:bezel,layer:face,layer:off,layer:on,layer:glass" {
+		t.Fatalf("expected mid-fade-off layers to include off and on, got %q", got)
+	}
+	on := firstGaugeLayerPart(midWidget, "on")
+	if !(on.Alpha > 0 && on.Alpha < 1) {
+		t.Fatalf("expected mid-fade-off alpha in (0,1), got %v", on.Alpha)
+	}
+
+	finalScenes, changed, err := runtime.Tick(now.Add(240 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected final fade-off tick to redraw")
+	}
+	finalWidget := requireWidget(t, finalScenes[0], "check_engine")
+	if got := gaugePartSequence(finalWidget); got != "layer:bezel,layer:face,layer:off,layer:glass" {
+		t.Fatalf("expected final off layers, got %q", got)
+	}
+	if on := firstGaugeLayerPart(finalWidget, "on"); on.AssetPath != "" {
+		t.Fatalf("expected on layer to be gone after settling off, got %#v", on)
+	}
+	if runtime.HasActiveMovement() {
+		t.Fatalf("expected thermal fade to stop ticking once settled off")
 	}
 }
 
@@ -2453,10 +2612,16 @@ func makeDashboardOdometerGaugePackageWithRealism(t *testing.T, movement string,
 }
 
 func makeDashboardIndicatorGaugePackage(t *testing.T) string {
+	return makeDashboardIndicatorGaugePackageWithThermalFade(t, nil, nil)
+}
+
+func makeDashboardIndicatorGaugePackageWithThermalFade(t *testing.T, riseMS *int, fallMS *int) string {
 	t.Helper()
 	root := t.TempDir()
 	files := []string{
 		"assets/gauges/indicator/check_engine/bezel.png",
+		"assets/gauges/indicator/check_engine/face.png",
+		"assets/gauges/indicator/check_engine/off.png",
 		"assets/gauges/indicator/check_engine/on.png",
 		"assets/gauges/indicator/check_engine/glass.png",
 	}
@@ -2473,7 +2638,7 @@ func makeDashboardIndicatorGaugePackage(t *testing.T) string {
 	if err := os.MkdirAll(packageDir, 0o755); err != nil {
 		t.Fatalf("MkdirAll: %v", err)
 	}
-	if err := os.WriteFile(filepath.Join(packageDir, "gauge.yaml"), []byte(dashboardIndicatorGaugeYAML()), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(packageDir, "gauge.yaml"), []byte(dashboardIndicatorGaugeYAML(riseMS, fallMS)), 0o600); err != nil {
 		t.Fatalf("WriteFile: %v", err)
 	}
 	return packageDir
@@ -2702,15 +2867,29 @@ odometer:
 `
 }
 
-func dashboardIndicatorGaugeYAML() string {
+func dashboardIndicatorGaugeYAML(riseMS *int, fallMS *int) string {
+	realismBlock := ""
+	if riseMS != nil || fallMS != nil {
+		rise := 120
+		fall := 240
+		if riseMS != nil {
+			rise = *riseMS
+		}
+		if fallMS != nil {
+			fall = *fallMS
+		}
+		realismBlock = fmt.Sprintf("realism:\n  thermal_fade:\n    rise_ms: %d\n    fall_ms: %d\n", rise, fall)
+	}
 	return `id: dashboard_check_engine_indicator
 type: indicator
 sensor: check_engine
-size:
+` + realismBlock + `size:
   width: 48
   height: 48
 layers:
   bezel: bezel.png
+  face: face.png
+  off: off.png
   on: on.png
   glass: glass.png
 `

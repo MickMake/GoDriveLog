@@ -334,6 +334,9 @@ func (a *Adapter) drawPart(screen *ebitenui.Image, part renderedPart, source ima
 			options.ColorScale.ScaleAlpha(float32(part.alpha))
 		}
 	} else {
+		if part.alpha > 0 && part.alpha < 1 {
+			options.ColorScale.ScaleAlpha(float32(part.alpha))
+		}
 		options.GeoM.Scale(part.scale, part.scale)
 		options.GeoM.Translate(part.x, part.y+sourceOffsetY*part.scale)
 	}

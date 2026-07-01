@@ -454,6 +454,131 @@ layers:
 	}
 }
 
+func TestLoadPackageLoadsIndicatorThermalFade(t *testing.T) {
+	root := makeGaugeFixtures(t)
+	packageDir := filepath.Join(root, "assets", "gauges", "indicator", "check_engine")
+	writeGaugeYAML(t, packageDir, `id: check_engine_indicator
+type: indicator
+sensor: check_engine
+realism:
+  thermal_fade:
+    rise_ms: 120
+    fall_ms: 240
+size:
+  width: 48
+  height: 48
+layers:
+  bezel: bezel.png
+  face: face.png
+  off: off.png
+  on: on.png
+  glass: glass.png
+`)
+
+	pkg, err := LoadPackage(packageDir)
+	if err != nil {
+		t.Fatalf("LoadPackage returned error: %v", err)
+	}
+	if pkg.Realism.ThermalFade == nil || pkg.Realism.ThermalFade.RiseMS != 120 || pkg.Realism.ThermalFade.FallMS != 240 {
+		t.Fatalf("thermal_fade = %#v, want rise=120 fall=240", pkg.Realism.ThermalFade)
+	}
+}
+
+func TestLoadPackageRejectsInvalidIndicatorThermalFade(t *testing.T) {
+	tests := []struct {
+		name        string
+		packageType string
+		thermalFade string
+		want        string
+	}{
+		{
+			name:        "non_indicator",
+			packageType: "radial",
+			thermalFade: `thermal_fade:
+    rise_ms: 120
+    fall_ms: 240
+`,
+			want: "only supported for indicator",
+		},
+		{
+			name:        "zero_rise",
+			packageType: "indicator",
+			thermalFade: `thermal_fade:
+    rise_ms: 0
+    fall_ms: 240
+`,
+			want: "rise_ms must be greater than zero",
+		},
+		{
+			name:        "zero_fall",
+			packageType: "indicator",
+			thermalFade: `thermal_fade:
+    rise_ms: 120
+    fall_ms: 0
+`,
+			want: "fall_ms must be greater than zero",
+		},
+		{
+			name:        "bad_key",
+			packageType: "indicator",
+			thermalFade: `thermal_fade:
+    rise: 120
+    fall_ms: 240
+`,
+			want: "thermal_fade field",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			root := makeGaugeFixtures(t)
+			packageDir := filepath.Join(root, "assets", "gauges", test.packageType, "bad_thermal_fade_"+test.name)
+			yamlText := `id: bad_` + test.packageType + `
+type: ` + test.packageType + `
+sensor: check_engine
+realism:
+  ` + test.thermalFade + `size:
+  width: 48
+  height: 48
+layers:
+  bezel: bezel.png
+  face: face.png
+  off: off.png
+  on: on.png
+  glass: glass.png
+`
+			if test.packageType == "radial" {
+				yamlText = `id: bad_radial
+type: radial
+sensor: rpm
+realism:
+  ` + test.thermalFade + `size:
+  width: 100
+  height: 100
+layers:
+  needle: ../../shared/radial/simple_rpm/needle.png
+pivot:
+  face: { x: 0.5, y: 0.5 }
+  needle: { x: 0.5, y: 0.9 }
+value_map:
+  min: 0
+  max: 1000
+  start_angle: -90
+  end_angle: 90
+  clamp: true
+`
+			}
+			writeGaugeYAML(t, packageDir, yamlText)
+
+			_, err := LoadPackage(packageDir)
+			if err == nil {
+				t.Fatal("LoadPackage returned nil error, want error")
+			}
+			assertErrorContains(t, err, test.want)
+		})
+	}
+}
+
 func TestLoadPackageLoadsBarGauge(t *testing.T) {
 	root := makeGaugeFixtures(t)
 	packageDir := filepath.Join(root, "assets", "gauges", "bar", "coolant")

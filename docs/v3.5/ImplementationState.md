@@ -1,10 +1,10 @@
 # v3.5 Implementation State
 
-Status: v3.5.18 radial calibration offset implemented; v3.5.12, v3.5.13, and v3.5.16 remain pending
+Status: v3.5.12 indicator thermal fade implemented; v3.5.13 and v3.5.16 remain pending
 
-Current target: v3.5.12 indicator thermal fade
+Current target: v3.5.13 bar smoothing
 
-Current branch: `codex/v3.5.18-radial-calibration-offset`
+Current branch: `codex/v3.5.12-indicator-thermal-fade`
 
 ## Scope
 
@@ -110,7 +110,7 @@ Not allowed in v3.5:
 - [x] v3.5.9 radial stiction
 - [x] v3.5.10 radial/bar overshoot
 - [x] v3.5.11 radial peg bounce
-- [ ] v3.5.12 indicator thermal fade
+- [x] v3.5.12 indicator thermal fade
 - [ ] v3.5.13 bar smoothing
 - [x] v3.5.14 odometer snap / settle
 - [x] v3.5.15 odometer backlash

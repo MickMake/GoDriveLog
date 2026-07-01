@@ -467,6 +467,11 @@ func (d Dashboard) renderWidget(configWidget v3config.WidgetConfig, states map[s
 			if err != nil {
 				return Widget{}, false, fmt.Errorf("dashboard %q widget %q: %w", d.ID, configWidget.ID, err)
 			}
+		} else if pkg.Type == v3gauges.TypeIndicator {
+			state, movement, movementChanged, err = resolveIndicatorThermalFadeState(movements, movementKey(d.ID, configWidget.ID), pkg, state, now)
+			if err != nil {
+				return Widget{}, false, fmt.Errorf("dashboard %q widget %q: %w", d.ID, configWidget.ID, err)
+			}
 		} else {
 			damping := pkg.Realism.Damping != nil && *pkg.Realism.Damping
 			stiction := 0.0
@@ -489,7 +494,11 @@ func (d Dashboard) renderWidget(configWidget v3config.WidgetConfig, states map[s
 				gaugeScene, err = v3gauges.OdometerScene(pkg, v3gauges.Placement{Position: configWidget.Position, Scale: configWidget.Scale}, state)
 			}
 		case v3gauges.TypeIndicator:
-			gaugeScene, err = v3gauges.IndicatorScene(pkg, v3gauges.Placement{Position: configWidget.Position, Scale: configWidget.Scale}, state)
+			if pkg.Realism.ThermalFade != nil && movement.HasValue {
+				gaugeScene, err = v3gauges.IndicatorSceneWithOnAlpha(pkg, v3gauges.Placement{Position: configWidget.Position, Scale: configWidget.Scale}, state, movement.DisplayValue)
+			} else {
+				gaugeScene, err = v3gauges.IndicatorScene(pkg, v3gauges.Placement{Position: configWidget.Position, Scale: configWidget.Scale}, state)
+			}
 		case v3gauges.TypeBar:
 			gaugeScene, err = v3gauges.BarScene(pkg, v3gauges.Placement{Position: configWidget.Position, Scale: configWidget.Scale}, state)
 		case v3gauges.TypeSegmented:
@@ -670,6 +679,82 @@ func effectiveMovementPolicy(gaugeType string, policy string, damping bool, over
 		}
 	}
 	return policy
+}
+
+func resolveIndicatorThermalFadeState(movements map[string]widgetMovementState, key string, pkg v3gauges.Package, source sensors.SensorState, now time.Time) (sensors.SensorState, widgetMovementState, bool, error) {
+	if movements == nil || pkg.Realism.ThermalFade == nil {
+		return source, widgetMovementState{}, false, nil
+	}
+	targetAlpha := indicatorTargetAlpha(source)
+	movement := movements[key]
+	previous := movement
+	if !movement.HasValue {
+		movement = widgetMovementState{
+			Phase:                movementPhaseStatic,
+			Policy:               v3gauges.MovementPolicyLinear,
+			PreviousDisplayValue: targetAlpha,
+			DisplayValue:         targetAlpha,
+			TargetValue:          targetAlpha,
+			HasValue:             true,
+		}
+	} else if targetAlpha != movement.TargetValue {
+		if movementActive(movement) {
+			movement = advanceMovementState(movement, now)
+			movement = cleanupIndicatorMovementState(movement)
+		}
+		movement.Policy = v3gauges.MovementPolicyLinear
+		movement.PreviousDisplayValue = movement.DisplayValue
+		movement.TargetValue = targetAlpha
+		duration := indicatorFadeDuration(pkg.Realism.ThermalFade, movement.PreviousDisplayValue, targetAlpha)
+		if duration <= 0 || movement.DisplayValue == targetAlpha {
+			movement.DisplayValue = targetAlpha
+			movement.Phase = movementPhaseStatic
+			movement.Duration = 0
+			movement.StartedAt = time.Time{}
+		} else {
+			movement.Duration = duration
+			movement.StartedAt = now
+			movement.Phase = movementPhaseMoving
+		}
+	} else if movementActive(movement) {
+		movement = advanceMovementState(movement, now)
+		movement = cleanupIndicatorMovementState(movement)
+	}
+	movements[key] = movement
+	return source, movement, movementActive(movement) != movementActive(previous), nil
+}
+
+func indicatorTargetAlpha(state sensors.SensorState) float64 {
+	if state.Status == sensors.StatusOK {
+		if state.TypedValue.Kind == sensors.ValueKindBool && state.TypedValue.Bool != nil {
+			if *state.TypedValue.Bool {
+				return 1
+			}
+			return 0
+		}
+		if state.Value != 0 {
+			return 1
+		}
+	}
+	return 0
+}
+
+func indicatorFadeDuration(config *v3gauges.ThermalFadeConfig, previous float64, target float64) time.Duration {
+	if config == nil || previous == target {
+		return 0
+	}
+	if target > previous {
+		return time.Duration(config.RiseMS) * time.Millisecond
+	}
+	return time.Duration(config.FallMS) * time.Millisecond
+}
+
+func cleanupIndicatorMovementState(movement widgetMovementState) widgetMovementState {
+	if movement.Phase == movementPhaseSettled {
+		movement.Phase = movementPhaseStatic
+		movement.DisplayValue = movement.TargetValue
+	}
+	return movement
 }
 
 func resolveOdometerMovementState(movements map[string]widgetMovementState, key string, context movementContext, pkg v3gauges.Package, source sensors.SensorState, planner movementPlanner, now time.Time) (sensors.SensorState, widgetMovementState, bool, error) {
