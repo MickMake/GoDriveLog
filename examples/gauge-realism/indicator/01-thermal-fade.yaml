@@ -1,0 +1,27 @@
+vehicles:
+  demo:
+    name: Gauge Preview
+    obd:
+      address: preview://manual
+      timeout: 1000
+    dashboards:
+      - preview
+sensors:
+  check_engine:
+    type: obd
+    pid: "0101"
+    unit: state
+    min: 0
+    max: 1
+    poll: 250
+dashboards:
+  preview:
+    display: preview
+    size:
+      width: 240
+      height: 240
+    widgets:
+      - id: check_engine_indicator
+        type: gauge
+        gauge: assets/01-thermal-fade
+        position: [0, 0]

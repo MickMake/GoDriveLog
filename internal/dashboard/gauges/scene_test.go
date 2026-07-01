@@ -21,9 +21,9 @@ func TestRadialSceneCalibrationOffsetDoesNotClampWhenValueMapClampFalse(t *testi
 		t.Fatalf("RadialScene returned error: %v", err)
 	}
 
-if scene.Angle <= 135 {
-	t.Fatalf("unclamped calibration angle = %v, want above dial max", scene.Angle)
-}
+	if scene.Angle <= 135 {
+		t.Fatalf("unclamped calibration angle = %v, want above dial max", scene.Angle)
+	}
 }
 
 func TestNumericSceneUsesPackageOwnedFormatPositionsAndStaticLayers(t *testing.T) {
@@ -884,6 +884,23 @@ func TestIndicatorSceneSelectsOffAndOnLayers(t *testing.T) {
 	}
 }
 
+func TestIndicatorSceneWithOnAlphaBlendsOffAndOnLayers(t *testing.T) {
+	pkg := loadIndicatorScenePackage(t)
+
+	scene, err := IndicatorSceneWithOnAlpha(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("check_engine", 1), 0.4)
+	if err != nil {
+		t.Fatalf("IndicatorSceneWithOnAlpha returned error: %v", err)
+	}
+
+	if got := partLayerSequence(scene); got != "layer:bezel,layer:face,layer:off,layer:on,layer:glass" {
+		t.Fatalf("blended indicator sequence = %q", got)
+	}
+	on := firstLayerPart(scene, "on")
+	if !almostEqual(on.Alpha, 0.4) {
+		t.Fatalf("on layer alpha = %v, want 0.4", on.Alpha)
+	}
+}
+
 func TestIndicatorSceneUsesBoolTypedValueWhenPresent(t *testing.T) {
 	pkg := loadIndicatorScenePackage(t)
 	value := true
@@ -1164,10 +1181,14 @@ func loadFourWheelOdometerScenePackage(t *testing.T) Package {
 }
 
 func loadIndicatorScenePackage(t *testing.T) Package {
+	return loadIndicatorScenePackageWithThermalFade(t, nil, nil)
+}
+
+func loadIndicatorScenePackageWithThermalFade(t *testing.T, riseMS *int, fallMS *int) Package {
 	t.Helper()
 	root := makeGaugeFixtures(t)
 	packageDir := filepath.Join(root, "assets", "gauges", "indicator", "check_engine")
-	writeGaugeYAML(t, packageDir, indicatorGaugeYAML())
+	writeGaugeYAML(t, packageDir, indicatorGaugeYAML(riseMS, fallMS))
 	pkg, err := LoadPackage(packageDir)
 	if err != nil {
 		t.Fatalf("LoadPackage returned error: %v", err)
@@ -1407,11 +1428,23 @@ func float64SlicesAlmostEqual(left []float64, right []float64) bool {
 	return true
 }
 
-func indicatorGaugeYAML() string {
+func indicatorGaugeYAML(riseMS *int, fallMS *int) string {
+	realismBlock := ""
+	if riseMS != nil || fallMS != nil {
+		rise := 120
+		fall := 240
+		if riseMS != nil {
+			rise = *riseMS
+		}
+		if fallMS != nil {
+			fall = *fallMS
+		}
+		realismBlock = fmt.Sprintf("realism:\n  thermal_fade:\n    rise_ms: %d\n    fall_ms: %d\n", rise, fall)
+	}
 	return `id: test_check_engine_indicator
 type: indicator
 sensor: check_engine
-size:
+` + realismBlock + `size:
   width: 48
   height: 48
 layers:

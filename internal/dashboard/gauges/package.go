@@ -135,6 +135,34 @@ func (o *OvershootConfig) UnmarshalYAML(node *yaml.Node) error {
 	return nil
 }
 
+type ThermalFadeConfig struct {
+	RiseMS int `yaml:"rise_ms,omitempty"`
+	FallMS int `yaml:"fall_ms,omitempty"`
+}
+
+func (t *ThermalFadeConfig) UnmarshalYAML(node *yaml.Node) error {
+	if node.Kind != yaml.MappingNode {
+		return fmt.Errorf("realism thermal_fade must be a mapping")
+	}
+	allowedKeys := map[string]bool{
+		"rise_ms": true,
+		"fall_ms": true,
+	}
+	for index := 0; index+1 < len(node.Content); index += 2 {
+		key := node.Content[index].Value
+		if !allowedKeys[key] {
+			return fmt.Errorf("realism thermal_fade field %q is not supported", key)
+		}
+	}
+	type rawThermalFadeConfig ThermalFadeConfig
+	var decoded rawThermalFadeConfig
+	if err := node.Decode(&decoded); err != nil {
+		return err
+	}
+	*t = ThermalFadeConfig(decoded)
+	return nil
+}
+
 type NeedleShadowConfig struct {
 	Offset []int    `yaml:"offset,omitempty"`
 	Alpha  *float64 `yaml:"alpha,omitempty"`
@@ -171,6 +199,7 @@ type Realism struct {
 	Stiction          *float64            `yaml:"stiction,omitempty"`
 	Overshoot         *OvershootConfig    `yaml:"overshoot,omitempty"`
 	PegBounce         *bool               `yaml:"peg_bounce,omitempty"`
+	ThermalFade       *ThermalFadeConfig  `yaml:"thermal_fade,omitempty"`
 	NeedleShadow      *NeedleShadowConfig `yaml:"needle_shadow,omitempty"`
 	CalibrationOffset *float64            `yaml:"calibration_offset,omitempty"`
 	MovementPolicy    string              `yaml:"movement_policy,omitempty"`
@@ -190,6 +219,7 @@ func (r *Realism) UnmarshalYAML(node *yaml.Node) error {
 		"stiction":           true,
 		"overshoot":          true,
 		"peg_bounce":         true,
+		"thermal_fade":       true,
 		"needle_shadow":      true,
 		"calibration_offset": true,
 		"movement_policy":    true,
@@ -644,6 +674,17 @@ func validateRealism(pkg Package) error {
 			if alpha < 0 || alpha > 1 {
 				return fmt.Errorf("realism needle_shadow alpha must be between 0 and 1")
 			}
+		}
+	}
+	if pkg.Realism.ThermalFade != nil {
+		if pkg.Type != TypeIndicator {
+			return fmt.Errorf("realism thermal_fade is only supported for indicator gauges")
+		}
+		if pkg.Realism.ThermalFade.RiseMS <= 0 {
+			return fmt.Errorf("realism thermal_fade rise_ms must be greater than zero")
+		}
+		if pkg.Realism.ThermalFade.FallMS <= 0 {
+			return fmt.Errorf("realism thermal_fade fall_ms must be greater than zero")
 		}
 	}
 	if pkg.Realism.CalibrationOffset != nil {

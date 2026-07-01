@@ -1,0 +1,19 @@
+id: ornate_timber_check_engine_indicator
+type: indicator
+sensor: check_engine
+
+realism:
+  thermal_fade:
+    rise_ms: 120
+    fall_ms: 240
+
+size:
+  width: 108
+  height: 108
+
+layers:
+  bezel: ../../../assets/gauges/check_engine_indicator/bezel.png
+  face: ../../../assets/gauges/check_engine_indicator/face.png
+  off: ../../../assets/gauges/check_engine_indicator/off.png
+  on: ../../../assets/gauges/check_engine_indicator/on.png
+  glass: ../../../assets/gauges/check_engine_indicator/glass.png

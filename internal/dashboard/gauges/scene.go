@@ -420,6 +420,18 @@ func OdometerSnapSettleWheelOffsets(pkg Package, previousValue float64, targetVa
 }
 
 func IndicatorScene(pkg Package, placement Placement, state sensors.SensorState) (Scene, error) {
+	onAlpha := 0.0
+	if indicatorStateOn(state) {
+		onAlpha = 1
+	}
+	return indicatorScene(pkg, placement, state, onAlpha, false)
+}
+
+func IndicatorSceneWithOnAlpha(pkg Package, placement Placement, state sensors.SensorState, onAlpha float64) (Scene, error) {
+	return indicatorScene(pkg, placement, state, onAlpha, true)
+}
+
+func indicatorScene(pkg Package, placement Placement, state sensors.SensorState, onAlpha float64, explicitAlpha bool) (Scene, error) {
 	if pkg.Type != TypeIndicator {
 		return Scene{}, fmt.Errorf("gauge package %q type %q is not indicator", pkg.ID, pkg.Type)
 	}
@@ -446,10 +458,21 @@ func IndicatorScene(pkg Package, placement Placement, state sensors.SensorState)
 		Parts:       indicatorUnderlayLayerParts(pkg.Layers),
 	}
 
-	if indicatorStateOn(state) {
-		scene.Parts = append(scene.Parts, ScenePart{Kind: ScenePartKindLayer, Layer: "on", AssetPath: onPath})
-	} else if offPath != "" {
+	if onAlpha < 0 {
+		onAlpha = 0
+	}
+	if onAlpha > 1 {
+		onAlpha = 1
+	}
+	if offPath != "" && onAlpha < 1 {
 		scene.Parts = append(scene.Parts, ScenePart{Kind: ScenePartKindLayer, Layer: "off", AssetPath: offPath})
+	}
+	if onAlpha > 0 {
+		part := ScenePart{Kind: ScenePartKindLayer, Layer: "on", AssetPath: onPath}
+		if explicitAlpha || onAlpha < 1 {
+			part.Alpha = onAlpha
+		}
+		scene.Parts = append(scene.Parts, part)
 	}
 	scene.Parts = append(scene.Parts, indicatorOverlayLayerParts(pkg.Layers)...)
 	return scene, nil

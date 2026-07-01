@@ -459,6 +459,11 @@ func sensorEvent(id string, state sensors.SensorState) sensors.SensorEvent {
 	return sensors.SensorEvent{Kind: sensors.EventKindValueChange, SensorID: id, State: state, Timestamp: state.UpdatedAt, ReadAt: state.UpdatedAt}
 }
 
+func sensorEventAt(id string, state sensors.SensorState, when time.Time) sensors.SensorEvent {
+	state.UpdatedAt = when
+	return sensors.SensorEvent{Kind: sensors.EventKindValueChange, SensorID: id, State: state, Timestamp: when, ReadAt: when}
+}
+
 func floatPtr(value float64) *float64 {
 	return &value
 }
