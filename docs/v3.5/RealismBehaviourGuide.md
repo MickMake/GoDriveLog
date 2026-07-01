@@ -203,6 +203,8 @@ Applies to: radial, bar.
 
 The displayed position may rest slightly differently depending on whether the value approached from below or above.
 
+For radial gauges, this means a small direction-dependent angle offset. For bar gauges, this means a small direction-dependent fill/reveal extent offset.
+
 **Good result:**
 
 A rising value and falling value can settle with a tiny direction-dependent display difference, while still clearly representing the same source value.
@@ -213,19 +215,21 @@ The displayed offset is large enough to look wrong, changes the source value, or
 
 ## `stiction`
 
-Applies to: radial.
+Applies to: radial, bar.
 
 **Visual intent:**
 
-A needle resists very small changes, then releases once the change is large enough to notice.
+The displayed position resists very small changes, then releases once the change is large enough to notice.
+
+For radial gauges, the needle may hold briefly before making a catch-up movement. For bar gauges, the displayed fill/reveal extent may hold briefly before making a catch-up movement.
 
 **Good result:**
 
-Tiny value changes may not move the needle immediately. When it does move, it makes a small catch-up movement and settles.
+Tiny value changes may not move the display immediately. When it does move, it makes a small catch-up movement and settles.
 
 **Bad result:**
 
-The needle sticks during large changes, jumps violently, or behaves unpredictably.
+The display sticks during large changes, jumps violently, behaves unpredictably, or changes source values.
 
 ## `damping`
 
@@ -251,29 +255,33 @@ Applies to: radial, bar.
 
 The displayed position may pass the target slightly, then return and settle.
 
+For radial gauges, this is angular needle overshoot. For bar gauges, this is fill/reveal extent overshoot.
+
 **Good result:**
 
 The movement gives a small sense of momentum without stealing attention.
 
 **Bad result:**
 
-The display swings too far, oscillates repeatedly, or overshoots during tiny changes where it looks silly.
+The display swings too far, oscillates repeatedly, overshoots during tiny changes where it looks silly, or renders outside sensible visual bounds.
 
 ## `peg_bounce`
 
-Applies to: radial.
+Applies to: radial, bar.
 
 **Visual intent:**
 
-When a radial needle reaches the configured minimum or maximum stop, it should appear to tap the stop, rebound slightly, then settle quickly.
+When the displayed position reaches the configured minimum or maximum stop, it should appear to tap the stop, rebound slightly, then settle quickly.
+
+For radial gauges, this appears as a needle tapping a min/max physical peg. For bar gauges, this appears as an end-stop bounce on the displayed fill/reveal extent. The config key remains `realism.peg_bounce` in v3.5 even though bars do not have literal pegs.
 
 **Good result:**
 
-The bounce is small, quick, and only visible at the physical stop.
+The bounce is small, quick, deterministic, and only visible at the configured visual stop.
 
 **Bad result:**
 
-The needle bounces during ordinary in-range movement, passes through the stop, or keeps bouncing.
+The display bounces during ordinary in-range movement, passes through the stop, keeps bouncing, or changes source values.
 
 ## `thermal_fade`
 
