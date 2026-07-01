@@ -821,6 +821,118 @@ value_map:
 	assertErrorContains(t, err, "raito")
 }
 
+func TestLoadPackageAcceptsRadialPegBounce(t *testing.T) {
+	root := makeGaugeFixtures(t)
+	packageDir := filepath.Join(root, "assets", "gauges", "radial", "peg_bounce")
+	writeGaugeYAML(t, packageDir, `id: peg_bounce_radial
+type: radial
+sensor: rpm
+realism:
+  peg_bounce: true
+size:
+  width: 100
+  height: 100
+layers:
+  needle: ../../shared/radial/simple_rpm/needle.png
+pivot:
+  face: { x: 0.5, y: 0.5 }
+  needle: { x: 0.5, y: 0.9 }
+value_map:
+  min: 0
+  max: 1000
+  start_angle: -90
+  end_angle: 90
+  clamp: true
+`)
+
+	pkg, err := LoadPackage(packageDir)
+	if err != nil {
+		t.Fatalf("LoadPackage returned error: %v", err)
+	}
+	if pkg.Realism.PegBounce == nil || !*pkg.Realism.PegBounce {
+		t.Fatalf("peg_bounce = %#v, want true", pkg.Realism.PegBounce)
+	}
+}
+
+func TestLoadPackageRejectsInvalidRadialPegBounce(t *testing.T) {
+	tests := []struct {
+		name        string
+		packageType string
+		valueMap    string
+		want        string
+	}{
+		{
+			name:        "non_radial",
+			packageType: "bar",
+			valueMap: `value_map:
+  min: 40
+  max: 120
+  clamp: true
+bar:
+  mode: level
+  axis: vertical
+  origin: bottom
+  bounds: [10, 10, 20, 60]
+`,
+			want: "only supported for radial",
+		},
+		{
+			name:        "unclamped_range",
+			packageType: "radial",
+			valueMap: `value_map:
+  min: 0
+  max: 1000
+  start_angle: -90
+  end_angle: 90
+  clamp: false
+`,
+			want: "requires a clamped radial value_map range",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			root := makeGaugeFixtures(t)
+			packageDir := filepath.Join(root, "assets", "gauges", test.packageType, "bad_peg_bounce_"+test.name)
+			yamlText := `id: bad_` + test.packageType + `
+type: ` + test.packageType + `
+sensor: rpm
+realism:
+  peg_bounce: true
+size:
+  width: 100
+  height: 100
+layers:
+  needle: ../../shared/radial/simple_rpm/needle.png
+pivot:
+  face: { x: 0.5, y: 0.5 }
+  needle: { x: 0.5, y: 0.9 }
+` + test.valueMap
+			if test.packageType == "bar" {
+				yamlText = `id: bad_bar
+type: bar
+sensor: coolant_temperature
+realism:
+  peg_bounce: true
+size:
+  width: 100
+  height: 100
+layers:
+  panel: panel.png
+  level: level.png
+` + test.valueMap
+			}
+			writeGaugeYAML(t, packageDir, yamlText)
+
+			_, err := LoadPackage(packageDir)
+			if err == nil {
+				t.Fatal("LoadPackage returned nil error, want error")
+			}
+			assertErrorContains(t, err, test.want)
+		})
+	}
+}
+
 func TestLoadPackageRejectsInvalidSharedMovementPolicy(t *testing.T) {
 	root := makeGaugeFixtures(t)
 	packageDir := filepath.Join(root, "assets", "gauges", "radial", "bad_policy")

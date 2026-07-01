@@ -141,6 +141,7 @@ type Realism struct {
 	Damping        *bool            `yaml:"damping,omitempty"`
 	Stiction       *float64         `yaml:"stiction,omitempty"`
 	Overshoot      *OvershootConfig `yaml:"overshoot,omitempty"`
+	PegBounce      *bool            `yaml:"peg_bounce,omitempty"`
 	MovementPolicy string           `yaml:"movement_policy,omitempty"`
 	DrumSlop       []int            `yaml:"drum_slop,omitempty"`
 	DrumSlopSet    bool             `yaml:"-"`
@@ -157,6 +158,7 @@ func (r *Realism) UnmarshalYAML(node *yaml.Node) error {
 		"damping":         true,
 		"stiction":        true,
 		"overshoot":       true,
+		"peg_bounce":      true,
 		"movement_policy": true,
 		"drum_slop":       true,
 	}
@@ -580,6 +582,14 @@ func validateRealism(pkg Package) error {
 			if settleDamping <= 0 {
 				return fmt.Errorf("realism overshoot settle_damping must be greater than zero")
 			}
+		}
+	}
+	if pkg.Realism.PegBounce != nil {
+		if pkg.Type != TypeRadial {
+			return fmt.Errorf("realism peg_bounce is only supported for radial gauges")
+		}
+		if *pkg.Realism.PegBounce && (!pkg.ValueMap.Clamp || pkg.ValueMap.Max <= pkg.ValueMap.Min) {
+			return fmt.Errorf("realism peg_bounce requires a clamped radial value_map range")
 		}
 	}
 	if pkg.Realism.DrumSlopSet {

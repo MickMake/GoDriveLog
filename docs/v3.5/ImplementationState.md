@@ -1,10 +1,10 @@
 # v3.5 Implementation State
 
-Status: v3.5.10 radial overshoot implemented; radial follow-on slices remain pending
+Status: v3.5.11 radial peg bounce implemented; later v3.5 realism slices remain pending
 
-Current target: v3.5.11 radial peg bounce
+Current target: v3.5.12 indicator thermal fade
 
-Current branch: `codex/v3.5.10-radial-overshoot`
+Current branch: `codex/v3.5.11-radial-peg-bounce`
 
 ## Scope
 
@@ -109,7 +109,7 @@ Not allowed in v3.5:
 - [x] v3.5.8 radial damping
 - [x] v3.5.9 radial stiction
 - [x] v3.5.10 radial/bar overshoot
-- [ ] v3.5.11 radial peg bounce
+- [x] v3.5.11 radial peg bounce
 - [ ] v3.5.12 indicator thermal fade
 - [ ] v3.5.13 bar smoothing
 - [x] v3.5.14 odometer snap / settle
