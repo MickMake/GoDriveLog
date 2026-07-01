@@ -11,6 +11,21 @@ import (
 	"github.com/MickMake/GoDriveLog/internal/sensors"
 )
 
+func TestRadialSceneCalibrationOffsetDoesNotClampWhenValueMapClampFalse(t *testing.T) {
+	offset := 25.0
+	pkg := loadRadialScenePackageWithCalibrationOffset(t, &offset)
+	pkg.ValueMap.Clamp = false
+
+	scene, err := RadialScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("rpm", 9999))
+	if err != nil {
+		t.Fatalf("RadialScene returned error: %v", err)
+	}
+
+	if !almostEqual(scene.Angle, 186.2232) {
+		t.Fatalf("unclamped calibration angle = %v, want above dial max", scene.Angle)
+	}
+}
+
 func TestNumericSceneUsesPackageOwnedFormatPositionsAndStaticLayers(t *testing.T) {
 	pkg := loadNumericScenePackage(t, 4, "%04.0f")
 
