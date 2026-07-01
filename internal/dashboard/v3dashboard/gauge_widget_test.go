@@ -1298,36 +1298,23 @@ func TestRuntimeRadialGaugePegBounceDoesNotTriggerForInRangeTarget(t *testing.T)
 		t.Fatalf("ApplyEvent failed: %v", err)
 	}
 	if !changed {
-		t.Fatalf("expected in-range peg bounce movement to animate linearly")
+		t.Fatalf("expected in-range peg-bounce-only change to redraw immediately")
 	}
 
 	movement := runtime.movements[movementKey("primary", "rpm")]
-	if !movement.PegBounceEnabled || movement.PegBounceReboundValue != 0 || movement.PegBounceStopValue != 0 {
+	if !movement.PegBounceEnabled || movement.PegBounceActive || movement.PegBounceReboundValue != 0 || movement.PegBounceStopValue != 0 {
 		t.Fatalf("expected in-range movement to avoid scheduling peg bounce, got %#v", movement)
+	}
+	if movement.DisplayValue != 6000 || movement.TargetValue != 6000 || movement.Phase != movementPhaseStatic || runtime.HasActiveMovement() {
+		t.Fatalf("expected in-range peg-bounce-only change to settle immediately with no active movement, got %#v", movement)
 	}
 
 	_, changed, err = runtime.Tick(start.Add(200 * time.Millisecond))
 	if err != nil {
 		t.Fatalf("Tick failed: %v", err)
 	}
-	if !changed {
-		t.Fatalf("expected in-range peg bounce tick to redraw")
-	}
-	movement = runtime.movements[movementKey("primary", "rpm")]
-	if movement.DisplayValue <= 2000 || movement.DisplayValue >= 6000 {
-		t.Fatalf("expected ordinary in-range movement without stop bounce, got %#v", movement)
-	}
-
-	_, changed, err = runtime.Tick(start.Add(320 * time.Millisecond))
-	if err != nil {
-		t.Fatalf("Tick failed: %v", err)
-	}
-	if !changed {
-		t.Fatalf("expected in-range movement completion tick to redraw")
-	}
-	movement = runtime.movements[movementKey("primary", "rpm")]
-	if movement.DisplayValue != 6000 || movement.TargetValue != 6000 || movement.Phase != movementPhaseSettled {
-		t.Fatalf("expected in-range movement to settle exactly on target, got %#v", movement)
+	if changed {
+		t.Fatalf("expected no follow-up animation tick for in-range peg-bounce-only change")
 	}
 }
 
