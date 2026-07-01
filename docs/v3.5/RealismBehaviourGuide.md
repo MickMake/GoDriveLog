@@ -322,3 +322,54 @@ The gauge looks slightly imperfect while still clearly representing the configur
 **Bad result:**
 
 The offset changes source values, pushes the needle outside sensible visual bounds, or makes the gauge look broken.
+
+## `stat_markers`
+
+Applies to: radial in v3.5; bar later.
+
+**Visual intent:**
+
+A gauge may show rolling-window statistical markers as separate pointer assets. In v3.5 this is radial-only.
+
+The marker is not a fading peak-hold animation. It is the current result of a rolling statistical calculation over the configured `window`.
+
+```yaml
+realism:
+  stat_markers:
+    window: 1h
+    min: true
+    max: true
+    average: true
+```
+
+v3.5.18 implements `min` and `max` for radial gauges.
+
+v3.5.19 implements `average` for radial gauges.
+
+Asset names:
+
+```text
+needle_min.png
+needle_max.png
+needle_average.png
+```
+
+**Good result:**
+
+The marker clearly indicates the rolling-window minimum, maximum, or average without being mistaken for the live needle. It uses the same pivot/rotation geometry as the live radial needle and remains visually readable.
+
+**Bad result:**
+
+The marker fades randomly, captures temporary overshoot/peg-bounce excursions, changes source values, stores unbounded history, renders over foreground/bezel assets, or feels like a second live needle.
+
+**Composition rules:**
+
+- `window` defines the trailing time range used by all enabled stat markers.
+- `window: 0` means all stable displayed samples since runtime start.
+- Track stable displayed radial values after normal value mapping and `calibration_offset`.
+- Do not capture temporary overshoot or peg-bounce excursions as stat marker values.
+- Render stat marker needles above the live needle and below existing foreground/overlay/bezel layers.
+- Do not implement fade or decay for stat markers.
+- Do not implement `trip` or session-lifetime windows in v3.5.
+- Do not place stat markers under `movement`.
+- Keep stat markers display-only: no source/log/export/range/input mutation.
