@@ -13,7 +13,7 @@ Effort is rough **Codex hours**, assuming the v3 dashboard/gauge code is already
 | 1 | Near / implementation-ready | Bar gauge overshoot follow-up | `gauge/bar`, `realism.overshoot`, animation | 2-4 | [`gauge-bar-overshoot-follow-up.md`](gauge-bar-overshoot-follow-up.md) |
 | 2 | Near / needs spec tightening | Radial movement options | `gauge/radial`, movement policy, runtime animation | 3-5 | [`gauge-radial-movement-options.md`](gauge-radial-movement-options.md) |
 | 3 | Later / visual feature | Radial needle trail | `gauge/radial`, renderer, animation history | 4-7 | [`gauge-radial-needle-trail.md`](gauge-radial-needle-trail.md) |
-| 4 | Later / visual feature | Radial peak hold | `gauge/radial`, display marker, state tracking | 3-6 | [`gauge-radial-peak-hold.md`](gauge-radial-peak-hold.md) |
+| 4 | Later / visual statistics | Gauge stat markers | `gauge/radial`, `gauge/bar`, renderer, rolling-window statistics, marker assets | 6-10 | [`gauge-stat-markers.md`](gauge-stat-markers.md) |
 | 5 | Medium / useful soon | Value zones / warning-danger assets | `gauge/assets`, renderer, config validation | 4-7 | [`gauge-assets-value-zones-warning-danger-assets.md`](gauge-assets-value-zones-warning-danger-assets.md) |
 | 6 | Medium / foundational logging | Canonical GoDriveLog Event Log | logging, sensor events, schema/versioning | 5-9 | [`logger-canonical-event-log.md`](logger-canonical-event-log.md) |
 | 7 | Medium / pairs with event log | Session metadata sidecar | logging, replay metadata, config provenance | 4-7 | [`logger-session-metadata-sidecar.md`](logger-session-metadata-sidecar.md) |
@@ -21,13 +21,12 @@ Effort is rough **Codex hours**, assuming the v3 dashboard/gauge code is already
 | 9 | Near / bounded utility | JSONL log validation | logs, CLI, schema validation | 3-5 | [`logger-jsonl-log-validation.md`](logger-jsonl-log-validation.md) |
 | 10 | Later / architecture boundary | External converter boundary | `tools/converters`, import/export architecture | 3-6 | [`tools-converters-external-converter-boundary.md`](tools-converters-external-converter-boundary.md) |
 | 11 | Near / performance polish | Needle Animation Performance | `gauge/radial`, animation loop, renderer, Pi4 performance | 3-6 | [`gauge-radial-animation-performance.md`](gauge-radial-animation-performance.md) |
-| 12 | Later / visual statistics | Gauge stat markers | `gauge/radial`, `gauge/bar`, renderer, rolling-window statistics, marker assets | 6-10 | [`gauge-stat-markers.md`](gauge-stat-markers.md) |
 
 A few notes from the table:
 
 - **#1, #9, and #11** are the most directly sliceable.
 - **#6-#8** are chunky but important because they form the logging/replay backbone.
-- **#3 and #4** are fun, but they’re polish. Nice polish, but still polish.
+- **#3 is fun, but it’s polish. Nice polish, but still polish.**
 - **#11 should not change the look.** It should protect the look from dropped/undersampled frames. That distinction is the whole ballgame.
 
 ## Guidelines
