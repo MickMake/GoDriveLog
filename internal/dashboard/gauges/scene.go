@@ -599,7 +599,12 @@ func radialCalibrationAngle(angle float64, valueMap ValueMap, offset *float64) f
 	if offset == nil || *offset == 0 {
 		return angle
 	}
+
 	adjusted := angle + *offset
+	if !valueMap.Clamp {
+		return adjusted
+	}
+
 	minAngle := math.Min(valueMap.StartAngle, valueMap.EndAngle)
 	maxAngle := math.Max(valueMap.StartAngle, valueMap.EndAngle)
 	if adjusted < minAngle {
