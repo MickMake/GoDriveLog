@@ -4,7 +4,7 @@ This file is a parking lot for approved or desired follow-on ideas that are not 
 
 Use this to capture "oh, also implement this later" notes without making the active slice ambiguous. Future prompts may reference this file, but items here are not current scope unless a later prompt explicitly promotes them.
 
-## Guidelines
+## 0. Guidelines
 
 - Keep entries small and slice-shaped.
 - Mark ideas as `deferred`, `desired`, `exploratory`, or `rejected`.
@@ -12,7 +12,7 @@ Use this to capture "oh, also implement this later" notes without making the act
 - Do not let vague mentions here expand the current slice.
 - Prefer a later dedicated prompt/spec before implementation.
 
-## Addendum: bar gauge overshoot follow-up
+## 1. Bar gauge overshoot follow-up
 
 Status: deferred
 
@@ -37,7 +37,7 @@ Possible future slice:
 v3.5.x bar overshoot
 ```
 
-## Radial movement options
+## 2. Radial movement options
 
 Status: desired
 
@@ -65,7 +65,7 @@ Possible future slice:
 v3.5.x radial movement options
 ```
 
-## Radial needle trail
+## 3. Radial needle trail
 
 Status: desired
 
@@ -104,7 +104,7 @@ Possible future slice:
 v3.5.19 radial needle trail
 ```
 
-## Radial peak hold
+## 4. Radial peak hold
 
 Status: desired
 
@@ -142,7 +142,7 @@ Possible future slice:
 v3.5.20 radial peak hold
 ```
 
-## Value zones / warning-danger assets
+## 5. Value zones / warning-danger assets
 
 Status: desired
 
@@ -190,7 +190,7 @@ Possible future slice:
 v3.5.x value zones / warning-danger assets
 ```
 
-## Canonical GoDriveLog Event Log
+## 6. Canonical GoDriveLog Event Log
 
 Status: desired
 
@@ -229,7 +229,7 @@ Possible future slice:
 v3.x canonical event log v1
 ```
 
-## Session metadata sidecar
+## 7. Session metadata sidecar
 
 Status: desired
 
@@ -273,7 +273,7 @@ Possible future slice:
 v3.x session metadata sidecar
 ```
 
-## JSONL dashboard replay
+## 8. JSONL dashboard replay
 
 Status: desired
 
@@ -320,7 +320,7 @@ Possible future slice:
 v3.x JSONL dashboard replay
 ```
 
-## JSONL log validation
+## 9. JSONL log validation
 
 Status: desired
 
@@ -349,7 +349,7 @@ Possible future slice:
 v3.x GoDriveLog log validator
 ```
 
-## External converter boundary
+## 10. External converter boundary
 
 Status: desired
 
