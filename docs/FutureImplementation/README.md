@@ -24,6 +24,7 @@ Effort is rough **Codex hours**, assuming the v3 dashboard/gauge code is already
 | 12 | Later / gauge realism | Gauge power lifecycle | `gauge/radial`, `gauge/bar`, indicator, numeric, odometer, dashboard runtime, ACC/power events | 6-10 | [`gauge-power-lifecycle.md`](gauge-power-lifecycle.md) |
 | 13 | Later / gauge realism | Gauge lighting mode | `gauge/radial`, `gauge/bar`, indicator, numeric, odometer, dashboard runtime, lights-state events, alternate asset sets | 4-7 | [`gauge-lighting-mode.md`](gauge-lighting-mode.md) |
 | 14 | Later / gauge realism | Gauge imperfections | `gauge/radial`, `gauge/bar`, indicator, numeric, display artefacts, mechanical wear, electrical artefacts | 7-12 | [`gauge-imperfections.md`](gauge-imperfections.md) |
+| 15 | Later / config reuse | Gauge presets | `gauge/config`, `gauge/assets`, `gauge/realism`, config loading, validation, reusable gauge profiles | 5-9 | [`gauge-presets.md`](gauge-presets.md) |
 
 A few notes from the table:
 
