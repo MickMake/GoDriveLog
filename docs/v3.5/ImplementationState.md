@@ -1,10 +1,10 @@
 # v3.5 Implementation State
 
-Status: v3.5.11 radial peg bounce implemented; later v3.5 realism slices remain pending
+Status: v3.5.17 radial needle drop shadow implemented; deferred and later v3.5 realism slices remain pending
 
 Current target: v3.5.12 indicator thermal fade
 
-Current branch: `codex/v3.5.11-radial-peg-bounce`
+Current branch: `codex/v3.5.17-radial-needle-drop-shadow`
 
 ## Scope
 
@@ -115,7 +115,7 @@ Not allowed in v3.5:
 - [x] v3.5.14 odometer snap / settle
 - [x] v3.5.15 odometer backlash
 - [ ] v3.5.16 display-only hysteresis
-- [ ] v3.5.17 radial needle drop shadow
+- [x] v3.5.17 radial needle drop shadow
 - [ ] v3.5.18 radial calibration offset
 
 ## Next-slice workflow

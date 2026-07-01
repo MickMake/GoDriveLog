@@ -206,6 +206,33 @@ func TestRadialSceneUsesPackageOwnedPivotsValueMapAndLayerOrder(t *testing.T) {
 	}
 }
 
+func TestRadialSceneAddsNeedleShadowBeforeNeedleWhenConfigured(t *testing.T) {
+	pkg := loadRadialScenePackageWithNeedleShadow(t, []int{3, 4}, nil)
+
+	scene, err := RadialScene(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("rpm", 3500))
+	if err != nil {
+		t.Fatalf("RadialScene returned error: %v", err)
+	}
+
+	if got := partLayerSequence(scene); got != "layer:background,layer:face,layer:ticks,needle_shadow:0,needle:0,layer:overlay" {
+		t.Fatalf("part sequence = %q", got)
+	}
+	shadow := firstPart(scene, ScenePartKindNeedleShadow)
+	needle := firstPart(scene, ScenePartKindNeedle)
+	if shadow.AssetPath != needle.AssetPath || !almostEqual(shadow.Angle, needle.Angle) {
+		t.Fatalf("shadow/needle geometry = %#v / %#v", shadow, needle)
+	}
+	if !intSlicesEqual(shadow.Position, []int{3, 4}) {
+		t.Fatalf("shadow offset = %#v, want [3 4]", shadow.Position)
+	}
+	if !almostEqual(shadow.Alpha, defaultNeedleShadowAlpha) {
+		t.Fatalf("shadow alpha = %v, want %v", shadow.Alpha, defaultNeedleShadowAlpha)
+	}
+	if !almostEqual(scene.Angle, needle.Angle) {
+		t.Fatalf("scene angle = %v, want needle angle %v", scene.Angle, needle.Angle)
+	}
+}
+
 func TestRadialSceneClampsAnglesAndChangesSignatureWithAngle(t *testing.T) {
 	pkg := loadRadialScenePackage(t)
 
@@ -999,10 +1026,14 @@ func loadNumericScenePackage(t *testing.T, count int, format string) Package {
 }
 
 func loadRadialScenePackage(t *testing.T) Package {
+	return loadRadialScenePackageWithNeedleShadow(t, nil, nil)
+}
+
+func loadRadialScenePackageWithNeedleShadow(t *testing.T, offset []int, alpha *float64) Package {
 	t.Helper()
 	root := makeGaugeFixtures(t)
 	packageDir := filepath.Join(root, "assets", "gauges", "radial", "simple_rpm")
-	writeGaugeYAML(t, packageDir, radialGaugeYAML())
+	writeGaugeYAML(t, packageDir, radialGaugeYAML(offset, alpha))
 	pkg, err := LoadPackage(packageDir)
 	if err != nil {
 		t.Fatalf("LoadPackage returned error: %v", err)
@@ -1149,11 +1180,19 @@ digits:
 %s`, count, format, count, positions.String())
 }
 
-func radialGaugeYAML() string {
+func radialGaugeYAML(offset []int, alpha *float64) string {
+	realismBlock := ""
+	if len(offset) == 2 {
+		realismBlock = "realism:\n  needle_shadow:\n"
+		realismBlock += fmt.Sprintf("    offset: [%d, %d]\n", offset[0], offset[1])
+		if alpha != nil {
+			realismBlock += fmt.Sprintf("    alpha: %.3f\n", *alpha)
+		}
+	}
 	return `id: simple_radial_rpm
 type: radial
 sensor: rpm
-size:
+` + realismBlock + `size:
   width: 512
   height: 512
 layers:
@@ -1189,12 +1228,12 @@ func odometerGaugeYAML(movement string, wraparound bool, carryDrag bool, snapSet
 	if snapSettle {
 		realismLines = append(realismLines, "  snap_settle: true")
 	}
-	if len(drumSlop) > 0 {
+	if drumSlop != nil {
 		values := make([]string, len(drumSlop))
-		for index, value := range drumSlop {
-			values[index] = strconv.Itoa(value)
+		for i, slop := range drumSlop {
+			values[i] = strconv.Itoa(slop)
 		}
-		realismLines = append(realismLines, fmt.Sprintf("  drum_slop: [%s]", strings.Join(values, ", ")))
+		realismLines = append(realismLines, "  drum_slop: ["+strings.Join(values, ", ")+"]")
 	}
 	realismBlock := ""
 	if len(realismLines) > 0 {
@@ -1356,6 +1395,8 @@ func partLayerSequence(scene Scene) string {
 			parts = append(parts, "layer:"+part.Layer)
 		case ScenePartKindCharacter:
 			parts = append(parts, "character:"+part.Character)
+		case ScenePartKindNeedleShadow:
+			parts = append(parts, fmt.Sprintf("needle_shadow:%.0f", part.Angle))
 		case ScenePartKindNeedle:
 			parts = append(parts, fmt.Sprintf("needle:%.0f", part.Angle))
 		case ScenePartKindBar:

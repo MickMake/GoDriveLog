@@ -26,6 +26,7 @@ const (
 	PartKindFrame        = "frame"
 	PartKindForeground   = "foreground"
 	PartKindLayer        = "layer"
+	PartKindNeedleShadow = "needle_shadow"
 	PartKindNeedle       = "needle"
 	PartKindBar          = "bar"
 	PartKindWheelStrip   = "wheel_strip"
@@ -154,6 +155,7 @@ type Part struct {
 	Cell        string
 	Frame       int
 	Angle       float64
+	Alpha       float64
 	FacePivot   v3gauges.Point
 	NeedlePivot v3gauges.Point
 	Source      []int
@@ -1359,6 +1361,7 @@ func gaugeSceneParts(scene v3gauges.Scene) []Part {
 			Character:   scenePart.Character,
 			Position:    append([]int(nil), scenePart.Position...),
 			Angle:       scenePart.Angle,
+			Alpha:       scenePart.Alpha,
 			FacePivot:   scenePart.FacePivot,
 			NeedlePivot: scenePart.NeedlePivot,
 			Source:      append([]int(nil), scenePart.Source...),
@@ -1647,6 +1650,8 @@ func sceneSignature(scene Scene) string {
 			b.WriteString(formatPartPosition(part.Position))
 			b.WriteString("#")
 			b.WriteString(strconv.FormatFloat(part.Angle, 'f', -1, 64))
+			b.WriteString("#")
+			b.WriteString(strconv.FormatFloat(part.Alpha, 'f', -1, 64))
 			b.WriteString("#")
 			b.WriteString(formatGaugePoint(part.FacePivot))
 			b.WriteString("#")

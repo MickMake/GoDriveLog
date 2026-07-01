@@ -15,6 +15,7 @@ const (
 	ScenePartKindCharacter    = "character"
 	ScenePartKindDecimalPoint = "decimal_point"
 	ScenePartKindForeground   = "foreground"
+	ScenePartKindNeedleShadow = "needle_shadow"
 	ScenePartKindNeedle       = "needle"
 	ScenePartKindBar          = "bar"
 	ScenePartKindWheelStrip   = "wheel_strip"
@@ -56,6 +57,7 @@ type ScenePart struct {
 	Character   string
 	Position    []int
 	Angle       float64
+	Alpha       float64
 	FacePivot   Point
 	NeedlePivot Point
 	Source      []int
@@ -181,6 +183,18 @@ func RadialScene(pkg Package, placement Placement, state sensors.SensorState) (S
 			return Scene{}, fmt.Errorf("gauge package %q: %w", pkg.ID, err)
 		}
 		scene.Angle = angle
+		if pkg.Realism.NeedleShadow != nil && needleShadowEnabled(pkg.Realism.NeedleShadow) {
+			scene.Parts = append(scene.Parts, ScenePart{
+				Kind:        ScenePartKindNeedleShadow,
+				Layer:       "needle_shadow",
+				AssetPath:   needlePath,
+				Position:    cloneInts(pkg.Realism.NeedleShadow.Offset),
+				Angle:       angle,
+				Alpha:       needleShadowAlpha(pkg.Realism.NeedleShadow),
+				FacePivot:   pkg.Pivot.Face,
+				NeedlePivot: pkg.Pivot.Needle,
+			})
+		}
 		scene.Parts = append(scene.Parts, ScenePart{
 			Kind:        ScenePartKindNeedle,
 			Layer:       "needle",
@@ -667,6 +681,8 @@ func (s Scene) Signature() string {
 		b.WriteString("#")
 		b.WriteString(strconv.FormatFloat(part.Angle, 'f', -1, 64))
 		b.WriteString("#")
+		b.WriteString(strconv.FormatFloat(part.Alpha, 'f', -1, 64))
+		b.WriteString("#")
 		b.WriteString(formatPoint(part.FacePivot))
 		b.WriteString("#")
 		b.WriteString(formatPoint(part.NeedlePivot))
@@ -711,6 +727,17 @@ func radialUnderlayLayerParts(layers map[string]string) []ScenePart {
 
 func radialOverlayLayerParts(layers map[string]string) []ScenePart {
 	return namedLayerParts(layers, []string{"glass", "overlay", "foreground"})
+}
+
+func needleShadowEnabled(config *NeedleShadowConfig) bool {
+	return config != nil && needleShadowAlpha(config) > 0
+}
+
+func needleShadowAlpha(config *NeedleShadowConfig) float64 {
+	if config == nil || config.Alpha == nil {
+		return 0
+	}
+	return *config.Alpha
 }
 
 func odometerUnderlayLayerParts(layers map[string]string) []ScenePart {
