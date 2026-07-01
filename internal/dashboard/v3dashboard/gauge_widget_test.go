@@ -202,6 +202,36 @@ func TestRuntimeRadialGaugeWidgetNonOKStateDoesNotRenderNeedle(t *testing.T) {
 	}
 }
 
+func TestRuntimeRadialGaugeWidgetIncludesNeedleShadowBeforeNeedle(t *testing.T) {
+	packageDir := makeDashboardRadialGaugePackageWithNeedleShadow(t, []int{3, 4}, nil)
+	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 1024, Height: 600}, Widgets: []v3config.WidgetConfig{{ID: "rpm", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{0, 0}, Scale: 1}}}}}}
+	runtime, err := NewRuntime(plan, testAssetRegistry())
+	if err != nil {
+		t.Fatalf("NewRuntime failed: %v", err)
+	}
+
+	runtime.SetState(okState("rpm", 3500, "rpm"))
+	scenes, err := runtime.Snapshot()
+	if err != nil {
+		t.Fatalf("Snapshot failed: %v", err)
+	}
+	widget := requireWidget(t, scenes[0], "rpm")
+	if got := gaugePartSequence(widget); got != "layer:background,layer:face,layer:ticks,needle_shadow:0,needle:0,layer:overlay" {
+		t.Fatalf("radial part sequence = %q", got)
+	}
+	shadow := firstPartKind(widget, PartKindNeedleShadow)
+	needle := firstPartKind(widget, PartKindNeedle)
+	if !intSlicesEqual(shadow.Position, []int{3, 4}) {
+		t.Fatalf("shadow offset = %#v, want [3 4]", shadow.Position)
+	}
+	if !almostEqual(shadow.Alpha, 0.35) {
+		t.Fatalf("shadow alpha = %v", shadow.Alpha)
+	}
+	if !almostEqual(shadow.Angle, needle.Angle) || !almostEqual(widget.GaugeAngle, needle.Angle) {
+		t.Fatalf("shadow/needle/widget angles = %v/%v/%v", shadow.Angle, needle.Angle, widget.GaugeAngle)
+	}
+}
+
 func TestRuntimeRadialGaugeWidgetSceneSignatureChangesWithAngle(t *testing.T) {
 	packageDir := makeDashboardRadialGaugePackage(t)
 	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 1024, Height: 600}, Widgets: []v3config.WidgetConfig{{ID: "rpm", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{0, 0}, Scale: 1}}}}}}
@@ -2318,6 +2348,14 @@ func makeDashboardRadialGaugePackageWithPolicy(t *testing.T, policy string) stri
 }
 
 func makeDashboardRadialGaugePackageWithRealism(t *testing.T, policy string, damping bool, stiction *float64, overshoot *v3gauges.OvershootConfig, pegBounce bool) string {
+	return makeDashboardRadialGaugePackageWithExtendedRealism(t, policy, damping, stiction, overshoot, pegBounce, nil, nil)
+}
+
+func makeDashboardRadialGaugePackageWithNeedleShadow(t *testing.T, offset []int, alpha *float64) string {
+	return makeDashboardRadialGaugePackageWithExtendedRealism(t, "", false, nil, nil, false, offset, alpha)
+}
+
+func makeDashboardRadialGaugePackageWithExtendedRealism(t *testing.T, policy string, damping bool, stiction *float64, overshoot *v3gauges.OvershootConfig, pegBounce bool, shadowOffset []int, shadowAlpha *float64) string {
 	t.Helper()
 	root := t.TempDir()
 	files := []string{
@@ -2340,7 +2378,7 @@ func makeDashboardRadialGaugePackageWithRealism(t *testing.T, policy string, dam
 	if err := os.MkdirAll(packageDir, 0o755); err != nil {
 		t.Fatalf("MkdirAll: %v", err)
 	}
-	if err := os.WriteFile(filepath.Join(packageDir, "gauge.yaml"), []byte(dashboardRadialGaugeYAML(policy, damping, stiction, overshoot, pegBounce)), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(packageDir, "gauge.yaml"), []byte(dashboardRadialGaugeYAML(policy, damping, stiction, overshoot, pegBounce, shadowOffset, shadowAlpha)), 0o600); err != nil {
 		t.Fatalf("WriteFile: %v", err)
 	}
 	return packageDir
@@ -2503,7 +2541,7 @@ digits:
 %s`, count, format, count, positions.String())
 }
 
-func dashboardRadialGaugeYAML(policy string, damping bool, stiction *float64, overshoot *v3gauges.OvershootConfig, pegBounce bool) string {
+func dashboardRadialGaugeYAML(policy string, damping bool, stiction *float64, overshoot *v3gauges.OvershootConfig, pegBounce bool, shadowOffset []int, shadowAlpha *float64) string {
 	realismLines := []string{}
 	if stiction != nil {
 		realismLines = append(realismLines, fmt.Sprintf("  stiction: %.0f", *stiction))
@@ -2546,6 +2584,13 @@ func dashboardRadialGaugeYAML(policy string, damping bool, stiction *float64, ov
 			if overshoot.AllowExtremes {
 				realismLines = append(realismLines, "    allow_extremes: true")
 			}
+		}
+	}
+	if len(shadowOffset) == 2 {
+		realismLines = append(realismLines, "  needle_shadow:")
+		realismLines = append(realismLines, fmt.Sprintf("    offset: [%d, %d]", shadowOffset[0], shadowOffset[1]))
+		if shadowAlpha != nil {
+			realismLines = append(realismLines, fmt.Sprintf("    alpha: %.3f", *shadowAlpha))
 		}
 	}
 	if policy != "" {
@@ -2776,6 +2821,8 @@ func gaugePartSequence(widget Widget) string {
 			parts = append(parts, "layer:"+part.Layer)
 		case PartKindCharacter:
 			parts = append(parts, "character:"+part.Character)
+		case PartKindNeedleShadow:
+			parts = append(parts, fmt.Sprintf("needle_shadow:%.0f", part.Angle))
 		case PartKindNeedle:
 			parts = append(parts, fmt.Sprintf("needle:%.0f", part.Angle))
 		case PartKindBar:

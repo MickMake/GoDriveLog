@@ -854,6 +854,145 @@ value_map:
 	}
 }
 
+func TestLoadPackageAcceptsRadialNeedleShadow(t *testing.T) {
+	root := makeGaugeFixtures(t)
+	packageDir := filepath.Join(root, "assets", "gauges", "radial", "needle_shadow")
+	writeGaugeYAML(t, packageDir, `id: needle_shadow_radial
+type: radial
+sensor: rpm
+realism:
+  needle_shadow:
+    offset: [3, 4]
+size:
+  width: 100
+  height: 100
+layers:
+  needle: ../../shared/radial/simple_rpm/needle.png
+pivot:
+  face: { x: 0.5, y: 0.5 }
+  needle: { x: 0.5, y: 0.9 }
+value_map:
+  min: 0
+  max: 1000
+  start_angle: -90
+  end_angle: 90
+  clamp: true
+`)
+
+	pkg, err := LoadPackage(packageDir)
+	if err != nil {
+		t.Fatalf("LoadPackage returned error: %v", err)
+	}
+	if pkg.Realism.NeedleShadow == nil {
+		t.Fatal("needle_shadow = nil, want config")
+	}
+	if len(pkg.Realism.NeedleShadow.Offset) != 2 || pkg.Realism.NeedleShadow.Offset[0] != 3 || pkg.Realism.NeedleShadow.Offset[1] != 4 {
+		t.Fatalf("needle_shadow offset = %#v, want [3 4]", pkg.Realism.NeedleShadow.Offset)
+	}
+	if pkg.Realism.NeedleShadow.Alpha == nil || *pkg.Realism.NeedleShadow.Alpha != defaultNeedleShadowAlpha {
+		t.Fatalf("needle_shadow alpha = %#v, want default %v", pkg.Realism.NeedleShadow.Alpha, defaultNeedleShadowAlpha)
+	}
+}
+
+func TestLoadPackageRejectsInvalidRadialNeedleShadow(t *testing.T) {
+	tests := []struct {
+		name         string
+		packageType  string
+		needleShadow string
+		want         string
+	}{
+		{
+			name:        "non_radial",
+			packageType: "bar",
+			needleShadow: `needle_shadow:
+    offset: [3, 4]
+`,
+			want: "only supported for radial",
+		},
+		{
+			name:        "short_offset",
+			packageType: "radial",
+			needleShadow: `needle_shadow:
+    offset: [3]
+`,
+			want: "offset must contain x and y",
+		},
+		{
+			name:        "alpha_out_of_range",
+			packageType: "radial",
+			needleShadow: `needle_shadow:
+    offset: [3, 4]
+    alpha: 1.2
+`,
+			want: "alpha must be between 0 and 1",
+		},
+		{
+			name:        "bad_nested_key",
+			packageType: "radial",
+			needleShadow: `needle_shadow:
+    offset: [3, 4]
+    aplha: 0.3
+`,
+			want: "needle_shadow field",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			root := makeGaugeFixtures(t)
+			packageDir := filepath.Join(root, "assets", "gauges", test.packageType, "bad_needle_shadow_"+test.name)
+			yamlText := `id: bad_` + test.packageType + `
+type: ` + test.packageType + `
+sensor: rpm
+realism:
+  ` + test.needleShadow + `size:
+  width: 100
+  height: 100
+layers:
+  needle: ../../shared/radial/simple_rpm/needle.png
+pivot:
+  face: { x: 0.5, y: 0.5 }
+  needle: { x: 0.5, y: 0.9 }
+value_map:
+  min: 0
+  max: 1000
+  start_angle: -90
+  end_angle: 90
+  clamp: true
+`
+			if test.packageType == "bar" {
+				yamlText = `id: bad_bar
+type: bar
+sensor: coolant_temperature
+realism:
+  ` + test.needleShadow + `size:
+  width: 100
+  height: 100
+layers:
+  panel: panel.png
+  level: level.png
+bar:
+  mode: level
+  axis: vertical
+  origin: bottom
+  bounds: [10, 10, 20, 60]
+value_map:
+  min: 40
+  max: 120
+  clamp: true
+`
+			}
+			writeGaugeYAML(t, packageDir, yamlText)
+
+			_, err := LoadPackage(packageDir)
+			if err == nil {
+				t.Fatal("LoadPackage returned nil error, want error")
+			}
+			assertErrorContains(t, err, test.want)
+		})
+	}
+}
+
 func TestLoadPackageRejectsInvalidRadialPegBounce(t *testing.T) {
 	tests := []struct {
 		name        string

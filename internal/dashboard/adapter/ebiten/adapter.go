@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"image"
+	"image/color"
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
@@ -56,7 +57,9 @@ type renderedPart struct {
 	scale float64
 
 	needle bool
+	shadow bool
 	angle  float64
+	alpha  float64
 	pivotX float64
 	pivotY float64
 
@@ -255,20 +258,26 @@ func (a *Adapter) renderWidgetParts(dashboardID string, widget v3dashboard.Widge
 	for _, loadedPart := range loaded {
 		part := loadedPart.part
 		asset := loadedPart.asset
-		if part.Kind == v3dashboard.PartKindNeedle {
+		if part.Kind == v3dashboard.PartKindNeedle || part.Kind == v3dashboard.PartKindNeedleShadow {
 			if gaugeWidth <= 0 || gaugeHeight <= 0 {
 				gaugeWidth = float64(asset.width)
 				gaugeHeight = float64(asset.height)
 			}
 			faceX := baseX + part.FacePivot.X*gaugeWidth*widgetScale
 			faceY := baseY + part.FacePivot.Y*gaugeHeight*widgetScale
+			if len(part.Position) >= 2 {
+				faceX += float64(part.Position[0]) * widgetScale
+				faceY += float64(part.Position[1]) * widgetScale
+			}
 			parts = append(parts, renderedPart{
 				asset:  asset,
 				x:      faceX,
 				y:      faceY,
 				scale:  widgetScale,
 				needle: true,
+				shadow: part.Kind == v3dashboard.PartKindNeedleShadow,
 				angle:  part.Angle,
+				alpha:  part.Alpha,
 				pivotX: part.NeedlePivot.X * float64(asset.width),
 				pivotY: part.NeedlePivot.Y * float64(asset.height),
 			})
@@ -320,6 +329,10 @@ func (a *Adapter) drawPart(screen *ebitenui.Image, part renderedPart, source ima
 		options.GeoM.Rotate(part.angle * math.Pi / 180)
 		options.GeoM.Scale(part.scale, part.scale)
 		options.GeoM.Translate(part.x, part.y)
+		if part.shadow {
+			options.ColorScale.ScaleWithColor(color.Black)
+			options.ColorScale.ScaleAlpha(float32(part.alpha))
+		}
 	} else {
 		options.GeoM.Scale(part.scale, part.scale)
 		options.GeoM.Translate(part.x, part.y+sourceOffsetY*part.scale)

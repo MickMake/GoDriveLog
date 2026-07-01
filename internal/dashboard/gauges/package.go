@@ -37,6 +37,7 @@ const (
 	WheelRoleDigit           = "digit"
 	WheelRoleSubUnit         = "sub_unit"
 	defaultOvershootRatio    = 0.12
+	defaultNeedleShadowAlpha = 0.35
 	maxOvershootRatio        = 0.25
 )
 
@@ -134,17 +135,46 @@ func (o *OvershootConfig) UnmarshalYAML(node *yaml.Node) error {
 	return nil
 }
 
+type NeedleShadowConfig struct {
+	Offset []int    `yaml:"offset,omitempty"`
+	Alpha  *float64 `yaml:"alpha,omitempty"`
+}
+
+func (n *NeedleShadowConfig) UnmarshalYAML(node *yaml.Node) error {
+	if node.Kind != yaml.MappingNode {
+		return fmt.Errorf("realism needle_shadow must be a mapping")
+	}
+	allowedKeys := map[string]bool{
+		"offset": true,
+		"alpha":  true,
+	}
+	for index := 0; index+1 < len(node.Content); index += 2 {
+		key := node.Content[index].Value
+		if !allowedKeys[key] {
+			return fmt.Errorf("realism needle_shadow field %q is not supported", key)
+		}
+	}
+	type rawNeedleShadowConfig NeedleShadowConfig
+	var decoded rawNeedleShadowConfig
+	if err := node.Decode(&decoded); err != nil {
+		return err
+	}
+	*n = NeedleShadowConfig(decoded)
+	return nil
+}
+
 type Realism struct {
-	Wraparound     *bool            `yaml:"wraparound,omitempty"`
-	CarryDrag      *bool            `yaml:"carry_drag,omitempty"`
-	SnapSettle     *bool            `yaml:"snap_settle,omitempty"`
-	Damping        *bool            `yaml:"damping,omitempty"`
-	Stiction       *float64         `yaml:"stiction,omitempty"`
-	Overshoot      *OvershootConfig `yaml:"overshoot,omitempty"`
-	PegBounce      *bool            `yaml:"peg_bounce,omitempty"`
-	MovementPolicy string           `yaml:"movement_policy,omitempty"`
-	DrumSlop       []int            `yaml:"drum_slop,omitempty"`
-	DrumSlopSet    bool             `yaml:"-"`
+	Wraparound     *bool               `yaml:"wraparound,omitempty"`
+	CarryDrag      *bool               `yaml:"carry_drag,omitempty"`
+	SnapSettle     *bool               `yaml:"snap_settle,omitempty"`
+	Damping        *bool               `yaml:"damping,omitempty"`
+	Stiction       *float64            `yaml:"stiction,omitempty"`
+	Overshoot      *OvershootConfig    `yaml:"overshoot,omitempty"`
+	PegBounce      *bool               `yaml:"peg_bounce,omitempty"`
+	NeedleShadow   *NeedleShadowConfig `yaml:"needle_shadow,omitempty"`
+	MovementPolicy string              `yaml:"movement_policy,omitempty"`
+	DrumSlop       []int               `yaml:"drum_slop,omitempty"`
+	DrumSlopSet    bool                `yaml:"-"`
 }
 
 func (r *Realism) UnmarshalYAML(node *yaml.Node) error {
@@ -159,6 +189,7 @@ func (r *Realism) UnmarshalYAML(node *yaml.Node) error {
 		"stiction":        true,
 		"overshoot":       true,
 		"peg_bounce":      true,
+		"needle_shadow":   true,
 		"movement_policy": true,
 		"drum_slop":       true,
 	}
@@ -440,6 +471,10 @@ func normalizePackage(pkg *Package) {
 	if strings.TrimSpace(pkg.Realism.MovementPolicy) == "" {
 		pkg.Realism.MovementPolicy = MovementPolicyImmediate
 	}
+	if pkg.Realism.NeedleShadow != nil && pkg.Realism.NeedleShadow.Alpha == nil {
+		alpha := defaultNeedleShadowAlpha
+		pkg.Realism.NeedleShadow.Alpha = &alpha
+	}
 	if pkg.Type == TypeOdometer && strings.TrimSpace(pkg.Odometer.Movement) == "" {
 		pkg.Odometer.Movement = MovementInstant
 	}
@@ -590,6 +625,23 @@ func validateRealism(pkg Package) error {
 		}
 		if *pkg.Realism.PegBounce && (!pkg.ValueMap.Clamp || pkg.ValueMap.Max <= pkg.ValueMap.Min) {
 			return fmt.Errorf("realism peg_bounce requires a clamped radial value_map range")
+		}
+	}
+	if pkg.Realism.NeedleShadow != nil {
+		if pkg.Type != TypeRadial {
+			return fmt.Errorf("realism needle_shadow is only supported for radial gauges")
+		}
+		if len(pkg.Realism.NeedleShadow.Offset) != 2 {
+			return fmt.Errorf("realism needle_shadow offset must contain x and y")
+		}
+		if pkg.Realism.NeedleShadow.Alpha != nil {
+			alpha := *pkg.Realism.NeedleShadow.Alpha
+			if math.IsNaN(alpha) || math.IsInf(alpha, 0) {
+				return fmt.Errorf("realism needle_shadow alpha must be finite")
+			}
+			if alpha < 0 || alpha > 1 {
+				return fmt.Errorf("realism needle_shadow alpha must be between 0 and 1")
+			}
 		}
 	}
 	if pkg.Realism.DrumSlopSet {
