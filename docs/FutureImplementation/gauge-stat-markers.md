@@ -1,6 +1,6 @@
 # Gauge Stat Markers
 
-Index: 12
+Index: 4
 
 Status: desired
 
@@ -9,6 +9,8 @@ Area: `gauge/radial`, `gauge/bar`, renderer, rolling-window statistics, marker a
 Effort: 6-10 Codex hours
 
 Add optional `realism.stat_markers` support for rolling-window minimum, maximum, and average markers.
+
+Stat markers supersede the older radial peak-hold future idea. A max stat marker with an appropriate window covers the useful part of peak hold without needing a separate fade or decay display feature.
 
 Stat markers display separate gauge markers at statistical values calculated over a trailing time window. They are display-only markers, not source value changes, not fading peak-hold animation, and not a second live value indicator.
 
@@ -109,6 +111,7 @@ Bar stat markers should:
 
 ## Do not
 
+- Do not bring back a separate peak-hold feature; stat markers supersede that future idea.
 - Do not implement fade or decay behaviour.
 - Do not implement trip or session-lifetime windows unless a later spec explicitly defines them.
 - Do not use `needle_peak.png` for this feature.
