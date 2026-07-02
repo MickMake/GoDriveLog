@@ -802,6 +802,83 @@ func TestRuntimeRadialGaugeHysteresisOffsetsFallingApproach(t *testing.T) {
 	}
 }
 
+func TestRuntimeRadialGaugeHysteresisClampTrueStaysWithinValueMapBounds(t *testing.T) {
+	runtime := testRadialMovementRuntimeWithHysteresisAndClamp(t, true, true)
+	start := time.Unix(98, 0)
+
+	_, _, err := runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "rpm",
+		State:     okState("rpm", 0, "rpm"),
+		Timestamp: start,
+		ReadAt:    start,
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+
+	scenes, changed, err := runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "rpm",
+		State:     okState("rpm", 7000, "rpm"),
+		Timestamp: start.Add(10 * time.Millisecond),
+		ReadAt:    start.Add(10 * time.Millisecond),
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected clamped hysteresis update to redraw")
+	}
+	movement := runtime.movements[movementKey("primary", "rpm")]
+	if movement.DisplayValue != 7000 || movement.RawTargetValue != 7000 {
+		t.Fatalf("expected clamp=true hysteresis to stay at max value 7000, got %#v", movement)
+	}
+	if got := requireWidget(t, scenes[0], "rpm").GaugeAngle; math.Abs(got-135) > 0.001 {
+		t.Fatalf("expected clamp=true hysteresis angle 135, got %v", got)
+	}
+}
+
+func TestRuntimeRadialGaugeHysteresisClampFalsePreservesOutOfRangeRendering(t *testing.T) {
+	runtime := testRadialMovementRuntimeWithHysteresisAndClamp(t, true, false)
+	start := time.Unix(98, 0)
+
+	_, _, err := runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "rpm",
+		State:     okState("rpm", 0, "rpm"),
+		Timestamp: start,
+		ReadAt:    start,
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+
+	scenes, changed, err := runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "rpm",
+		State:     okState("rpm", 7000, "rpm"),
+		Timestamp: start.Add(10 * time.Millisecond),
+		ReadAt:    start.Add(10 * time.Millisecond),
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected unclamped hysteresis update to redraw")
+	}
+	movement := runtime.movements[movementKey("primary", "rpm")]
+	if movement.DisplayValue <= 7000 || movement.RawTargetValue != 7000 {
+		t.Fatalf("expected clamp=false hysteresis to keep out-of-range display value, got %#v", movement)
+	}
+	if got := requireWidget(t, scenes[0], "rpm").GaugeAngle; got <= 135 {
+		t.Fatalf("expected clamp=false hysteresis angle above 135, got %v", got)
+	}
+	if got := runtime.states["rpm"].Value; got != 7000 {
+		t.Fatalf("expected stored source value 7000 to remain unchanged, got %v", got)
+	}
+}
+
 func TestRuntimeRadialGaugeHysteresisLeavesStoredSourceValueUnchanged(t *testing.T) {
 	runtime := testRadialMovementRuntimeWithHysteresis(t, true)
 	start := time.Unix(99, 0)
@@ -2846,6 +2923,20 @@ func makeDashboardRadialGaugePackageWithCalibrationOffset(t *testing.T, calibrat
 	return makeDashboardRadialGaugePackageWithExtendedRealism(t, "", false, nil, nil, false, nil, nil, calibrationOffset, false)
 }
 
+func makeDashboardRadialGaugePackageWithHysteresisAndClamp(t *testing.T, hysteresis bool, clamp bool) string {
+	t.Helper()
+	packageDir := makeDashboardRadialGaugePackageWithRealism(t, "", false, nil, nil, false, hysteresis)
+	if clamp {
+		return packageDir
+	}
+	gaugeYAML := dashboardRadialGaugeYAML("", false, nil, nil, false, nil, nil, nil, hysteresis)
+	gaugeYAML = strings.Replace(gaugeYAML, "  clamp: true\n", "  clamp: false\n", 1)
+	if err := os.WriteFile(filepath.Join(packageDir, "gauge.yaml"), []byte(gaugeYAML), 0o600); err != nil {
+		t.Fatalf("WriteFile: %v", err)
+	}
+	return packageDir
+}
+
 func makeDashboardRadialGaugePackageWithExtendedRealism(t *testing.T, policy string, damping bool, stiction *float64, overshoot *v3gauges.OvershootConfig, pegBounce bool, shadowOffset []int, shadowAlpha *float64, calibrationOffset *float64, hysteresis bool) string {
 	t.Helper()
 	root := t.TempDir()
@@ -3257,6 +3348,17 @@ func testRadialMovementRuntimeWithDamping(t *testing.T, damping bool) *Runtime {
 
 func testRadialMovementRuntimeWithHysteresis(t *testing.T, hysteresis bool) *Runtime {
 	return testRadialMovementRuntimeWithRealism(t, "", false, nil, nil, false, hysteresis)
+}
+
+func testRadialMovementRuntimeWithHysteresisAndClamp(t *testing.T, hysteresis bool, clamp bool) *Runtime {
+	t.Helper()
+	packageDir := makeDashboardRadialGaugePackageWithHysteresisAndClamp(t, hysteresis, clamp)
+	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 1024, Height: 600}, Widgets: []v3config.WidgetConfig{{ID: "rpm", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{0, 0}, Scale: 1}}}}}}
+	runtime, err := NewRuntime(plan, testAssetRegistry())
+	if err != nil {
+		t.Fatalf("NewRuntime failed: %v", err)
+	}
+	return runtime
 }
 
 func testRadialMovementRuntimeWithRealism(t *testing.T, policy string, damping bool, stiction *float64, overshoot *v3gauges.OvershootConfig, pegBounce bool, hysteresis bool) *Runtime {

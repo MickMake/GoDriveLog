@@ -705,6 +705,9 @@ func radialHysteresisDisplayTarget(target float64, direction int, enabled bool, 
 		return target
 	}
 	shifted := target + (math.Copysign(span*defaultRadialHysteresisSpanRatio, float64(direction)))
+	if !valueMap.Clamp {
+		return shifted
+	}
 	if shifted < valueMap.Min {
 		return valueMap.Min
 	}
