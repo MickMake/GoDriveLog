@@ -1,10 +1,10 @@
 # v3.5 Implementation State
 
-Status: v3.5.13 bar smoothing implemented; v3.5.16 and v3.5.19 through v3.5.22 remain pending
+Status: v3.5.16 radial display-only hysteresis implemented; v3.5.19 through v3.5.22 remain pending
 
-Current target: v3.5.16 radial display-only hysteresis
+Current target: v3.5.19 bar overshoot
 
-Current branch: `codex/v3.5.13-bar-smoothing`
+Current branch: `codex/v3.5.16-radial-display-only-hysteresis`
 
 ## Scope
 
@@ -16,7 +16,7 @@ The final v3.5 tail also includes two small radial-only display refinements that
 
 ## Current decisions
 
-- v3.5.8 through v3.5.13 were temporarily deferred so the odometer movement stack could be completed while the implementation context was fresh; v3.5.12, v3.5.13, v3.5.16, and v3.5.19 through v3.5.22 remain pending and should now be implemented in checklist order.
+- v3.5.8 through v3.5.13 were temporarily deferred so the odometer movement stack could be completed while the implementation context was fresh; v3.5.19 through v3.5.22 remain pending and should now be implemented in checklist order.
 - v3.5.10 was intended to cover radial and bar overshoot, but implementation only covered radial behaviour; v3.5.19 adds the missing bar overshoot slice.
 - v3.5.16 covers radial display-only hysteresis. Bar hysteresis is split into v3.5.20 so the bar implementation can stay small and inspectable.
 - Bar stiction is split into v3.5.21. It may reuse radial transition ideas, but it applies to bar fill/reveal extent, not needle angle.
@@ -118,7 +118,7 @@ Not allowed in v3.5:
 - [x] v3.5.13 bar smoothing
 - [x] v3.5.14 odometer snap / settle
 - [x] v3.5.15 odometer backlash
-- [ ] v3.5.16 radial display-only hysteresis
+- [x] v3.5.16 radial display-only hysteresis
 - [x] v3.5.17 radial needle drop shadow
 - [x] v3.5.18 radial calibration offset
 - [ ] v3.5.19 bar overshoot
