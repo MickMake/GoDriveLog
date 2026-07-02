@@ -819,32 +819,34 @@ func resolveBarMovementState(movements map[string]widgetMovementState, key strin
 			HasValue:             true,
 		}
 	} else if source.Value != movement.RawTargetValue {
-		if movementActive(movement) {
-			movement = advanceMovementState(movement, now)
-		}
 		movement.Policy = policy
 		movement.RawTargetValue = source.Value
 		movement.DampingEnabled = true
-		movement.PreviousDisplayValue = movement.DisplayValue
-		movement.TargetValue = displayTarget
-		duration := time.Duration(0)
-		if planner != nil {
-			duration = planner(context, source, movement)
-		}
-		duration = barDampingDuration(damping, movement.PreviousDisplayValue, movement.TargetValue, duration)
-		if duration <= 0 || movement.DisplayValue == movement.TargetValue {
-			movement.DisplayValue = movement.TargetValue
-			movement.Phase = movementPhaseStatic
-			movement.Duration = 0
-			movement.TravelDuration = 0
-			movement.SettleDuration = 0
-			movement.StartedAt = time.Time{}
-		} else {
-			movement.Duration = duration
-			movement.TravelDuration = 0
-			movement.SettleDuration = 0
-			movement.StartedAt = now
-			movement.Phase = movementPhaseValueChange
+		if displayTarget != movement.TargetValue {
+			if movementActive(movement) {
+				movement = advanceMovementState(movement, now)
+			}
+			movement.PreviousDisplayValue = movement.DisplayValue
+			movement.TargetValue = displayTarget
+			duration := time.Duration(0)
+			if planner != nil {
+				duration = planner(context, source, movement)
+			}
+			duration = barDampingDuration(damping, movement.PreviousDisplayValue, movement.TargetValue, duration)
+			if duration <= 0 || movement.DisplayValue == movement.TargetValue {
+				movement.DisplayValue = movement.TargetValue
+				movement.Phase = movementPhaseStatic
+				movement.Duration = 0
+				movement.TravelDuration = 0
+				movement.SettleDuration = 0
+				movement.StartedAt = time.Time{}
+			} else {
+				movement.Duration = duration
+				movement.TravelDuration = 0
+				movement.SettleDuration = 0
+				movement.StartedAt = now
+				movement.Phase = movementPhaseValueChange
+			}
 		}
 	}
 	movement = advanceMovementState(movement, now)
