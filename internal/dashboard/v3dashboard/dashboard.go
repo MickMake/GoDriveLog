@@ -806,24 +806,27 @@ func resolveBarMovementState(movements map[string]widgetMovementState, key strin
 
 	movement := movements[key]
 	previous := movement
+	displayTarget := barDisplayTarget(source.Value, pkg.ValueMap)
 	if !movement.HasValue {
 		movement = widgetMovementState{
 			Phase:                movementPhaseStatic,
 			Policy:               policy,
+			RawTargetValue:       source.Value,
 			DampingEnabled:       true,
-			PreviousDisplayValue: source.Value,
-			DisplayValue:         source.Value,
-			TargetValue:          source.Value,
+			PreviousDisplayValue: displayTarget,
+			DisplayValue:         displayTarget,
+			TargetValue:          displayTarget,
 			HasValue:             true,
 		}
-	} else if source.Value != movement.TargetValue {
+	} else if source.Value != movement.RawTargetValue {
 		if movementActive(movement) {
 			movement = advanceMovementState(movement, now)
 		}
 		movement.Policy = policy
+		movement.RawTargetValue = source.Value
 		movement.DampingEnabled = true
 		movement.PreviousDisplayValue = movement.DisplayValue
-		movement.TargetValue = source.Value
+		movement.TargetValue = displayTarget
 		duration := time.Duration(0)
 		if planner != nil {
 			duration = planner(context, source, movement)
@@ -1137,6 +1140,19 @@ func radialOvershootTravelDuration(overshootTarget float64, target float64, dura
 }
 
 func radialDisplayTarget(value float64, valueMap v3gauges.ValueMap) float64 {
+	if !valueMap.Clamp || valueMap.Max <= valueMap.Min {
+		return value
+	}
+	if value < valueMap.Min {
+		return valueMap.Min
+	}
+	if value > valueMap.Max {
+		return valueMap.Max
+	}
+	return value
+}
+
+func barDisplayTarget(value float64, valueMap v3gauges.ValueMap) float64 {
 	if !valueMap.Clamp || valueMap.Max <= valueMap.Min {
 		return value
 	}
