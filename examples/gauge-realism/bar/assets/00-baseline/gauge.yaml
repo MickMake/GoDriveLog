@@ -2,19 +2,14 @@ id: ornate_timber_fuel_bar
 type: bar
 sensor: fuel_level
 
-realism:
-  damping:
-    rise_ms: 140
-    fall_ms: 220
-
 size:
   width: 152
   height: 300
 
 layers:
-  panel: ../fuel_bar/panel.png
-  level: ../fuel_bar/level.png
-  glass: ../fuel_bar/glass.png
+  panel: ../panel.png
+  level: ../level.png
+  glass: ../glass.png
 
 value_map:
   min: 0
