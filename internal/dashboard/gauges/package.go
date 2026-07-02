@@ -252,6 +252,7 @@ type Realism struct {
 	Wraparound        *bool               `yaml:"wraparound,omitempty"`
 	CarryDrag         *bool               `yaml:"carry_drag,omitempty"`
 	SnapSettle        *bool               `yaml:"snap_settle,omitempty"`
+	Hysteresis        *bool               `yaml:"hysteresis,omitempty"`
 	Damping           *DampingConfig      `yaml:"damping,omitempty"`
 	Stiction          *float64            `yaml:"stiction,omitempty"`
 	Overshoot         *OvershootConfig    `yaml:"overshoot,omitempty"`
@@ -272,6 +273,7 @@ func (r *Realism) UnmarshalYAML(node *yaml.Node) error {
 		"wraparound":         true,
 		"carry_drag":         true,
 		"snap_settle":        true,
+		"hysteresis":         true,
 		"damping":            true,
 		"stiction":           true,
 		"overshoot":          true,
@@ -625,6 +627,9 @@ func validateRealism(pkg Package) error {
 	}
 	if pkg.Realism.SnapSettle != nil && pkg.Type != TypeOdometer {
 		return fmt.Errorf("realism snap_settle is only supported for odometer gauges")
+	}
+	if pkg.Realism.Hysteresis != nil && pkg.Type != TypeRadial {
+		return fmt.Errorf("realism hysteresis is only supported for radial gauges")
 	}
 	if pkg.Realism.Damping != nil {
 		if pkg.Type != TypeRadial && pkg.Type != TypeBar {

@@ -48,6 +48,7 @@ const defaultOdometerMovementDuration = 200 * time.Millisecond
 const defaultOdometerSnapSettleDuration = 60 * time.Millisecond
 const defaultRadialDampingDuration = 200 * time.Millisecond
 const defaultBarDampingDuration = 200 * time.Millisecond
+const defaultRadialHysteresisSpanRatio = 0.01
 const defaultRadialOvershootRatio = 0.12
 const defaultRadialOvershootMinChangeRatio = 0.15
 const defaultRadialOvershootMaxSpanRatio = 0.04
@@ -71,6 +72,9 @@ type widgetMovementState struct {
 	Phase                  movementPhase
 	Policy                 string
 	Mode                   string
+	HysteresisEnabled      bool
+	ApproachDirection      int
+	RawTargetValue         float64
 	DampingEnabled         bool
 	OvershootEnabled       bool
 	PegBounceEnabled       bool
@@ -482,13 +486,14 @@ func (d Dashboard) renderWidget(configWidget v3config.WidgetConfig, states map[s
 		} else if pkg.Type == v3gauges.TypeBar {
 			state, movement, movementChanged = resolveBarMovementState(movements, movementKey(d.ID, configWidget.ID), context, pkg, state, planner, now)
 		} else {
+			hysteresis := pkg.Realism.Hysteresis != nil && *pkg.Realism.Hysteresis
 			damping := pkg.Realism.Damping != nil && pkg.Realism.Damping.Enabled
 			stiction := 0.0
 			if pkg.Realism.Stiction != nil {
 				stiction = *pkg.Realism.Stiction
 			}
 			pegBounce := pkg.Realism.PegBounce != nil && *pkg.Realism.PegBounce
-			state, movementChanged = resolveMovementState(movements, movementKey(d.ID, configWidget.ID), context, state, pkg.Realism.MovementPolicy, damping, stiction, pkg.Realism.Overshoot, pegBounce, pkg.ValueMap, planner, now)
+			state, movementChanged = resolveMovementState(movements, movementKey(d.ID, configWidget.ID), context, state, hysteresis, pkg.Realism.MovementPolicy, damping, stiction, pkg.Realism.Overshoot, pegBounce, pkg.ValueMap, planner, now)
 		}
 		var gaugeScene v3gauges.Scene
 		switch pkg.Type {
@@ -546,13 +551,13 @@ func movementKey(dashboardID string, widgetID string) string {
 	return dashboardID + "|" + widgetID
 }
 
-func resolveMovementState(movements map[string]widgetMovementState, key string, context movementContext, source sensors.SensorState, policy string, damping bool, stiction float64, overshoot *v3gauges.OvershootConfig, pegBounce bool, valueMap v3gauges.ValueMap, planner movementPlanner, now time.Time) (sensors.SensorState, bool) {
+func resolveMovementState(movements map[string]widgetMovementState, key string, context movementContext, source sensors.SensorState, hysteresis bool, policy string, damping bool, stiction float64, overshoot *v3gauges.OvershootConfig, pegBounce bool, valueMap v3gauges.ValueMap, planner movementPlanner, now time.Time) (sensors.SensorState, bool) {
 	if movements == nil {
 		return source, false
 	}
-	displayTarget := source.Value
+	rawTarget := source.Value
 	if context.GaugeType == v3gauges.TypeRadial {
-		displayTarget = radialDisplayTarget(source.Value, valueMap)
+		rawTarget = radialDisplayTarget(source.Value, valueMap)
 	}
 	policy = effectiveMovementPolicy(context.GaugeType, policy, damping, overshoot != nil, false)
 	if source.Status != sensors.StatusOK {
@@ -564,11 +569,18 @@ func resolveMovementState(movements map[string]widgetMovementState, key string, 
 	}
 	movement := movements[key]
 	previous := movement
+	displayTarget := rawTarget
+	if context.GaugeType == v3gauges.TypeRadial {
+		displayTarget = radialHysteresisDisplayTarget(rawTarget, movement.ApproachDirection, hysteresis, valueMap)
+	}
 	if !movement.HasValue {
 		movement = widgetMovementState{
 			Phase:                  movementPhaseStatic,
 			Policy:                 policy,
 			Mode:                   context.GaugeMode,
+			HysteresisEnabled:      hysteresis,
+			ApproachDirection:      0,
+			RawTargetValue:         rawTarget,
 			DampingEnabled:         damping,
 			OvershootEnabled:       overshoot != nil,
 			PegBounceEnabled:       pegBounce,
@@ -585,11 +597,14 @@ func resolveMovementState(movements map[string]widgetMovementState, key string, 
 			TargetValue:            displayTarget,
 			HasValue:               true,
 		}
-	} else if displayTarget != movement.TargetValue {
+	} else if rawTarget != movement.RawTargetValue {
 		if movementActive(movement) {
 			movement = advanceMovementState(movement, now)
 		}
 		movement.Policy = policy
+		movement.HysteresisEnabled = hysteresis
+		movement.ApproachDirection = movementDirection(movement.RawTargetValue, rawTarget, movement.ApproachDirection, hysteresis)
+		movement.RawTargetValue = rawTarget
 		movement.DampingEnabled = damping
 		movement.OvershootEnabled = overshoot != nil
 		movement.PegBounceEnabled = pegBounce
@@ -597,6 +612,10 @@ func resolveMovementState(movements map[string]widgetMovementState, key string, 
 		movement.OvershootSettleCycles = radialOvershootSettleCycles(overshoot)
 		movement.OvershootSettleDamping = radialOvershootSettleDamping(overshoot)
 		movement.StictionThreshold = stiction
+		displayTarget = rawTarget
+		if context.GaugeType == v3gauges.TypeRadial {
+			displayTarget = radialHysteresisDisplayTarget(rawTarget, movement.ApproachDirection, hysteresis, valueMap)
+		}
 		movement.OvershootTargetValue = displayTarget
 		movement.OvershootMinValue = valueMap.Min
 		movement.OvershootMaxValue = valueMap.Max
@@ -662,6 +681,37 @@ func resolveMovementState(movements map[string]widgetMovementState, key string, 
 	source.Value = movement.DisplayValue
 	source.TypedValue = sensors.NewNumericValue(source.Value, source.Unit)
 	return source, movementActive(movement) != movementActive(previous)
+}
+
+func movementDirection(previous float64, target float64, current int, enabled bool) int {
+	if !enabled {
+		return 0
+	}
+	if target > previous {
+		return 1
+	}
+	if target < previous {
+		return -1
+	}
+	return current
+}
+
+func radialHysteresisDisplayTarget(target float64, direction int, enabled bool, valueMap v3gauges.ValueMap) float64 {
+	if !enabled || direction == 0 {
+		return target
+	}
+	span := valueMap.Max - valueMap.Min
+	if span <= 0 {
+		return target
+	}
+	shifted := target + (math.Copysign(span*defaultRadialHysteresisSpanRatio, float64(direction)))
+	if shifted < valueMap.Min {
+		return valueMap.Min
+	}
+	if shifted > valueMap.Max {
+		return valueMap.Max
+	}
+	return shifted
 }
 
 func stictionShouldHold(context movementContext, movement widgetMovementState, target float64) bool {

@@ -872,6 +872,38 @@ bar:
 	}
 }
 
+func TestLoadPackageAcceptsRadialHysteresis(t *testing.T) {
+	root := makeGaugeFixtures(t)
+	packageDir := filepath.Join(root, "assets", "gauges", "radial", "hysteresis")
+	writeGaugeYAML(t, packageDir, `id: hysteresis_radial
+type: radial
+sensor: rpm
+realism:
+  hysteresis: true
+size:
+  width: 100
+  height: 100
+layers:
+  needle: ../../shared/radial/simple_rpm/needle.png
+pivot:
+  face: { x: 0.5, y: 0.5 }
+  needle: { x: 0.5, y: 0.9 }
+value_map:
+  min: 0
+  max: 100
+  start_angle: -90
+  end_angle: 90
+`)
+
+	pkg, err := LoadPackage(packageDir)
+	if err != nil {
+		t.Fatalf("LoadPackage returned error: %v", err)
+	}
+	if pkg.Realism.Hysteresis == nil || !*pkg.Realism.Hysteresis {
+		t.Fatalf("hysteresis = %#v, want true", pkg.Realism.Hysteresis)
+	}
+}
+
 func TestLoadPackageAcceptsRadialStiction(t *testing.T) {
 	root := makeGaugeFixtures(t)
 	packageDir := filepath.Join(root, "assets", "gauges", "radial", "stiction")
@@ -1613,6 +1645,90 @@ bar:
   axis: vertical
   origin: bottom
   bounds: [10, 10, 20, 60]
+`
+			}
+			writeGaugeYAML(t, packageDir, yamlText)
+
+			_, err := LoadPackage(packageDir)
+			if err == nil {
+				t.Fatal("LoadPackage returned nil error, want error")
+			}
+			assertErrorContains(t, err, test.want)
+		})
+	}
+}
+
+func TestLoadPackageRejectsHysteresisOnUnsupportedGaugeType(t *testing.T) {
+	tests := []struct {
+		name        string
+		packageType string
+		want        string
+	}{
+		{name: "bar", packageType: "bar", want: "only supported for radial gauges"},
+		{name: "indicator", packageType: "indicator", want: "only supported for radial gauges"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			root := makeGaugeFixtures(t)
+			packageDir := filepath.Join(root, "assets", "gauges", test.packageType, "bad_hysteresis_"+test.name)
+			yamlText := `id: bad_` + test.packageType + `
+type: ` + test.packageType + `
+sensor: rpm
+realism:
+  hysteresis: true
+size:
+  width: 100
+  height: 100
+layers:
+  needle: ../../shared/radial/simple_rpm/needle.png
+pivot:
+  face: { x: 0.5, y: 0.5 }
+  needle: { x: 0.5, y: 0.9 }
+value_map:
+  min: 0
+  max: 100
+  start_angle: -90
+  end_angle: 90
+`
+			if test.packageType == "bar" {
+				yamlText = `id: bad_bar
+type: bar
+sensor: coolant_temperature
+realism:
+  hysteresis: true
+size:
+  width: 100
+  height: 100
+layers:
+  panel: panel.png
+  level: level.png
+value_map:
+  min: 40
+  max: 120
+  clamp: true
+bar:
+  mode: level
+  axis: vertical
+  origin: bottom
+  bounds: [10, 10, 20, 60]
+`
+			}
+			if test.packageType == "indicator" {
+				yamlText = `id: bad_indicator
+type: indicator
+sensor: check_engine
+realism:
+  hysteresis: true
+size:
+  width: 48
+  height: 48
+layers:
+  bezel: bezel.png
+  face: face.png
+  off: off.png
+  on: on.png
+  glass: glass.png
 `
 			}
 			writeGaugeYAML(t, packageDir, yamlText)
