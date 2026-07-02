@@ -829,10 +829,46 @@ value_map:
 			if err != nil {
 				t.Fatalf("LoadPackage returned error: %v", err)
 			}
-			if pkg.Realism.Damping == nil || *pkg.Realism.Damping != enabled {
+			if pkg.Realism.Damping == nil || pkg.Realism.Damping.Enabled != enabled {
 				t.Fatalf("damping = %#v, want %v", pkg.Realism.Damping, enabled)
 			}
 		})
+	}
+}
+
+func TestLoadPackageLoadsBarDampingWithDirectionalTiming(t *testing.T) {
+	root := makeGaugeFixtures(t)
+	packageDir := filepath.Join(root, "assets", "gauges", "bar", "damping")
+	writeGaugeYAML(t, packageDir, `id: coolant_bar
+type: bar
+sensor: coolant_temperature
+realism:
+  damping:
+    rise_ms: 120
+    fall_ms: 240
+size:
+  width: 100
+  height: 100
+layers:
+  panel: panel.png
+  level: level.png
+value_map:
+  min: 40
+  max: 120
+  clamp: true
+bar:
+  mode: level
+  axis: vertical
+  origin: bottom
+  bounds: [10, 10, 20, 60]
+`)
+
+	pkg, err := LoadPackage(packageDir)
+	if err != nil {
+		t.Fatalf("LoadPackage returned error: %v", err)
+	}
+	if pkg.Realism.Damping == nil || !pkg.Realism.Damping.Enabled || pkg.Realism.Damping.RiseMS != 120 || pkg.Realism.Damping.FallMS != 240 {
+		t.Fatalf("damping = %#v, want enabled rise=120 fall=240", pkg.Realism.Damping)
 	}
 }
 
@@ -1459,14 +1495,109 @@ value_map:
 	assertErrorContains(t, err, "snap_settle")
 }
 
-func TestLoadPackageRejectsDampingOnNonRadialGauge(t *testing.T) {
-	root := makeGaugeFixtures(t)
-	packageDir := filepath.Join(root, "assets", "gauges", "bar", "damping")
-	writeGaugeYAML(t, packageDir, `id: bad_bar
+func TestLoadPackageRejectsInvalidDamping(t *testing.T) {
+	tests := []struct {
+		name        string
+		packageType string
+		dampingYAML string
+		want        string
+	}{
+		{
+			name:        "non_bar_or_radial",
+			packageType: "indicator",
+			dampingYAML: "true",
+			want:        "only supported for radial and bar",
+		},
+		{
+			name:        "radial_timing",
+			packageType: "radial",
+			dampingYAML: `rise_ms: 120
+    fall_ms: 240`,
+			want: "only supported for bar",
+		},
+		{
+			name:        "zero_rise",
+			packageType: "bar",
+			dampingYAML: `rise_ms: 0
+    fall_ms: 240`,
+			want: "rise_ms must be greater than zero",
+		},
+		{
+			name:        "zero_fall",
+			packageType: "bar",
+			dampingYAML: `rise_ms: 120
+    fall_ms: 0`,
+			want: "fall_ms must be greater than zero",
+		},
+		{
+			name:        "disabled_with_timing",
+			packageType: "bar",
+			dampingYAML: `enabled: false
+    rise_ms: 120`,
+			want: "timing requires damping to be enabled",
+		},
+		{
+			name:        "bad_key",
+			packageType: "bar",
+			dampingYAML: `rise: 120
+    fall_ms: 240`,
+			want: "damping field",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			root := makeGaugeFixtures(t)
+			packageDir := filepath.Join(root, "assets", "gauges", test.packageType, "bad_damping_"+test.name)
+			yamlText := `id: bad_` + test.packageType + `
+type: ` + test.packageType + `
+sensor: check_engine
+realism:
+  damping: `
+			if strings.Contains(test.dampingYAML, "\n") {
+				yamlText += "\n    " + test.dampingYAML
+			} else {
+				yamlText += test.dampingYAML + "\n"
+			}
+			yamlText += `size:
+  width: 48
+  height: 48
+layers:
+  bezel: bezel.png
+  face: face.png
+  off: off.png
+  on: on.png
+  glass: glass.png
+`
+			if test.packageType == "radial" {
+				yamlText = `id: bad_radial
+type: radial
+sensor: rpm
+realism:
+  damping:
+    ` + test.dampingYAML + `
+size:
+  width: 100
+  height: 100
+layers:
+  needle: ../../shared/radial/simple_rpm/needle.png
+pivot:
+  face: { x: 0.5, y: 0.5 }
+  needle: { x: 0.5, y: 0.9 }
+value_map:
+  min: 0
+  max: 100
+  start_angle: -90
+  end_angle: 90
+`
+			}
+			if test.packageType == "bar" {
+				yamlText = `id: bad_bar
 type: bar
 sensor: coolant_temperature
 realism:
-  damping: true
+  damping:
+    ` + test.dampingYAML + `
 size:
   width: 100
   height: 100
@@ -1482,13 +1613,17 @@ bar:
   axis: vertical
   origin: bottom
   bounds: [10, 10, 20, 60]
-`)
+`
+			}
+			writeGaugeYAML(t, packageDir, yamlText)
 
-	_, err := LoadPackage(packageDir)
-	if err == nil {
-		t.Fatal("LoadPackage returned nil error, want error")
+			_, err := LoadPackage(packageDir)
+			if err == nil {
+				t.Fatal("LoadPackage returned nil error, want error")
+			}
+			assertErrorContains(t, err, test.want)
+		})
 	}
-	assertErrorContains(t, err, "damping")
 }
 
 func TestLoadPackageRejectsInvalidRadialStiction(t *testing.T) {

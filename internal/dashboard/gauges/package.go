@@ -135,6 +135,63 @@ func (o *OvershootConfig) UnmarshalYAML(node *yaml.Node) error {
 	return nil
 }
 
+type DampingConfig struct {
+	Enabled   bool `yaml:"enabled,omitempty"`
+	RiseMS    int  `yaml:"rise_ms,omitempty"`
+	FallMS    int  `yaml:"fall_ms,omitempty"`
+	RiseMSSet bool `yaml:"-"`
+	FallMSSet bool `yaml:"-"`
+}
+
+func (d *DampingConfig) UnmarshalYAML(node *yaml.Node) error {
+	switch node.Kind {
+	case yaml.ScalarNode:
+		var enabled bool
+		if err := node.Decode(&enabled); err != nil {
+			return fmt.Errorf("realism damping must be a boolean or mapping")
+		}
+		*d = DampingConfig{Enabled: enabled}
+		return nil
+	case yaml.MappingNode:
+		allowedKeys := map[string]bool{
+			"enabled": true,
+			"rise_ms": true,
+			"fall_ms": true,
+		}
+		riseSet := false
+		fallSet := false
+		enabledSet := false
+		for index := 0; index+1 < len(node.Content); index += 2 {
+			key := node.Content[index].Value
+			if !allowedKeys[key] {
+				return fmt.Errorf("realism damping field %q is not supported", key)
+			}
+			switch key {
+			case "enabled":
+				enabledSet = true
+			case "rise_ms":
+				riseSet = true
+			case "fall_ms":
+				fallSet = true
+			}
+		}
+		type rawDampingConfig DampingConfig
+		var decoded rawDampingConfig
+		if err := node.Decode(&decoded); err != nil {
+			return err
+		}
+		*d = DampingConfig(decoded)
+		d.RiseMSSet = riseSet
+		d.FallMSSet = fallSet
+		if !enabledSet {
+			d.Enabled = true
+		}
+		return nil
+	default:
+		return fmt.Errorf("realism damping must be a boolean or mapping")
+	}
+}
+
 type ThermalFadeConfig struct {
 	RiseMS int `yaml:"rise_ms,omitempty"`
 	FallMS int `yaml:"fall_ms,omitempty"`
@@ -195,7 +252,7 @@ type Realism struct {
 	Wraparound        *bool               `yaml:"wraparound,omitempty"`
 	CarryDrag         *bool               `yaml:"carry_drag,omitempty"`
 	SnapSettle        *bool               `yaml:"snap_settle,omitempty"`
-	Damping           *bool               `yaml:"damping,omitempty"`
+	Damping           *DampingConfig      `yaml:"damping,omitempty"`
 	Stiction          *float64            `yaml:"stiction,omitempty"`
 	Overshoot         *OvershootConfig    `yaml:"overshoot,omitempty"`
 	PegBounce         *bool               `yaml:"peg_bounce,omitempty"`
@@ -569,8 +626,22 @@ func validateRealism(pkg Package) error {
 	if pkg.Realism.SnapSettle != nil && pkg.Type != TypeOdometer {
 		return fmt.Errorf("realism snap_settle is only supported for odometer gauges")
 	}
-	if pkg.Realism.Damping != nil && pkg.Type != TypeRadial {
-		return fmt.Errorf("realism damping is only supported for radial gauges")
+	if pkg.Realism.Damping != nil {
+		if pkg.Type != TypeRadial && pkg.Type != TypeBar {
+			return fmt.Errorf("realism damping is only supported for radial and bar gauges")
+		}
+		if (pkg.Realism.Damping.RiseMSSet || pkg.Realism.Damping.FallMSSet) && pkg.Type != TypeBar {
+			return fmt.Errorf("realism damping rise_ms and fall_ms are only supported for bar gauges")
+		}
+		if !pkg.Realism.Damping.Enabled && (pkg.Realism.Damping.RiseMSSet || pkg.Realism.Damping.FallMSSet) {
+			return fmt.Errorf("realism damping timing requires damping to be enabled")
+		}
+		if pkg.Realism.Damping.RiseMSSet && pkg.Realism.Damping.RiseMS <= 0 {
+			return fmt.Errorf("realism damping rise_ms must be greater than zero")
+		}
+		if pkg.Realism.Damping.FallMSSet && pkg.Realism.Damping.FallMS <= 0 {
+			return fmt.Errorf("realism damping fall_ms must be greater than zero")
+		}
 	}
 	if pkg.Realism.Stiction != nil {
 		if pkg.Type != TypeRadial {

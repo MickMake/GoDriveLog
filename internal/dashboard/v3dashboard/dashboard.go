@@ -47,6 +47,7 @@ type Runtime struct {
 const defaultOdometerMovementDuration = 200 * time.Millisecond
 const defaultOdometerSnapSettleDuration = 60 * time.Millisecond
 const defaultRadialDampingDuration = 200 * time.Millisecond
+const defaultBarDampingDuration = 200 * time.Millisecond
 const defaultRadialOvershootRatio = 0.12
 const defaultRadialOvershootMinChangeRatio = 0.15
 const defaultRadialOvershootMaxSpanRatio = 0.04
@@ -195,6 +196,12 @@ func defaultMovementPlanner(context movementContext, state sensors.SensorState, 
 	if context.GaugeType == v3gauges.TypeRadial {
 		if current.DampingEnabled || current.OvershootEnabled || current.PegBounceActive {
 			return defaultRadialDampingDuration
+		}
+		return 0
+	}
+	if context.GaugeType == v3gauges.TypeBar {
+		if current.DampingEnabled {
+			return defaultBarDampingDuration
 		}
 		return 0
 	}
@@ -472,8 +479,10 @@ func (d Dashboard) renderWidget(configWidget v3config.WidgetConfig, states map[s
 			if err != nil {
 				return Widget{}, false, fmt.Errorf("dashboard %q widget %q: %w", d.ID, configWidget.ID, err)
 			}
+		} else if pkg.Type == v3gauges.TypeBar {
+			state, movement, movementChanged = resolveBarMovementState(movements, movementKey(d.ID, configWidget.ID), context, pkg, state, planner, now)
 		} else {
-			damping := pkg.Realism.Damping != nil && *pkg.Realism.Damping
+			damping := pkg.Realism.Damping != nil && pkg.Realism.Damping.Enabled
 			stiction := 0.0
 			if pkg.Realism.Stiction != nil {
 				stiction = *pkg.Realism.Stiction
@@ -722,6 +731,92 @@ func resolveIndicatorThermalFadeState(movements map[string]widgetMovementState, 
 	}
 	movements[key] = movement
 	return source, movement, movementActive(movement) != movementActive(previous), nil
+}
+
+func resolveBarMovementState(movements map[string]widgetMovementState, key string, context movementContext, pkg v3gauges.Package, source sensors.SensorState, planner movementPlanner, now time.Time) (sensors.SensorState, widgetMovementState, bool) {
+	damping := pkg.Realism.Damping
+	if movements == nil || damping == nil || !damping.Enabled {
+		return source, widgetMovementState{}, false
+	}
+	if source.Status != sensors.StatusOK {
+		previous, hadMovement := movements[key]
+		if hadMovement {
+			delete(movements, key)
+		}
+		return source, widgetMovementState{}, hadMovement && movementActive(previous)
+	}
+
+	policy := strings.TrimSpace(pkg.Realism.MovementPolicy)
+	if policy == "" || policy == v3gauges.MovementPolicyImmediate {
+		policy = v3gauges.MovementPolicyLinear
+	}
+
+	movement := movements[key]
+	previous := movement
+	if !movement.HasValue {
+		movement = widgetMovementState{
+			Phase:                movementPhaseStatic,
+			Policy:               policy,
+			DampingEnabled:       true,
+			PreviousDisplayValue: source.Value,
+			DisplayValue:         source.Value,
+			TargetValue:          source.Value,
+			HasValue:             true,
+		}
+	} else if source.Value != movement.TargetValue {
+		if movementActive(movement) {
+			movement = advanceMovementState(movement, now)
+		}
+		movement.Policy = policy
+		movement.DampingEnabled = true
+		movement.PreviousDisplayValue = movement.DisplayValue
+		movement.TargetValue = source.Value
+		duration := time.Duration(0)
+		if planner != nil {
+			duration = planner(context, source, movement)
+		}
+		duration = barDampingDuration(damping, movement.PreviousDisplayValue, movement.TargetValue, duration)
+		if duration <= 0 || movement.DisplayValue == movement.TargetValue {
+			movement.DisplayValue = movement.TargetValue
+			movement.Phase = movementPhaseStatic
+			movement.Duration = 0
+			movement.TravelDuration = 0
+			movement.SettleDuration = 0
+			movement.StartedAt = time.Time{}
+		} else {
+			movement.Duration = duration
+			movement.TravelDuration = 0
+			movement.SettleDuration = 0
+			movement.StartedAt = now
+			movement.Phase = movementPhaseValueChange
+		}
+	}
+	movement = advanceMovementState(movement, now)
+	if movement.Phase == movementPhaseSettled {
+		movement.Phase = movementPhaseStatic
+		movement.DisplayValue = movement.TargetValue
+		movement.Duration = 0
+		movement.TravelDuration = 0
+		movement.SettleDuration = 0
+		movement.StartedAt = time.Time{}
+	}
+	movements[key] = movement
+	source.Value = movement.DisplayValue
+	source.TypedValue = sensors.NewNumericValue(source.Value, source.Unit)
+	return source, movement, movementActive(movement) != movementActive(previous)
+}
+
+func barDampingDuration(config *v3gauges.DampingConfig, previous float64, target float64, fallback time.Duration) time.Duration {
+	if config == nil || !config.Enabled || previous == target {
+		return 0
+	}
+	if target > previous && config.RiseMSSet {
+		return time.Duration(config.RiseMS) * time.Millisecond
+	}
+	if target < previous && config.FallMSSet {
+		return time.Duration(config.FallMS) * time.Millisecond
+	}
+	return fallback
 }
 
 func indicatorTargetAlpha(state sensors.SensorState) float64 {

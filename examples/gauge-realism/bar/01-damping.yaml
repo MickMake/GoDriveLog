@@ -1,0 +1,27 @@
+vehicles:
+  demo:
+    name: Gauge Preview
+    obd:
+      address: preview://manual
+      timeout: 1000
+    dashboards:
+      - preview
+sensors:
+  fuel_level:
+    type: obd
+    pid: "012F"
+    unit: percent
+    min: 0
+    max: 100
+    poll: 250
+dashboards:
+  preview:
+    display: preview
+    size:
+      width: 320
+      height: 480
+    widgets:
+      - id: fuel_bar
+        type: gauge
+        gauge: ../assets/gauges/fuel_bar_damping
+        position: [0, 0]
