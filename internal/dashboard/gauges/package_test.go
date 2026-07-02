@@ -982,6 +982,48 @@ value_map:
 	}
 }
 
+func TestLoadPackageAcceptsBarOvershoot(t *testing.T) {
+	root := makeGaugeFixtures(t)
+	packageDir := filepath.Join(root, "assets", "gauges", "bar", "overshoot")
+	writeGaugeYAML(t, packageDir, `id: overshoot_bar
+type: bar
+sensor: coolant_temperature
+realism:
+  overshoot:
+    ratio: 0.18
+    min_change_ratio: 0.05
+    max_span_ratio: 0.08
+    settle_mode: smooth
+size:
+  width: 100
+  height: 100
+layers:
+  panel: panel.png
+  level: level.png
+value_map:
+  min: 40
+  max: 120
+  clamp: true
+bar:
+  mode: level
+  axis: vertical
+  origin: bottom
+  bounds: [10, 10, 20, 60]
+`)
+
+	pkg, err := LoadPackage(packageDir)
+	if err != nil {
+		t.Fatalf("LoadPackage returned error: %v", err)
+	}
+	if pkg.Realism.Overshoot == nil ||
+		pkg.Realism.Overshoot.Ratio == nil || *pkg.Realism.Overshoot.Ratio != 0.18 ||
+		pkg.Realism.Overshoot.MinChangeRatio == nil || *pkg.Realism.Overshoot.MinChangeRatio != 0.05 ||
+		pkg.Realism.Overshoot.MaxSpanRatio == nil || *pkg.Realism.Overshoot.MaxSpanRatio != 0.08 ||
+		pkg.Realism.Overshoot.SettleMode != OvershootSettleSmooth {
+		t.Fatalf("overshoot = %#v, want expanded smooth bar config", pkg.Realism.Overshoot)
+	}
+}
+
 func TestLoadPackageRejectsUnknownRadialOvershootKey(t *testing.T) {
 	root := makeGaugeFixtures(t)
 	packageDir := filepath.Join(root, "assets", "gauges", "radial", "bad_overshoot_key")
@@ -1845,21 +1887,12 @@ func TestLoadPackageRejectsInvalidRadialOvershoot(t *testing.T) {
 	}{
 		{
 			name:        "non_radial",
-			packageType: "bar",
+			packageType: "indicator",
 			overshoot: `overshoot:
-    ratio: 0.12
+	    ratio: 0.12
 `,
-			valueMap: `value_map:
-  min: 40
-  max: 120
-  clamp: true
-bar:
-  mode: level
-  axis: vertical
-  origin: bottom
-  bounds: [10, 10, 20, 60]
-`,
-			want: "only supported for radial",
+			valueMap: ``,
+			want:     "only supported for radial and bar",
 		},
 		{
 			name:        "zero_ratio",
@@ -1932,10 +1965,28 @@ bar:
 			want: "settle_mode",
 		},
 		{
+			name:        "bar_oscillate",
+			packageType: "bar",
+			overshoot: `overshoot:
+	    settle_mode: oscillate
+`,
+			valueMap: `value_map:
+	  min: 40
+	  max: 120
+	  clamp: true
+bar:
+	  mode: level
+	  axis: vertical
+	  origin: bottom
+	  bounds: [10, 10, 20, 60]
+`,
+			want: "not supported for bar gauges",
+		},
+		{
 			name:        "zero_settle_cycles",
 			packageType: "radial",
 			overshoot: `overshoot:
-    settle_cycles: 0
+	    settle_cycles: 0
 `,
 			valueMap: `value_map:
   min: 0
@@ -1965,11 +2016,13 @@ bar:
 		t.Run(test.name, func(t *testing.T) {
 			root := makeGaugeFixtures(t)
 			packageDir := filepath.Join(root, "assets", "gauges", test.packageType, test.name)
+			overshootYAML := strings.ReplaceAll(test.overshoot, "\t", "  ")
+			valueMapYAML := strings.ReplaceAll(test.valueMap, "\t", "  ")
 			yamlText := `id: bad_` + test.packageType + `
 type: ` + test.packageType + `
 sensor: rpm
 realism:
-  ` + test.overshoot + `size:
+  ` + overshootYAML + `size:
   width: 100
   height: 100
 layers:
@@ -1977,19 +2030,31 @@ layers:
 pivot:
   face: { x: 0.5, y: 0.5 }
   needle: { x: 0.5, y: 0.9 }
-` + test.valueMap
+` + valueMapYAML
 			if test.packageType == "bar" {
 				yamlText = `id: bad_bar
 type: bar
 sensor: coolant_temperature
 realism:
-  ` + test.overshoot + `size:
+  ` + overshootYAML + `size:
   width: 100
   height: 100
 layers:
   panel: panel.png
   level: level.png
-` + test.valueMap
+` + valueMapYAML
+			} else if test.packageType == "indicator" {
+				yamlText = `id: bad_indicator
+type: indicator
+sensor: check_engine
+realism:
+  ` + overshootYAML + `size:
+  width: 48
+  height: 48
+layers:
+  off: off.png
+  on: on.png
+`
 			}
 			writeGaugeYAML(t, packageDir, yamlText)
 

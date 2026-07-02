@@ -204,7 +204,7 @@ func defaultMovementPlanner(context movementContext, state sensors.SensorState, 
 		return 0
 	}
 	if context.GaugeType == v3gauges.TypeBar {
-		if current.DampingEnabled {
+		if current.DampingEnabled || current.OvershootEnabled {
 			return defaultBarDampingDuration
 		}
 		return 0
@@ -732,7 +732,7 @@ func effectiveMovementPolicy(gaugeType string, policy string, damping bool, over
 	if policy == "" {
 		policy = v3gauges.MovementPolicyImmediate
 	}
-	if gaugeType == v3gauges.TypeRadial {
+	if gaugeType == v3gauges.TypeRadial || gaugeType == v3gauges.TypeBar {
 		if !damping && !overshoot && !pegBounce {
 			return v3gauges.MovementPolicyImmediate
 		}
@@ -788,7 +788,10 @@ func resolveIndicatorThermalFadeState(movements map[string]widgetMovementState, 
 
 func resolveBarMovementState(movements map[string]widgetMovementState, key string, context movementContext, pkg v3gauges.Package, source sensors.SensorState, planner movementPlanner, now time.Time) (sensors.SensorState, widgetMovementState, bool) {
 	damping := pkg.Realism.Damping
-	if movements == nil || damping == nil || !damping.Enabled {
+	overshoot := pkg.Realism.Overshoot
+	dampingEnabled := damping != nil && damping.Enabled
+	overshootEnabled := overshoot != nil
+	if movements == nil || (!dampingEnabled && !overshootEnabled) {
 		return source, widgetMovementState{}, false
 	}
 	if source.Status != sensors.StatusOK {
@@ -799,10 +802,7 @@ func resolveBarMovementState(movements map[string]widgetMovementState, key strin
 		return source, widgetMovementState{}, hadMovement && movementActive(previous)
 	}
 
-	policy := strings.TrimSpace(pkg.Realism.MovementPolicy)
-	if policy == "" || policy == v3gauges.MovementPolicyImmediate {
-		policy = v3gauges.MovementPolicyLinear
-	}
+	policy := effectiveMovementPolicy(context.GaugeType, pkg.Realism.MovementPolicy, dampingEnabled, overshootEnabled, false)
 
 	movement := movements[key]
 	previous := movement
@@ -812,7 +812,12 @@ func resolveBarMovementState(movements map[string]widgetMovementState, key strin
 			Phase:                movementPhaseStatic,
 			Policy:               policy,
 			RawTargetValue:       source.Value,
-			DampingEnabled:       true,
+			DampingEnabled:       dampingEnabled,
+			OvershootEnabled:     overshootEnabled,
+			OvershootSettleMode:  radialOvershootSettleMode(overshoot),
+			OvershootTargetValue: displayTarget,
+			OvershootMinValue:    pkg.ValueMap.Min,
+			OvershootMaxValue:    pkg.ValueMap.Max,
 			PreviousDisplayValue: displayTarget,
 			DisplayValue:         displayTarget,
 			TargetValue:          displayTarget,
@@ -821,7 +826,11 @@ func resolveBarMovementState(movements map[string]widgetMovementState, key strin
 	} else if source.Value != movement.RawTargetValue {
 		movement.Policy = policy
 		movement.RawTargetValue = source.Value
-		movement.DampingEnabled = true
+		movement.DampingEnabled = dampingEnabled
+		movement.OvershootEnabled = overshootEnabled
+		movement.OvershootSettleMode = radialOvershootSettleMode(overshoot)
+		movement.OvershootMinValue = pkg.ValueMap.Min
+		movement.OvershootMaxValue = pkg.ValueMap.Max
 		if displayTarget != movement.TargetValue {
 			if movementActive(movement) {
 				movement = advanceMovementState(movement, now)
@@ -832,7 +841,8 @@ func resolveBarMovementState(movements map[string]widgetMovementState, key strin
 			if planner != nil {
 				duration = planner(context, source, movement)
 			}
-			duration = barDampingDuration(damping, movement.PreviousDisplayValue, movement.TargetValue, duration)
+			duration = barMovementDuration(damping, movement.PreviousDisplayValue, movement.TargetValue, duration)
+			movement.OvershootTargetValue = radialOvershootTarget(movement.PreviousDisplayValue, movement.TargetValue, pkg.ValueMap, overshoot)
 			if duration <= 0 || movement.DisplayValue == movement.TargetValue {
 				movement.DisplayValue = movement.TargetValue
 				movement.Phase = movementPhaseStatic
@@ -842,8 +852,12 @@ func resolveBarMovementState(movements map[string]widgetMovementState, key strin
 				movement.StartedAt = time.Time{}
 			} else {
 				movement.Duration = duration
-				movement.TravelDuration = 0
-				movement.SettleDuration = 0
+				movement.TravelDuration = radialOvershootTravelDuration(movement.OvershootTargetValue, movement.TargetValue, duration, movement.OvershootSettleMode)
+				if movement.TravelDuration > 0 {
+					movement.SettleDuration = duration - movement.TravelDuration
+				} else {
+					movement.SettleDuration = 0
+				}
 				movement.StartedAt = now
 				movement.Phase = movementPhaseValueChange
 			}
@@ -875,6 +889,16 @@ func barDampingDuration(config *v3gauges.DampingConfig, previous float64, target
 		return time.Duration(config.FallMS) * time.Millisecond
 	}
 	return fallback
+}
+
+func barMovementDuration(config *v3gauges.DampingConfig, previous float64, target float64, fallback time.Duration) time.Duration {
+	if config == nil || !config.Enabled {
+		if previous == target {
+			return 0
+		}
+		return fallback
+	}
+	return barDampingDuration(config, previous, target, fallback)
 }
 
 func indicatorTargetAlpha(state sensors.SensorState) float64 {

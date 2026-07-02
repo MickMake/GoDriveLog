@@ -2802,6 +2802,214 @@ func TestRuntimeBarGaugeDampingSettlesAtFinalReveal(t *testing.T) {
 	}
 }
 
+func TestRuntimeBarGaugeOvershootDefaultDisabledStaysImmediate(t *testing.T) {
+	runtime := testBarMovementRuntimeWithRealismAndValueMap(t, "", 0, 100, true)
+	start := time.Unix(705, 0)
+
+	_, _, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 0, "c"), start))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	scenes, changed, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 80, "c"), start.Add(10*time.Millisecond)))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected immediate bar update to redraw")
+	}
+	if runtime.HasActiveMovement() {
+		t.Fatalf("expected default bar overshoot-disabled update to stay immediate")
+	}
+	if got := firstPartKind(requireWidget(t, scenes[0], "coolant"), PartKindBar).Window.Height; got != 144 {
+		t.Fatalf("expected immediate reveal height 144, got %d", got)
+	}
+}
+
+func TestRuntimeBarGaugeOvershootAnimatesRisingReveal(t *testing.T) {
+	runtime := testBarMovementRuntimeWithRealismAndValueMap(t, "  overshoot: {}\n", 0, 100, true)
+	start := time.Unix(706, 0)
+
+	_, _, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 0, "c"), start))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	_, changed, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 50, "c"), start.Add(10*time.Millisecond)))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed || !runtime.HasActiveMovement() {
+		t.Fatalf("expected overshoot-only rising bar movement to become active")
+	}
+
+	movement := runtime.movements[movementKey("primary", "coolant")]
+	if movement.DampingEnabled {
+		t.Fatalf("expected overshoot-only bar movement to keep damping disabled: %#v", movement)
+	}
+	if !movement.OvershootEnabled || movement.Duration <= 0 || movement.Phase != movementPhaseMoving {
+		t.Fatalf("expected overshoot-only rising bar movement to schedule animation: %#v", movement)
+	}
+
+	scenes, changed, err := runtime.Tick(start.Add(140 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected overshoot-only rising tick to redraw")
+	}
+	movement = runtime.movements[movementKey("primary", "coolant")]
+	if movement.DisplayValue <= 50 || movement.DisplayValue > 100 {
+		t.Fatalf("expected rising overshoot above target and within range, got %#v", movement)
+	}
+	if got := firstPartKind(requireWidget(t, scenes[0], "coolant"), PartKindBar).Window.Height; got <= 90 || got > 180 {
+		t.Fatalf("expected rising overshoot reveal height between target and max, got %d", got)
+	}
+}
+
+func TestRuntimeBarGaugeOvershootAnimatesFallingReveal(t *testing.T) {
+	runtime := testBarMovementRuntimeWithRealismAndValueMap(t, "  overshoot: {}\n", 0, 100, true)
+	start := time.Unix(707, 0)
+
+	_, _, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 100, "c"), start))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	_, changed, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 50, "c"), start.Add(10*time.Millisecond)))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed || !runtime.HasActiveMovement() {
+		t.Fatalf("expected overshoot-only falling bar movement to become active")
+	}
+
+	scenes, changed, err := runtime.Tick(start.Add(140 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected overshoot-only falling tick to redraw")
+	}
+	movement := runtime.movements[movementKey("primary", "coolant")]
+	if movement.DisplayValue >= 50 || movement.DisplayValue < 0 {
+		t.Fatalf("expected falling overshoot below target and within range, got %#v", movement)
+	}
+	if got := firstPartKind(requireWidget(t, scenes[0], "coolant"), PartKindBar).Window.Height; got >= 90 {
+		t.Fatalf("expected falling overshoot reveal height below target, got %d", got)
+	}
+}
+
+func TestRuntimeBarGaugeOvershootStaysBoundedAndSettlesOnTarget(t *testing.T) {
+	runtime := testBarMovementRuntimeWithRealismAndValueMap(t, "  overshoot: {}\n", 0, 100, true)
+	start := time.Unix(708, 0)
+	runtime.movementPlanner = func(context movementContext, state sensors.SensorState, current widgetMovementState) time.Duration {
+		return 300 * time.Millisecond
+	}
+
+	_, _, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 0, "c"), start))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	_, _, err = runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 80, "c"), start.Add(10*time.Millisecond)))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+
+	scenes, changed, err := runtime.Tick(start.Add(220 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected bounded overshoot tick to redraw")
+	}
+	movement := runtime.movements[movementKey("primary", "coolant")]
+	if movement.DisplayValue <= 80 || movement.DisplayValue > 100 {
+		t.Fatalf("expected bounded overshoot above target and within range, got %#v", movement)
+	}
+	if movement.OvershootTargetValue <= 80 || movement.OvershootTargetValue > 100 {
+		t.Fatalf("unexpected bounded bar overshoot target %#v", movement)
+	}
+	if got := firstPartKind(requireWidget(t, scenes[0], "coolant"), PartKindBar).Window.Height; got <= 144 || got > 180 {
+		t.Fatalf("expected bounded overshoot reveal height between target and max, got %d", got)
+	}
+
+	scenes, changed, err = runtime.Tick(start.Add(320 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected overshoot settle tick to redraw")
+	}
+	movement = runtime.movements[movementKey("primary", "coolant")]
+	if movement.DisplayValue != 80 || movement.TargetValue != 80 || movement.Phase != movementPhaseStatic {
+		t.Fatalf("expected bounded bar overshoot to settle exactly on target, got %#v", movement)
+	}
+	if runtime.HasActiveMovement() {
+		t.Fatalf("expected settled bar overshoot to stop ticking")
+	}
+	if got := firstPartKind(requireWidget(t, scenes[0], "coolant"), PartKindBar).Window.Height; got != 144 {
+		t.Fatalf("expected settled reveal height 144, got %d", got)
+	}
+}
+
+func TestRuntimeBarGaugeOvershootSettlesAtFinalReveal(t *testing.T) {
+	runtime := testBarMovementRuntimeWithRealismAndValueMap(t, "  overshoot: {}\n", 0, 100, true)
+	start := time.Unix(709, 0)
+
+	_, _, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 0, "c"), start))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	_, _, err = runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 50, "c"), start.Add(10*time.Millisecond)))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+
+	scenes, changed, err := runtime.Tick(start.Add(220 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected final overshoot settle tick to redraw")
+	}
+	movement := runtime.movements[movementKey("primary", "coolant")]
+	if movement.DisplayValue != 50 || movement.TargetValue != 50 || movement.Phase != movementPhaseStatic {
+		t.Fatalf("expected bar overshoot to settle exactly at final target, got %#v", movement)
+	}
+	if got := firstPartKind(requireWidget(t, scenes[0], "coolant"), PartKindBar).Window.Height; got != 90 {
+		t.Fatalf("expected settled reveal height 90, got %d", got)
+	}
+}
+
+func TestRuntimeBarGaugeOvershootLeavesStoredSourceValueUnchanged(t *testing.T) {
+	runtime := testBarMovementRuntimeWithRealismAndValueMap(t, "  overshoot: {}\n", 0, 100, true)
+	start := time.Unix(709, 0)
+
+	_, _, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 0, "c"), start))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	_, changed, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 50, "c"), start.Add(10*time.Millisecond)))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected overshoot source update to redraw")
+	}
+	if got := runtime.states["coolant_temperature"].Value; got != 50 {
+		t.Fatalf("expected stored source value 50 to remain unchanged, got %v", got)
+	}
+
+	_, changed, err = runtime.Tick(start.Add(140 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected active overshoot tick to redraw")
+	}
+	if got := runtime.states["coolant_temperature"].Value; got != 50 {
+		t.Fatalf("expected stored source value 50 to remain unchanged during overshoot, got %v", got)
+	}
+}
+
 func TestRuntimeBarGaugeDampingClampTrueTargetsDisplayedMaxValue(t *testing.T) {
 	runtime := testBarMovementRuntimeWithDampingAndValueMap(t, "  damping:\n    rise_ms: 100\n    fall_ms: 100\n", 0, 100, true)
 	start := time.Unix(710, 0)
@@ -3755,10 +3963,14 @@ func testOdometerMovementRuntimeWithRealism(t *testing.T, movement string, wrapa
 }
 
 func testBarMovementRuntimeWithDamping(t *testing.T, realismYAML string) *Runtime {
-	return testBarMovementRuntimeWithDampingAndValueMap(t, realismYAML, 40, 120, true)
+	return testBarMovementRuntimeWithRealismAndValueMap(t, realismYAML, 40, 120, true)
 }
 
 func testBarMovementRuntimeWithDampingAndValueMap(t *testing.T, realismYAML string, min float64, max float64, clamp bool) *Runtime {
+	return testBarMovementRuntimeWithRealismAndValueMap(t, realismYAML, min, max, clamp)
+}
+
+func testBarMovementRuntimeWithRealismAndValueMap(t *testing.T, realismYAML string, min float64, max float64, clamp bool) *Runtime {
 	t.Helper()
 	packageDir := makeDashboardBarGaugePackageWithRealismAndValueMap(t, realismYAML, min, max, clamp)
 	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 1024, Height: 600}, Widgets: []v3config.WidgetConfig{{ID: "coolant", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{0, 0}, Scale: 1}}}}}}

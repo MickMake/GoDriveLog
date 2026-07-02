@@ -1,0 +1,30 @@
+id: ornate_timber_fuel_bar
+type: bar
+sensor: fuel_level
+
+realism:
+  overshoot:
+    ratio: 0.18
+    min_change_ratio: 0.05
+    max_span_ratio: 0.08
+    settle_mode: smooth
+
+size:
+  width: 152
+  height: 300
+
+layers:
+  panel: ../panel.png
+  level: ../level.png
+  glass: ../glass.png
+
+value_map:
+  min: 0
+  max: 100
+  clamp: true
+
+bar:
+  mode: level
+  axis: vertical
+  origin: bottom
+  bounds: [56, 34, 40, 220]
