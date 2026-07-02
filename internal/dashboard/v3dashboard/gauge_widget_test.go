@@ -2802,6 +2802,365 @@ func TestRuntimeBarGaugeDampingSettlesAtFinalReveal(t *testing.T) {
 	}
 }
 
+func TestRuntimeBarGaugeDampingClampTrueTargetsDisplayedMaxValue(t *testing.T) {
+	runtime := testBarMovementRuntimeWithDampingAndValueMap(t, "  damping:\n    rise_ms: 100\n    fall_ms: 100\n", 0, 100, true)
+	start := time.Unix(710, 0)
+
+	_, _, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 0, "c"), start))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	_, changed, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 200, "c"), start.Add(10*time.Millisecond)))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed || !runtime.HasActiveMovement() {
+		t.Fatalf("expected clamped bar damping to start active movement")
+	}
+
+	movement := runtime.movements[movementKey("primary", "coolant")]
+	if movement.RawTargetValue != 200 || movement.TargetValue != 100 || movement.DisplayValue != 0 {
+		t.Fatalf("expected clamp=true bar damping to animate toward displayed max only, got %#v", movement)
+	}
+
+	scenes, changed, err := runtime.Tick(start.Add(60 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected clamped bar damping midpoint tick to redraw")
+	}
+	movement = runtime.movements[movementKey("primary", "coolant")]
+	if math.Abs(movement.DisplayValue-50) > 0.001 {
+		t.Fatalf("expected clamp=true midpoint display 50, got %#v", movement)
+	}
+	if got := firstPartKind(requireWidget(t, scenes[0], "coolant"), PartKindBar).Window.Height; got != 90 {
+		t.Fatalf("expected clamp=true midpoint reveal height 90, got %d", got)
+	}
+}
+
+func TestRuntimeBarGaugeDampingClampTrueFallsFromDisplayedMaxValue(t *testing.T) {
+	runtime := testBarMovementRuntimeWithDampingAndValueMap(t, "  damping:\n    rise_ms: 100\n    fall_ms: 100\n", 0, 100, true)
+	start := time.Unix(720, 0)
+
+	_, _, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 0, "c"), start))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	_, _, err = runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 200, "c"), start.Add(10*time.Millisecond)))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	_, changed, err := runtime.Tick(start.Add(110 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected clamp=true rise settle tick to redraw")
+	}
+
+	movement := runtime.movements[movementKey("primary", "coolant")]
+	if movement.DisplayValue != 100 || movement.TargetValue != 100 || movement.RawTargetValue != 200 {
+		t.Fatalf("expected clamp=true settled state to stay at displayed max, got %#v", movement)
+	}
+
+	_, changed, err = runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 80, "c"), start.Add(120*time.Millisecond)))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed || !runtime.HasActiveMovement() {
+		t.Fatalf("expected clamp=true fall from displayed max to start active movement")
+	}
+
+	movement = runtime.movements[movementKey("primary", "coolant")]
+	if movement.PreviousDisplayValue != 100 || movement.TargetValue != 80 || movement.RawTargetValue != 80 {
+		t.Fatalf("expected clamp=true fall to start from displayed max 100, got %#v", movement)
+	}
+
+	var scenes []Scene
+	scenes, changed, err = runtime.Tick(start.Add(170 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected clamp=true falling midpoint tick to redraw")
+	}
+	movement = runtime.movements[movementKey("primary", "coolant")]
+	if math.Abs(movement.DisplayValue-90) > 0.001 {
+		t.Fatalf("expected clamp=true falling midpoint display 90, got %#v", movement)
+	}
+	if got := firstPartKind(requireWidget(t, scenes[0], "coolant"), PartKindBar).Window.Height; got != 162 {
+		t.Fatalf("expected clamp=true falling midpoint reveal height 162, got %d", got)
+	}
+}
+
+func TestRuntimeBarGaugeDampingClampTrueTargetsDisplayedMinValue(t *testing.T) {
+	runtime := testBarMovementRuntimeWithDampingAndValueMap(t, "  damping:\n    rise_ms: 100\n    fall_ms: 100\n", 0, 100, true)
+	start := time.Unix(730, 0)
+
+	_, _, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 20, "c"), start))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	_, changed, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", -40, "c"), start.Add(10*time.Millisecond)))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed || !runtime.HasActiveMovement() {
+		t.Fatalf("expected clamp=true low out-of-range bar damping to start active movement")
+	}
+
+	movement := runtime.movements[movementKey("primary", "coolant")]
+	if movement.RawTargetValue != -40 || movement.TargetValue != 0 {
+		t.Fatalf("expected clamp=true low out-of-range target to clamp to displayed min, got %#v", movement)
+	}
+
+	scenes, changed, err := runtime.Tick(start.Add(60 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected clamp=true falling-to-min midpoint tick to redraw")
+	}
+	movement = runtime.movements[movementKey("primary", "coolant")]
+	if math.Abs(movement.DisplayValue-10) > 0.001 {
+		t.Fatalf("expected clamp=true falling-to-min midpoint display 10, got %#v", movement)
+	}
+	if got := firstPartKind(requireWidget(t, scenes[0], "coolant"), PartKindBar).Window.Height; got != 18 {
+		t.Fatalf("expected clamp=true falling-to-min reveal height 18, got %d", got)
+	}
+}
+
+func TestRuntimeBarGaugeDampingClampFalsePreservesRawTargetValue(t *testing.T) {
+	runtime := testBarMovementRuntimeWithDampingAndValueMap(t, "  damping:\n    rise_ms: 100\n    fall_ms: 100\n", 0, 100, false)
+	start := time.Unix(740, 0)
+
+	_, _, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 0, "c"), start))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	_, changed, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 200, "c"), start.Add(10*time.Millisecond)))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed || !runtime.HasActiveMovement() {
+		t.Fatalf("expected unclamped bar damping to keep active raw movement")
+	}
+
+	movement := runtime.movements[movementKey("primary", "coolant")]
+	if movement.RawTargetValue != 200 || movement.TargetValue != 200 {
+		t.Fatalf("expected clamp=false bar damping to keep raw target semantics, got %#v", movement)
+	}
+
+	scenes, changed, err := runtime.Tick(start.Add(60 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected unclamped bar damping midpoint tick to redraw")
+	}
+	movement = runtime.movements[movementKey("primary", "coolant")]
+	if math.Abs(movement.DisplayValue-100) > 0.001 {
+		t.Fatalf("expected clamp=false midpoint display 100 from raw target 200, got %#v", movement)
+	}
+	if got := firstPartKind(requireWidget(t, scenes[0], "coolant"), PartKindBar).Window.Height; got != 180 {
+		t.Fatalf("expected clamp=false midpoint reveal height 180 at displayed value 100, got %d", got)
+	}
+
+	scenes, changed, err = runtime.Tick(start.Add(110 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected unclamped bar damping settle tick to redraw")
+	}
+	movement = runtime.movements[movementKey("primary", "coolant")]
+	if movement.DisplayValue != 200 || movement.TargetValue != 200 || movement.Phase != movementPhaseStatic {
+		t.Fatalf("expected clamp=false bar damping to settle at raw target 200, got %#v", movement)
+	}
+	if got := firstPartKind(requireWidget(t, scenes[0], "coolant"), PartKindBar).Window.Height; got != 180 {
+		t.Fatalf("expected clamp=false settled reveal height to stay capped by bar geometry, got %d", got)
+	}
+}
+
+func TestRuntimeBarGaugeDampingClampTrueLeavesStoredSourceValueUnchanged(t *testing.T) {
+	runtime := testBarMovementRuntimeWithDampingAndValueMap(t, "  damping:\n    rise_ms: 100\n    fall_ms: 100\n", 0, 100, true)
+	start := time.Unix(750, 0)
+
+	_, _, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 0, "c"), start))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	_, changed, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 200, "c"), start.Add(10*time.Millisecond)))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected clamp=true source update to redraw")
+	}
+	if got := runtime.states["coolant_temperature"].Value; got != 200 {
+		t.Fatalf("expected stored source value 200 to remain unchanged, got %v", got)
+	}
+
+	_, changed, err = runtime.Tick(start.Add(60 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected clamp=true active tick to redraw")
+	}
+	if got := runtime.states["coolant_temperature"].Value; got != 200 {
+		t.Fatalf("expected stored source value 200 to remain unchanged during clamped movement, got %v", got)
+	}
+}
+
+func TestRuntimeBarGaugeDampingClampTrueSameDisplayedTargetDoesNotRestart(t *testing.T) {
+	runtime := testBarMovementRuntimeWithDampingAndValueMap(t, "  damping:\n    rise_ms: 100\n    fall_ms: 100\n", 0, 100, true)
+	start := time.Unix(760, 0)
+
+	_, _, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 0, "c"), start))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	firstRetargetAt := start.Add(10 * time.Millisecond)
+	_, _, err = runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 200, "c"), firstRetargetAt))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+
+	secondRawAt := start.Add(60 * time.Millisecond)
+	_, changed, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 150, "c"), secondRawAt))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed || !runtime.HasActiveMovement() {
+		t.Fatalf("expected same-display clamp=true update to keep active movement")
+	}
+
+	movement := runtime.movements[movementKey("primary", "coolant")]
+	if movement.RawTargetValue != 150 {
+		t.Fatalf("expected latest raw target 150, got %#v", movement)
+	}
+	if movement.TargetValue != 100 || movement.PreviousDisplayValue != 0 {
+		t.Fatalf("expected same visible target to preserve original display retarget state, got %#v", movement)
+	}
+	if !movement.StartedAt.Equal(firstRetargetAt) || movement.Duration != 100*time.Millisecond || movement.Phase != movementPhaseMoving {
+		t.Fatalf("expected same visible target update not to restart active movement, got %#v", movement)
+	}
+	if math.Abs(movement.DisplayValue-50) > 0.001 {
+		t.Fatalf("expected continued midpoint display 50 without restart, got %#v", movement)
+	}
+}
+
+func TestRuntimeBarGaugeDampingClampTrueRepeatedHighUpdatesStillSettleOnSchedule(t *testing.T) {
+	runtime := testBarMovementRuntimeWithDampingAndValueMap(t, "  damping:\n    rise_ms: 100\n    fall_ms: 100\n", 0, 100, true)
+	start := time.Unix(770, 0)
+
+	_, _, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 0, "c"), start))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	_, _, err = runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 200, "c"), start.Add(10*time.Millisecond)))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	_, _, err = runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 150, "c"), start.Add(60*time.Millisecond)))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	_, _, err = runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 180, "c"), start.Add(90*time.Millisecond)))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+
+	scenes, changed, err := runtime.Tick(start.Add(110 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected scheduled settle tick to redraw")
+	}
+	movement := runtime.movements[movementKey("primary", "coolant")]
+	if movement.DisplayValue != 100 || movement.TargetValue != 100 || movement.RawTargetValue != 180 || movement.Phase != movementPhaseStatic {
+		t.Fatalf("expected repeated same-display clamp=true updates to settle at displayed max on schedule, got %#v", movement)
+	}
+	if runtime.HasActiveMovement() {
+		t.Fatalf("expected repeated same-display clamp=true updates not to extend active movement")
+	}
+	if got := firstPartKind(requireWidget(t, scenes[0], "coolant"), PartKindBar).Window.Height; got != 180 {
+		t.Fatalf("expected settled reveal height 180 at displayed max, got %d", got)
+	}
+}
+
+func TestRuntimeBarGaugeDampingClampFalseRawRetargetRestartsMovement(t *testing.T) {
+	runtime := testBarMovementRuntimeWithDampingAndValueMap(t, "  damping:\n    rise_ms: 100\n    fall_ms: 100\n", 0, 100, false)
+	start := time.Unix(780, 0)
+
+	_, _, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 0, "c"), start))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	_, _, err = runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 200, "c"), start.Add(10*time.Millisecond)))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+
+	retargetAt := start.Add(60 * time.Millisecond)
+	_, changed, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 150, "c"), retargetAt))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed || !runtime.HasActiveMovement() {
+		t.Fatalf("expected clamp=false raw retarget to keep active movement")
+	}
+
+	movement := runtime.movements[movementKey("primary", "coolant")]
+	if movement.RawTargetValue != 150 || movement.TargetValue != 150 {
+		t.Fatalf("expected clamp=false retarget to update raw and display targets, got %#v", movement)
+	}
+	if math.Abs(movement.PreviousDisplayValue-100) > 0.001 || math.Abs(movement.DisplayValue-100) > 0.001 {
+		t.Fatalf("expected clamp=false retarget to restart from current display 100, got %#v", movement)
+	}
+	if !movement.StartedAt.Equal(retargetAt) || movement.Duration != 100*time.Millisecond || movement.Phase != movementPhaseMoving {
+		t.Fatalf("expected clamp=false retarget to restart timing, got %#v", movement)
+	}
+}
+
+func TestRuntimeBarGaugeDampingClampTrueStoresLatestRawValue(t *testing.T) {
+	runtime := testBarMovementRuntimeWithDampingAndValueMap(t, "  damping:\n    rise_ms: 100\n    fall_ms: 100\n", 0, 100, true)
+	start := time.Unix(790, 0)
+
+	_, _, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 0, "c"), start))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	_, _, err = runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 200, "c"), start.Add(10*time.Millisecond)))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	_, changed, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 150, "c"), start.Add(60*time.Millisecond)))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected latest raw source update to redraw current movement state")
+	}
+	if got := runtime.states["coolant_temperature"].Value; got != 150 {
+		t.Fatalf("expected stored source value 150 after same-display retarget, got %v", got)
+	}
+
+	_, changed, err = runtime.Tick(start.Add(80 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected active movement tick to redraw")
+	}
+	if got := runtime.states["coolant_temperature"].Value; got != 150 {
+		t.Fatalf("expected stored source value 150 to remain latest raw value during continued movement, got %v", got)
+	}
+}
+
 func TestRuntimeLoadsSegmentedGaugeWidgetPackageAndPersistsHysteresis(t *testing.T) {
 	packageDir := makeDashboardSegmentedGaugePackage(t)
 	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 1024, Height: 600}, Widgets: []v3config.WidgetConfig{{ID: "rpm", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{120, 80}, Scale: 1.5}}}}}}
@@ -3040,6 +3399,10 @@ func makeDashboardBarGaugePackage(t *testing.T) string {
 }
 
 func makeDashboardBarGaugePackageWithRealism(t *testing.T, realismYAML string) string {
+	return makeDashboardBarGaugePackageWithRealismAndValueMap(t, realismYAML, 40, 120, true)
+}
+
+func makeDashboardBarGaugePackageWithRealismAndValueMap(t *testing.T, realismYAML string, min float64, max float64, clamp bool) string {
 	t.Helper()
 	root := t.TempDir()
 	files := []string{
@@ -3060,7 +3423,7 @@ func makeDashboardBarGaugePackageWithRealism(t *testing.T, realismYAML string) s
 	if err := os.MkdirAll(packageDir, 0o755); err != nil {
 		t.Fatalf("MkdirAll: %v", err)
 	}
-	if err := os.WriteFile(filepath.Join(packageDir, "gauge.yaml"), []byte(dashboardBarGaugeYAML(realismYAML)), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(packageDir, "gauge.yaml"), []byte(dashboardBarGaugeYAMLWithValueMap(realismYAML, min, max, clamp)), 0o600); err != nil {
 		t.Fatalf("WriteFile: %v", err)
 	}
 	return packageDir
@@ -3294,14 +3657,18 @@ layers:
 }
 
 func dashboardBarGaugeYAML(realismYAML string) string {
+	return dashboardBarGaugeYAMLWithValueMap(realismYAML, 40, 120, true)
+}
+
+func dashboardBarGaugeYAMLWithValueMap(realismYAML string, min float64, max float64, clamp bool) string {
 	realismBlock := ""
 	if strings.TrimSpace(realismYAML) != "" {
 		realismBlock = "realism:\n" + realismYAML
 	}
-	return `id: dashboard_coolant_bar
+	return fmt.Sprintf(`id: dashboard_coolant_bar
 type: bar
 sensor: coolant_temperature
-` + realismBlock + `size:
+%ssize:
   width: 120
   height: 220
 layers:
@@ -3309,15 +3676,15 @@ layers:
   level: level.png
   glass: glass.png
 value_map:
-  min: 40
-  max: 120
-  clamp: true
+  min: %g
+  max: %g
+  clamp: %t
 bar:
   mode: level
   axis: vertical
   origin: bottom
   bounds: [40, 20, 24, 180]
-`
+`, realismBlock, min, max, clamp)
 }
 
 func dashboardSegmentedGaugeYAML() string {
@@ -3388,8 +3755,12 @@ func testOdometerMovementRuntimeWithRealism(t *testing.T, movement string, wrapa
 }
 
 func testBarMovementRuntimeWithDamping(t *testing.T, realismYAML string) *Runtime {
+	return testBarMovementRuntimeWithDampingAndValueMap(t, realismYAML, 40, 120, true)
+}
+
+func testBarMovementRuntimeWithDampingAndValueMap(t *testing.T, realismYAML string, min float64, max float64, clamp bool) *Runtime {
 	t.Helper()
-	packageDir := makeDashboardBarGaugePackageWithRealism(t, realismYAML)
+	packageDir := makeDashboardBarGaugePackageWithRealismAndValueMap(t, realismYAML, min, max, clamp)
 	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 1024, Height: 600}, Widgets: []v3config.WidgetConfig{{ID: "coolant", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{0, 0}, Scale: 1}}}}}}
 	runtime, err := NewRuntime(plan, testAssetRegistry())
 	if err != nil {
