@@ -2425,6 +2425,139 @@ func TestRuntimeBarGaugeWidgetSceneSignatureChangesWithRevealHeight(t *testing.T
 	}
 }
 
+func TestRuntimeBarGaugeDampingDisabledRemainsImmediate(t *testing.T) {
+	runtime := testBarMovementRuntimeWithDamping(t, "")
+	start := time.Unix(400, 0)
+
+	_, _, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 40, "c"), start))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	scenes, changed, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 80, "c"), start.Add(10*time.Millisecond)))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected immediate bar change to redraw")
+	}
+	if runtime.HasActiveMovement() {
+		t.Fatalf("expected disabled bar damping to stay static")
+	}
+	if got := firstPartKind(requireWidget(t, scenes[0], "coolant"), PartKindBar).Window.Height; got != 90 {
+		t.Fatalf("expected immediate reveal height 90, got %d", got)
+	}
+}
+
+func TestRuntimeBarGaugeDampingAnimatesRisingReveal(t *testing.T) {
+	runtime := testBarMovementRuntimeWithDamping(t, "  damping: true\n")
+	start := time.Unix(500, 0)
+	runtime.movementPlanner = func(context movementContext, state sensors.SensorState, current widgetMovementState) time.Duration {
+		if !current.DampingEnabled {
+			t.Fatalf("expected damping-enabled movement state, got %#v", current)
+		}
+		return 200 * time.Millisecond
+	}
+
+	_, _, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 40, "c"), start))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	_, changed, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 80, "c"), start.Add(10*time.Millisecond)))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed || !runtime.HasActiveMovement() {
+		t.Fatalf("expected rising bar damping to start active movement")
+	}
+
+	movement := runtime.movements[movementKey("primary", "coolant")]
+	if movement.Policy != v3gauges.MovementPolicyLinear {
+		t.Fatalf("expected bar damping to default to linear movement curve, got %#v", movement)
+	}
+
+	scenes, changed, err := runtime.Tick(start.Add(110 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected active bar damping tick to redraw")
+	}
+	movement = runtime.movements[movementKey("primary", "coolant")]
+	if math.Abs(movement.DisplayValue-60) > 0.001 {
+		t.Fatalf("expected rising bar midpoint display 60, got %#v", movement)
+	}
+	if got := firstPartKind(requireWidget(t, scenes[0], "coolant"), PartKindBar).Window.Height; got != 45 {
+		t.Fatalf("expected rising midpoint reveal height 45, got %d", got)
+	}
+}
+
+func TestRuntimeBarGaugeDampingAnimatesFallingReveal(t *testing.T) {
+	runtime := testBarMovementRuntimeWithDamping(t, "  damping:\n    rise_ms: 100\n    fall_ms: 240\n")
+	start := time.Unix(600, 0)
+
+	_, _, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 120, "c"), start))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	_, changed, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 80, "c"), start.Add(10*time.Millisecond)))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed || !runtime.HasActiveMovement() {
+		t.Fatalf("expected falling bar damping to start active movement")
+	}
+
+	scenes, changed, err := runtime.Tick(start.Add(130 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected falling bar damping tick to redraw")
+	}
+	movement := runtime.movements[movementKey("primary", "coolant")]
+	if math.Abs(movement.DisplayValue-100) > 0.001 {
+		t.Fatalf("expected falling bar midpoint display 100, got %#v", movement)
+	}
+	if got := firstPartKind(requireWidget(t, scenes[0], "coolant"), PartKindBar).Window.Height; got != 135 {
+		t.Fatalf("expected falling midpoint reveal height 135, got %d", got)
+	}
+}
+
+func TestRuntimeBarGaugeDampingSettlesAtFinalReveal(t *testing.T) {
+	runtime := testBarMovementRuntimeWithDamping(t, "  damping:\n    rise_ms: 100\n    fall_ms: 240\n")
+	start := time.Unix(700, 0)
+
+	_, _, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 40, "c"), start))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	_, changed, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 80, "c"), start.Add(10*time.Millisecond)))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected damping start to change rendered output")
+	}
+
+	scenes, changed, err := runtime.Tick(start.Add(110 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected final damping tick to redraw")
+	}
+	movement := runtime.movements[movementKey("primary", "coolant")]
+	if movement.DisplayValue != 80 || movement.TargetValue != 80 || movement.Phase != movementPhaseStatic {
+		t.Fatalf("expected rising bar damping to settle exactly at the target, got %#v", movement)
+	}
+	if got := firstPartKind(requireWidget(t, scenes[0], "coolant"), PartKindBar).Window.Height; got != 90 {
+		t.Fatalf("expected settled reveal height 90, got %d", got)
+	}
+	if runtime.HasActiveMovement() {
+		t.Fatalf("expected settled bar damping to stop ticking")
+	}
+}
+
 func TestRuntimeLoadsSegmentedGaugeWidgetPackageAndPersistsHysteresis(t *testing.T) {
 	packageDir := makeDashboardSegmentedGaugePackage(t)
 	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 1024, Height: 600}, Widgets: []v3config.WidgetConfig{{ID: "rpm", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{120, 80}, Scale: 1.5}}}}}}
@@ -2645,6 +2778,10 @@ func makeDashboardIndicatorGaugePackageWithThermalFade(t *testing.T, riseMS *int
 }
 
 func makeDashboardBarGaugePackage(t *testing.T) string {
+	return makeDashboardBarGaugePackageWithRealism(t, "")
+}
+
+func makeDashboardBarGaugePackageWithRealism(t *testing.T, realismYAML string) string {
 	t.Helper()
 	root := t.TempDir()
 	files := []string{
@@ -2665,7 +2802,7 @@ func makeDashboardBarGaugePackage(t *testing.T) string {
 	if err := os.MkdirAll(packageDir, 0o755); err != nil {
 		t.Fatalf("MkdirAll: %v", err)
 	}
-	if err := os.WriteFile(filepath.Join(packageDir, "gauge.yaml"), []byte(dashboardBarGaugeYAML()), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(packageDir, "gauge.yaml"), []byte(dashboardBarGaugeYAML(realismYAML)), 0o600); err != nil {
 		t.Fatalf("WriteFile: %v", err)
 	}
 	return packageDir
@@ -2895,11 +3032,15 @@ layers:
 `
 }
 
-func dashboardBarGaugeYAML() string {
+func dashboardBarGaugeYAML(realismYAML string) string {
+	realismBlock := ""
+	if strings.TrimSpace(realismYAML) != "" {
+		realismBlock = "realism:\n" + realismYAML
+	}
 	return `id: dashboard_coolant_bar
 type: bar
 sensor: coolant_temperature
-size:
+` + realismBlock + `size:
   width: 120
   height: 220
 layers:
@@ -2963,6 +3104,17 @@ func testOdometerMovementRuntimeWithRealism(t *testing.T, movement string, wrapa
 	t.Helper()
 	packageDir := makeDashboardOdometerGaugePackageWithRealism(t, movement, wraparound, carryDrag, snapSettle)
 	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 1024, Height: 600}, Widgets: []v3config.WidgetConfig{{ID: "trip", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{0, 0}, Scale: 1}}}}}}
+	runtime, err := NewRuntime(plan, testAssetRegistry())
+	if err != nil {
+		t.Fatalf("NewRuntime failed: %v", err)
+	}
+	return runtime
+}
+
+func testBarMovementRuntimeWithDamping(t *testing.T, realismYAML string) *Runtime {
+	t.Helper()
+	packageDir := makeDashboardBarGaugePackageWithRealism(t, realismYAML)
+	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 1024, Height: 600}, Widgets: []v3config.WidgetConfig{{ID: "coolant", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{0, 0}, Scale: 1}}}}}}
 	runtime, err := NewRuntime(plan, testAssetRegistry())
 	if err != nil {
 		t.Fatalf("NewRuntime failed: %v", err)

@@ -12,8 +12,8 @@ size:
   height: 108
 
 layers:
-  bezel: ../../../assets/gauges/check_engine_indicator/bezel.png
-  face: ../../../assets/gauges/check_engine_indicator/face.png
-  off: ../../../assets/gauges/check_engine_indicator/off.png
-  on: ../../../assets/gauges/check_engine_indicator/on.png
-  glass: ../../../assets/gauges/check_engine_indicator/glass.png
+  bezel: ../bezel.png
+  face: ../face.png
+  off: ../off.png
+  on: ../on.png
+  glass: ../glass.png

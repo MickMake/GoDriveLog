@@ -1,10 +1,10 @@
 # v3.5 Implementation State
 
-Status: v3.5.12 indicator thermal fade implemented; v3.5.13, v3.5.16, and v3.5.19 through v3.5.22 remain pending
+Status: v3.5.13 bar smoothing implemented; v3.5.16 and v3.5.19 through v3.5.22 remain pending
 
-Current target: v3.5.13 bar smoothing
+Current target: v3.5.16 radial display-only hysteresis
 
-Current branch: `v3.5-bar-realism-docs`
+Current branch: `codex/v3.5.13-bar-smoothing`
 
 ## Scope
 
@@ -115,7 +115,7 @@ Not allowed in v3.5:
 - [x] v3.5.10 radial overshoot
 - [x] v3.5.11 radial peg bounce
 - [x] v3.5.12 indicator thermal fade
-- [ ] v3.5.13 bar smoothing
+- [x] v3.5.13 bar smoothing
 - [x] v3.5.14 odometer snap / settle
 - [x] v3.5.15 odometer backlash
 - [ ] v3.5.16 radial display-only hysteresis

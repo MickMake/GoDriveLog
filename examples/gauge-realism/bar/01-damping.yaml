@@ -23,5 +23,5 @@ dashboards:
     widgets:
       - id: fuel_bar
         type: gauge
-        gauge: assets/00-baseline
+        gauge: assets/01-damping
         position: [0, 0]
