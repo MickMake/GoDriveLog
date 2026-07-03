@@ -904,6 +904,40 @@ value_map:
 	}
 }
 
+func TestLoadPackageAcceptsBarHysteresis(t *testing.T) {
+	root := makeGaugeFixtures(t)
+	packageDir := filepath.Join(root, "assets", "gauges", "bar", "hysteresis")
+	writeGaugeYAML(t, packageDir, `id: hysteresis_bar
+type: bar
+sensor: coolant_temperature
+realism:
+  hysteresis: true
+size:
+  width: 100
+  height: 100
+layers:
+  panel: panel.png
+  level: level.png
+value_map:
+  min: 40
+  max: 120
+  clamp: true
+bar:
+  mode: level
+  axis: vertical
+  origin: bottom
+  bounds: [10, 10, 20, 60]
+`)
+
+	pkg, err := LoadPackage(packageDir)
+	if err != nil {
+		t.Fatalf("LoadPackage returned error: %v", err)
+	}
+	if pkg.Realism.Hysteresis == nil || !*pkg.Realism.Hysteresis {
+		t.Fatalf("hysteresis = %#v, want true", pkg.Realism.Hysteresis)
+	}
+}
+
 func TestLoadPackageAcceptsRadialStiction(t *testing.T) {
 	root := makeGaugeFixtures(t)
 	packageDir := filepath.Join(root, "assets", "gauges", "radial", "stiction")
@@ -1706,8 +1740,8 @@ func TestLoadPackageRejectsHysteresisOnUnsupportedGaugeType(t *testing.T) {
 		packageType string
 		want        string
 	}{
-		{name: "bar", packageType: "bar", want: "only supported for radial gauges"},
-		{name: "indicator", packageType: "indicator", want: "only supported for radial gauges"},
+		{name: "indicator", packageType: "indicator", want: "only supported for radial and bar gauges"},
+		{name: "numeric", packageType: "numeric", want: "only supported for radial and bar gauges"},
 	}
 
 	for _, test := range tests {
@@ -1771,6 +1805,27 @@ layers:
   off: off.png
   on: on.png
   glass: glass.png
+`
+			}
+			if test.packageType == "numeric" {
+				yamlText = `id: bad_numeric
+type: numeric
+sensor: rpm
+realism:
+  hysteresis: true
+size:
+  width: 100
+  height: 40
+layers:
+  panel: panel.png
+digits:
+  count: 1
+  positions:
+    - [0, 0]
+digit_set:
+  background: bg.png
+  characters:
+    "0": zero.png
 `
 			}
 			writeGaugeYAML(t, packageDir, yamlText)

@@ -3010,6 +3010,118 @@ func TestRuntimeBarGaugeOvershootLeavesStoredSourceValueUnchanged(t *testing.T) 
 	}
 }
 
+func TestRuntimeBarGaugeHysteresisDefaultDisabledStaysImmediate(t *testing.T) {
+	runtime := testBarMovementRuntimeWithRealismAndValueMap(t, "", 0, 100, true)
+	start := time.Unix(709, 0)
+
+	_, _, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 0, "c"), start))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	scenes, changed, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 50, "c"), start.Add(10*time.Millisecond)))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected non-hysteresis bar update to redraw")
+	}
+	if runtime.HasActiveMovement() {
+		t.Fatalf("expected disabled bar hysteresis to avoid active movement")
+	}
+	movement := runtime.movements[movementKey("primary", "coolant")]
+	if movement.HasValue {
+		t.Fatalf("unexpected disabled bar hysteresis state: %#v", movement)
+	}
+	if got := firstPartKind(requireWidget(t, scenes[0], "coolant"), PartKindBar).Window.Height; got != 90 {
+		t.Fatalf("expected disabled bar hysteresis reveal height 90, got %d", got)
+	}
+}
+
+func TestRuntimeBarGaugeHysteresisOffsetsRisingApproach(t *testing.T) {
+	runtime := testBarMovementRuntimeWithRealismAndValueMap(t, "  hysteresis: true\n", 0, 100, true)
+	start := time.Unix(710, 0)
+
+	_, _, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 0, "c"), start))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	scenes, changed, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 50, "c"), start.Add(10*time.Millisecond)))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected rising bar hysteresis update to redraw")
+	}
+	if runtime.HasActiveMovement() {
+		t.Fatalf("expected hysteresis-only bar update to stay immediate")
+	}
+	movement := runtime.movements[movementKey("primary", "coolant")]
+	if !movement.HysteresisEnabled || movement.ApproachDirection != 1 || movement.RawTargetValue != 50 || movement.DisplayValue <= 50 {
+		t.Fatalf("unexpected rising bar hysteresis state: %#v", movement)
+	}
+	if got := firstPartKind(requireWidget(t, scenes[0], "coolant"), PartKindBar).Window.Height; got != 92 {
+		t.Fatalf("expected rising bar hysteresis reveal height 92, got %d", got)
+	}
+}
+
+func TestRuntimeBarGaugeHysteresisOffsetsFallingApproach(t *testing.T) {
+	runtime := testBarMovementRuntimeWithRealismAndValueMap(t, "  hysteresis: true\n", 0, 100, true)
+	start := time.Unix(711, 0)
+
+	_, _, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 100, "c"), start))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	scenes, changed, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 50, "c"), start.Add(10*time.Millisecond)))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected falling bar hysteresis update to redraw")
+	}
+	if runtime.HasActiveMovement() {
+		t.Fatalf("expected hysteresis-only falling bar update to stay immediate")
+	}
+	movement := runtime.movements[movementKey("primary", "coolant")]
+	if !movement.HysteresisEnabled || movement.ApproachDirection != -1 || movement.RawTargetValue != 50 || movement.DisplayValue >= 50 {
+		t.Fatalf("unexpected falling bar hysteresis state: %#v", movement)
+	}
+	if got := firstPartKind(requireWidget(t, scenes[0], "coolant"), PartKindBar).Window.Height; got != 88 {
+		t.Fatalf("expected falling bar hysteresis reveal height 88, got %d", got)
+	}
+}
+
+func TestRuntimeBarGaugeHysteresisLeavesStoredSourceValueUnchanged(t *testing.T) {
+	runtime := testBarMovementRuntimeWithRealismAndValueMap(t, "  hysteresis: true\n", 0, 100, true)
+	start := time.Unix(712, 0)
+
+	_, _, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 0, "c"), start))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	_, changed, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 50, "c"), start.Add(10*time.Millisecond)))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected bar hysteresis source update to redraw")
+	}
+	if got := runtime.states["coolant_temperature"].Value; got != 50 {
+		t.Fatalf("expected stored source value 50 to remain unchanged, got %v", got)
+	}
+
+	_, changed, err = runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 50, "c"), start.Add(20*time.Millisecond)))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if changed {
+		t.Fatalf("expected unchanged bar hysteresis source value to avoid redraw")
+	}
+	if got := runtime.states["coolant_temperature"].Value; got != 50 {
+		t.Fatalf("expected stored source value 50 to remain unchanged after repeated input, got %v", got)
+	}
+}
+
 func TestRuntimeBarGaugeDampingClampTrueTargetsDisplayedMaxValue(t *testing.T) {
 	runtime := testBarMovementRuntimeWithDampingAndValueMap(t, "  damping:\n    rise_ms: 100\n    fall_ms: 100\n", 0, 100, true)
 	start := time.Unix(710, 0)
