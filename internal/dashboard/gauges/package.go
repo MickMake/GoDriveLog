@@ -667,11 +667,11 @@ func validateRealism(pkg Package) error {
 		}
 	}
 	if pkg.Realism.Overshoot != nil {
-		if pkg.Type != TypeRadial {
-			return fmt.Errorf("realism overshoot is only supported for radial gauges")
+		if pkg.Type != TypeRadial && pkg.Type != TypeBar {
+			return fmt.Errorf("realism overshoot is only supported for radial and bar gauges")
 		}
 		if pkg.ValueMap.Max <= pkg.ValueMap.Min {
-			return fmt.Errorf("realism overshoot requires a valid radial value_map range")
+			return fmt.Errorf("realism overshoot requires a valid value_map range")
 		}
 		if pkg.Realism.Overshoot.Ratio != nil {
 			ratio := *pkg.Realism.Overshoot.Ratio
@@ -708,7 +708,13 @@ func validateRealism(pkg Package) error {
 		default:
 			return fmt.Errorf("realism overshoot settle_mode %q is not supported", pkg.Realism.Overshoot.SettleMode)
 		}
+		if pkg.Type == TypeBar && pkg.Realism.Overshoot.SettleMode == OvershootSettleOscillate {
+			return fmt.Errorf("realism overshoot settle_mode %q is not supported for bar gauges", pkg.Realism.Overshoot.SettleMode)
+		}
 		if pkg.Realism.Overshoot.SettleCycles != nil {
+			if pkg.Type == TypeBar {
+				return fmt.Errorf("realism overshoot settle_cycles is not supported for bar gauges")
+			}
 			settleCycles := *pkg.Realism.Overshoot.SettleCycles
 			if math.IsNaN(settleCycles) || math.IsInf(settleCycles, 0) {
 				return fmt.Errorf("realism overshoot settle_cycles must be finite")
@@ -718,6 +724,9 @@ func validateRealism(pkg Package) error {
 			}
 		}
 		if pkg.Realism.Overshoot.SettleDamping != nil {
+			if pkg.Type == TypeBar {
+				return fmt.Errorf("realism overshoot settle_damping is not supported for bar gauges")
+			}
 			settleDamping := *pkg.Realism.Overshoot.SettleDamping
 			if math.IsNaN(settleDamping) || math.IsInf(settleDamping, 0) {
 				return fmt.Errorf("realism overshoot settle_damping must be finite")

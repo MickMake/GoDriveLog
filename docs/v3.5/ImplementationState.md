@@ -1,10 +1,10 @@
 # v3.5 Implementation State
 
-Status: v3.5.16 radial display-only hysteresis implemented; v3.5.19 through v3.5.22 remain pending
+Status: v3.5.19 bar overshoot implemented; v3.5.20 through v3.5.22 remain pending
 
-Current target: v3.5.19 bar overshoot
+Current target: v3.5.20 bar hysteresis
 
-Current branch: `codex/v3.5.16-radial-display-only-hysteresis`
+Current branch: `codex/v3.5.19-bar-overshoot`
 
 ## Scope
 
@@ -121,7 +121,7 @@ Not allowed in v3.5:
 - [x] v3.5.16 radial display-only hysteresis
 - [x] v3.5.17 radial needle drop shadow
 - [x] v3.5.18 radial calibration offset
-- [ ] v3.5.19 bar overshoot
+- [x] v3.5.19 bar overshoot
 - [ ] v3.5.20 bar hysteresis
 - [ ] v3.5.21 bar stiction
 - [ ] v3.5.22 bar peg bounce
