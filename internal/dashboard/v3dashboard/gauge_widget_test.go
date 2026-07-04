@@ -3246,6 +3246,210 @@ func TestRuntimeBarGaugeHysteresisClampFalseLeavesStoredSourceValueRaw(t *testin
 	}
 }
 
+func TestRuntimeBarGaugeStictionBelowThresholdHoldsDisplay(t *testing.T) {
+	runtime := testBarMovementRuntimeWithRealismAndValueMap(t, "  stiction: 15\n", 0, 100, true)
+	start := time.Unix(717, 0)
+
+	_, _, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 40, "c"), start))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	scenes, changed, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 50, "c"), start.Add(10*time.Millisecond)))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if changed || scenes != nil {
+		t.Fatalf("expected below-threshold bar stiction to suppress redraw, changed=%v scenes=%#v", changed, scenes)
+	}
+	if runtime.HasActiveMovement() {
+		t.Fatalf("expected below-threshold bar stiction to remain static")
+	}
+
+	movement := runtime.movements[movementKey("primary", "coolant")]
+	if movement.DisplayValue != 40 || movement.TargetValue != 50 || movement.RawTargetValue != 50 || movement.Phase != movementPhaseStatic {
+		t.Fatalf("unexpected held bar stiction state: %#v", movement)
+	}
+}
+
+func TestRuntimeBarGaugeStictionReleasesAboveThreshold(t *testing.T) {
+	runtime := testBarMovementRuntimeWithRealismAndValueMap(t, "  stiction: 15\n", 0, 100, true)
+	start := time.Unix(718, 0)
+
+	_, _, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 40, "c"), start))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	_, _, err = runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 50, "c"), start.Add(10*time.Millisecond)))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+
+	scenes, changed, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 60, "c"), start.Add(20*time.Millisecond)))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed || scenes == nil {
+		t.Fatalf("expected above-threshold bar stiction to release and redraw")
+	}
+	if runtime.HasActiveMovement() {
+		t.Fatalf("expected stiction-only bar release to jump without active damping")
+	}
+
+	movement := runtime.movements[movementKey("primary", "coolant")]
+	if movement.DisplayValue != 60 || movement.TargetValue != 60 || movement.RawTargetValue != 60 || movement.Phase != movementPhaseStatic {
+		t.Fatalf("unexpected released bar stiction state: %#v", movement)
+	}
+	if got := firstPartKind(requireWidget(t, scenes[0], "coolant"), PartKindBar).Window.Height; got != 108 {
+		t.Fatalf("expected released bar stiction reveal height 108, got %d", got)
+	}
+}
+
+func TestRuntimeBarGaugeStictionLargeChangeMovesImmediately(t *testing.T) {
+	runtime := testBarMovementRuntimeWithRealismAndValueMap(t, "  stiction: 15\n", 0, 100, true)
+	start := time.Unix(719, 0)
+
+	_, _, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 0, "c"), start))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	scenes, changed, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 40, "c"), start.Add(10*time.Millisecond)))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed || scenes == nil {
+		t.Fatalf("expected large bar stiction change to redraw immediately")
+	}
+	if runtime.HasActiveMovement() {
+		t.Fatalf("expected large stiction-only bar change to avoid active movement")
+	}
+
+	movement := runtime.movements[movementKey("primary", "coolant")]
+	if movement.DisplayValue != 40 || movement.TargetValue != 40 || movement.RawTargetValue != 40 || movement.Phase != movementPhaseStatic {
+		t.Fatalf("unexpected large-change bar stiction state: %#v", movement)
+	}
+	if got := firstPartKind(requireWidget(t, scenes[0], "coolant"), PartKindBar).Window.Height; got != 72 {
+		t.Fatalf("expected large-change bar stiction reveal height 72, got %d", got)
+	}
+}
+
+func TestRuntimeBarGaugeStictionDefaultDisabledDoesNotHoldSmallChanges(t *testing.T) {
+	runtime := testBarMovementRuntimeWithRealismAndValueMap(t, "", 0, 100, true)
+	start := time.Unix(720, 0)
+
+	_, _, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 40, "c"), start))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	scenes, changed, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 50, "c"), start.Add(10*time.Millisecond)))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed || scenes == nil {
+		t.Fatalf("expected default bar behavior to redraw immediately without stiction")
+	}
+	if runtime.HasActiveMovement() {
+		t.Fatalf("expected default bar behavior to remain immediate")
+	}
+
+	movement := runtime.movements[movementKey("primary", "coolant")]
+	if movement.HasValue {
+		t.Fatalf("unexpected default non-stiction bar state: %#v", movement)
+	}
+	if got := firstPartKind(requireWidget(t, scenes[0], "coolant"), PartKindBar).Window.Height; got != 90 {
+		t.Fatalf("expected default non-stiction reveal height 90, got %d", got)
+	}
+}
+
+func TestRuntimeBarGaugeStictionDampingSettlesAfterRelease(t *testing.T) {
+	runtime := testBarMovementRuntimeWithRealismAndValueMap(t, "  stiction: 15\n  damping:\n    rise_ms: 100\n    fall_ms: 100\n", 0, 100, true)
+	start := time.Unix(721, 0)
+
+	_, _, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 40, "c"), start))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	_, _, err = runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 50, "c"), start.Add(10*time.Millisecond)))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	_, changed, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 60, "c"), start.Add(20*time.Millisecond)))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed || !runtime.HasActiveMovement() {
+		t.Fatalf("expected bar stiction release with damping to start active movement")
+	}
+
+	movement := runtime.movements[movementKey("primary", "coolant")]
+	if movement.PreviousDisplayValue != 40 || movement.DisplayValue != 40 || movement.TargetValue != 60 || movement.RawTargetValue != 60 || movement.Duration != 100*time.Millisecond {
+		t.Fatalf("unexpected released damped bar stiction state: %#v", movement)
+	}
+
+	scenes, changed, err := runtime.Tick(start.Add(70 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected damped bar stiction midpoint tick to redraw")
+	}
+	movement = runtime.movements[movementKey("primary", "coolant")]
+	if math.Abs(movement.DisplayValue-50) > 0.001 {
+		t.Fatalf("expected damped bar stiction midpoint display 50, got %#v", movement)
+	}
+	if got := firstPartKind(requireWidget(t, scenes[0], "coolant"), PartKindBar).Window.Height; got != 90 {
+		t.Fatalf("expected damped bar stiction midpoint reveal height 90, got %d", got)
+	}
+
+	scenes, changed, err = runtime.Tick(start.Add(120 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected damped bar stiction settle tick to redraw")
+	}
+	movement = runtime.movements[movementKey("primary", "coolant")]
+	if movement.DisplayValue != 60 || movement.TargetValue != 60 || movement.Phase != movementPhaseStatic {
+		t.Fatalf("expected damped bar stiction to settle cleanly, got %#v", movement)
+	}
+	if runtime.HasActiveMovement() {
+		t.Fatalf("expected damped bar stiction to finish active movement after settlement")
+	}
+	if got := firstPartKind(requireWidget(t, scenes[0], "coolant"), PartKindBar).Window.Height; got != 108 {
+		t.Fatalf("expected damped bar stiction settled reveal height 108, got %d", got)
+	}
+}
+
+func TestRuntimeBarGaugeStictionLeavesStoredSourceValueUnchanged(t *testing.T) {
+	runtime := testBarMovementRuntimeWithRealismAndValueMap(t, "  stiction: 15\n", 0, 100, true)
+	start := time.Unix(722, 0)
+
+	_, _, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 40, "c"), start))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	_, changed, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 50, "c"), start.Add(10*time.Millisecond)))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if changed {
+		t.Fatalf("expected held bar stiction update not to redraw")
+	}
+	if got := runtime.states["coolant_temperature"].Value; got != 50 {
+		t.Fatalf("expected stored source value 50 to remain raw while display is held, got %v", got)
+	}
+
+	_, changed, err = runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 50, "c"), start.Add(20*time.Millisecond)))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if changed {
+		t.Fatalf("expected unchanged held bar stiction source value to avoid redraw")
+	}
+	if got := runtime.states["coolant_temperature"].Value; got != 50 {
+		t.Fatalf("expected stored source value 50 to remain unchanged after repeated held input, got %v", got)
+	}
+}
+
 func TestRuntimeBarGaugeDampingClampTrueTargetsDisplayedMaxValue(t *testing.T) {
 	runtime := testBarMovementRuntimeWithDampingAndValueMap(t, "  damping:\n    rise_ms: 100\n    fall_ms: 100\n", 0, 100, true)
 	start := time.Unix(710, 0)

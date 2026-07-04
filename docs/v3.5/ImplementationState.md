@@ -1,10 +1,10 @@
 # v3.5 Implementation State
 
-Status: v3.5.20 bar hysteresis implemented; v3.5.21 through v3.5.22 remain pending
+Status: v3.5.21 bar stiction implemented; v3.5.22 remains pending
 
-Current target: v3.5.21 bar stiction
+Current target: v3.5.22 bar peg bounce
 
-Current branch: `codex/v3.5.20-bar-hysteresis`
+Current branch: `codex/v3.5.21-bar-stiction`
 
 ## Scope
 
@@ -123,7 +123,7 @@ Not allowed in v3.5:
 - [x] v3.5.18 radial calibration offset
 - [x] v3.5.19 bar overshoot
 - [x] v3.5.20 bar hysteresis
-- [ ] v3.5.21 bar stiction
+- [x] v3.5.21 bar stiction
 - [ ] v3.5.22 bar peg bounce
 
 ## Next-slice workflow

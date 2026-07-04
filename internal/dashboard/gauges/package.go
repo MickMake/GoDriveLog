@@ -649,8 +649,8 @@ func validateRealism(pkg Package) error {
 		}
 	}
 	if pkg.Realism.Stiction != nil {
-		if pkg.Type != TypeRadial {
-			return fmt.Errorf("realism stiction is only supported for radial gauges")
+		if pkg.Type != TypeRadial && pkg.Type != TypeBar {
+			return fmt.Errorf("realism stiction is only supported for radial and bar gauges")
 		}
 		if math.IsNaN(*pkg.Realism.Stiction) || math.IsInf(*pkg.Realism.Stiction, 0) {
 			return fmt.Errorf("realism stiction must be a finite threshold")
@@ -660,10 +660,10 @@ func validateRealism(pkg Package) error {
 		}
 		span := pkg.ValueMap.Max - pkg.ValueMap.Min
 		if span <= 0 {
-			return fmt.Errorf("realism stiction requires a valid radial value_map range")
+			return fmt.Errorf("realism stiction requires a valid value_map range")
 		}
 		if *pkg.Realism.Stiction > span {
-			return fmt.Errorf("realism stiction %v exceeds radial value_map span %v", *pkg.Realism.Stiction, span)
+			return fmt.Errorf("realism stiction %v exceeds value_map span %v", *pkg.Realism.Stiction, span)
 		}
 	}
 	if pkg.Realism.Overshoot != nil {
