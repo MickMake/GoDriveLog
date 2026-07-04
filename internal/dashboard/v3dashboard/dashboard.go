@@ -906,17 +906,17 @@ func barHysteresisDisplayTarget(target float64, direction int, enabled bool, val
 	if span <= 0 {
 		return target
 	}
-	shifted := target + offset
-if !valueMap.Clamp {
-    return shifted
-}
-if shifted < valueMap.Min {
-    return valueMap.Min
-}
-if shifted > valueMap.Max {
-    return valueMap.Max
-}
-return shifted
+	shifted := target + (math.Copysign(span*defaultRadialHysteresisSpanRatio, float64(direction)))
+	if !valueMap.Clamp {
+		return shifted
+	}
+	if shifted < valueMap.Min {
+		return valueMap.Min
+	}
+	if shifted > valueMap.Max {
+		return valueMap.Max
+	}
+	return shifted
 }
 
 func barMovementDuration(config *v3gauges.DampingConfig, previous float64, target float64, fallback time.Duration) time.Duration {
