@@ -788,10 +788,11 @@ func resolveIndicatorThermalFadeState(movements map[string]widgetMovementState, 
 
 func resolveBarMovementState(movements map[string]widgetMovementState, key string, context movementContext, pkg v3gauges.Package, source sensors.SensorState, planner movementPlanner, now time.Time) (sensors.SensorState, widgetMovementState, bool) {
 	damping := pkg.Realism.Damping
+	hysteresis := pkg.Realism.Hysteresis != nil && *pkg.Realism.Hysteresis
 	overshoot := pkg.Realism.Overshoot
 	dampingEnabled := damping != nil && damping.Enabled
 	overshootEnabled := overshoot != nil
-	if movements == nil || (!dampingEnabled && !overshootEnabled) {
+	if movements == nil || (!dampingEnabled && !overshootEnabled && !hysteresis) {
 		return source, widgetMovementState{}, false
 	}
 	if source.Status != sensors.StatusOK {
@@ -806,11 +807,14 @@ func resolveBarMovementState(movements map[string]widgetMovementState, key strin
 
 	movement := movements[key]
 	previous := movement
-	displayTarget := barDisplayTarget(source.Value, pkg.ValueMap)
+	rawDisplayTarget := barDisplayTarget(source.Value, pkg.ValueMap)
+	displayTarget := barHysteresisDisplayTarget(rawDisplayTarget, movement.ApproachDirection, hysteresis, pkg.ValueMap)
 	if !movement.HasValue {
 		movement = widgetMovementState{
 			Phase:                movementPhaseStatic,
 			Policy:               policy,
+			HysteresisEnabled:    hysteresis,
+			ApproachDirection:    0,
 			RawTargetValue:       source.Value,
 			DampingEnabled:       dampingEnabled,
 			OvershootEnabled:     overshootEnabled,
@@ -825,12 +829,15 @@ func resolveBarMovementState(movements map[string]widgetMovementState, key strin
 		}
 	} else if source.Value != movement.RawTargetValue {
 		movement.Policy = policy
+		movement.HysteresisEnabled = hysteresis
+		movement.ApproachDirection = movementDirection(barDisplayTarget(movement.RawTargetValue, pkg.ValueMap), rawDisplayTarget, movement.ApproachDirection, hysteresis)
 		movement.RawTargetValue = source.Value
 		movement.DampingEnabled = dampingEnabled
 		movement.OvershootEnabled = overshootEnabled
 		movement.OvershootSettleMode = radialOvershootSettleMode(overshoot)
 		movement.OvershootMinValue = pkg.ValueMap.Min
 		movement.OvershootMaxValue = pkg.ValueMap.Max
+		displayTarget = barHysteresisDisplayTarget(rawDisplayTarget, movement.ApproachDirection, hysteresis, pkg.ValueMap)
 		if displayTarget != movement.TargetValue {
 			if movementActive(movement) {
 				movement = advanceMovementState(movement, now)
@@ -889,6 +896,27 @@ func barDampingDuration(config *v3gauges.DampingConfig, previous float64, target
 		return time.Duration(config.FallMS) * time.Millisecond
 	}
 	return fallback
+}
+
+func barHysteresisDisplayTarget(target float64, direction int, enabled bool, valueMap v3gauges.ValueMap) float64 {
+	if !enabled || direction == 0 {
+		return target
+	}
+	span := valueMap.Max - valueMap.Min
+	if span <= 0 {
+		return target
+	}
+	shifted := target + (math.Copysign(span*defaultRadialHysteresisSpanRatio, float64(direction)))
+	if !valueMap.Clamp {
+		return shifted
+	}
+	if shifted < valueMap.Min {
+		return valueMap.Min
+	}
+	if shifted > valueMap.Max {
+		return valueMap.Max
+	}
+	return shifted
 }
 
 func barMovementDuration(config *v3gauges.DampingConfig, previous float64, target float64, fallback time.Duration) time.Duration {

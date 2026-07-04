@@ -628,8 +628,8 @@ func validateRealism(pkg Package) error {
 	if pkg.Realism.SnapSettle != nil && pkg.Type != TypeOdometer {
 		return fmt.Errorf("realism snap_settle is only supported for odometer gauges")
 	}
-	if pkg.Realism.Hysteresis != nil && pkg.Type != TypeRadial {
-		return fmt.Errorf("realism hysteresis is only supported for radial gauges")
+	if pkg.Realism.Hysteresis != nil && pkg.Type != TypeRadial && pkg.Type != TypeBar {
+		return fmt.Errorf("realism hysteresis is only supported for radial and bar gauges")
 	}
 	if pkg.Realism.Damping != nil {
 		if pkg.Type != TypeRadial && pkg.Type != TypeBar {
