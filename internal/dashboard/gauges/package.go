@@ -737,11 +737,11 @@ func validateRealism(pkg Package) error {
 		}
 	}
 	if pkg.Realism.PegBounce != nil {
-		if pkg.Type != TypeRadial {
-			return fmt.Errorf("realism peg_bounce is only supported for radial gauges")
+		if pkg.Type != TypeRadial && pkg.Type != TypeBar {
+			return fmt.Errorf("realism peg_bounce is only supported for radial and bar gauges")
 		}
 		if *pkg.Realism.PegBounce && (!pkg.ValueMap.Clamp || pkg.ValueMap.Max <= pkg.ValueMap.Min) {
-			return fmt.Errorf("realism peg_bounce requires a clamped radial value_map range")
+			return fmt.Errorf("realism peg_bounce requires a clamped value_map range")
 		}
 	}
 	if pkg.Realism.NeedleShadow != nil {
