@@ -619,7 +619,7 @@ func resolveMovementState(movements map[string]widgetMovementState, key string, 
 		movement.OvershootTargetValue = displayTarget
 		movement.OvershootMinValue = valueMap.Min
 		movement.OvershootMaxValue = valueMap.Max
-		if stictionShouldHold(context, movement, displayTarget) {
+		if stictionShouldHold(movement, displayTarget) {
 			movement.TargetValue = displayTarget
 			movement.Phase = movementPhaseStatic
 			movement.Duration = 0
@@ -717,8 +717,8 @@ func radialHysteresisDisplayTarget(target float64, direction int, enabled bool, 
 	return shifted
 }
 
-func stictionShouldHold(context movementContext, movement widgetMovementState, target float64) bool {
-	if context.GaugeType != v3gauges.TypeRadial || movement.StictionThreshold <= 0 {
+func stictionShouldHold(movement widgetMovementState, target float64) bool {
+	if movement.StictionThreshold <= 0 {
 		return false
 	}
 	if movementActive(movement) && movement.Phase != movementPhaseSettled {
@@ -789,10 +789,14 @@ func resolveIndicatorThermalFadeState(movements map[string]widgetMovementState, 
 func resolveBarMovementState(movements map[string]widgetMovementState, key string, context movementContext, pkg v3gauges.Package, source sensors.SensorState, planner movementPlanner, now time.Time) (sensors.SensorState, widgetMovementState, bool) {
 	damping := pkg.Realism.Damping
 	hysteresis := pkg.Realism.Hysteresis != nil && *pkg.Realism.Hysteresis
+	stiction := 0.0
+	if pkg.Realism.Stiction != nil {
+		stiction = *pkg.Realism.Stiction
+	}
 	overshoot := pkg.Realism.Overshoot
 	dampingEnabled := damping != nil && damping.Enabled
 	overshootEnabled := overshoot != nil
-	if movements == nil || (!dampingEnabled && !overshootEnabled && !hysteresis) {
+	if movements == nil || (!dampingEnabled && !overshootEnabled && !hysteresis && stiction <= 0) {
 		return source, widgetMovementState{}, false
 	}
 	if source.Status != sensors.StatusOK {
@@ -818,6 +822,7 @@ func resolveBarMovementState(movements map[string]widgetMovementState, key strin
 			RawTargetValue:       source.Value,
 			DampingEnabled:       dampingEnabled,
 			OvershootEnabled:     overshootEnabled,
+			StictionThreshold:    stiction,
 			OvershootSettleMode:  radialOvershootSettleMode(overshoot),
 			OvershootTargetValue: displayTarget,
 			OvershootMinValue:    pkg.ValueMap.Min,
@@ -834,6 +839,7 @@ func resolveBarMovementState(movements map[string]widgetMovementState, key strin
 		movement.RawTargetValue = source.Value
 		movement.DampingEnabled = dampingEnabled
 		movement.OvershootEnabled = overshootEnabled
+		movement.StictionThreshold = stiction
 		movement.OvershootSettleMode = radialOvershootSettleMode(overshoot)
 		movement.OvershootMinValue = pkg.ValueMap.Min
 		movement.OvershootMaxValue = pkg.ValueMap.Max
@@ -841,6 +847,18 @@ func resolveBarMovementState(movements map[string]widgetMovementState, key strin
 		if displayTarget != movement.TargetValue {
 			if movementActive(movement) {
 				movement = advanceMovementState(movement, now)
+			}
+			if stictionShouldHold(movement, displayTarget) {
+				movement.TargetValue = displayTarget
+				movement.Phase = movementPhaseStatic
+				movement.Duration = 0
+				movement.TravelDuration = 0
+				movement.SettleDuration = 0
+				movement.StartedAt = time.Time{}
+				movements[key] = movement
+				source.Value = movement.DisplayValue
+				source.TypedValue = sensors.NewNumericValue(source.Value, source.Unit)
+				return source, movement, movementActive(movement) != movementActive(previous)
 			}
 			movement.PreviousDisplayValue = movement.DisplayValue
 			movement.TargetValue = displayTarget

@@ -970,6 +970,40 @@ value_map:
 	}
 }
 
+func TestLoadPackageAcceptsBarStiction(t *testing.T) {
+	root := makeGaugeFixtures(t)
+	packageDir := filepath.Join(root, "assets", "gauges", "bar", "stiction")
+	writeGaugeYAML(t, packageDir, `id: stiction_bar
+type: bar
+sensor: coolant_temperature
+realism:
+  stiction: 15
+size:
+  width: 100
+  height: 180
+layers:
+  panel: panel.png
+  level: level.png
+value_map:
+  min: 0
+  max: 100
+  clamp: true
+bar:
+  mode: level
+  axis: vertical
+  origin: bottom
+  bounds: [10, 10, 20, 80]
+`)
+
+	pkg, err := LoadPackage(packageDir)
+	if err != nil {
+		t.Fatalf("LoadPackage returned error: %v", err)
+	}
+	if pkg.Realism.Stiction == nil || *pkg.Realism.Stiction != 15 {
+		t.Fatalf("stiction = %#v, want 15", pkg.Realism.Stiction)
+	}
+}
+
 func TestLoadPackageAcceptsRadialOvershoot(t *testing.T) {
 	root := makeGaugeFixtures(t)
 	packageDir := filepath.Join(root, "assets", "gauges", "radial", "overshoot")
@@ -1839,7 +1873,7 @@ digit_set:
 	}
 }
 
-func TestLoadPackageRejectsInvalidRadialStiction(t *testing.T) {
+func TestLoadPackageRejectsInvalidStiction(t *testing.T) {
 	tests := []struct {
 		name        string
 		packageType string
@@ -1848,20 +1882,11 @@ func TestLoadPackageRejectsInvalidRadialStiction(t *testing.T) {
 		want        string
 	}{
 		{
-			name:        "non_radial",
-			packageType: "bar",
-			valueMap: `value_map:
-  min: 40
-  max: 120
-  clamp: true
-bar:
-  mode: level
-  axis: vertical
-  origin: bottom
-  bounds: [10, 10, 20, 60]
-`,
-			stiction: "150",
-			want:     "only supported for radial",
+			name:        "unsupported_type",
+			packageType: "numeric",
+			valueMap:    "",
+			stiction:    "150",
+			want:        "only supported for radial and bar",
 		},
 		{
 			name:        "zero",
@@ -1876,6 +1901,22 @@ bar:
 			want:     "greater than zero",
 		},
 		{
+			name:        "bar_too_large",
+			packageType: "bar",
+			valueMap: `value_map:
+  min: 0
+  max: 100
+  clamp: true
+bar:
+  mode: level
+  axis: vertical
+  origin: bottom
+  bounds: [10, 10, 20, 60]
+`,
+			stiction: "150",
+			want:     "exceeds value_map span",
+		},
+		{
 			name:        "too_large",
 			packageType: "radial",
 			valueMap: `value_map:
@@ -1885,7 +1926,7 @@ bar:
   end_angle: 90
 `,
 			stiction: "1500",
-			want:     "exceeds radial value_map span",
+			want:     "exceeds value_map span",
 		},
 	}
 
@@ -1920,6 +1961,26 @@ layers:
   panel: panel.png
   level: level.png
 ` + test.valueMap
+			} else if test.packageType == "numeric" {
+				yamlText = `id: bad_numeric
+type: numeric
+sensor: rpm
+realism:
+  stiction: ` + test.stiction + `
+size:
+  width: 100
+  height: 40
+layers:
+  panel: panel.png
+digits:
+  count: 1
+  positions:
+    - [0, 0]
+digit_set:
+  background: bg.png
+  characters:
+    "0": zero.png
+`
 			}
 			writeGaugeYAML(t, packageDir, yamlText)
 
