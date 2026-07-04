@@ -3450,6 +3450,226 @@ func TestRuntimeBarGaugeStictionLeavesStoredSourceValueUnchanged(t *testing.T) {
 	}
 }
 
+func TestRuntimeBarGaugePegBounceDefaultDisabledSettlesImmediatelyAtStop(t *testing.T) {
+	runtime := testBarMovementRuntimeWithRealismAndValueMap(t, "", 0, 100, true)
+	start := time.Unix(723, 0)
+
+	_, _, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 20, "c"), start))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	scenes, changed, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 100, "c"), start.Add(10*time.Millisecond)))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed || scenes == nil {
+		t.Fatalf("expected default bar stop update to redraw")
+	}
+	if runtime.HasActiveMovement() {
+		t.Fatalf("expected default bar stop update to avoid peg-bounce animation")
+	}
+	movement := runtime.movements[movementKey("primary", "coolant")]
+	if movement.HasValue {
+		t.Fatalf("unexpected default peg-bounce-disabled bar state: %#v", movement)
+	}
+	if got := firstPartKind(requireWidget(t, scenes[0], "coolant"), PartKindBar).Window.Height; got != 180 {
+		t.Fatalf("expected default stop reveal height 180, got %d", got)
+	}
+}
+
+func TestRuntimeBarGaugePegBounceAtMaxStopSettlesBackToLimit(t *testing.T) {
+	runtime := testBarMovementRuntimeWithRealismAndValueMap(t, "  peg_bounce: true\n", 0, 100, true)
+	start := time.Unix(724, 0)
+	runtime.movementPlanner = func(context movementContext, state sensors.SensorState, current widgetMovementState) time.Duration {
+		return 300 * time.Millisecond
+	}
+
+	_, _, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 20, "c"), start))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	_, changed, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 100, "c"), start.Add(10*time.Millisecond)))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed || !runtime.HasActiveMovement() {
+		t.Fatalf("expected max-stop bar peg bounce to animate")
+	}
+
+	movement := runtime.movements[movementKey("primary", "coolant")]
+	if !movement.PegBounceEnabled || !movement.PegBounceActive || movement.TargetValue != 100 || movement.PegBounceStopValue != 100 || movement.PegBounceReboundValue >= 100 {
+		t.Fatalf("expected max-stop bar peg bounce to schedule inward rebound, got %#v", movement)
+	}
+	if movement.SettleDuration < defaultRadialPegBounceMinSettleDuration {
+		t.Fatalf("expected visible bar peg-bounce settle duration, got %#v", movement)
+	}
+	if movement.PegBounceStopValue-movement.PegBounceReboundValue > (100*defaultRadialPegBounceSpanRatio)+0.001 {
+		t.Fatalf("expected bounded max-stop bar peg-bounce amplitude, got %#v", movement)
+	}
+
+	scenes, changed, err := runtime.Tick(start.Add(280 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected max-stop bar peg bounce settle tick to redraw")
+	}
+	movement = runtime.movements[movementKey("primary", "coolant")]
+	if movement.DisplayValue >= 100 || movement.DisplayValue <= movement.PegBounceReboundValue {
+		t.Fatalf("expected max-stop bar peg bounce to rebound slightly below the stop, got %#v", movement)
+	}
+	if got := firstPartKind(requireWidget(t, scenes[0], "coolant"), PartKindBar).Window.Height; got >= 180 || got <= 176 {
+		t.Fatalf("expected max-stop bar peg bounce height near the stop, got %d", got)
+	}
+
+	scenes, changed, err = runtime.Tick(start.Add(320 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected max-stop bar peg bounce completion tick to redraw")
+	}
+	movement = runtime.movements[movementKey("primary", "coolant")]
+	if movement.DisplayValue != 100 || movement.TargetValue != 100 || movement.Phase != movementPhaseStatic {
+		t.Fatalf("expected max-stop bar peg bounce to settle exactly at the stop, got %#v", movement)
+	}
+	if runtime.HasActiveMovement() {
+		t.Fatalf("expected settled max-stop bar peg bounce to stop ticking")
+	}
+	if got := firstPartKind(requireWidget(t, scenes[0], "coolant"), PartKindBar).Window.Height; got != 180 {
+		t.Fatalf("expected settled max-stop reveal height 180, got %d", got)
+	}
+}
+
+func TestRuntimeBarGaugePegBounceAtMinStopSettlesBackToLimit(t *testing.T) {
+	runtime := testBarMovementRuntimeWithRealismAndValueMap(t, "  peg_bounce: true\n", 0, 100, true)
+	start := time.Unix(725, 0)
+	runtime.movementPlanner = func(context movementContext, state sensors.SensorState, current widgetMovementState) time.Duration {
+		return 300 * time.Millisecond
+	}
+
+	_, _, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 80, "c"), start))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	_, changed, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 0, "c"), start.Add(10*time.Millisecond)))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed || !runtime.HasActiveMovement() {
+		t.Fatalf("expected min-stop bar peg bounce to animate")
+	}
+
+	scenes, changed, err := runtime.Tick(start.Add(280 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected min-stop bar peg bounce settle tick to redraw")
+	}
+	movement := runtime.movements[movementKey("primary", "coolant")]
+	if movement.PegBounceStopValue != 0 || movement.PegBounceReboundValue <= 0 || movement.DisplayValue <= 0 {
+		t.Fatalf("expected min-stop bar peg bounce to rebound above zero, got %#v", movement)
+	}
+	if movement.PegBounceReboundValue-movement.PegBounceStopValue > (100*defaultRadialPegBounceSpanRatio)+0.001 {
+		t.Fatalf("expected bounded min-stop bar peg-bounce amplitude, got %#v", movement)
+	}
+	if got := firstPartKind(requireWidget(t, scenes[0], "coolant"), PartKindBar).Window.Height; got <= 0 || got >= 4 {
+		t.Fatalf("expected min-stop bar peg bounce height just above zero, got %d", got)
+	}
+
+	scenes, changed, err = runtime.Tick(start.Add(320 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected min-stop bar peg bounce completion tick to redraw")
+	}
+	movement = runtime.movements[movementKey("primary", "coolant")]
+	if movement.DisplayValue != 0 || movement.TargetValue != 0 || movement.Phase != movementPhaseStatic {
+		t.Fatalf("expected min-stop bar peg bounce to settle exactly at the stop, got %#v", movement)
+	}
+	if runtime.HasActiveMovement() {
+		t.Fatalf("expected settled min-stop bar peg bounce to stop ticking")
+	}
+	if got := firstPartKind(requireWidget(t, scenes[0], "coolant"), PartKindBar).Window.Height; got != 0 {
+		t.Fatalf("expected settled min-stop reveal height 0, got %d", got)
+	}
+}
+
+func TestRuntimeBarGaugePegBounceDoesNotTriggerForInRangeTarget(t *testing.T) {
+	runtime := testBarMovementRuntimeWithRealismAndValueMap(t, "  peg_bounce: true\n", 0, 100, true)
+	start := time.Unix(726, 0)
+	runtime.movementPlanner = func(context movementContext, state sensors.SensorState, current widgetMovementState) time.Duration {
+		return 300 * time.Millisecond
+	}
+
+	_, _, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 20, "c"), start))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	scenes, changed, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 80, "c"), start.Add(10*time.Millisecond)))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed || scenes == nil {
+		t.Fatalf("expected in-range bar peg-bounce-only change to redraw immediately")
+	}
+
+	movement := runtime.movements[movementKey("primary", "coolant")]
+	if !movement.PegBounceEnabled || movement.PegBounceActive || movement.PegBounceReboundValue != 0 || movement.PegBounceStopValue != 0 {
+		t.Fatalf("expected in-range bar movement to avoid scheduling peg bounce, got %#v", movement)
+	}
+	if movement.DisplayValue != 80 || movement.TargetValue != 80 || movement.Phase != movementPhaseStatic || runtime.HasActiveMovement() {
+		t.Fatalf("expected in-range bar peg-bounce-only change to settle immediately with no active movement, got %#v", movement)
+	}
+	if got := firstPartKind(requireWidget(t, scenes[0], "coolant"), PartKindBar).Window.Height; got != 144 {
+		t.Fatalf("expected in-range bar reveal height 144, got %d", got)
+	}
+
+	_, changed, err = runtime.Tick(start.Add(200 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if changed {
+		t.Fatalf("expected no follow-up animation tick for in-range bar peg-bounce-only change")
+	}
+}
+
+func TestRuntimeBarGaugePegBounceLeavesStoredSourceValueUnchanged(t *testing.T) {
+	runtime := testBarMovementRuntimeWithRealismAndValueMap(t, "  peg_bounce: true\n", 0, 100, true)
+	start := time.Unix(727, 0)
+	runtime.movementPlanner = func(context movementContext, state sensors.SensorState, current widgetMovementState) time.Duration {
+		return 300 * time.Millisecond
+	}
+
+	_, _, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 20, "c"), start))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	_, changed, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 200, "c"), start.Add(10*time.Millisecond)))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected max-stop peg-bounce source update to redraw")
+	}
+	if got := runtime.states["coolant_temperature"].Value; got != 200 {
+		t.Fatalf("expected stored source value 200 to remain raw, got %v", got)
+	}
+
+	_, changed, err = runtime.Tick(start.Add(280 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected active max-stop peg-bounce tick to redraw")
+	}
+	if got := runtime.states["coolant_temperature"].Value; got != 200 {
+		t.Fatalf("expected stored source value 200 to remain unchanged during peg bounce, got %v", got)
+	}
+}
+
 func TestRuntimeBarGaugeDampingClampTrueTargetsDisplayedMaxValue(t *testing.T) {
 	runtime := testBarMovementRuntimeWithDampingAndValueMap(t, "  damping:\n    rise_ms: 100\n    fall_ms: 100\n", 0, 100, true)
 	start := time.Unix(710, 0)

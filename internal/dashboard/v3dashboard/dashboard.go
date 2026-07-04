@@ -204,7 +204,7 @@ func defaultMovementPlanner(context movementContext, state sensors.SensorState, 
 		return 0
 	}
 	if context.GaugeType == v3gauges.TypeBar {
-		if current.DampingEnabled || current.OvershootEnabled {
+		if current.DampingEnabled || current.OvershootEnabled || current.PegBounceActive {
 			return defaultBarDampingDuration
 		}
 		return 0
@@ -793,10 +793,11 @@ func resolveBarMovementState(movements map[string]widgetMovementState, key strin
 	if pkg.Realism.Stiction != nil {
 		stiction = *pkg.Realism.Stiction
 	}
+	pegBounce := pkg.Realism.PegBounce != nil && *pkg.Realism.PegBounce
 	overshoot := pkg.Realism.Overshoot
 	dampingEnabled := damping != nil && damping.Enabled
 	overshootEnabled := overshoot != nil
-	if movements == nil || (!dampingEnabled && !overshootEnabled && !hysteresis && stiction <= 0) {
+	if movements == nil || (!dampingEnabled && !overshootEnabled && !hysteresis && stiction <= 0 && !pegBounce) {
 		return source, widgetMovementState{}, false
 	}
 	if source.Status != sensors.StatusOK {
@@ -822,6 +823,8 @@ func resolveBarMovementState(movements map[string]widgetMovementState, key strin
 			RawTargetValue:       source.Value,
 			DampingEnabled:       dampingEnabled,
 			OvershootEnabled:     overshootEnabled,
+			PegBounceEnabled:     pegBounce,
+			PegBounceActive:      false,
 			StictionThreshold:    stiction,
 			OvershootSettleMode:  radialOvershootSettleMode(overshoot),
 			OvershootTargetValue: displayTarget,
@@ -839,6 +842,7 @@ func resolveBarMovementState(movements map[string]widgetMovementState, key strin
 		movement.RawTargetValue = source.Value
 		movement.DampingEnabled = dampingEnabled
 		movement.OvershootEnabled = overshootEnabled
+		movement.PegBounceEnabled = pegBounce
 		movement.StictionThreshold = stiction
 		movement.OvershootSettleMode = radialOvershootSettleMode(overshoot)
 		movement.OvershootMinValue = pkg.ValueMap.Min
@@ -855,6 +859,9 @@ func resolveBarMovementState(movements map[string]widgetMovementState, key strin
 				movement.TravelDuration = 0
 				movement.SettleDuration = 0
 				movement.StartedAt = time.Time{}
+				movement.PegBounceStopValue = 0
+				movement.PegBounceReboundValue = 0
+				movement.PegBounceActive = false
 				movements[key] = movement
 				source.Value = movement.DisplayValue
 				source.TypedValue = sensors.NewNumericValue(source.Value, source.Unit)
@@ -864,24 +871,40 @@ func resolveBarMovementState(movements map[string]widgetMovementState, key strin
 			movement.TargetValue = displayTarget
 			duration := time.Duration(0)
 			if planner != nil {
+				movement.PegBounceStopValue, movement.PegBounceReboundValue = radialPegBounceValues(movement.PreviousDisplayValue, movement.TargetValue, pkg.ValueMap, pegBounce)
+				movement.PegBounceActive = radialPegBounceScheduled(movement)
+				movement.Policy = effectiveMovementPolicy(context.GaugeType, policy, dampingEnabled, overshootEnabled, movement.PegBounceActive)
 				duration = planner(context, source, movement)
 			}
 			duration = barMovementDuration(damping, movement.PreviousDisplayValue, movement.TargetValue, duration)
 			movement.OvershootTargetValue = radialOvershootTarget(movement.PreviousDisplayValue, movement.TargetValue, pkg.ValueMap, overshoot)
-			if duration <= 0 || movement.DisplayValue == movement.TargetValue {
+			if planner == nil {
+				movement.PegBounceStopValue, movement.PegBounceReboundValue = radialPegBounceValues(movement.PreviousDisplayValue, movement.TargetValue, pkg.ValueMap, pegBounce)
+				movement.PegBounceActive = radialPegBounceScheduled(movement)
+				movement.Policy = effectiveMovementPolicy(context.GaugeType, policy, dampingEnabled, overshootEnabled, movement.PegBounceActive)
+			}
+			if duration <= 0 || movement.DisplayValue == movement.TargetValue || movement.Policy == v3gauges.MovementPolicyImmediate {
 				movement.DisplayValue = movement.TargetValue
 				movement.Phase = movementPhaseStatic
 				movement.Duration = 0
 				movement.TravelDuration = 0
 				movement.SettleDuration = 0
 				movement.StartedAt = time.Time{}
+				movement.PegBounceStopValue = 0
+				movement.PegBounceReboundValue = 0
+				movement.PegBounceActive = false
 			} else {
-				movement.Duration = duration
-				movement.TravelDuration = radialOvershootTravelDuration(movement.OvershootTargetValue, movement.TargetValue, duration, movement.OvershootSettleMode)
-				if movement.TravelDuration > 0 {
-					movement.SettleDuration = duration - movement.TravelDuration
+				if movement.TargetValue == movement.PegBounceStopValue && movement.PegBounceReboundValue != movement.PegBounceStopValue {
+					movement.TravelDuration, movement.SettleDuration = radialPegBounceDurations(duration)
+					movement.Duration = movement.TravelDuration + movement.SettleDuration
 				} else {
-					movement.SettleDuration = 0
+					movement.Duration = duration
+					movement.TravelDuration = radialOvershootTravelDuration(movement.OvershootTargetValue, movement.TargetValue, duration, movement.OvershootSettleMode)
+					if movement.TravelDuration > 0 {
+						movement.SettleDuration = duration - movement.TravelDuration
+					} else {
+						movement.SettleDuration = 0
+					}
 				}
 				movement.StartedAt = now
 				movement.Phase = movementPhaseValueChange

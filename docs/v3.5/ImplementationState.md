@@ -1,10 +1,10 @@
 # v3.5 Implementation State
 
-Status: v3.5.21 bar stiction implemented; v3.5.22 remains pending
+Status: v3.5.22 bar peg bounce implemented; the planned v3.5 slice list is complete
 
-Current target: v3.5.22 bar peg bounce
+Current target: planned v3.5 slice list complete
 
-Current branch: `codex/v3.5.21-bar-stiction`
+Current branch: `codex/v3.5.22-bar-peg-bounce`
 
 ## Scope
 
@@ -124,7 +124,7 @@ Not allowed in v3.5:
 - [x] v3.5.19 bar overshoot
 - [x] v3.5.20 bar hysteresis
 - [x] v3.5.21 bar stiction
-- [ ] v3.5.22 bar peg bounce
+- [x] v3.5.22 bar peg bounce
 
 ## Next-slice workflow
 

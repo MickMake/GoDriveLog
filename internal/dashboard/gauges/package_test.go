@@ -1157,6 +1157,40 @@ value_map:
 	}
 }
 
+func TestLoadPackageAcceptsBarPegBounce(t *testing.T) {
+	root := makeGaugeFixtures(t)
+	packageDir := filepath.Join(root, "assets", "gauges", "bar", "peg_bounce")
+	writeGaugeYAML(t, packageDir, `id: peg_bounce_bar
+type: bar
+sensor: coolant_temperature
+realism:
+  peg_bounce: true
+size:
+  width: 100
+  height: 180
+layers:
+  panel: panel.png
+  level: level.png
+value_map:
+  min: 0
+  max: 100
+  clamp: true
+bar:
+  mode: level
+  axis: vertical
+  origin: bottom
+  bounds: [10, 10, 20, 80]
+`)
+
+	pkg, err := LoadPackage(packageDir)
+	if err != nil {
+		t.Fatalf("LoadPackage returned error: %v", err)
+	}
+	if pkg.Realism.PegBounce == nil || !*pkg.Realism.PegBounce {
+		t.Fatalf("peg_bounce = %#v, want true", pkg.Realism.PegBounce)
+	}
+}
+
 func TestLoadPackageAcceptsRadialNeedleShadow(t *testing.T) {
 	root := makeGaugeFixtures(t)
 	packageDir := filepath.Join(root, "assets", "gauges", "radial", "needle_shadow")
@@ -1408,7 +1442,7 @@ value_map:
 	}
 }
 
-func TestLoadPackageRejectsInvalidRadialPegBounce(t *testing.T) {
+func TestLoadPackageRejectsInvalidPegBounce(t *testing.T) {
 	tests := []struct {
 		name        string
 		packageType string
@@ -1416,19 +1450,10 @@ func TestLoadPackageRejectsInvalidRadialPegBounce(t *testing.T) {
 		want        string
 	}{
 		{
-			name:        "non_radial",
-			packageType: "bar",
-			valueMap: `value_map:
-  min: 40
-  max: 120
-  clamp: true
-bar:
-  mode: level
-  axis: vertical
-  origin: bottom
-  bounds: [10, 10, 20, 60]
-`,
-			want: "only supported for radial",
+			name:        "unsupported_type",
+			packageType: "numeric",
+			valueMap:    "",
+			want:        "only supported for radial and bar",
 		},
 		{
 			name:        "unclamped_range",
@@ -1440,7 +1465,22 @@ bar:
   end_angle: 90
   clamp: false
 `,
-			want: "requires a clamped radial value_map range",
+			want: "requires a clamped value_map range",
+		},
+		{
+			name:        "bar_unclamped_range",
+			packageType: "bar",
+			valueMap: `value_map:
+  min: 0
+  max: 100
+  clamp: false
+bar:
+  mode: level
+  axis: vertical
+  origin: bottom
+  bounds: [10, 10, 20, 60]
+`,
+			want: "requires a clamped value_map range",
 		},
 	}
 
@@ -1475,6 +1515,26 @@ layers:
   panel: panel.png
   level: level.png
 ` + test.valueMap
+			} else if test.packageType == "numeric" {
+				yamlText = `id: bad_numeric
+type: numeric
+sensor: rpm
+realism:
+  peg_bounce: true
+size:
+  width: 100
+  height: 40
+layers:
+  panel: panel.png
+digits:
+  count: 1
+  positions:
+    - [0, 0]
+digit_set:
+  background: bg.png
+  characters:
+    "0": zero.png
+`
 			}
 			writeGaugeYAML(t, packageDir, yamlText)
 
