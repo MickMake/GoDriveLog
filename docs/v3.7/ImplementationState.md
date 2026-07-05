@@ -1,8 +1,8 @@
 # v3.7 Implementation State
 
-Status: active planning; v3.7.0 audit slice prepared
+Status: active planning; v3.7.0 implementation slice prepared
 
-Current target: v3.7.0 odometer backlash audit
+Current target: v3.7.0 implement odometer backlash cleanup
 
 Current branch: `v37audit`
 
@@ -10,38 +10,38 @@ Current branch: `v37audit`
 
 v3.7 is the gauge realism follow-up release area created after v3.6 was narrowed to pointer markers only.
 
-The first v3.7 task is an audit, not an implementation. It must determine whether odometer `backlash` is already implemented, partially implemented, missing, or wrongly documented before any code change is planned.
+The first v3.7 task is odometer `backlash`: audit the current code/docs state, then implement missing support if the audit confirms it is absent or incomplete.
 
 ## Current decisions
 
 - v3.6 remains pointer-marker-only.
 - v3.7 may own broader gauge realism audit/backlog work.
-- Odometer `backlash` cleanup is the first candidate, but v3.7.0 is audit-only.
-- Do not implement `backlash` until the audit produces a clear finding.
+- Odometer `backlash` cleanup is required as the first v3.7 implementation slice.
+- v3.7.0 must still inspect current code before changing it, but implementation is in scope.
 - Numeric and segmented display realism candidates need separate design before implementation.
 - Bar realism audit work must not contradict completed v3.5 docs without a focused code audit.
 - Do not bundle unrelated gauge families into one slice.
 
 ## Candidate checklist
 
-- [ ] v3.7.0 odometer backlash audit
-- [ ] v3.7.1 odometer backlash implementation decision / prompt, if audit confirms missing support
+- [ ] v3.7.0 implement odometer backlash cleanup
 - [ ] numeric/segmented display realism design
 - [ ] bar realism implementation audit
 - [ ] indicator realism scope review
 - [ ] marker persistence/statistics/styling follow-up review
 
-## v3.7.0 audit questions
+## v3.7.0 requirements
 
-The v3.7.0 audit must answer:
+The v3.7.0 slice must:
 
-1. Is `backlash` documented as implemented or completed anywhere in v3.5 docs?
-2. Does config parsing currently recognise `realism.backlash`?
-3. Does validation allow or reject `backlash`, and for which gauge families?
-4. Does odometer runtime code apply direction-change slack?
-5. Are tests present for parsing, validation, runtime reversal behaviour, and final settling?
-6. Are preview fixtures or examples present?
-7. If support is missing, should the fix be a v3.7 slice or a smaller bugfix/cleanup PR?
+1. Confirm the current `backlash` docs/code state.
+2. Add config parsing support for `realism.backlash` if missing.
+3. Restrict `backlash` to odometer gauges.
+4. Add deterministic odometer direction-change slack.
+5. Preserve existing odometer behaviour when `backlash` is absent or false.
+6. Keep source values, logs, exports, configured ranges, and input data unchanged.
+7. Add parsing, validation, runtime, and final-settling tests.
+8. Add or update preview/docs examples.
 
 ## Next-slice workflow
 
@@ -52,6 +52,6 @@ When v3.7 is explicitly activated:
 3. Read `docs/v3.7/PlannedFeatures.md`.
 4. Read the matching prompt under `docs/v3.7/prompts/`.
 5. Make only that slice's changes.
-6. For v3.7.0, produce an audit finding before proposing implementation.
+6. For v3.7.0, audit first, then implement only the confirmed missing/incomplete `backlash` support.
 7. Do not implement broad backlog/audit material in one slice.
 8. Update docs and checklist after the slice.
