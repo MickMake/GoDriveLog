@@ -2,7 +2,7 @@
 
 v3.7 is the gauge realism follow-up area created after v3.6 was narrowed to pointer markers only.
 
-v3.7 starts with audit work. Do not implement a realism feature until the relevant audit confirms the current code/docs state and narrows the implementation scope.
+v3.7 starts with odometer `backlash` cleanup. The slice must still audit current code before changing it, but implementation is in scope because the feature is required.
 
 ## Theme
 
@@ -10,28 +10,34 @@ Keep v3.6 clean by parking unrelated gauge realism ideas here, then promote only
 
 Candidate v3.7 work may include:
 
-- odometer `backlash` audit and possible cleanup;
+- odometer `backlash` cleanup;
 - broad realism implementation audits;
 - numeric and segmented display realism design;
 - bar realism follow-up review;
 - indicator realism scope review;
 - pointer-marker follow-ups such as persistence, labels, styling, statistics overlays, or reset controls.
 
-## First slice: odometer backlash audit
+## First slice: odometer backlash cleanup
 
 Odometer `backlash` was removed from v3.6 because it is not pointer-marker work.
 
-v3.7.0 must audit before implementation. It should confirm:
+v3.7.0 must audit and then implement missing/incomplete support for:
+
+```yaml
+realism:
+  backlash: true
+```
+
+The slice should confirm:
 
 - whether `backlash` is documented as complete in v3.5;
 - whether config parsing recognises `realism.backlash`;
 - whether validation gates `backlash` to odometer gauges;
 - whether runtime code implements direction-change slack;
 - whether tests cover parsing, validation, reversal behaviour, and final settling;
-- whether preview fixtures/examples exist;
-- whether the fix belongs in v3.7, a v3.5 cleanup, or a dedicated bugfix release.
+- whether preview fixtures/examples exist.
 
-If a later slice promotes implementation, `backlash` should mean:
+`backlash` should mean:
 
 > when an odometer-style value reverses direction, wheel movement shows a small bounded amount of mechanical slack before following the new direction and settling exactly on the target.
 
@@ -55,7 +61,7 @@ Promotion should be explicit:
 3. define its user-facing config;
 4. define which gauge families support it;
 5. add or update docs and prompt slice(s);
-6. then implement it in a dedicated branch/PR only if still needed.
+6. then implement it in a dedicated branch/PR.
 
 ## Non-goals
 
