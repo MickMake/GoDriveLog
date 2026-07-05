@@ -1,34 +1,37 @@
 # v3.7 Release Plan
 
-v3.7 is the future gauge realism follow-up area created by moving non-pointer-marker material out of v3.6.
+v3.7 is the gauge realism follow-up area created after v3.6 was narrowed to pointer markers only.
 
-v3.7 is not yet an active implementation release. It is a planning shelf for work that needs sharper scope before code changes begin.
+v3.7 starts with audit work. Do not implement a realism feature until the relevant audit confirms the current code/docs state and narrows the implementation scope.
 
 ## Theme
 
-Keep v3.6 clean by parking unrelated gauge realism ideas here.
+Keep v3.6 clean by parking unrelated gauge realism ideas here, then promote only one small, verified item at a time.
 
 Candidate v3.7 work may include:
 
-- odometer `backlash` cleanup;
+- odometer `backlash` audit and possible cleanup;
 - broad realism implementation audits;
 - numeric and segmented display realism design;
 - bar realism follow-up review;
 - indicator realism scope review;
 - pointer-marker follow-ups such as persistence, labels, styling, statistics overlays, or reset controls.
 
-## First candidate: odometer backlash cleanup
+## First slice: odometer backlash audit
 
 Odometer `backlash` was removed from v3.6 because it is not pointer-marker work.
 
-Before implementation, v3.7 should confirm:
+v3.7.0 must audit before implementation. It should confirm:
 
 - whether `backlash` is documented as complete in v3.5;
-- whether code support is actually missing;
-- whether the fix belongs in v3.7, a v3.5 cleanup, or a dedicated bugfix release;
-- whether the intended config and runtime behaviour are still desirable.
+- whether config parsing recognises `realism.backlash`;
+- whether validation gates `backlash` to odometer gauges;
+- whether runtime code implements direction-change slack;
+- whether tests cover parsing, validation, reversal behaviour, and final settling;
+- whether preview fixtures/examples exist;
+- whether the fix belongs in v3.7, a v3.5 cleanup, or a dedicated bugfix release.
 
-If promoted, `backlash` should mean:
+If a later slice promotes implementation, `backlash` should mean:
 
 > when an odometer-style value reverses direction, wheel movement shows a small bounded amount of mechanical slack before following the new direction and settling exactly on the target.
 
@@ -43,15 +46,16 @@ The implementation must be:
 
 ## Planning rule
 
-Do not implement anything from v3.7 during v3.6 work.
+Do not implement anything from v3.7 during a different slice.
 
 Promotion should be explicit:
 
 1. choose one small candidate;
-2. define its user-facing config;
-3. define which gauge families support it;
-4. add docs and prompt slice(s);
-5. then implement it in a dedicated branch/PR.
+2. audit the current code/docs state;
+3. define its user-facing config;
+4. define which gauge families support it;
+5. add or update docs and prompt slice(s);
+6. then implement it in a dedicated branch/PR only if still needed.
 
 ## Non-goals
 
