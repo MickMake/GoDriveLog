@@ -1,12 +1,12 @@
 # v3.7 Prompt Index
 
-These prompt files are parked future-work candidates. They are not part of v3.6.
+These prompt files define v3.7 follow-up slices. They are not part of v3.6.
 
 Do not run a v3.7 prompt unless the user explicitly activates v3.7 or names the specific v3.7 slice.
 
 ## Prompt files
 
-- `v3.7.0-implement-odometer-backlash-cleanup.md`
+- `v3.7.0-implement-odometer-backlash-cleanup.md` — audit odometer `backlash`; do not implement in this slice.
 
 ## Shared rules
 
@@ -16,3 +16,4 @@ Do not run a v3.7 prompt unless the user explicitly activates v3.7 or names the 
 - Never mutate source values, logs, exports, configured ranges, or input data.
 - Audit current code before assuming an old checklist is wrong.
 - Do not bundle unrelated gauge families into one slice.
+- Do not implement from an audit prompt unless the prompt explicitly says implementation is in scope.
