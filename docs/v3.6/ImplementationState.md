@@ -8,9 +8,9 @@ Current branch: `docs/v3.6-planning`
 
 ## Scope
 
-v3.6 is the gauge enhancement pass after v3.5.
+v3.6 is the pointer marker gauge enhancement pass after the completed v3.5 gauge realism pass.
 
-The first v3.6 theme is pointer markers for radial and bar gauges. Pointer markers are instrument-realism features, not statistical overlays.
+Pointer markers are instrument-realism features, not statistical overlays.
 
 Pointer markers observe the rendered indicator path for the gauge family:
 
@@ -19,7 +19,7 @@ Pointer markers observe the rendered indicator path for the gauge family:
 
 If no realism effects are enabled, the rendered indicator path is equivalent to the mapped source value, so pointer marker behaviour naturally reflects true input data. If realism effects are enabled, pointer markers follow the realistic rendered behaviour. For example, a radial max marker may capture overshoot if the live pointer actually overshoots.
 
-v3.6 should remain open to other small gauge enhancements, but pointer markers are the initial implementation tranche.
+v3.6 must stay focused on pointer markers only. Broader gauge realism audit/backlog material belongs in v3.7 or later.
 
 ## Current decisions
 
@@ -29,12 +29,9 @@ v3.6 should remain open to other small gauge enhancements, but pointer markers a
 - Radial pointer markers come before bar pointer markers.
 - Bar pointer markers should reuse the same semantics after radial behaviour is proven.
 - The damped secondary marker is a mechanical/visual feature, not a mathematical average.
-- Do not promise a true arithmetic average in v3.6 unless a later prompt explicitly defines statistical averaging.
-- Pointer marker state is runtime/session state only unless a later slice explicitly adds persistence.
-- v3.6 docs should keep an enhancement backlog so future work can be promoted into slices without bloating the first marker implementation.
-- Odometer `backlash` is required as a v3.6 tail implementation slice because existing odometer realism cannot fully create direction-change slack.
-- Do not implement `movement: smooth` as a separate odometer mode; `linear`, `ease_out`, and `bell` are already the smooth movement modes.
-- Do not implement `movement: click` as a separate odometer mode unless a later prompt defines distinct stepped-wheel behaviour.
+- Do not promise a true arithmetic average in v3.6.
+- Pointer marker state is runtime/session state only unless a later release explicitly adds persistence.
+- Keep future gauge realism audit/backlog material out of v3.6.
 
 ## Config key ownership
 
@@ -43,27 +40,28 @@ v3.6 should remain open to other small gauge enhancements, but pointer markers a
 | `pointer_markers.max` | radial, bar | Tracks highest rendered indicator position seen by the marker. |
 | `pointer_markers.min` | radial, bar | Tracks lowest rendered indicator position seen by the marker. |
 | `pointer_markers.damped` | radial, bar | Slow secondary indicator; not a mathematical average. |
-| `backlash` | odometer | Direction-change slack for odometer wheels; v3.6.9 required missing implementation. |
 
 ## Scope boundaries
 
 Allowed in v3.6:
 
-- docs and prompts for v3.6 planning;
+- docs and prompts for v3.6 pointer marker planning;
 - radial pointer max/min markers;
 - bar pointer max/min markers;
 - explicit marker reset/session behaviour;
 - a damped secondary marker that behaves like a slow mechanical indicator;
-- odometer `backlash` as the promoted v3.6 tail realism cleanup slice;
-- small future enhancement candidates documented as backlog items.
+- final pointer-marker docs/checkpoint work.
 
-Not allowed in the first v3.6 marker tranche:
+Not allowed in v3.6:
 
 - database persistence for marker state;
-- mathematical average unless explicitly promoted later;
+- mathematical average/statistical overlays;
 - source/log/export mutation;
 - hidden config defaults that alter existing gauges;
 - applying radial marker assets to bar gauges without a family-specific rendering plan;
+- odometer backlash cleanup;
+- v3.5 realism implementation audits;
+- broad future gauge realism matrices;
 - implementing multiple later slices while doing an earlier one.
 
 ## Checklist
@@ -76,8 +74,7 @@ Not allowed in the first v3.6 marker tranche:
 - [ ] v3.6.5 bar pointer marker max
 - [ ] v3.6.6 bar pointer marker min
 - [ ] v3.6.7 bar damped secondary pointer marker
-- [ ] v3.6.8 enhancement backlog triage
-- [ ] v3.6.9 implement odometer backlash cleanup
+- [ ] v3.6.8 pointer marker docs/checkpoint
 
 ## Next-slice workflow
 
