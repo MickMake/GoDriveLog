@@ -32,6 +32,9 @@ v3.6 should remain open to other small gauge enhancements, but pointer markers a
 - Do not promise a true arithmetic average in v3.6 unless a later prompt explicitly defines statistical averaging.
 - Pointer marker state is runtime/session state only unless a later slice explicitly adds persistence.
 - v3.6 docs should keep an enhancement backlog so future work can be promoted into slices without bloating the first marker implementation.
+- Odometer `backlash` is required as a v3.6 tail implementation slice because existing odometer realism cannot fully create direction-change slack.
+- Do not implement `movement: smooth` as a separate odometer mode; `linear`, `ease_out`, and `bell` are already the smooth movement modes.
+- Do not implement `movement: click` as a separate odometer mode unless a later prompt defines distinct stepped-wheel behaviour.
 
 ## Config key ownership
 
@@ -40,6 +43,7 @@ v3.6 should remain open to other small gauge enhancements, but pointer markers a
 | `pointer_markers.max` | radial, bar | Tracks highest rendered indicator position seen by the marker. |
 | `pointer_markers.min` | radial, bar | Tracks lowest rendered indicator position seen by the marker. |
 | `pointer_markers.damped` | radial, bar | Slow secondary indicator; not a mathematical average. |
+| `backlash` | odometer | Direction-change slack for odometer wheels; v3.6.9 required missing implementation. |
 
 ## Scope boundaries
 
@@ -50,6 +54,7 @@ Allowed in v3.6:
 - bar pointer max/min markers;
 - explicit marker reset/session behaviour;
 - a damped secondary marker that behaves like a slow mechanical indicator;
+- odometer `backlash` as the promoted v3.6 tail realism cleanup slice;
 - small future enhancement candidates documented as backlog items.
 
 Not allowed in the first v3.6 marker tranche:
@@ -72,6 +77,7 @@ Not allowed in the first v3.6 marker tranche:
 - [ ] v3.6.6 bar pointer marker min
 - [ ] v3.6.7 bar damped secondary pointer marker
 - [ ] v3.6.8 enhancement backlog triage
+- [ ] v3.6.9 implement odometer backlash cleanup
 
 ## Next-slice workflow
 
