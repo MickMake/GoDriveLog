@@ -32,7 +32,7 @@ When the user names a specific version such as `implement v3.6.5`, use the match
 - `v3.6.5-bar-pointer-marker-max.md`
 - `v3.6.6-bar-pointer-marker-min.md`
 - `v3.6.7-bar-damped-secondary-pointer.md`
-- `v3.6.8-enhancement-backlog.md`
+- `v3.6.8-pointer-marker-checkpoint.md`
 
 ## Shared rules
 
