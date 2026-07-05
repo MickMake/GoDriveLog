@@ -8,13 +8,11 @@ It is a holding area for ideas that are useful, plausible, or already documented
 
 | Marker | Meaning |
 | --- | --- |
-| `implemented` | Code support exists and is expected to be usable. |
-| `partial` | Some parsing, validation, or runtime behaviour exists, but the feature is not complete or not the preferred long-term model. |
-| `planned / not yet` | Intended by current planning docs, but not implemented yet. |
-| `marked implemented / no code` | Documentation or checklist says the feature is complete, but code support could not be found. |
-| `potential candidate / needs design` | Plausible future feature, but config model, rendering semantics, or user-facing explanation need more design. |
-| `good candidate` | Plausible future feature with a reasonably simple display-level model. |
-| `not planned` | Not currently considered suitable for that gauge family. |
+| ✅ | Implemented or expected to be usable. |
+| ❌ | Not planned for that gauge family. |
+| 🟡 | Partial, legacy, parse-only, or supported indirectly. |
+| ⚠️ | Planned, questionable, in-progress, or needs audit before trusting. |
+| 🍺 | Potential candidate / needs beer thought before design or implementation. |
 
 ## Gauge realism map
 
@@ -22,29 +20,29 @@ This map is a planning aid only. Do not treat it as implementation truth without
 
 | Realism option | Numeric | Radial | Odometer | Indicator | Bar | Segmented |
 | --- | --- | --- | --- | --- | --- | --- |
-| `movement` | partial: parse only | partial: existing `realism.movement_policy` finite-movement selector | implemented: `odometer.movement` | not planned | partial: finite fill-edge movement currently tied to damping/related behaviour | not planned |
-| `wraparound` | not planned | not planned | implemented | not planned | not planned | not planned |
-| `drum_slop` | not planned | not planned | implemented | not planned | not planned | not planned |
-| `carry_drag` | not planned | not planned | implemented | not planned | not planned | not planned |
-| `snap_settle` | not planned | not planned | implemented | not planned | not planned | not planned |
-| `backlash` | not planned | not planned | candidate: audit before implementation | not planned | not planned | not planned |
-| `hysteresis` | not planned | implemented | not planned | not planned | audit before planning | not planned |
-| `stiction` | not planned | implemented | not planned | not planned | audit before planning | not planned |
-| `damping` | not planned | implemented | not planned | not planned | implemented | not planned |
-| `overshoot` | not planned | implemented | not planned | not planned | audit before planning | not planned |
-| `peg_bounce` | not planned | implemented | not planned | not planned | audit before planning | not planned |
-| `thermal_fade` | good candidate | not planned | not planned | implemented: off/on image fade with `rise_ms`/`fall_ms` | not planned | potential candidate / needs design |
-| `per_digit_response_lag` | good candidate: staggered digit-slot updates | not planned | not planned | not planned | not planned | potential candidate / needs design |
-| `leading_zero_behaviour` | good candidate: blank/dim/formatted leading-zero slots | not planned | not planned | not planned | not planned | potential candidate / needs design |
-| `decimal_point_behaviour` | good candidate: explicit DP overlay behaviour | not planned | not planned | not planned | not planned | potential candidate / needs design |
-| `needle_shadow` | not planned | implemented | not planned | not planned | not planned | not planned |
-| `calibration_offset` | not planned | implemented | not planned | not planned | not planned | not planned |
-| `segment_bleed` / `digit_bleed` | potential candidate / needs design | not planned | not planned | not planned | not planned | potential candidate / needs design |
-| `ghosting` | potential candidate / needs design | not planned | not planned | not planned | not planned | potential candidate / needs design |
-| `uneven_brightness` | good candidate: digit-slot brightness variation | not planned | not planned | not planned | not planned | potential candidate / needs design |
-| `load_sag` | good candidate: current-load brightness sag | not planned | not planned | not planned | not planned | potential candidate / needs design |
-| `stepped_fill` | not planned | not planned | not planned | not planned | potential candidate / needs design | potential candidate / needs design |
-| `quantized_fill` | not planned | not planned | not planned | not planned | potential candidate / needs design | potential candidate / needs design |
+| `movement` | 🟡 parse only | 🟡 legacy `movement_policy` | ✅ `odometer.movement` | ❌ | 🟡 via damping only | ❌ |
+| `wraparound` | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ |
+| `drum_slop` | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ |
+| `carry_drag` | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ |
+| `snap_settle` | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ |
+| `backlash` | ❌ | ❌ | ⚠️ marked implemented / no code | ❌ | ❌ | ❌ |
+| `hysteresis` | ❌ | ✅ | ❌ | ❌ | ⚠️ planned / not yet | ❌ |
+| `stiction` | ❌ | ✅ | ❌ | ❌ | ⚠️ planned / not yet | ❌ |
+| `damping` | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ |
+| `overshoot` | ❌ | ✅ | ❌ | ❌ | ⚠️ PR open / in progress | ❌ |
+| `peg_bounce` | ❌ | ✅ | ❌ | ❌ | ⚠️ planned / not yet | ❌ |
+| `thermal_fade` | 🍺 potential candidate / needs beer thought | ❌ | ❌ | ✅ | ❌ | 🍺 potential candidate / needs beer thought |
+| `per_digit_response_lag` | 🍺 potential candidate / needs beer thought | ❌ | ❌ | ❌ | ❌ | 🍺 potential candidate / needs beer thought |
+| `leading_zero_behaviour` | 🍺 potential candidate / needs beer thought | ❌ | ❌ | ❌ | ❌ | 🍺 potential candidate / needs beer thought |
+| `decimal_point_behaviour` | 🍺 potential candidate / needs beer thought | ❌ | ❌ | ❌ | ❌ | 🍺 potential candidate / needs beer thought |
+| `needle_shadow` | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
+| `calibration_offset` | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
+| `segment_bleed` / `digit_bleed` | 🍺 potential candidate / needs beer thought | ❌ | ❌ | ❌ | ❌ | 🍺 potential candidate / needs beer thought |
+| `ghosting` | 🍺 potential candidate / needs beer thought | ❌ | ❌ | ❌ | ❌ | 🍺 potential candidate / needs beer thought |
+| `uneven_brightness` | 🍺 potential candidate / needs beer thought | ❌ | ❌ | ❌ | ❌ | 🍺 potential candidate / needs beer thought |
+| `load_sag` | 🍺 potential candidate / needs beer thought | ❌ | ❌ | ❌ | ❌ | 🍺 potential candidate / needs beer thought |
+| `stepped_fill` | ❌ | ❌ | ❌ | ❌ | 🍺 potential candidate / needs beer thought | 🍺 potential candidate / needs beer thought |
+| `quantized_fill` | ❌ | ❌ | ❌ | ❌ | 🍺 potential candidate / needs beer thought | 🍺 potential candidate / needs beer thought |
 
 ## Candidate: odometer backlash
 
