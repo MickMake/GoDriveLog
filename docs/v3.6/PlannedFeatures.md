@@ -20,7 +20,7 @@ It is a holding area for ideas that are useful, plausible, or already documented
 
 | Realism option | Numeric | Radial | Odometer | Indicator | Bar | Segmented |
 | --- | --- | --- | --- | --- | --- | --- |
-| `movement` | partial: parse only | partial: existing `realism.movement_policy` finite-movement selector | implemented: `odometer.movement` | not planned | partial: finite movement currently tied to damping/related behaviour | not planned |
+| `movement` | partial: parse only | partial: existing `realism.movement_policy` finite-movement selector | implemented: `odometer.movement` | not planned | partial: finite fill-edge movement currently tied to damping/related behaviour | not planned |
 | `wraparound` | not planned | not planned | implemented | not planned | not planned | not planned |
 | `drum_slop` | not planned | not planned | implemented | not planned | not planned | not planned |
 | `carry_drag` | not planned | not planned | implemented | not planned | not planned | not planned |
@@ -41,6 +41,8 @@ It is a holding area for ideas that are useful, plausible, or already documented
 | `ghosting` | potential candidate / needs beer thought | not planned | not planned | not planned | not planned | potential candidate / needs beer thought |
 | `uneven_brightness` | good candidate: digit-slot brightness variation | not planned | not planned | not planned | not planned | potential candidate / needs beer thought |
 | `load_sag` | good candidate: current-load brightness sag | not planned | not planned | not planned | not planned | potential candidate / needs beer thought |
+| `stepped_fill` | not planned | not planned | not planned | not planned | potential candidate / needs beer thought | potential candidate / needs beer thought |
+| `quantized_fill` | not planned | not planned | not planned | not planned | potential candidate / needs beer thought | potential candidate / needs beer thought |
 
 ## Promoted tail slice: odometer backlash
 
@@ -209,6 +211,44 @@ Decimal points make that less clean. In the current numeric display model, DP is
 - a config model that users can understand without knowing the internal renderer layering.
 
 Do not promote bleed/ghosting candidates until the display-mask abstraction and config naming are clear.
+
+## Bar realism scope
+
+Bar gauges are linear fill/reveal gauges. Runtime realism should focus on the displayed fill edge moving toward the target, not on repainting the gauge artwork.
+
+The planned bar scope mirrors radial motion behaviour where that makes sense for a linear fill:
+
+- `damping` — implemented; supports directional timing such as rise/fall behaviour;
+- `overshoot` — planned / in progress; fill edge may pass the target then settle back;
+- `hysteresis` — planned / not yet; fill edge approaches from slightly different display targets depending on direction;
+- `stiction` — planned / not yet; small changes may hold until the threshold is exceeded;
+- `peg_bounce` — planned / not yet; fill edge may bump against min/max and rebound subtly.
+
+Do not add runtime realism for static bar appearance unless a later design explicitly needs it. Track texture, fill-edge softness, glow, grime, scratches, masks, and colour/opacity variation should normally belong in the supplied images/assets.
+
+### Bar candidates needing more design
+
+`stepped_fill` is a possible future candidate for block-style bars:
+
+```text
+[####----]
+```
+
+rather than continuous fill:
+
+```text
+[████    ]
+```
+
+Only promote it if bar gauges are meant to support visibly discrete blocks rather than a continuous filled region.
+
+`quantized_fill` is a related possible future candidate where the bar only visibly changes after the value crosses a display-resolution step. This is similar to display resolution and should not be confused with `hysteresis` or `stiction`:
+
+- `hysteresis` changes the displayed target based on approach direction;
+- `stiction` holds small changes until a movement threshold is exceeded;
+- `quantized_fill` rounds/snaps the visible fill level to discrete display steps.
+
+Both `stepped_fill` and `quantized_fill` need a clear config model before promotion.
 
 ## Planning rule
 
