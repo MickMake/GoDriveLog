@@ -2,9 +2,11 @@
 
 Status: v3.5.22 bar peg bounce implemented; the planned v3.5 slice list is complete
 
-Current target: planned v3.5 slice list complete
+## Completion note
 
-Current branch: `codex/v3.5.22-bar-peg-bounce`
+- All planned v3.5 slices are complete.
+- Future gauge-realism work should start a new release plan or an explicit follow-up issue/PR rather than reopening the planned v3.5 slice sequence.
+- Stale unresolved review comments on older merged PRs are administrative unless a current code issue is confirmed on `main`.
 
 ## Scope
 
@@ -14,14 +16,13 @@ It adds believable gauge behaviour without changing the v3.4 gauge family model.
 
 The final v3.5 tail also includes two small radial-only display refinements that need renderer support: an optional needle drop shadow and an optional display-only calibration offset.
 
-## Current decisions
+## Completion and history notes
 
-- v3.5.8 through v3.5.13 were temporarily deferred so the odometer movement stack could be completed while the implementation context was fresh; v3.5.19 through v3.5.22 remain pending and should now be implemented in checklist order.
+- v3.5.8 through v3.5.13 were temporarily deferred so the odometer movement stack could be completed while the implementation context was fresh; the later bar tail was then completed by v3.5.19 through v3.5.22.
 - v3.5.10 was intended to cover radial and bar overshoot, but implementation only covered radial behaviour; v3.5.19 adds the missing bar overshoot slice.
 - v3.5.16 covers radial display-only hysteresis. Bar hysteresis is split into v3.5.20 so the bar implementation can stay small and inspectable.
 - Bar stiction is split into v3.5.21. It may reuse radial transition ideas, but it applies to bar fill/reveal extent, not needle angle.
 - Bar `peg_bounce` is split into v3.5.22. The config key remains `realism.peg_bounce`; for bars it means end-stop bounce on the displayed fill/reveal extent.
-- The next-slice workflow should follow `Current target` when it is explicitly set, even if earlier unchecked slices remain.
 - Most v3.5 realism options live under the `realism` key.
 - `movement` is the exception: it is the single movement knob and should be accepted by any gauge type for now.
 - Keep movement config collapsed as a scalar, not a nested object.
@@ -126,12 +127,14 @@ Not allowed in v3.5:
 - [x] v3.5.21 bar stiction
 - [x] v3.5.22 bar peg bounce
 
-## Next-slice workflow
+## Historical slice workflow
 
-When asked to do the next slice:
+This workflow is kept for audit and rerun reference only. It no longer applies to planned v3.5 work because no unchecked planned slices remain.
+
+When replaying the original slice sequence:
 
 1. Read this file.
-2. Find the first unchecked slice.
+2. Identify the historical target slice to replay or audit.
 3. Read docs/v3.5/ReleasePlan.md.
 4. Read the matching prompt in docs/v3.5/prompts/.
 5. Make only that slice’s changes.

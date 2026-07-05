@@ -1,6 +1,6 @@
 # v3.5 Gauge Realism Release Plan
 
-Status: planned
+Status: implemented; planned slice list complete
 
 v3.5 adds gauge realism in small, inspectable slices. It builds on the v3.4 gauge package work and keeps the existing asset-driven dashboard model.
 

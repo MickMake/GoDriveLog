@@ -1,12 +1,14 @@
 # v3.5 Prompts
 
+The planned v3.5 slice list is complete. These prompt files are now historical, audit, and rerun prompts; no unchecked planned v3.5 slices remain.
+
 These prompts define the v3.5 slice sequence.
 
 ## Codex Usage
 
 These prompt files are intended for ChatGPT, Codex, or a human applying the same slice rules.
 
-If the user says any of the following:
+If the user wants to replay the original slice process and says any of the following:
 
 - "implement the next slice"
 - "do the next slice"
@@ -16,7 +18,7 @@ If the user says any of the following:
 the agent must:
 
 1. Read `docs/v3.5/ImplementationState.md`.
-2. Find the first unchecked slice.
+2. Confirm whether the request is historical replay, audit, or rerun work, because no unchecked planned slices remain.
 3. Read `docs/v3.5/ReleasePlan.md`.
 4. Read `docs/v3.5/RealismBehaviourGuide.md`.
 5. Read the matching prompt file under `docs/v3.5/prompts/`.
