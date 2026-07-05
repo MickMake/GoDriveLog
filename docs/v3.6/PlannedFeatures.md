@@ -32,6 +32,9 @@ It is a holding area for ideas that are useful, plausible, or already documented
 | `overshoot` | not planned | implemented | not planned | not planned | planned / in progress | not planned |
 | `peg_bounce` | not planned | implemented | not planned | not planned | planned / not yet | not planned |
 | `thermal_fade` | good candidate | not planned | not planned | implemented | not planned | potential candidate / needs beer thought |
+| `per_digit_response_lag` | good candidate: staggered digit-slot updates | not planned | not planned | not planned | not planned | potential candidate / needs beer thought |
+| `leading_zero_behaviour` | good candidate: blank/dim/formatted leading-zero slots | not planned | not planned | not planned | not planned | potential candidate / needs beer thought |
+| `decimal_point_behaviour` | good candidate: explicit DP overlay behaviour | not planned | not planned | not planned | not planned | potential candidate / needs beer thought |
 | `needle_shadow` | not planned | implemented | not planned | not planned | not planned | not planned |
 | `calibration_offset` | not planned | implemented | not planned | not planned | not planned | not planned |
 | `segment_bleed` / `digit_bleed` | potential candidate / needs beer thought | not planned | not planned | not planned | not planned | potential candidate / needs beer thought |
