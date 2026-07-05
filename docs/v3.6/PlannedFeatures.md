@@ -31,7 +31,7 @@ It is a holding area for ideas that are useful, plausible, or already documented
 | `damping` | not planned | implemented | not planned | not planned | implemented | not planned |
 | `overshoot` | not planned | implemented | not planned | not planned | planned / in progress | not planned |
 | `peg_bounce` | not planned | implemented | not planned | not planned | planned / not yet | not planned |
-| `thermal_fade` | good candidate | not planned | not planned | implemented | not planned | potential candidate / needs beer thought |
+| `thermal_fade` | good candidate | not planned | not planned | implemented: off/on image fade with `rise_ms`/`fall_ms` | not planned | potential candidate / needs beer thought |
 | `per_digit_response_lag` | good candidate: staggered digit-slot updates | not planned | not planned | not planned | not planned | potential candidate / needs beer thought |
 | `leading_zero_behaviour` | good candidate: blank/dim/formatted leading-zero slots | not planned | not planned | not planned | not planned | potential candidate / needs beer thought |
 | `decimal_point_behaviour` | good candidate: explicit DP overlay behaviour | not planned | not planned | not planned | not planned | potential candidate / needs beer thought |
@@ -101,6 +101,23 @@ Most click-like mechanical feel should come from combinations of existing/requir
 - `carry_drag`;
 - `snap_settle`;
 - `backlash` once implemented.
+
+## Indicator realism scope
+
+Indicator gauges are image-state driven. The `off` and `on` image layers define the static lamp appearance.
+
+Runtime realism should stay transition-focused. `thermal_fade` already supports separate rise and fall timing:
+
+```yaml
+realism:
+  thermal_fade:
+    rise_ms: 120
+    fall_ms: 240
+```
+
+Use `rise_ms` for off-to-on warm-up and `fall_ms` for on-to-off cool-down.
+
+Do not add separate planned runtime features for weak bulb, tint, ageing, bloom, dirty lens, or uneven illumination unless a later design explicitly introduces additional indicator image states or display-layer effects. Those qualities belong in the supplied images.
 
 ## Numeric and segmented display realism candidates
 
