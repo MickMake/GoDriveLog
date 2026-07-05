@@ -67,6 +67,27 @@ It is not a mathematical average and must not be documented as an arithmetic mea
 
 A later slice may choose a simple deterministic damping model that follows the same input target or rendered indicator target with heavier damping than the live indicator.
 
+## Odometer backlash tail slice
+
+Odometer `backlash` is required as a v3.6 tail cleanup slice.
+
+It is already documented as an odometer realism behaviour in v3.5 planning, but current code support was not found. Existing odometer realism can create general mechanical feel, but cannot fully create direction-change slack.
+
+`backlash` should mean:
+
+> when an odometer-style value reverses direction, wheel movement shows a small bounded amount of mechanical slack before following the new direction and settling exactly on the target.
+
+The implementation must be:
+
+- odometer-only;
+- display-only;
+- deterministic;
+- bounded and subtle;
+- disabled unless configured;
+- non-mutating for source values, logs, exports, configured ranges, or input data.
+
+Do not treat `movement: smooth` or `movement: click` as required future movement implementations while doing this cleanup. `linear`, `ease_out`, and `bell` are already smooth movement modes. `click` remains reserved unless a later prompt defines a genuinely distinct stepped-wheel behaviour.
+
 ## Reset/session behaviour
 
 Pointer markers are runtime/session state in v3.6.
@@ -107,6 +128,7 @@ Bar marker assets or render primitives should be family-specific. Do not force r
 | v3.6.6 | Bar pointer marker min | Add min marker for rendered bar path/fill. |
 | v3.6.7 | Bar damped secondary pointer marker | Add slow secondary bar marker. |
 | v3.6.8 | Enhancement backlog triage | Review and promote later v3.6 candidates. |
+| v3.6.9 | Odometer backlash cleanup | Implement missing odometer `backlash` and document `smooth`/`click` cleanup decisions. |
 
 ## Backlog candidates
 
