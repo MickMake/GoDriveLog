@@ -1,6 +1,6 @@
 # v3.6 Prompt Index
 
-These prompt files define the v3.6 implementation slices.
+These prompt files define the v3.6 pointer marker implementation slices.
 
 If the user says any of the following:
 
@@ -44,4 +44,5 @@ When the user names a specific version such as `implement v3.6.5`, use the match
 - Pointer markers follow the rendered indicator path for the gauge family.
 - Do not add a `source: value` / `source: pointer` switch in v3.6.
 - Do not call the damped secondary marker a mathematical average.
-- Do not implement persistence unless a prompt explicitly asks for it.
+- Do not implement persistence in v3.6.
+- Do not implement odometer, numeric, segmented, indicator, or broad realism-audit work in v3.6.
