@@ -24,7 +24,7 @@ It is a holding area for ideas that are useful, plausible, or already documented
 | `drum_slop` | not planned | not planned | implemented | not planned | not planned | not planned |
 | `carry_drag` | not planned | not planned | implemented | not planned | not planned | not planned |
 | `snap_settle` | not planned | not planned | implemented | not planned | not planned | not planned |
-| `backlash` | not planned | not planned | marked implemented / no code | not planned | not planned | not planned |
+| `backlash` | not planned | not planned | marked implemented / no code; promoted to v3.6.9 | not planned | not planned | not planned |
 | `hysteresis` | not planned | implemented | not planned | not planned | planned / not yet | not planned |
 | `stiction` | not planned | implemented | not planned | not planned | planned / not yet | not planned |
 | `damping` | not planned | implemented | not planned | not planned | implemented | not planned |
@@ -37,7 +37,7 @@ It is a holding area for ideas that are useful, plausible, or already documented
 | `ghosting` | potential candidate / needs beer thought | not planned | not planned | not planned | not planned | potential candidate / needs beer thought |
 | `uneven_brightness` | potential candidate / needs beer thought | not planned | not planned | not planned | not planned | potential candidate / needs beer thought |
 
-## Known mismatch: odometer backlash
+## Promoted tail slice: odometer backlash
 
 `backlash` is listed as a planned/approved odometer realism behaviour in the v3.5 documentation, and the v3.5 implementation checklist previously marked the slice complete.
 
@@ -46,10 +46,56 @@ However, repository archaeology found only docs/prompt commits for v3.5.15 backl
 Treat odometer `backlash` as:
 
 ```text
-marked implemented / no code
+required missing implementation
 ```
 
-Before any later release depends on v3.5 being complete, this mismatch should be resolved either by implementing backlash properly or correcting the v3.5 state documentation.
+This is now promoted into the v3.6 tail as:
+
+```text
+docs/v3.6/prompts/v3.6.9-implement-odometer-backlash-cleanup.md
+```
+
+### Required behaviour
+
+`backlash` must model direction-change slack for odometer wheels.
+
+Existing odometer realism can create general mechanical feel, but it cannot fully create direction-change backlash:
+
+| Existing option | Why it is not backlash |
+| --- | --- |
+| `drum_slop` | Static wheel alignment imperfection; does not care about direction changes. |
+| `carry_drag` | Rollover coupling between wheels; not reverse-direction slack. |
+| `snap_settle` | Landing/settle effect; not slack when reversing. |
+| `movement: linear`, `ease_out`, `bell` | Movement curves; not mechanical play. |
+| `wraparound` | Route choice across digit boundaries; not slack. |
+
+Therefore `backlash` should be implemented as its own odometer-only feature.
+
+## Odometer movement cleanup decisions
+
+The reserved odometer movement values should be cleaned up while implementing `backlash`.
+
+### `smooth`
+
+Do not implement `movement: smooth` as a separate future movement mode unless a later design gives it a meaning that is genuinely different from existing movement curves.
+
+Current smooth odometer movement is already covered by:
+
+- `movement: linear` — continuous constant roll;
+- `movement: ease_out` — continuous roll slowing into target;
+- `movement: bell` — continuous slow-fast-slow roll.
+
+### `click`
+
+Do not implement `movement: click` as a separate movement mode unless a later slice defines distinct stepped-wheel behaviour.
+
+Most click-like mechanical feel should come from combinations of existing/required realism options:
+
+- `movement: instant`;
+- `drum_slop`;
+- `carry_drag`;
+- `snap_settle`;
+- `backlash` once implemented.
 
 ## Numeric and segmented display realism candidates
 
