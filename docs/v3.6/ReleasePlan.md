@@ -2,7 +2,7 @@
 
 v3.6 follows the completed v3.5 gauge realism pass.
 
-v3.6 starts with pointer markers for radial and bar gauges, then keeps room for small follow-on gauge enhancements. The goal is to add useful instrument-style behaviours without turning the dashboard into a physics engine with opinions.
+v3.6 is the pointer marker release. The goal is to add useful instrument-style marker behaviours for radial and bar gauges without reopening v3.5 realism work or turning the dashboard into a physics engine with opinions.
 
 ## Theme
 
@@ -67,27 +67,6 @@ It is not a mathematical average and must not be documented as an arithmetic mea
 
 A later slice may choose a simple deterministic damping model that follows the same input target or rendered indicator target with heavier damping than the live indicator.
 
-## Odometer backlash tail slice
-
-Odometer `backlash` is required as a v3.6 tail cleanup slice.
-
-It is already documented as an odometer realism behaviour in v3.5 planning, but current code support was not found. Existing odometer realism can create general mechanical feel, but cannot fully create direction-change slack.
-
-`backlash` should mean:
-
-> when an odometer-style value reverses direction, wheel movement shows a small bounded amount of mechanical slack before following the new direction and settling exactly on the target.
-
-The implementation must be:
-
-- odometer-only;
-- display-only;
-- deterministic;
-- bounded and subtle;
-- disabled unless configured;
-- non-mutating for source values, logs, exports, configured ranges, or input data.
-
-Do not treat `movement: smooth` or `movement: click` as required future movement implementations while doing this cleanup. `linear`, `ease_out`, and `bell` are already smooth movement modes. `click` remains reserved unless a later prompt defines a genuinely distinct stepped-wheel behaviour.
-
 ## Reset/session behaviour
 
 Pointer markers are runtime/session state in v3.6.
@@ -99,7 +78,7 @@ Default reset events:
 - relevant gauge config change;
 - data source identity change.
 
-Do not add database persistence in v3.6 unless a later prompt explicitly promotes it.
+Do not add database persistence in v3.6.
 
 ## Rendering model
 
@@ -127,21 +106,20 @@ Bar marker assets or render primitives should be family-specific. Do not force r
 | v3.6.5 | Bar pointer marker max | Add max marker for rendered bar path/fill. |
 | v3.6.6 | Bar pointer marker min | Add min marker for rendered bar path/fill. |
 | v3.6.7 | Bar damped secondary pointer marker | Add slow secondary bar marker. |
-| v3.6.8 | Enhancement backlog triage | Review and promote later v3.6 candidates. |
-| v3.6.9 | Odometer backlash cleanup | Implement missing odometer `backlash` and document `smooth`/`click` cleanup decisions. |
+| v3.6.8 | Pointer marker docs/checkpoint | Finalise marker docs and confirm no unrelated backlog items were pulled into v3.6. |
 
-## Backlog candidates
+## Deferred to v3.7+
 
-These are possible v3.6+ enhancements, not first-tranche requirements:
+The following are intentionally outside v3.6:
 
-- explicit manual marker reset control;
-- optional marker labels/tooltips;
-- marker preview fixtures for all gauge families;
-- indicator marker equivalents;
-- numeric/segmented baseline preview improvements;
-- mathematical statistics overlays, if separately named and scoped;
+- odometer backlash cleanup;
+- broad v3.5 realism implementation audit;
+- numeric/segmented display realism candidates;
+- indicator realism expansion beyond existing thermal fade behaviour;
+- bar realism backlog beyond pointer markers;
 - persistent marker state;
-- marker styling overrides beyond default assets.
+- mathematical statistics overlays;
+- marker styling/labels/tooltips beyond default marker assets.
 
 ## Non-goals
 
@@ -149,4 +127,5 @@ These are possible v3.6+ enhancements, not first-tranche requirements:
 - Do not add true statistical average under `pointer_markers`.
 - Do not implement persistence as part of min/max.
 - Do not bundle radial and bar renderer changes in the same slice.
-- Do not let v3.6 become a random wishlist drawer. The drawer already contains three screws, a dead battery, and a suspiciously important bracket.
+- Do not add odometer backlash or other non-marker realism work in v3.6.
+- Do not let v3.6 become a random wishlist drawer. The drawer has been moved to v3.7, where at least it can be labelled properly.
