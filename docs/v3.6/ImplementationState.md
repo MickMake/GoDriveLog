@@ -1,8 +1,8 @@
 # v3.6 Implementation State
 
-Status: v3.6 planning scaffold prepared; implementation slices pending
+Status: v3.6 planning scaffold complete; implementation slices pending
 
-Current target: v3.6.0 pointer marker planning docs
+Current target: v3.6.1 shared pointer marker config/state
 
 Current branch: `docs/v3.6-pointer-marker-spec-fix`
 
@@ -32,10 +32,13 @@ v3.6 must stay focused on pointer markers only. Broader gauge realism audit/back
 - Do not add a separate `source: value` / `source: pointer` switch in v3.6.
 - Pointer markers always sample the final rendered indicator position.
 - Pointer markers must not sample source values, logs, exports, clean mapped values, or pre-realism values.
+- The shared marker engine consumes a gauge-family-neutral normalised rendered position where `0.0` is the rendered visual minimum and `1.0` is the rendered visual maximum after source mapping, clamping, and realism effects.
 - Support radial and bar gauges in v3.6.
 - Use a shared marker engine where practical; keep rendering family-specific.
 - Min/max markers use daily local reset mode when `window` is absent.
+- Daily reset mode uses the host system local timezone; v3.6 does not add dashboard-level or per-gauge timezone configuration.
 - Min/max markers use rolling-window history when `window` is present.
+- Rolling-window history should retain data/update ticks or meaningful final rendered position changes, not every unchanged render frame.
 - `average` is an old-style highly damped pointer marker, not a mathematical average.
 - `average` uses a fixed 10 second time constant in v3.6.
 - Pointer markers render above the live needle/bar and below overlay/glass/bezel/frame layers.
@@ -90,7 +93,7 @@ Not allowed in v3.6:
 
 ## Checklist
 
-- [ ] v3.6.0 pointer marker planning docs
+- [x] v3.6.0 pointer marker planning docs
 - [ ] v3.6.1 shared pointer marker config/state
 - [ ] v3.6.2 shared min/max marker engine
 - [ ] v3.6.3 radial pointer marker rendering
