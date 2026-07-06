@@ -19,6 +19,8 @@ Pointer markers observe the final rendered indicator position:
 
 Existing gauge mapping and realism remain responsible for producing the final live indicator position. Pointer markers must not replace, bypass, simplify, or become the only radial/bar realism mechanism.
 
+The shared marker engine consumes a gauge-family-neutral normalised rendered position where `0.0` is the rendered visual minimum and `1.0` is the rendered visual maximum after source mapping, clamping, and realism effects. Radial and bar renderers convert that marker position into angle or bar-axis geometry. If the existing renderer already has a better equivalent abstraction, use that abstraction while preserving the same meaning.
+
 ## Config shape
 
 Use the `realism.pointer_markers` key.
@@ -101,8 +103,10 @@ When `window` is absent, min/max markers track the current local day and reset a
 
 Rules:
 
-- use local dashboard/runtime time;
-- reset at local midnight;
+- use the host system local timezone;
+- for the Raspberry Pi deployment, this means whatever timezone the Pi is configured to use;
+- v3.6 does not add dashboard-level or per-gauge timezone configuration;
+- reset at host-local midnight;
 - do not replay earlier history if the app starts partway through the day;
 - marker state starts unset until the first valid final rendered indicator position;
 - no database persistence.
@@ -115,10 +119,15 @@ Rules:
 
 - `window` must be a positive finite duration;
 - zero, negative, or unparseable windows must fail config loading clearly;
-- each retained sample is timestamped;
+- retained samples are timestamped;
+- rolling-window min/max history should retain samples from gauge update ticks or meaningful final rendered position changes;
+- implementations should avoid retaining duplicate or unchanged frame samples and should coalesce unchanged or effectively identical rendered positions where practical;
 - samples older than the configured window are discarded;
+- retained history must stay bounded by the configured window;
 - min/max markers are recalculated from the remaining samples;
 - if no valid samples remain, the affected marker becomes unset until the next valid sample.
+
+This is marker display state only, not a general-purpose history store, database, or time-series subsystem.
 
 `window` applies to min/max marker history. The average marker remains a live 10 second damped follower and must not become a statistical rolling average.
 
