@@ -16,6 +16,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/MickMake/GoDriveLog/internal/dashboard/adapter/renderplan"
 	"github.com/MickMake/GoDriveLog/internal/dashboard/v3dashboard"
 	ebitenui "github.com/hajimehoshi/ebiten/v2"
 )
@@ -236,17 +237,22 @@ func (a *Adapter) renderSceneParts(scene v3dashboard.Scene, yOffset float64) ([]
 
 func (a *Adapter) renderWidgetParts(dashboardID string, widget v3dashboard.Widget, yOffset float64) ([]renderedPart, error) {
 	loaded := make([]loadedPart, 0, len(widget.Parts))
-	gaugeWidth := 0.0
-	gaugeHeight := 0.0
 	for index, part := range widget.Parts {
 		asset, err := a.loadAsset(part.AssetPath)
 		if err != nil {
 			return nil, fmt.Errorf("part %d %q asset %q: %w", index, part.Kind, part.AssetPath, err)
 		}
 		loaded = append(loaded, loadedPart{index: index, part: part, asset: asset})
-		gaugeWidth, gaugeHeight = radialGaugeSize(gaugeWidth, gaugeHeight, part, asset)
 	}
+	return layoutWidgetParts(widget, loaded, yOffset), nil
+}
 
+func layoutWidgetParts(widget v3dashboard.Widget, loaded []loadedPart, yOffset float64) []renderedPart {
+	gaugeWidth := 0.0
+	gaugeHeight := 0.0
+	for _, loadedPart := range loaded {
+		gaugeWidth, gaugeHeight = radialGaugeSize(gaugeWidth, gaugeHeight, loadedPart.part, loadedPart.asset)
+	}
 	parts := make([]renderedPart, 0, len(loaded))
 	baseX, baseY := widgetPosition(widget)
 	baseY += yOffset
@@ -258,31 +264,28 @@ func (a *Adapter) renderWidgetParts(dashboardID string, widget v3dashboard.Widge
 	for _, loadedPart := range loaded {
 		part := loadedPart.part
 		asset := loadedPart.asset
-		if part.Kind == v3dashboard.PartKindNeedle ||
-			part.Kind == v3dashboard.PartKindNeedleShadow ||
-			part.Kind == v3dashboard.PartKindNeedleMin ||
-			part.Kind == v3dashboard.PartKindNeedleMax {
+		renderGaugeWidth := gaugeWidth
+		renderGaugeHeight := gaugeHeight
+		if renderGaugeWidth <= 0 || renderGaugeHeight <= 0 {
+			renderGaugeWidth = float64(asset.width)
+			renderGaugeHeight = float64(asset.height)
+		}
+		if needlePart, ok := renderplan.BuildNeedleLikePart(part, asset.width, asset.height, baseX, baseY, renderGaugeWidth, renderGaugeHeight, widgetScale); ok {
 			if gaugeWidth <= 0 || gaugeHeight <= 0 {
 				gaugeWidth = float64(asset.width)
 				gaugeHeight = float64(asset.height)
 			}
-			faceX := baseX + part.FacePivot.X*gaugeWidth*widgetScale
-			faceY := baseY + part.FacePivot.Y*gaugeHeight*widgetScale
-			if len(part.Position) >= 2 {
-				faceX += float64(part.Position[0]) * widgetScale
-				faceY += float64(part.Position[1]) * widgetScale
-			}
 			parts = append(parts, renderedPart{
 				asset:  asset,
-				x:      faceX,
-				y:      faceY,
-				scale:  widgetScale,
-				needle: true,
-				shadow: part.Kind == v3dashboard.PartKindNeedleShadow,
-				angle:  part.Angle,
-				alpha:  part.Alpha,
-				pivotX: part.NeedlePivot.X * float64(asset.width),
-				pivotY: part.NeedlePivot.Y * float64(asset.height),
+				x:      needlePart.X,
+				y:      needlePart.Y,
+				scale:  needlePart.Scale,
+				needle: needlePart.Needle,
+				shadow: needlePart.Shadow,
+				angle:  needlePart.Angle,
+				alpha:  needlePart.Alpha,
+				pivotX: needlePart.PivotX,
+				pivotY: needlePart.PivotY,
 			})
 			continue
 		}
@@ -309,7 +312,7 @@ func (a *Adapter) renderWidgetParts(dashboardID string, widget v3dashboard.Widge
 		}
 		parts = append(parts, renderedPart{asset: asset, x: x, y: y, scale: widgetScale, source: partSourceRect(part), wraparound: part.Wraparound})
 	}
-	return parts, nil
+	return parts
 }
 
 func (a *Adapter) drawPart(screen *ebitenui.Image, part renderedPart, source image.Rectangle, sourceOffsetY float64) {
