@@ -249,20 +249,21 @@ func (n *NeedleShadowConfig) UnmarshalYAML(node *yaml.Node) error {
 }
 
 type Realism struct {
-	Wraparound        *bool               `yaml:"wraparound,omitempty"`
-	CarryDrag         *bool               `yaml:"carry_drag,omitempty"`
-	SnapSettle        *bool               `yaml:"snap_settle,omitempty"`
-	Hysteresis        *bool               `yaml:"hysteresis,omitempty"`
-	Damping           *DampingConfig      `yaml:"damping,omitempty"`
-	Stiction          *float64            `yaml:"stiction,omitempty"`
-	Overshoot         *OvershootConfig    `yaml:"overshoot,omitempty"`
-	PegBounce         *bool               `yaml:"peg_bounce,omitempty"`
-	ThermalFade       *ThermalFadeConfig  `yaml:"thermal_fade,omitempty"`
-	NeedleShadow      *NeedleShadowConfig `yaml:"needle_shadow,omitempty"`
-	CalibrationOffset *float64            `yaml:"calibration_offset,omitempty"`
-	MovementPolicy    string              `yaml:"movement_policy,omitempty"`
-	DrumSlop          []int               `yaml:"drum_slop,omitempty"`
-	DrumSlopSet       bool                `yaml:"-"`
+	Wraparound        *bool                 `yaml:"wraparound,omitempty"`
+	CarryDrag         *bool                 `yaml:"carry_drag,omitempty"`
+	SnapSettle        *bool                 `yaml:"snap_settle,omitempty"`
+	Hysteresis        *bool                 `yaml:"hysteresis,omitempty"`
+	Damping           *DampingConfig        `yaml:"damping,omitempty"`
+	Stiction          *float64              `yaml:"stiction,omitempty"`
+	Overshoot         *OvershootConfig      `yaml:"overshoot,omitempty"`
+	PegBounce         *bool                 `yaml:"peg_bounce,omitempty"`
+	PointerMarkers    *PointerMarkersConfig `yaml:"pointer_markers,omitempty"`
+	ThermalFade       *ThermalFadeConfig    `yaml:"thermal_fade,omitempty"`
+	NeedleShadow      *NeedleShadowConfig   `yaml:"needle_shadow,omitempty"`
+	CalibrationOffset *float64              `yaml:"calibration_offset,omitempty"`
+	MovementPolicy    string                `yaml:"movement_policy,omitempty"`
+	DrumSlop          []int                 `yaml:"drum_slop,omitempty"`
+	DrumSlopSet       bool                  `yaml:"-"`
 }
 
 func (r *Realism) UnmarshalYAML(node *yaml.Node) error {
@@ -278,6 +279,7 @@ func (r *Realism) UnmarshalYAML(node *yaml.Node) error {
 		"stiction":           true,
 		"overshoot":          true,
 		"peg_bounce":         true,
+		"pointer_markers":    true,
 		"thermal_fade":       true,
 		"needle_shadow":      true,
 		"calibration_offset": true,
@@ -743,6 +745,9 @@ func validateRealism(pkg Package) error {
 		if *pkg.Realism.PegBounce && (!pkg.ValueMap.Clamp || pkg.ValueMap.Max <= pkg.ValueMap.Min) {
 			return fmt.Errorf("realism peg_bounce requires a clamped value_map range")
 		}
+	}
+	if pkg.Realism.PointerMarkers != nil && pkg.Type != TypeRadial && pkg.Type != TypeBar {
+		return fmt.Errorf("realism pointer_markers is only supported for radial and bar gauges")
 	}
 	if pkg.Realism.NeedleShadow != nil {
 		if pkg.Type != TypeRadial {

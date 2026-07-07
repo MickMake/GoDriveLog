@@ -33,6 +33,16 @@ func TestRuntimeUsesResolvedSelectedDashboardsOnly(t *testing.T) {
 	}
 }
 
+func TestRuntimeInitializesPointerMarkerStateStore(t *testing.T) {
+	runtime := testRuntime(t)
+	if runtime.pointerMarkers == nil {
+		t.Fatal("pointerMarkers map is nil")
+	}
+	if len(runtime.pointerMarkers) != 0 {
+		t.Fatalf("pointerMarkers = %#v, want empty", runtime.pointerMarkers)
+	}
+}
+
 func TestRuntimeRendersImageDigitBarFrameAndIndicatorFromSensorState(t *testing.T) {
 	runtime := testRuntime(t)
 	runtime.SetState(okState("speed", 42, "km/h"))

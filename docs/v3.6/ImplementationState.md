@@ -1,10 +1,10 @@
 # v3.6 Implementation State
 
-Status: v3.6 planning scaffold complete; implementation slices pending
+Status: v3.6.1 shared pointer marker config/state complete; v3.6.2 pending
 
-Current target: v3.6.1 shared pointer marker config/state
+Current target: v3.6.2 shared min/max marker engine
 
-Current branch: `docs/v3.6-pointer-marker-spec-fix`
+Current branch: `v3.6.1-shared-pointer-marker-config-state`
 
 ## Scope
 
@@ -94,7 +94,7 @@ Not allowed in v3.6:
 ## Checklist
 
 - [x] v3.6.0 pointer marker planning docs
-- [ ] v3.6.1 shared pointer marker config/state
+- [x] v3.6.1 shared pointer marker config/state
 - [ ] v3.6.2 shared min/max marker engine
 - [ ] v3.6.3 radial pointer marker rendering
 - [ ] v3.6.4 bar pointer marker rendering
