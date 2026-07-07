@@ -25,14 +25,13 @@ When the user names a specific version such as `implement v3.6.5`, use the match
 ## Prompt files
 
 - `v3.6.0-pointer-marker-docs.md`
-- `v3.6.1-radial-pointer-marker-max.md`
-- `v3.6.2-radial-pointer-marker-min.md`
-- `v3.6.3-pointer-marker-reset-session.md`
-- `v3.6.4-radial-damped-secondary-pointer.md`
-- `v3.6.5-bar-pointer-marker-max.md`
-- `v3.6.6-bar-pointer-marker-min.md`
-- `v3.6.7-bar-damped-secondary-pointer.md`
-- `v3.6.8-pointer-marker-checkpoint.md`
+- `v3.6.1-shared-pointer-marker-config-state.md`
+- `v3.6.2-shared-min-max-marker-engine.md`
+- `v3.6.3-radial-pointer-marker-rendering.md`
+- `v3.6.4-bar-pointer-marker-rendering.md`
+- `v3.6.5-average-pointer-marker-engine.md`
+- `v3.6.6-average-pointer-marker-rendering.md`
+- `v3.6.7-pointer-marker-tests-previews-docs.md`
 
 ## Shared rules
 
@@ -41,8 +40,14 @@ When the user names a specific version such as `implement v3.6.5`, use the match
 - Preserve existing gauge behaviour when new config is absent or disabled.
 - Keep pointer markers display-only.
 - Never mutate source values, logs, exports, configured ranges, or input data.
-- Pointer markers follow the rendered indicator path for the gauge family.
+- Pointer markers sample the final rendered indicator position for the gauge family.
+- Do not sample source values, logs, exports, clean mapped values, or pre-realism values.
 - Do not add a `source: value` / `source: pointer` switch in v3.6.
-- Do not call the damped secondary marker a mathematical average.
+- Support simple boolean marker config only: `max`, `min`, and `average`.
+- Reject long-form marker object config and unknown marker keys.
+- Keep `average` as a highly damped visual pointer, not a statistical average.
+- Use the fixed 10 second average pointer time constant in v3.6.
+- Render pointer markers above the live needle/bar and below overlay/glass/bezel/frame layers.
+- Use explicit marker PNG assets where provided.
 - Do not implement persistence in v3.6.
 - Do not implement odometer, numeric, segmented, indicator, or broad realism-audit work in v3.6.
