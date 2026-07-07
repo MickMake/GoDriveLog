@@ -258,7 +258,10 @@ func (a *Adapter) renderWidgetParts(dashboardID string, widget v3dashboard.Widge
 	for _, loadedPart := range loaded {
 		part := loadedPart.part
 		asset := loadedPart.asset
-		if part.Kind == v3dashboard.PartKindNeedle || part.Kind == v3dashboard.PartKindNeedleShadow {
+		if part.Kind == v3dashboard.PartKindNeedle ||
+			part.Kind == v3dashboard.PartKindNeedleShadow ||
+			part.Kind == v3dashboard.PartKindNeedleMin ||
+			part.Kind == v3dashboard.PartKindNeedleMax {
 			if gaugeWidth <= 0 || gaugeHeight <= 0 {
 				gaugeWidth = float64(asset.width)
 				gaugeHeight = float64(asset.height)
