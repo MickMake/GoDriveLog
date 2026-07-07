@@ -202,6 +202,66 @@ func TestRuntimeRadialGaugeWidgetNonOKStateDoesNotRenderNeedle(t *testing.T) {
 	}
 }
 
+func TestRuntimeRadialGaugeWidgetKeepsPointerMarkersHiddenWhenDisabled(t *testing.T) {
+	packageDir := makeDashboardRadialGaugePackageWithPointerMarkersAndRealism(t, "    max: false\n    min: false\n", "", false, nil, nil, false, nil, nil, nil, false)
+	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 1024, Height: 600}, Widgets: []v3config.WidgetConfig{{ID: "rpm", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{0, 0}, Scale: 1}}}}}}
+	runtime, err := NewRuntime(plan, testAssetRegistry())
+	if err != nil {
+		t.Fatalf("NewRuntime failed: %v", err)
+	}
+
+	runtime.SetState(okState("rpm", 3500, "rpm"))
+	scenes, err := runtime.Snapshot()
+	if err != nil {
+		t.Fatalf("Snapshot failed: %v", err)
+	}
+
+	widget := requireWidget(t, scenes[0], "rpm")
+	if got := gaugePartSequence(widget); got != "layer:background,layer:face,layer:ticks,needle:0,layer:overlay" {
+		t.Fatalf("radial part sequence = %q", got)
+	}
+	if got := countParts(widget, PartKindNeedleMin); got != 0 {
+		t.Fatalf("expected no min marker parts, got %d", got)
+	}
+	if got := countParts(widget, PartKindNeedleMax); got != 0 {
+		t.Fatalf("expected no max marker parts, got %d", got)
+	}
+}
+
+func TestRuntimeRadialGaugeWidgetRendersPointerMarkersAboveNeedleBeforeOverlay(t *testing.T) {
+	packageDir := makeDashboardRadialGaugePackageWithPointerMarkersAndRealism(t, "    max: true\n    min: true\n", "", false, nil, nil, false, nil, nil, nil, false)
+	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 1024, Height: 600}, Widgets: []v3config.WidgetConfig{{ID: "rpm", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{0, 0}, Scale: 1}}}}}}
+	runtime, err := NewRuntime(plan, testAssetRegistry())
+	if err != nil {
+		t.Fatalf("NewRuntime failed: %v", err)
+	}
+
+	runtime.SetState(okState("rpm", 3500, "rpm"))
+	scenes, err := runtime.Snapshot()
+	if err != nil {
+		t.Fatalf("Snapshot failed: %v", err)
+	}
+
+	widget := requireWidget(t, scenes[0], "rpm")
+	if got := gaugePartSequence(widget); got != "layer:background,layer:face,layer:ticks,needle:0,needle_min:0,needle_max:0,layer:overlay" {
+		t.Fatalf("radial part sequence = %q", got)
+	}
+	minMarker := firstPartKind(widget, PartKindNeedleMin)
+	maxMarker := firstPartKind(widget, PartKindNeedleMax)
+	if minMarker.Layer != "needle_min" || minMarker.AssetPath == "" {
+		t.Fatalf("min marker part = %#v", minMarker)
+	}
+	if maxMarker.Layer != "needle_max" || maxMarker.AssetPath == "" {
+		t.Fatalf("max marker part = %#v", maxMarker)
+	}
+	if minMarker.FacePivot != widget.GaugeFacePivot || minMarker.NeedlePivot != widget.GaugeNeedlePivot {
+		t.Fatalf("min marker pivots = face %#v needle %#v", minMarker.FacePivot, minMarker.NeedlePivot)
+	}
+	if maxMarker.FacePivot != widget.GaugeFacePivot || maxMarker.NeedlePivot != widget.GaugeNeedlePivot {
+		t.Fatalf("max marker pivots = face %#v needle %#v", maxMarker.FacePivot, maxMarker.NeedlePivot)
+	}
+}
+
 func TestRuntimeRadialGaugeWidgetIncludesNeedleShadowBeforeNeedle(t *testing.T) {
 	packageDir := makeDashboardRadialGaugePackageWithNeedleShadow(t, []int{3, 4}, nil)
 	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 1024, Height: 600}, Widgets: []v3config.WidgetConfig{{ID: "rpm", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{0, 0}, Scale: 1}}}}}}
@@ -1420,8 +1480,8 @@ func TestRuntimeRollingPointerMarkersExpireDuringIdleTicks(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Tick failed: %v", err)
 	}
-	if changed {
-		t.Fatalf("expected pruning-only idle tick not to redraw")
+	if !changed {
+		t.Fatalf("expected pruning-only idle tick to redraw when visible markers expire")
 	}
 	state = runtime.pointerMarkers[key]
 	if len(state.Samples) != 0 {
@@ -4286,6 +4346,8 @@ func makeDashboardRadialGaugePackageWithExtendedRealism(t *testing.T, pointerMar
 		"assets/gauges/radial/simple_rpm/face.png",
 		"assets/gauges/radial/simple_rpm/ticks.png",
 		"assets/gauges/radial/simple_rpm/needle.png",
+		"assets/gauges/radial/simple_rpm/needle_min.png",
+		"assets/gauges/radial/simple_rpm/needle_max.png",
 		"assets/gauges/radial/simple_rpm/overlay.png",
 	}
 	for _, path := range files {
@@ -4560,6 +4622,8 @@ layers:
   face: face.png
   ticks: ticks.png
   needle: needle.png
+  needle_min: needle_min.png
+  needle_max: needle_max.png
   overlay: overlay.png
 pivot:
   face: { x: 0.5, y: 0.55 }
@@ -4841,6 +4905,10 @@ func gaugePartSequence(widget Widget) string {
 			parts = append(parts, fmt.Sprintf("needle_shadow:%.0f", part.Angle))
 		case PartKindNeedle:
 			parts = append(parts, fmt.Sprintf("needle:%.0f", part.Angle))
+		case PartKindNeedleMin:
+			parts = append(parts, fmt.Sprintf("needle_min:%.0f", part.Angle))
+		case PartKindNeedleMax:
+			parts = append(parts, fmt.Sprintf("needle_max:%.0f", part.Angle))
 		case PartKindBar:
 			parts = append(parts, "bar:"+part.Layer)
 		case PartKindWheelStrip:

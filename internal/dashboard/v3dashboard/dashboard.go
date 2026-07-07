@@ -28,6 +28,8 @@ const (
 	PartKindLayer        = "layer"
 	PartKindNeedleShadow = "needle_shadow"
 	PartKindNeedle       = "needle"
+	PartKindNeedleMin    = "needle_min"
+	PartKindNeedleMax    = "needle_max"
 	PartKindBar          = "bar"
 	PartKindWheelStrip   = "wheel_strip"
 )
@@ -469,6 +471,7 @@ func (d Dashboard) renderWidget(configWidget v3config.WidgetConfig, states map[s
 		if err != nil {
 			return Widget{}, false, fmt.Errorf("dashboard %q widget %q gauge %q could not load package: %w", d.ID, configWidget.ID, configWidget.Gauge, err)
 		}
+		key := movementKey(d.ID, configWidget.ID)
 		state := stateForSensor(pkg.Sensor, states)
 		context := movementContext{
 			DashboardID: d.ID,
@@ -480,17 +483,17 @@ func (d Dashboard) renderWidget(configWidget v3config.WidgetConfig, states map[s
 		var movementChanged bool
 		var movement widgetMovementState
 		if pkg.Type == v3gauges.TypeOdometer {
-			state, movement, movementChanged, err = resolveOdometerMovementState(movements, movementKey(d.ID, configWidget.ID), context, pkg, state, planner, now)
+			state, movement, movementChanged, err = resolveOdometerMovementState(movements, key, context, pkg, state, planner, now)
 			if err != nil {
 				return Widget{}, false, fmt.Errorf("dashboard %q widget %q: %w", d.ID, configWidget.ID, err)
 			}
 		} else if pkg.Type == v3gauges.TypeIndicator {
-			state, movement, movementChanged, err = resolveIndicatorThermalFadeState(movements, movementKey(d.ID, configWidget.ID), pkg, state, now)
+			state, movement, movementChanged, err = resolveIndicatorThermalFadeState(movements, key, pkg, state, now)
 			if err != nil {
 				return Widget{}, false, fmt.Errorf("dashboard %q widget %q: %w", d.ID, configWidget.ID, err)
 			}
 		} else if pkg.Type == v3gauges.TypeBar {
-			state, movement, movementChanged = resolveBarMovementState(movements, movementKey(d.ID, configWidget.ID), context, pkg, state, planner, now)
+			state, movement, movementChanged = resolveBarMovementState(movements, key, context, pkg, state, planner, now)
 		} else {
 			hysteresis := pkg.Realism.Hysteresis != nil && *pkg.Realism.Hysteresis
 			damping := pkg.Realism.Damping != nil && pkg.Realism.Damping.Enabled
@@ -499,14 +502,19 @@ func (d Dashboard) renderWidget(configWidget v3config.WidgetConfig, states map[s
 				stiction = *pkg.Realism.Stiction
 			}
 			pegBounce := pkg.Realism.PegBounce != nil && *pkg.Realism.PegBounce
-			state, movementChanged = resolveMovementState(movements, movementKey(d.ID, configWidget.ID), context, state, hysteresis, pkg.Realism.MovementPolicy, damping, stiction, pkg.Realism.Overshoot, pegBounce, pkg.ValueMap, planner, now)
+			state, movementChanged = resolveMovementState(movements, key, context, state, hysteresis, pkg.Realism.MovementPolicy, damping, stiction, pkg.Realism.Overshoot, pegBounce, pkg.ValueMap, planner, now)
 		}
+		recordSample := updatedSensors != nil && updatedSensors[pkg.Sensor]
+		if err := updatePointerMarkerState(pointerMarkers, key, pkg, state, now, recordSample); err != nil {
+			return Widget{}, false, fmt.Errorf("dashboard %q widget %q: %w", d.ID, configWidget.ID, err)
+		}
+		markerState := pointerMarkers[key]
 		var gaugeScene v3gauges.Scene
 		switch pkg.Type {
 		case v3gauges.TypeNumeric:
 			gaugeScene, err = v3gauges.NumericScene(pkg, v3gauges.Placement{Position: configWidget.Position, Scale: configWidget.Scale}, state)
 		case v3gauges.TypeRadial:
-			gaugeScene, err = v3gauges.RadialScene(pkg, v3gauges.Placement{Position: configWidget.Position, Scale: configWidget.Scale}, state)
+			gaugeScene, err = v3gauges.RadialSceneWithPointerMarkers(pkg, v3gauges.Placement{Position: configWidget.Position, Scale: configWidget.Scale}, state, markerState)
 		case v3gauges.TypeOdometer:
 			if movementActive(movement) && len(movement.WheelOffsets) == len(pkg.Odometer.Wheels) {
 				gaugeScene, err = v3gauges.OdometerSceneWithWheelOffsets(pkg, v3gauges.Placement{Position: configWidget.Position, Scale: configWidget.Scale}, state, movement.WheelOffsets)
@@ -542,10 +550,6 @@ func (d Dashboard) renderWidget(configWidget v3config.WidgetConfig, states map[s
 			return Widget{}, false, fmt.Errorf("dashboard %q widget %q gauge package type %q is not supported by dashboard scene runtime", d.ID, configWidget.ID, pkg.Type)
 		}
 		if err != nil {
-			return Widget{}, false, fmt.Errorf("dashboard %q widget %q: %w", d.ID, configWidget.ID, err)
-		}
-		recordSample := updatedSensors != nil && updatedSensors[pkg.Sensor]
-		if err := updatePointerMarkerState(pointerMarkers, movementKey(d.ID, configWidget.ID), pkg, state, now, recordSample); err != nil {
 			return Widget{}, false, fmt.Errorf("dashboard %q widget %q: %w", d.ID, configWidget.ID, err)
 		}
 		applyGaugeScene(&widget, gaugeScene)

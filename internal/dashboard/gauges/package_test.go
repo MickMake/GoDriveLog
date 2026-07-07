@@ -2871,6 +2871,8 @@ func makeGaugeFixtures(t *testing.T) string {
 		"assets/gauges/shared/radial/simple_rpm/face.png",
 		"assets/gauges/shared/radial/simple_rpm/ticks.png",
 		"assets/gauges/shared/radial/simple_rpm/needle.png",
+		"assets/gauges/shared/radial/simple_rpm/needle_min.png",
+		"assets/gauges/shared/radial/simple_rpm/needle_max.png",
 		"assets/gauges/shared/radial/simple_rpm/glass.png",
 		"assets/gauges/odometer/trip/panel.png",
 		"assets/gauges/odometer/trip/glass.png",
