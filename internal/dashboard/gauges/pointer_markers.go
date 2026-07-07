@@ -170,7 +170,11 @@ func RenderedPointerMarkerPosition(pkg Package, state sensors.SensorState) (floa
 		if span == 0 {
 			return 0, false, fmt.Errorf("value_map start_angle and end_angle must differ")
 		}
-		return clampUnit((angle - pkg.ValueMap.StartAngle) / span), true, nil
+		position := (angle - pkg.ValueMap.StartAngle) / span
+		if pkg.ValueMap.Clamp {
+			position = clampUnit(position)
+		}
+		return position, true, nil
 	case TypeBar:
 		percent, err := barNormalizedPercent(pkg.ValueMap, state.Value)
 		if err != nil {
@@ -304,7 +308,7 @@ func normalizedPointerMarkerPosition(normalizedPosition *float64) (float64, bool
 	if math.IsNaN(position) || math.IsInf(position, 0) {
 		return 0, false
 	}
-	return clampUnit(position), true
+	return position, true
 }
 
 func prunePointerMarkerSamples(samples []PointerMarkerSample, window time.Duration, now time.Time) []PointerMarkerSample {

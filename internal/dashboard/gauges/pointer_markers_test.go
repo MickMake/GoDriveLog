@@ -182,3 +182,102 @@ func TestRenderedPointerMarkerPositionUsesFinalRenderedGeometry(t *testing.T) {
 		t.Fatalf("bar rendered position = %v, want 0.5", barPosition)
 	}
 }
+
+func TestRenderedPointerMarkerPositionClampsRadialWhenConfigured(t *testing.T) {
+	pkg := Package{
+		Type:   TypeRadial,
+		Sensor: "rpm",
+		ValueMap: ValueMap{
+			Min:        0,
+			Max:        7000,
+			StartAngle: -135,
+			EndAngle:   135,
+			Clamp:      true,
+		},
+	}
+
+	above, ok, err := RenderedPointerMarkerPosition(pkg, sensors.SensorState{ID: "rpm", Status: sensors.StatusOK, Value: 9000})
+	if err != nil {
+		t.Fatalf("RenderedPointerMarkerPosition returned error: %v", err)
+	}
+	if !ok {
+		t.Fatal("expected clamped radial rendered position to be available")
+	}
+	if above != 1 {
+		t.Fatalf("clamped radial above-range position = %v, want 1", above)
+	}
+
+	below, ok, err := RenderedPointerMarkerPosition(pkg, sensors.SensorState{ID: "rpm", Status: sensors.StatusOK, Value: -500})
+	if err != nil {
+		t.Fatalf("RenderedPointerMarkerPosition returned error: %v", err)
+	}
+	if !ok {
+		t.Fatal("expected clamped radial below-range position to be available")
+	}
+	if below != 0 {
+		t.Fatalf("clamped radial below-range position = %v, want 0", below)
+	}
+}
+
+func TestRenderedPointerMarkerPositionPreservesUnclampedRadialRange(t *testing.T) {
+	pkg := Package{
+		Type:   TypeRadial,
+		Sensor: "rpm",
+		ValueMap: ValueMap{
+			Min:        0,
+			Max:        7000,
+			StartAngle: -135,
+			EndAngle:   135,
+			Clamp:      false,
+		},
+	}
+
+	above, ok, err := RenderedPointerMarkerPosition(pkg, sensors.SensorState{ID: "rpm", Status: sensors.StatusOK, Value: 9000})
+	if err != nil {
+		t.Fatalf("RenderedPointerMarkerPosition returned error: %v", err)
+	}
+	if !ok {
+		t.Fatal("expected unclamped radial above-range position to be available")
+	}
+	if above <= 1 {
+		t.Fatalf("unclamped radial above-range position = %v, want > 1", above)
+	}
+
+	below, ok, err := RenderedPointerMarkerPosition(pkg, sensors.SensorState{ID: "rpm", Status: sensors.StatusOK, Value: -500})
+	if err != nil {
+		t.Fatalf("RenderedPointerMarkerPosition returned error: %v", err)
+	}
+	if !ok {
+		t.Fatal("expected unclamped radial below-range position to be available")
+	}
+	if below >= 0 {
+		t.Fatalf("unclamped radial below-range position = %v, want < 0", below)
+	}
+}
+
+func TestRenderedPointerMarkerPositionPreservesUnclampedRadialCalibrationOffset(t *testing.T) {
+	offset := 30.0
+	pkg := Package{
+		Type:   TypeRadial,
+		Sensor: "rpm",
+		ValueMap: ValueMap{
+			Min:        0,
+			Max:        7000,
+			StartAngle: -135,
+			EndAngle:   135,
+			Clamp:      false,
+		},
+		Realism: Realism{CalibrationOffset: &offset},
+	}
+
+	position, ok, err := RenderedPointerMarkerPosition(pkg, sensors.SensorState{ID: "rpm", Status: sensors.StatusOK, Value: 7000})
+	if err != nil {
+		t.Fatalf("RenderedPointerMarkerPosition returned error: %v", err)
+	}
+	if !ok {
+		t.Fatal("expected unclamped radial calibration-offset position to be available")
+	}
+	if position <= 1 {
+		t.Fatalf("unclamped radial calibration-offset position = %v, want > 1", position)
+	}
+}
