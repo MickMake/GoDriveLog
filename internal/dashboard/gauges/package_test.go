@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestLoadPackageLoadsNumericGauge(t *testing.T) {
@@ -484,6 +485,121 @@ layers:
 	}
 }
 
+func TestLoadPackagePointerMarkersAbsentByDefault(t *testing.T) {
+	root := makeGaugeFixtures(t)
+	packageDir := filepath.Join(root, "assets", "gauges", "radial", "pointer_markers_absent")
+	writeGaugeYAML(t, packageDir, `id: radial_pointer_markers_absent
+type: radial
+sensor: rpm
+size:
+  width: 100
+  height: 100
+layers:
+  needle: ../../shared/radial/simple_rpm/needle.png
+pivot:
+  face: { x: 0.5, y: 0.5 }
+  needle: { x: 0.5, y: 0.9 }
+value_map:
+  min: 0
+  max: 1000
+  start_angle: -90
+  end_angle: 90
+  clamp: true
+`)
+
+	pkg, err := LoadPackage(packageDir)
+	if err != nil {
+		t.Fatalf("LoadPackage returned error: %v", err)
+	}
+	if pkg.Realism.PointerMarkers != nil {
+		t.Fatalf("pointer_markers = %#v, want nil", pkg.Realism.PointerMarkers)
+	}
+}
+
+func TestLoadPackageLoadsPointerMarkersConfig(t *testing.T) {
+	root := makeGaugeFixtures(t)
+	packageDir := filepath.Join(root, "assets", "gauges", "radial", "pointer_markers_enabled")
+	writeGaugeYAML(t, packageDir, `id: radial_pointer_markers_enabled
+type: radial
+sensor: rpm
+realism:
+  pointer_markers:
+    max: true
+    min: false
+    average: true
+    window: 5m
+size:
+  width: 100
+  height: 100
+layers:
+  needle: ../../shared/radial/simple_rpm/needle.png
+pivot:
+  face: { x: 0.5, y: 0.5 }
+  needle: { x: 0.5, y: 0.9 }
+value_map:
+  min: 0
+  max: 1000
+  start_angle: -90
+  end_angle: 90
+  clamp: true
+`)
+
+	pkg, err := LoadPackage(packageDir)
+	if err != nil {
+		t.Fatalf("LoadPackage returned error: %v", err)
+	}
+	if pkg.Realism.PointerMarkers == nil {
+		t.Fatal("pointer_markers = nil, want config")
+	}
+	if !pkg.Realism.PointerMarkers.Max || pkg.Realism.PointerMarkers.Min || !pkg.Realism.PointerMarkers.Average {
+		t.Fatalf("pointer_markers = %#v, want max=true min=false average=true", pkg.Realism.PointerMarkers)
+	}
+	if pkg.Realism.PointerMarkers.Window == nil || *pkg.Realism.PointerMarkers.Window != 5*time.Minute {
+		t.Fatalf("pointer_markers window = %#v, want 5m", pkg.Realism.PointerMarkers.Window)
+	}
+}
+
+func TestLoadPackageLoadsDisabledPointerMarkersConfig(t *testing.T) {
+	root := makeGaugeFixtures(t)
+	packageDir := filepath.Join(root, "assets", "gauges", "bar", "pointer_markers_disabled")
+	writeGaugeYAML(t, packageDir, `id: bar_pointer_markers_disabled
+type: bar
+sensor: coolant_temperature
+realism:
+  pointer_markers:
+    max: false
+    min: false
+    average: false
+size:
+  width: 120
+  height: 220
+layers:
+  panel: panel.png
+  level: level.png
+  glass: glass.png
+value_map:
+  min: 40
+  max: 120
+  clamp: true
+bar:
+  mode: level
+  axis: vertical
+  origin: bottom
+  bounds: [40, 20, 24, 180]
+`)
+
+	pkg, err := LoadPackage(packageDir)
+	if err != nil {
+		t.Fatalf("LoadPackage returned error: %v", err)
+	}
+	if pkg.Realism.PointerMarkers == nil {
+		t.Fatal("pointer_markers = nil, want disabled config")
+	}
+	if pkg.Realism.PointerMarkers.Enabled() {
+		t.Fatalf("pointer_markers Enabled() = true, want false for %#v", pkg.Realism.PointerMarkers)
+	}
+}
+
 func TestLoadPackageRejectsInvalidIndicatorThermalFade(t *testing.T) {
 	tests := []struct {
 		name        string
@@ -568,6 +684,117 @@ value_map:
   clamp: true
 `
 			}
+			writeGaugeYAML(t, packageDir, yamlText)
+
+			_, err := LoadPackage(packageDir)
+			if err == nil {
+				t.Fatal("LoadPackage returned nil error, want error")
+			}
+			assertErrorContains(t, err, test.want)
+		})
+	}
+}
+
+func TestLoadPackageRejectsInvalidPointerMarkers(t *testing.T) {
+	tests := []struct {
+		name               string
+		packageType        string
+		pointerMarkersYAML string
+		want               string
+	}{
+		{
+			name:        "top_level_boolean",
+			packageType: "radial",
+			pointerMarkersYAML: `pointer_markers: true
+`,
+			want: "pointer_markers must be a mapping",
+		},
+		{
+			name:        "long_form_max",
+			packageType: "radial",
+			pointerMarkersYAML: `pointer_markers:
+    max:
+      enabled: true
+`,
+			want: "pointer_markers max must be a boolean",
+		},
+		{
+			name:        "unknown_key",
+			packageType: "radial",
+			pointerMarkersYAML: `pointer_markers:
+    median: true
+`,
+			want: "pointer_markers field",
+		},
+		{
+			name:        "invalid_window",
+			packageType: "radial",
+			pointerMarkersYAML: `pointer_markers:
+    max: true
+    window: someday
+`,
+			want: "window",
+		},
+		{
+			name:        "zero_window",
+			packageType: "radial",
+			pointerMarkersYAML: `pointer_markers:
+    max: true
+    window: 0s
+`,
+			want: "greater than zero",
+		},
+		{
+			name:        "wrong_type",
+			packageType: "numeric",
+			pointerMarkersYAML: `pointer_markers:
+    max: true
+`,
+			want: "only supported for radial and bar gauges",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			root := makeGaugeFixtures(t)
+			packageDir := filepath.Join(root, "assets", "gauges", test.packageType, "bad_pointer_markers_"+test.name)
+			yamlText := `id: bad_` + test.packageType + `
+type: ` + test.packageType + `
+sensor: rpm
+realism:
+  ` + test.pointerMarkersYAML + `size:
+  width: 100
+  height: 100
+`
+			switch test.packageType {
+			case "radial":
+				yamlText += `layers:
+  needle: ../../shared/radial/simple_rpm/needle.png
+pivot:
+  face: { x: 0.5, y: 0.5 }
+  needle: { x: 0.5, y: 0.9 }
+value_map:
+  min: 0
+  max: 1000
+  start_angle: -90
+  end_angle: 90
+  clamp: true
+`
+			case "numeric":
+				yamlText += `format: "%04.0f"
+layers:
+  panel: ../../7Seg4Digits.png
+digit_set:
+  background: ../../7SegBack.png
+  characters:
+    "0": ../7Seg0.png
+digits:
+  count: 1
+`
+			default:
+				t.Fatalf("unsupported packageType %q", test.packageType)
+			}
+
 			writeGaugeYAML(t, packageDir, yamlText)
 
 			_, err := LoadPackage(packageDir)

@@ -40,6 +40,7 @@ type Runtime struct {
 	signatures      map[string]string
 	segments        map[string]v3gauges.SegmentedSelection
 	movements       map[string]widgetMovementState
+	pointerMarkers  map[string]v3gauges.PointerMarkerState
 	movementPlanner movementPlanner
 	clock           func() time.Time
 }
@@ -191,6 +192,7 @@ func NewRuntime(plan v3config.RuntimePlan, registry *v3assets.Registry) (*Runtim
 		signatures:      map[string]string{},
 		segments:        map[string]v3gauges.SegmentedSelection{},
 		movements:       map[string]widgetMovementState{},
+		pointerMarkers:  map[string]v3gauges.PointerMarkerState{},
 		movementPlanner: defaultMovementPlanner,
 		clock:           time.Now,
 	}, nil
