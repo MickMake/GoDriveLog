@@ -1322,6 +1322,116 @@ func TestRuntimeRadialGaugeOvershootStaysBoundedAndSettlesOnTarget(t *testing.T)
 	}
 }
 
+func TestRuntimeRadialPointerMarkersTrackRenderedOvershoot(t *testing.T) {
+	overshoot := &v3gauges.OvershootConfig{}
+	runtime := testRadialMovementRuntimeWithPointerMarkersAndRealism(t, "    max: true\n    min: true\n    window: 5m\n", "", false, nil, overshoot, false, false)
+	start := time.Unix(100, 0)
+	runtime.movementPlanner = func(context movementContext, state sensors.SensorState, current widgetMovementState) time.Duration {
+		return 300 * time.Millisecond
+	}
+
+	_, _, err := runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "rpm",
+		State:     okState("rpm", 0, "rpm"),
+		Timestamp: start,
+		ReadAt:    start,
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	_, _, err = runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "rpm",
+		State:     okState("rpm", 3500, "rpm"),
+		Timestamp: start.Add(10 * time.Millisecond),
+		ReadAt:    start.Add(10 * time.Millisecond),
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+
+	_, changed, err := runtime.Tick(start.Add(220 * time.Millisecond))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected overshoot tick to redraw")
+	}
+
+	markerState := runtime.pointerMarkers[movementKey("primary", "rpm")]
+	if !markerState.Min.Set || !markerState.Max.Set {
+		t.Fatalf("expected pointer marker min/max to be set, got %#v", markerState)
+	}
+	if markerState.Min.NormalizedPosition != 0 {
+		t.Fatalf("expected initial zero reading to seed min marker, got %#v", markerState)
+	}
+	if markerState.Max.NormalizedPosition <= 0.5 || markerState.Max.NormalizedPosition > 1 {
+		t.Fatalf("expected overshoot to push max marker past target, got %#v", markerState)
+	}
+	if got := runtime.states["rpm"].Value; got != 3500 {
+		t.Fatalf("expected stored source state to remain at 3500 during overshoot, got %v", got)
+	}
+	if len(markerState.Samples) < 2 {
+		t.Fatalf("expected overshoot movement tick to add a rolling sample, got %#v", markerState)
+	}
+}
+
+func TestRuntimeRollingPointerMarkersExpireDuringIdleTicks(t *testing.T) {
+	runtime := testRadialMovementRuntimeWithPointerMarkersAndRealism(t, "    max: true\n    min: true\n    window: 30m\n", "", false, nil, nil, false, false)
+	start := time.Unix(100, 0)
+
+	_, _, err := runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "rpm",
+		State:     okState("rpm", 1400, "rpm"),
+		Timestamp: start,
+		ReadAt:    start,
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+
+	key := movementKey("primary", "rpm")
+	initial := runtime.pointerMarkers[key]
+	if len(initial.Samples) != 1 {
+		t.Fatalf("expected one rolling sample after event, got %#v", initial)
+	}
+	if !initial.Samples[0].RecordedAt.Equal(start) {
+		t.Fatalf("expected initial sample timestamp %v, got %#v", start, initial.Samples[0])
+	}
+
+	_, changed, err := runtime.Tick(start.Add(20 * time.Minute))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if changed {
+		t.Fatalf("expected idle tick with unchanged render not to redraw")
+	}
+	state := runtime.pointerMarkers[key]
+	if len(state.Samples) != 1 {
+		t.Fatalf("expected idle tick not to add samples, got %#v", state)
+	}
+	if !state.Samples[0].RecordedAt.Equal(start) {
+		t.Fatalf("expected idle tick not to refresh sample timestamp, got %#v", state.Samples[0])
+	}
+
+	_, changed, err = runtime.Tick(start.Add(31 * time.Minute))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if changed {
+		t.Fatalf("expected pruning-only idle tick not to redraw")
+	}
+	state = runtime.pointerMarkers[key]
+	if len(state.Samples) != 0 {
+		t.Fatalf("expected rolling sample to expire during idle ticks, got %#v", state)
+	}
+	if state.Min.Set || state.Max.Set {
+		t.Fatalf("expected expired idle rolling markers to unset, got %#v", state)
+	}
+}
+
 func TestRuntimeRadialGaugeOvershootOscillatesAcrossTargetAndSettles(t *testing.T) {
 	ratio := 0.20
 	minChangeRatio := 0.05
@@ -4139,15 +4249,19 @@ func makeDashboardRadialGaugePackageWithPolicy(t *testing.T, policy string) stri
 }
 
 func makeDashboardRadialGaugePackageWithRealism(t *testing.T, policy string, damping bool, stiction *float64, overshoot *v3gauges.OvershootConfig, pegBounce bool, hysteresis bool) string {
-	return makeDashboardRadialGaugePackageWithExtendedRealism(t, policy, damping, stiction, overshoot, pegBounce, nil, nil, nil, hysteresis)
+	return makeDashboardRadialGaugePackageWithPointerMarkersAndRealism(t, "", policy, damping, stiction, overshoot, pegBounce, nil, nil, nil, hysteresis)
+}
+
+func makeDashboardRadialGaugePackageWithPointerMarkersAndRealism(t *testing.T, pointerMarkersYAML string, policy string, damping bool, stiction *float64, overshoot *v3gauges.OvershootConfig, pegBounce bool, shadowOffset []int, shadowAlpha *float64, calibrationOffset *float64, hysteresis bool) string {
+	return makeDashboardRadialGaugePackageWithExtendedRealism(t, pointerMarkersYAML, policy, damping, stiction, overshoot, pegBounce, shadowOffset, shadowAlpha, calibrationOffset, hysteresis)
 }
 
 func makeDashboardRadialGaugePackageWithNeedleShadow(t *testing.T, offset []int, alpha *float64) string {
-	return makeDashboardRadialGaugePackageWithExtendedRealism(t, "", false, nil, nil, false, offset, alpha, nil, false)
+	return makeDashboardRadialGaugePackageWithExtendedRealism(t, "", "", false, nil, nil, false, offset, alpha, nil, false)
 }
 
 func makeDashboardRadialGaugePackageWithCalibrationOffset(t *testing.T, calibrationOffset *float64) string {
-	return makeDashboardRadialGaugePackageWithExtendedRealism(t, "", false, nil, nil, false, nil, nil, calibrationOffset, false)
+	return makeDashboardRadialGaugePackageWithExtendedRealism(t, "", "", false, nil, nil, false, nil, nil, calibrationOffset, false)
 }
 
 func makeDashboardRadialGaugePackageWithHysteresisAndClamp(t *testing.T, hysteresis bool, clamp bool) string {
@@ -4156,7 +4270,7 @@ func makeDashboardRadialGaugePackageWithHysteresisAndClamp(t *testing.T, hystere
 	if clamp {
 		return packageDir
 	}
-	gaugeYAML := dashboardRadialGaugeYAML("", false, nil, nil, false, nil, nil, nil, hysteresis)
+	gaugeYAML := dashboardRadialGaugeYAML("", "", false, nil, nil, false, nil, nil, nil, hysteresis)
 	gaugeYAML = strings.Replace(gaugeYAML, "  clamp: true\n", "  clamp: false\n", 1)
 	if err := os.WriteFile(filepath.Join(packageDir, "gauge.yaml"), []byte(gaugeYAML), 0o600); err != nil {
 		t.Fatalf("WriteFile: %v", err)
@@ -4164,7 +4278,7 @@ func makeDashboardRadialGaugePackageWithHysteresisAndClamp(t *testing.T, hystere
 	return packageDir
 }
 
-func makeDashboardRadialGaugePackageWithExtendedRealism(t *testing.T, policy string, damping bool, stiction *float64, overshoot *v3gauges.OvershootConfig, pegBounce bool, shadowOffset []int, shadowAlpha *float64, calibrationOffset *float64, hysteresis bool) string {
+func makeDashboardRadialGaugePackageWithExtendedRealism(t *testing.T, pointerMarkersYAML string, policy string, damping bool, stiction *float64, overshoot *v3gauges.OvershootConfig, pegBounce bool, shadowOffset []int, shadowAlpha *float64, calibrationOffset *float64, hysteresis bool) string {
 	t.Helper()
 	root := t.TempDir()
 	files := []string{
@@ -4187,7 +4301,7 @@ func makeDashboardRadialGaugePackageWithExtendedRealism(t *testing.T, policy str
 	if err := os.MkdirAll(packageDir, 0o755); err != nil {
 		t.Fatalf("MkdirAll: %v", err)
 	}
-	if err := os.WriteFile(filepath.Join(packageDir, "gauge.yaml"), []byte(dashboardRadialGaugeYAML(policy, damping, stiction, overshoot, pegBounce, shadowOffset, shadowAlpha, calibrationOffset, hysteresis)), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(packageDir, "gauge.yaml"), []byte(dashboardRadialGaugeYAML(pointerMarkersYAML, policy, damping, stiction, overshoot, pegBounce, shadowOffset, shadowAlpha, calibrationOffset, hysteresis)), 0o600); err != nil {
 		t.Fatalf("WriteFile: %v", err)
 	}
 	return packageDir
@@ -4364,8 +4478,14 @@ digits:
 %s`, count, format, count, positions.String())
 }
 
-func dashboardRadialGaugeYAML(policy string, damping bool, stiction *float64, overshoot *v3gauges.OvershootConfig, pegBounce bool, shadowOffset []int, shadowAlpha *float64, calibrationOffset *float64, hysteresis bool) string {
+func dashboardRadialGaugeYAML(pointerMarkersYAML string, policy string, damping bool, stiction *float64, overshoot *v3gauges.OvershootConfig, pegBounce bool, shadowOffset []int, shadowAlpha *float64, calibrationOffset *float64, hysteresis bool) string {
 	realismLines := []string{}
+	if strings.TrimSpace(pointerMarkersYAML) != "" {
+		realismLines = append(realismLines, "  pointer_markers:")
+		for _, line := range strings.Split(strings.TrimSuffix(pointerMarkersYAML, "\n"), "\n") {
+			realismLines = append(realismLines, "  "+line)
+		}
+	}
 	if hysteresis {
 		realismLines = append(realismLines, "  hysteresis: true")
 	}
@@ -4575,6 +4695,17 @@ func testRadialMovementRuntime(t *testing.T) *Runtime {
 
 func testRadialMovementRuntimeWithPolicy(t *testing.T, policy string) *Runtime {
 	return testRadialMovementRuntimeWithRealism(t, policy, false, nil, nil, false, false)
+}
+
+func testRadialMovementRuntimeWithPointerMarkersAndRealism(t *testing.T, pointerMarkersYAML string, policy string, damping bool, stiction *float64, overshoot *v3gauges.OvershootConfig, pegBounce bool, hysteresis bool) *Runtime {
+	t.Helper()
+	packageDir := makeDashboardRadialGaugePackageWithPointerMarkersAndRealism(t, pointerMarkersYAML, policy, damping, stiction, overshoot, pegBounce, nil, nil, nil, hysteresis)
+	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 1024, Height: 600}, Widgets: []v3config.WidgetConfig{{ID: "rpm", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{0, 0}, Scale: 1}}}}}}
+	runtime, err := NewRuntime(plan, testAssetRegistry())
+	if err != nil {
+		t.Fatalf("NewRuntime failed: %v", err)
+	}
+	return runtime
 }
 
 func testRadialMovementRuntimeWithDamping(t *testing.T, damping bool) *Runtime {
