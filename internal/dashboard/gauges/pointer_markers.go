@@ -82,26 +82,76 @@ type PointerMarkerSample struct {
 }
 
 type PointerMarkerState struct {
-	LocalDayKey string
-	Min         PointerMarkerValueState
-	Max         PointerMarkerValueState
-	Average     PointerMarkerValueState
-	Samples     []PointerMarkerSample
+	LocalDayKey             string
+	Min                     PointerMarkerValueState
+	Max                     PointerMarkerValueState
+	Average                 PointerMarkerValueState
+	Samples                 []PointerMarkerSample
+	LastRenderedPosition    float64
+	LastRenderedPositionSet bool
 }
 
-func AdvanceMinMaxPointerMarkers(state PointerMarkerState, config *PointerMarkersConfig, normalizedPosition *float64, now time.Time) PointerMarkerState {
+func AdvanceMinMaxPointerMarkers(state PointerMarkerState, config *PointerMarkersConfig, normalizedPosition *float64, now time.Time, recordSample bool) PointerMarkerState {
 	if config == nil || !config.MinMaxEnabled() {
 		state.LocalDayKey = ""
 		state.Min = PointerMarkerValueState{}
 		state.Max = PointerMarkerValueState{}
 		state.Samples = nil
+		state.LastRenderedPosition = 0
+		state.LastRenderedPositionSet = false
 		return state
 	}
 
-	if config.Window == nil {
-		return advanceDailyMinMaxPointerMarkers(state, config, normalizedPosition, now)
+	state = PruneMinMaxPointerMarkers(state, config, now)
+	if recordSample {
+		state = RecordMinMaxPointerMarkerSample(state, config, normalizedPosition, now)
 	}
-	return advanceRollingMinMaxPointerMarkers(state, config, normalizedPosition, now)
+	state = UpdatePointerMarkerRenderedPosition(state, normalizedPosition)
+	return state
+}
+
+func PruneMinMaxPointerMarkers(state PointerMarkerState, config *PointerMarkersConfig, now time.Time) PointerMarkerState {
+	if config == nil || !config.MinMaxEnabled() {
+		return PointerMarkerState{}
+	}
+
+	if config.Window == nil {
+		return pruneDailyMinMaxPointerMarkers(state, now)
+	}
+	return pruneRollingMinMaxPointerMarkers(state, config, now)
+}
+
+func RecordMinMaxPointerMarkerSample(state PointerMarkerState, config *PointerMarkersConfig, normalizedPosition *float64, now time.Time) PointerMarkerState {
+	if config == nil || !config.MinMaxEnabled() {
+		return state
+	}
+	if config.Window == nil {
+		return recordDailyMinMaxPointerMarkerSample(state, config, normalizedPosition, now)
+	}
+	return recordRollingMinMaxPointerMarkerSample(state, config, normalizedPosition, now)
+}
+
+func PointerMarkerRenderedPositionChanged(state PointerMarkerState, normalizedPosition *float64) bool {
+	position, ok := normalizedPointerMarkerPosition(normalizedPosition)
+	if !ok {
+		return false
+	}
+	if !state.LastRenderedPositionSet {
+		return true
+	}
+	return math.Abs(state.LastRenderedPosition-position) > pointerMarkerPositionEpsilon
+}
+
+func UpdatePointerMarkerRenderedPosition(state PointerMarkerState, normalizedPosition *float64) PointerMarkerState {
+	position, ok := normalizedPointerMarkerPosition(normalizedPosition)
+	if !ok {
+		state.LastRenderedPosition = 0
+		state.LastRenderedPositionSet = false
+		return state
+	}
+	state.LastRenderedPosition = position
+	state.LastRenderedPositionSet = true
+	return state
 }
 
 func RenderedPointerMarkerPosition(pkg Package, state sensors.SensorState) (float64, bool, error) {
@@ -164,7 +214,7 @@ func decodePointerMarkerWindow(node *yaml.Node) (time.Duration, error) {
 	return duration, nil
 }
 
-func advanceDailyMinMaxPointerMarkers(state PointerMarkerState, config *PointerMarkersConfig, normalizedPosition *float64, now time.Time) PointerMarkerState {
+func pruneDailyMinMaxPointerMarkers(state PointerMarkerState, now time.Time) PointerMarkerState {
 	if !now.IsZero() {
 		dayKey := pointerMarkerLocalDayKey(now)
 		if state.LocalDayKey != dayKey {
@@ -174,7 +224,10 @@ func advanceDailyMinMaxPointerMarkers(state PointerMarkerState, config *PointerM
 			state.Samples = nil
 		}
 	}
+	return state
+}
 
+func recordDailyMinMaxPointerMarkerSample(state PointerMarkerState, config *PointerMarkersConfig, normalizedPosition *float64, now time.Time) PointerMarkerState {
 	position, ok := normalizedPointerMarkerPosition(normalizedPosition)
 	if !ok {
 		return state
@@ -198,19 +251,25 @@ func advanceDailyMinMaxPointerMarkers(state PointerMarkerState, config *PointerM
 	return state
 }
 
-func advanceRollingMinMaxPointerMarkers(state PointerMarkerState, config *PointerMarkersConfig, normalizedPosition *float64, now time.Time) PointerMarkerState {
-	window := *config.Window
+func pruneRollingMinMaxPointerMarkers(state PointerMarkerState, config *PointerMarkersConfig, now time.Time) PointerMarkerState {
 	state.LocalDayKey = ""
-	state.Samples = prunePointerMarkerSamples(state.Samples, window, now)
+	state.Samples = prunePointerMarkerSamples(state.Samples, *config.Window, now)
+	return recalculateRollingMinMaxPointerMarkers(state, config)
+}
 
+func recordRollingMinMaxPointerMarkerSample(state PointerMarkerState, config *PointerMarkersConfig, normalizedPosition *float64, now time.Time) PointerMarkerState {
 	position, ok := normalizedPointerMarkerPosition(normalizedPosition)
-	if ok {
-		state.Samples = appendOrCoalescePointerMarkerSample(state.Samples, PointerMarkerSample{
-			NormalizedPosition: position,
-			RecordedAt:         now,
-		})
+	if !ok {
+		return state
 	}
+	state.Samples = appendOrCoalescePointerMarkerSample(state.Samples, PointerMarkerSample{
+		NormalizedPosition: position,
+		RecordedAt:         now,
+	})
+	return recalculateRollingMinMaxPointerMarkers(state, config)
+}
 
+func recalculateRollingMinMaxPointerMarkers(state PointerMarkerState, config *PointerMarkersConfig) PointerMarkerState {
 	state.Min = PointerMarkerValueState{}
 	state.Max = PointerMarkerValueState{}
 	for _, sample := range state.Samples {

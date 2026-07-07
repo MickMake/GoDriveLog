@@ -1324,7 +1324,7 @@ func TestRuntimeRadialGaugeOvershootStaysBoundedAndSettlesOnTarget(t *testing.T)
 
 func TestRuntimeRadialPointerMarkersTrackRenderedOvershoot(t *testing.T) {
 	overshoot := &v3gauges.OvershootConfig{}
-	runtime := testRadialMovementRuntimeWithPointerMarkersAndRealism(t, "    max: true\n    min: true\n", "", false, nil, overshoot, false, false)
+	runtime := testRadialMovementRuntimeWithPointerMarkersAndRealism(t, "    max: true\n    min: true\n    window: 5m\n", "", false, nil, overshoot, false, false)
 	start := time.Unix(100, 0)
 	runtime.movementPlanner = func(context movementContext, state sensors.SensorState, current widgetMovementState) time.Duration {
 		return 300 * time.Millisecond
@@ -1371,6 +1371,64 @@ func TestRuntimeRadialPointerMarkersTrackRenderedOvershoot(t *testing.T) {
 	}
 	if got := runtime.states["rpm"].Value; got != 3500 {
 		t.Fatalf("expected stored source state to remain at 3500 during overshoot, got %v", got)
+	}
+	if len(markerState.Samples) < 2 {
+		t.Fatalf("expected overshoot movement tick to add a rolling sample, got %#v", markerState)
+	}
+}
+
+func TestRuntimeRollingPointerMarkersExpireDuringIdleTicks(t *testing.T) {
+	runtime := testRadialMovementRuntimeWithPointerMarkersAndRealism(t, "    max: true\n    min: true\n    window: 30m\n", "", false, nil, nil, false, false)
+	start := time.Unix(100, 0)
+
+	_, _, err := runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "rpm",
+		State:     okState("rpm", 1400, "rpm"),
+		Timestamp: start,
+		ReadAt:    start,
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+
+	key := movementKey("primary", "rpm")
+	initial := runtime.pointerMarkers[key]
+	if len(initial.Samples) != 1 {
+		t.Fatalf("expected one rolling sample after event, got %#v", initial)
+	}
+	if !initial.Samples[0].RecordedAt.Equal(start) {
+		t.Fatalf("expected initial sample timestamp %v, got %#v", start, initial.Samples[0])
+	}
+
+	_, changed, err := runtime.Tick(start.Add(20 * time.Minute))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if changed {
+		t.Fatalf("expected idle tick with unchanged render not to redraw")
+	}
+	state := runtime.pointerMarkers[key]
+	if len(state.Samples) != 1 {
+		t.Fatalf("expected idle tick not to add samples, got %#v", state)
+	}
+	if !state.Samples[0].RecordedAt.Equal(start) {
+		t.Fatalf("expected idle tick not to refresh sample timestamp, got %#v", state.Samples[0])
+	}
+
+	_, changed, err = runtime.Tick(start.Add(31 * time.Minute))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+	if changed {
+		t.Fatalf("expected pruning-only idle tick not to redraw")
+	}
+	state = runtime.pointerMarkers[key]
+	if len(state.Samples) != 0 {
+		t.Fatalf("expected rolling sample to expire during idle ticks, got %#v", state)
+	}
+	if state.Min.Set || state.Max.Set {
+		t.Fatalf("expected expired idle rolling markers to unset, got %#v", state)
 	}
 }
 

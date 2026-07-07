@@ -264,7 +264,11 @@ func (r *Runtime) ApplyEvent(event sensors.SensorEvent) ([]Scene, bool, error) {
 		r.states[event.SensorID] = state
 	}
 
-	scenes, movementChanged, err := r.snapshotAt(now)
+	updatedSensors := map[string]bool{}
+	if event.SensorID != "" {
+		updatedSensors[event.SensorID] = true
+	}
+	scenes, movementChanged, err := r.snapshotAt(now, updatedSensors)
 	if err != nil {
 		return nil, false, err
 	}
@@ -296,7 +300,7 @@ func (r *Runtime) Snapshot() ([]Scene, error) {
 	if r == nil {
 		return nil, fmt.Errorf("v3 dashboard runtime is nil")
 	}
-	scenes, _, err := r.snapshotAt(r.now())
+	scenes, _, err := r.snapshotAt(r.now(), nil)
 	return scenes, err
 }
 
@@ -307,7 +311,7 @@ func (r *Runtime) Tick(now time.Time) ([]Scene, bool, error) {
 	if now.IsZero() {
 		now = r.now()
 	}
-	scenes, movementChanged, err := r.snapshotAt(now)
+	scenes, movementChanged, err := r.snapshotAt(now, nil)
 	if err != nil {
 		return nil, false, err
 	}
@@ -337,14 +341,14 @@ func (r *Runtime) HasActiveMovement() bool {
 	return false
 }
 
-func (r *Runtime) snapshotAt(now time.Time) ([]Scene, bool, error) {
+func (r *Runtime) snapshotAt(now time.Time, updatedSensors map[string]bool) ([]Scene, bool, error) {
 	if r == nil {
 		return nil, false, fmt.Errorf("v3 dashboard runtime is nil")
 	}
 	scenes := make([]Scene, 0, len(r.dashboards))
 	movementChanged := false
 	for _, dashboard := range r.dashboards {
-		scene, dashboardMovementChanged, err := dashboard.render(r.states, r.segments, r.movements, r.pointerMarkers, r.movementPlanner, now)
+		scene, dashboardMovementChanged, err := dashboard.render(r.states, r.segments, r.movements, r.pointerMarkers, updatedSensors, r.movementPlanner, now)
 		if err != nil {
 			return nil, false, err
 		}
@@ -362,7 +366,7 @@ func (d Dashboard) Validate() error {
 		if strings.TrimSpace(widget.ID) == "" {
 			return fmt.Errorf("dashboard %q has widget with empty id", d.ID)
 		}
-		if _, _, err := d.renderWidget(widget, map[string]sensors.SensorState{}, nil, nil, nil, nil, time.Time{}); err != nil && !isMissingSensorOnly(err) {
+		if _, _, err := d.renderWidget(widget, map[string]sensors.SensorState{}, nil, nil, nil, nil, nil, time.Time{}); err != nil && !isMissingSensorOnly(err) {
 			return err
 		}
 	}
@@ -370,15 +374,15 @@ func (d Dashboard) Validate() error {
 }
 
 func (d Dashboard) Render(states map[string]sensors.SensorState) (Scene, error) {
-	scene, _, err := d.render(states, nil, nil, nil, nil, time.Time{})
+	scene, _, err := d.render(states, nil, nil, nil, nil, nil, time.Time{})
 	return scene, err
 }
 
-func (d Dashboard) render(states map[string]sensors.SensorState, segments map[string]v3gauges.SegmentedSelection, movements map[string]widgetMovementState, pointerMarkers map[string]v3gauges.PointerMarkerState, planner movementPlanner, now time.Time) (Scene, bool, error) {
+func (d Dashboard) render(states map[string]sensors.SensorState, segments map[string]v3gauges.SegmentedSelection, movements map[string]widgetMovementState, pointerMarkers map[string]v3gauges.PointerMarkerState, updatedSensors map[string]bool, planner movementPlanner, now time.Time) (Scene, bool, error) {
 	scene := Scene{DashboardID: d.ID, Display: d.Config.Display, Size: d.Config.Size}
 	movementChanged := false
 	for _, configWidget := range d.Config.Widgets {
-		widget, widgetMovementChanged, err := d.renderWidget(configWidget, states, segments, movements, pointerMarkers, planner, now)
+		widget, widgetMovementChanged, err := d.renderWidget(configWidget, states, segments, movements, pointerMarkers, updatedSensors, planner, now)
 		if err != nil {
 			return Scene{}, false, err
 		}
@@ -388,7 +392,7 @@ func (d Dashboard) render(states map[string]sensors.SensorState, segments map[st
 	return scene, movementChanged, nil
 }
 
-func (d Dashboard) renderWidget(configWidget v3config.WidgetConfig, states map[string]sensors.SensorState, segments map[string]v3gauges.SegmentedSelection, movements map[string]widgetMovementState, pointerMarkers map[string]v3gauges.PointerMarkerState, planner movementPlanner, now time.Time) (Widget, bool, error) {
+func (d Dashboard) renderWidget(configWidget v3config.WidgetConfig, states map[string]sensors.SensorState, segments map[string]v3gauges.SegmentedSelection, movements map[string]widgetMovementState, pointerMarkers map[string]v3gauges.PointerMarkerState, updatedSensors map[string]bool, planner movementPlanner, now time.Time) (Widget, bool, error) {
 	widget := Widget{
 		ID:       configWidget.ID,
 		Type:     configWidget.Type,
@@ -540,7 +544,8 @@ func (d Dashboard) renderWidget(configWidget v3config.WidgetConfig, states map[s
 		if err != nil {
 			return Widget{}, false, fmt.Errorf("dashboard %q widget %q: %w", d.ID, configWidget.ID, err)
 		}
-		if err := updatePointerMarkerState(pointerMarkers, movementKey(d.ID, configWidget.ID), pkg, state, now); err != nil {
+		recordSample := updatedSensors != nil && updatedSensors[pkg.Sensor]
+		if err := updatePointerMarkerState(pointerMarkers, movementKey(d.ID, configWidget.ID), pkg, state, now, recordSample); err != nil {
 			return Widget{}, false, fmt.Errorf("dashboard %q widget %q: %w", d.ID, configWidget.ID, err)
 		}
 		applyGaugeScene(&widget, gaugeScene)
@@ -556,11 +561,12 @@ func movementKey(dashboardID string, widgetID string) string {
 	return dashboardID + "|" + widgetID
 }
 
-func updatePointerMarkerState(pointerMarkers map[string]v3gauges.PointerMarkerState, key string, pkg v3gauges.Package, state sensors.SensorState, now time.Time) error {
+func updatePointerMarkerState(pointerMarkers map[string]v3gauges.PointerMarkerState, key string, pkg v3gauges.Package, state sensors.SensorState, now time.Time, recordSample bool) error {
 	if pointerMarkers == nil || pkg.Realism.PointerMarkers == nil || !pkg.Realism.PointerMarkers.MinMaxEnabled() {
 		return nil
 	}
 
+	markerState := pointerMarkers[key]
 	position, ok, err := v3gauges.RenderedPointerMarkerPosition(pkg, state)
 	if err != nil {
 		return err
@@ -570,7 +576,8 @@ func updatePointerMarkerState(pointerMarkers map[string]v3gauges.PointerMarkerSt
 	if ok {
 		normalizedPosition = &position
 	}
-	pointerMarkers[key] = v3gauges.AdvanceMinMaxPointerMarkers(pointerMarkers[key], pkg.Realism.PointerMarkers, normalizedPosition, now)
+	recordSample = recordSample || v3gauges.PointerMarkerRenderedPositionChanged(markerState, normalizedPosition)
+	pointerMarkers[key] = v3gauges.AdvanceMinMaxPointerMarkers(markerState, pkg.Realism.PointerMarkers, normalizedPosition, now, recordSample)
 	return nil
 }
 

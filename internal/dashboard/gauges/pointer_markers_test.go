@@ -18,7 +18,7 @@ func TestAdvanceMinMaxPointerMarkersResetsAtLocalMidnight(t *testing.T) {
 	config := &PointerMarkersConfig{Min: true, Max: true}
 	beforeMidnight := time.Date(2026, time.July, 7, 23, 59, 0, 0, time.Local)
 	beforePosition := 0.25
-	state := AdvanceMinMaxPointerMarkers(PointerMarkerState{}, config, &beforePosition, beforeMidnight)
+	state := AdvanceMinMaxPointerMarkers(PointerMarkerState{}, config, &beforePosition, beforeMidnight, true)
 
 	if !state.Min.Set || !state.Max.Set {
 		t.Fatalf("expected daily marker state to set min/max, got %#v", state)
@@ -28,7 +28,7 @@ func TestAdvanceMinMaxPointerMarkersResetsAtLocalMidnight(t *testing.T) {
 	}
 
 	afterMidnight := beforeMidnight.Add(2 * time.Minute)
-	state = AdvanceMinMaxPointerMarkers(state, config, nil, afterMidnight)
+	state = AdvanceMinMaxPointerMarkers(state, config, nil, afterMidnight, false)
 	if state.Min.Set || state.Max.Set {
 		t.Fatalf("expected midnight reset to clear min/max, got %#v", state)
 	}
@@ -37,7 +37,7 @@ func TestAdvanceMinMaxPointerMarkersResetsAtLocalMidnight(t *testing.T) {
 	}
 
 	afterPosition := 0.75
-	state = AdvanceMinMaxPointerMarkers(state, config, &afterPosition, afterMidnight.Add(time.Minute))
+	state = AdvanceMinMaxPointerMarkers(state, config, &afterPosition, afterMidnight.Add(time.Minute), true)
 	if !state.Min.Set || !state.Max.Set {
 		t.Fatalf("expected new-day sample to set min/max, got %#v", state)
 	}
@@ -52,11 +52,11 @@ func TestAdvanceMinMaxPointerMarkersRollingWindowRecalculatesAndExpires(t *testi
 	start := time.Unix(1_000, 0).UTC()
 
 	low := 0.20
-	state := AdvanceMinMaxPointerMarkers(PointerMarkerState{}, config, &low, start)
+	state := AdvanceMinMaxPointerMarkers(PointerMarkerState{}, config, &low, start, true)
 	high := 0.80
-	state = AdvanceMinMaxPointerMarkers(state, config, &high, start.Add(10*time.Minute))
+	state = AdvanceMinMaxPointerMarkers(state, config, &high, start.Add(10*time.Minute), true)
 	middle := 0.50
-	state = AdvanceMinMaxPointerMarkers(state, config, &middle, start.Add(20*time.Minute))
+	state = AdvanceMinMaxPointerMarkers(state, config, &middle, start.Add(20*time.Minute), true)
 
 	if len(state.Samples) != 3 {
 		t.Fatalf("expected three rolling samples, got %#v", state.Samples)
@@ -65,7 +65,7 @@ func TestAdvanceMinMaxPointerMarkersRollingWindowRecalculatesAndExpires(t *testi
 		t.Fatalf("unexpected initial rolling min/max: %#v", state)
 	}
 
-	state = AdvanceMinMaxPointerMarkers(state, config, nil, start.Add(35*time.Minute))
+	state = AdvanceMinMaxPointerMarkers(state, config, nil, start.Add(35*time.Minute), false)
 	if len(state.Samples) != 2 {
 		t.Fatalf("expected oldest sample to expire, got %#v", state.Samples)
 	}
@@ -76,7 +76,7 @@ func TestAdvanceMinMaxPointerMarkersRollingWindowRecalculatesAndExpires(t *testi
 		t.Fatalf("expected max to remain on retained high sample, got %#v", state)
 	}
 
-	state = AdvanceMinMaxPointerMarkers(state, config, nil, start.Add(55*time.Minute))
+	state = AdvanceMinMaxPointerMarkers(state, config, nil, start.Add(55*time.Minute), false)
 	if len(state.Samples) != 0 {
 		t.Fatalf("expected all rolling samples to expire, got %#v", state.Samples)
 	}
@@ -91,8 +91,8 @@ func TestAdvanceMinMaxPointerMarkersCoalescesUnchangedRollingSamples(t *testing.
 	start := time.Unix(2_000, 0).UTC()
 
 	value := 0.40
-	state := AdvanceMinMaxPointerMarkers(PointerMarkerState{}, config, &value, start)
-	state = AdvanceMinMaxPointerMarkers(state, config, &value, start.Add(10*time.Minute))
+	state := AdvanceMinMaxPointerMarkers(PointerMarkerState{}, config, &value, start, true)
+	state = AdvanceMinMaxPointerMarkers(state, config, &value, start.Add(10*time.Minute), true)
 
 	if len(state.Samples) != 1 {
 		t.Fatalf("expected unchanged sample to coalesce, got %#v", state.Samples)
@@ -101,12 +101,37 @@ func TestAdvanceMinMaxPointerMarkersCoalescesUnchangedRollingSamples(t *testing.
 		t.Fatalf("expected coalesced sample timestamp to advance, got %#v", state.Samples[0])
 	}
 
-	state = AdvanceMinMaxPointerMarkers(state, config, nil, start.Add(35*time.Minute))
+	state = AdvanceMinMaxPointerMarkers(state, config, nil, start.Add(35*time.Minute), false)
 	if len(state.Samples) != 1 {
 		t.Fatalf("expected coalesced sample to remain within window, got %#v", state.Samples)
 	}
 	if !state.Min.Set || !state.Max.Set {
 		t.Fatalf("expected markers to remain set after coalesced update, got %#v", state)
+	}
+}
+
+func TestAdvanceMinMaxPointerMarkersRollingWindowDoesNotRefreshWithoutRecord(t *testing.T) {
+	window := 30 * time.Minute
+	config := &PointerMarkersConfig{Min: true, Max: true, Window: &window}
+	start := time.Unix(3_000, 0).UTC()
+
+	value := 0.40
+	state := AdvanceMinMaxPointerMarkers(PointerMarkerState{}, config, &value, start, true)
+	state = AdvanceMinMaxPointerMarkers(state, config, &value, start.Add(10*time.Minute), false)
+
+	if len(state.Samples) != 1 {
+		t.Fatalf("expected unchanged render to avoid new sample, got %#v", state.Samples)
+	}
+	if !state.Samples[0].RecordedAt.Equal(start) {
+		t.Fatalf("expected unchanged render not to refresh sample timestamp, got %#v", state.Samples[0])
+	}
+
+	state = AdvanceMinMaxPointerMarkers(state, config, &value, start.Add(31*time.Minute), false)
+	if len(state.Samples) != 0 {
+		t.Fatalf("expected idle rolling sample to expire without refresh, got %#v", state.Samples)
+	}
+	if state.Min.Set || state.Max.Set {
+		t.Fatalf("expected expired idle rolling markers to unset, got %#v", state)
 	}
 }
 
