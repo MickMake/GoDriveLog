@@ -2815,6 +2815,118 @@ func TestRuntimeLoadsBarGaugeWidgetPackageAndRendersLevelReveal(t *testing.T) {
 	}
 }
 
+func TestRuntimeBarGaugeWidgetKeepsPointerMarkersHiddenWhenDisabled(t *testing.T) {
+	packageDir := makeDashboardBarGaugePackageWithPointerMarkers(t, "    max: false\n    min: false\n")
+	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 1024, Height: 600}, Widgets: []v3config.WidgetConfig{{ID: "coolant", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{0, 0}, Scale: 1}}}}}}
+	runtime, err := NewRuntime(plan, testAssetRegistry())
+	if err != nil {
+		t.Fatalf("NewRuntime failed: %v", err)
+	}
+
+	runtime.SetState(okState("coolant_temperature", 80, "c"))
+	scenes, err := runtime.Snapshot()
+	if err != nil {
+		t.Fatalf("Snapshot failed: %v", err)
+	}
+
+	widget := requireWidget(t, scenes[0], "coolant")
+	if got := gaugePartSequence(widget); got != "layer:panel,bar:level,layer:glass" {
+		t.Fatalf("bar part sequence = %q", got)
+	}
+	if got := countParts(widget, PartKindMarkerMin); got != 0 {
+		t.Fatalf("expected no min marker parts, got %d", got)
+	}
+	if got := countParts(widget, PartKindMarkerMax); got != 0 {
+		t.Fatalf("expected no max marker parts, got %d", got)
+	}
+}
+
+func TestRuntimeBarGaugeWidgetRendersPointerMarkersMinOnly(t *testing.T) {
+	packageDir := makeDashboardBarGaugePackageWithPointerMarkers(t, "    min: true\n")
+	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 1024, Height: 600}, Widgets: []v3config.WidgetConfig{{ID: "coolant", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{0, 0}, Scale: 1}}}}}}
+	runtime, err := NewRuntime(plan, testAssetRegistry())
+	if err != nil {
+		t.Fatalf("NewRuntime failed: %v", err)
+	}
+
+	runtime.SetState(okState("coolant_temperature", 80, "c"))
+	scenes, err := runtime.Snapshot()
+	if err != nil {
+		t.Fatalf("Snapshot failed: %v", err)
+	}
+
+	widget := requireWidget(t, scenes[0], "coolant")
+	if got := gaugePartSequence(widget); got != "layer:panel,bar:level,marker_min:[40 110],layer:glass" {
+		t.Fatalf("bar part sequence = %q", got)
+	}
+	marker := firstPartKind(widget, PartKindMarkerMin)
+	if marker.Layer != "marker_min" || marker.AssetPath == "" || !intSlicesEqual(marker.Position, []int{40, 110}) {
+		t.Fatalf("min marker part = %#v", marker)
+	}
+	if got := countParts(widget, PartKindMarkerMax); got != 0 {
+		t.Fatalf("expected no max marker parts, got %d", got)
+	}
+}
+
+func TestRuntimeBarGaugeWidgetRendersPointerMarkersMaxOnly(t *testing.T) {
+	packageDir := makeDashboardBarGaugePackageWithPointerMarkers(t, "    max: true\n")
+	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 1024, Height: 600}, Widgets: []v3config.WidgetConfig{{ID: "coolant", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{0, 0}, Scale: 1}}}}}}
+	runtime, err := NewRuntime(plan, testAssetRegistry())
+	if err != nil {
+		t.Fatalf("NewRuntime failed: %v", err)
+	}
+
+	runtime.SetState(okState("coolant_temperature", 80, "c"))
+	scenes, err := runtime.Snapshot()
+	if err != nil {
+		t.Fatalf("Snapshot failed: %v", err)
+	}
+
+	widget := requireWidget(t, scenes[0], "coolant")
+	if got := gaugePartSequence(widget); got != "layer:panel,bar:level,marker_max:[40 110],layer:glass" {
+		t.Fatalf("bar part sequence = %q", got)
+	}
+	marker := firstPartKind(widget, PartKindMarkerMax)
+	if marker.Layer != "marker_max" || marker.AssetPath == "" || !intSlicesEqual(marker.Position, []int{40, 110}) {
+		t.Fatalf("max marker part = %#v", marker)
+	}
+	if got := countParts(widget, PartKindMarkerMin); got != 0 {
+		t.Fatalf("expected no min marker parts, got %d", got)
+	}
+}
+
+func TestRuntimeBarGaugeWidgetRendersPointerMarkersAboveBarBeforeGlass(t *testing.T) {
+	packageDir := makeDashboardBarGaugePackageWithPointerMarkers(t, "    max: true\n    min: true\n")
+	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 1024, Height: 600}, Widgets: []v3config.WidgetConfig{{ID: "coolant", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{0, 0}, Scale: 1}}}}}}
+	runtime, err := NewRuntime(plan, testAssetRegistry())
+	if err != nil {
+		t.Fatalf("NewRuntime failed: %v", err)
+	}
+
+	_, _, err = runtime.ApplyEvent(sensorEvent("coolant_temperature", okState("coolant_temperature", 60, "c")))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	scenes, changed, err := runtime.ApplyEvent(sensorEvent("coolant_temperature", okState("coolant_temperature", 100, "c")))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	if !changed {
+		t.Fatalf("expected pointer marker update to redraw")
+	}
+
+	widget := requireWidget(t, scenes[0], "coolant")
+	if got := gaugePartSequence(widget); got != "layer:panel,bar:level,marker_min:[40 155],marker_max:[40 65],layer:glass" {
+		t.Fatalf("bar part sequence = %q", got)
+	}
+	if got := countParts(widget, PartKindMarkerMin); got != 1 {
+		t.Fatalf("expected one min marker part, got %d", got)
+	}
+	if got := countParts(widget, PartKindMarkerMax); got != 1 {
+		t.Fatalf("expected one max marker part, got %d", got)
+	}
+}
+
 func TestRuntimeBarGaugeWidgetSceneSignatureChangesWithRevealHeight(t *testing.T) {
 	packageDir := makeDashboardBarGaugePackage(t)
 	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 1024, Height: 600}, Widgets: []v3config.WidgetConfig{{ID: "coolant", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{120, 80}, Scale: 1}}}}}}
@@ -4452,6 +4564,8 @@ func makeDashboardBarGaugePackageWithRealismAndValueMap(t *testing.T, realismYAM
 	files := []string{
 		"assets/gauges/bar/coolant/panel.png",
 		"assets/gauges/bar/coolant/level.png",
+		"assets/gauges/bar/coolant/marker_min.png",
+		"assets/gauges/bar/coolant/marker_max.png",
 		"assets/gauges/bar/coolant/glass.png",
 	}
 	for _, path := range files {
@@ -4471,6 +4585,15 @@ func makeDashboardBarGaugePackageWithRealismAndValueMap(t *testing.T, realismYAM
 		t.Fatalf("WriteFile: %v", err)
 	}
 	return packageDir
+}
+
+func makeDashboardBarGaugePackageWithPointerMarkers(t *testing.T, pointerMarkersYAML string) string {
+	t.Helper()
+	realismLines := []string{"  pointer_markers:"}
+	for _, line := range strings.Split(strings.TrimSuffix(pointerMarkersYAML, "\n"), "\n") {
+		realismLines = append(realismLines, "  "+line)
+	}
+	return makeDashboardBarGaugePackageWithRealism(t, strings.Join(realismLines, "\n")+"\n")
 }
 
 func makeDashboardSegmentedGaugePackage(t *testing.T) string {
@@ -4726,6 +4849,8 @@ sensor: coolant_temperature
 layers:
   panel: panel.png
   level: level.png
+  marker_min: marker_min.png
+  marker_max: marker_max.png
   glass: glass.png
 value_map:
   min: %g
@@ -4909,6 +5034,10 @@ func gaugePartSequence(widget Widget) string {
 			parts = append(parts, fmt.Sprintf("needle_min:%.0f", part.Angle))
 		case PartKindNeedleMax:
 			parts = append(parts, fmt.Sprintf("needle_max:%.0f", part.Angle))
+		case PartKindMarkerMin:
+			parts = append(parts, fmt.Sprintf("marker_min:%v", part.Position))
+		case PartKindMarkerMax:
+			parts = append(parts, fmt.Sprintf("marker_max:%v", part.Position))
 		case PartKindBar:
 			parts = append(parts, "bar:"+part.Layer)
 		case PartKindWheelStrip:

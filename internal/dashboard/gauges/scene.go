@@ -19,6 +19,8 @@ const (
 	ScenePartKindNeedle       = "needle"
 	ScenePartKindNeedleMin    = "needle_min"
 	ScenePartKindNeedleMax    = "needle_max"
+	ScenePartKindMarkerMin    = "marker_min"
+	ScenePartKindMarkerMax    = "marker_max"
 	ScenePartKindBar          = "bar"
 	ScenePartKindWheelStrip   = "wheel_strip"
 )
@@ -486,6 +488,10 @@ func indicatorScene(pkg Package, placement Placement, state sensors.SensorState,
 }
 
 func BarScene(pkg Package, placement Placement, state sensors.SensorState) (Scene, error) {
+	return BarSceneWithPointerMarkers(pkg, placement, state, PointerMarkerState{})
+}
+
+func BarSceneWithPointerMarkers(pkg Package, placement Placement, state sensors.SensorState, markerState PointerMarkerState) (Scene, error) {
 	if pkg.Type != TypeBar {
 		return Scene{}, fmt.Errorf("gauge package %q type %q is not bar", pkg.ID, pkg.Type)
 	}
@@ -522,6 +528,7 @@ func BarScene(pkg Package, placement Placement, state sensors.SensorState) (Scen
 	}
 
 	if state.Status != sensors.StatusOK {
+		scene.Parts = appendBarPointerMarkerParts(scene.Parts, pkg, markerState)
 		scene.Parts = append(scene.Parts, barOverlayLayerParts(pkg.Layers)...)
 		return scene, nil
 	}
@@ -553,6 +560,7 @@ func BarScene(pkg Package, placement Placement, state sensors.SensorState) (Scen
 			Window:    Size{Width: boundsWidth, Height: revealHeight},
 		})
 	}
+	scene.Parts = appendBarPointerMarkerParts(scene.Parts, pkg, markerState)
 	scene.Parts = append(scene.Parts, barOverlayLayerParts(pkg.Layers)...)
 	return scene, nil
 }
@@ -811,6 +819,54 @@ func radialPointerMarkerPart(pkg Package, layer string, kind string, marker Poin
 		FacePivot:   facePivot,
 		NeedlePivot: needlePivot,
 	}, true
+}
+
+func appendBarPointerMarkerParts(parts []ScenePart, pkg Package, markerState PointerMarkerState) []ScenePart {
+	if pkg.Realism.PointerMarkers == nil || !pkg.Realism.PointerMarkers.MinMaxEnabled() {
+		return parts
+	}
+	if part, ok := barPointerMarkerPart(pkg, "marker_min", ScenePartKindMarkerMin, markerState.Min, pkg.Realism.PointerMarkers.Min); ok {
+		parts = append(parts, part)
+	}
+	if part, ok := barPointerMarkerPart(pkg, "marker_max", ScenePartKindMarkerMax, markerState.Max, pkg.Realism.PointerMarkers.Max); ok {
+		parts = append(parts, part)
+	}
+	return parts
+}
+
+func barPointerMarkerPart(pkg Package, layer string, kind string, marker PointerMarkerValueState, enabled bool) (ScenePart, bool) {
+	if !enabled || !marker.Set {
+		return ScenePart{}, false
+	}
+	assetPath := strings.TrimSpace(pkg.Layers[layer])
+	if assetPath == "" {
+		return ScenePart{}, false
+	}
+	return ScenePart{
+		Kind:      kind,
+		Layer:     layer,
+		AssetPath: assetPath,
+		Position:  barPointerMarkerPosition(pkg.Bar, marker.NormalizedPosition),
+	}, true
+}
+
+func barPointerMarkerPosition(bar BarConfig, normalized float64) []int {
+	normalized = clampUnit(normalized)
+	boundsX := bar.Bounds[0]
+	boundsY := bar.Bounds[1]
+	boundsWidth := bar.Bounds[2]
+	boundsHeight := bar.Bounds[3]
+
+	switch {
+	case bar.Axis == "horizontal" && bar.Origin == "left":
+		return []int{boundsX + int(math.Round(normalized*float64(boundsWidth))), boundsY}
+	case bar.Axis == "horizontal" && bar.Origin == "right":
+		return []int{boundsX + int(math.Round((1-normalized)*float64(boundsWidth))), boundsY}
+	case bar.Axis == "vertical" && bar.Origin == "top":
+		return []int{boundsX, boundsY + int(math.Round(normalized*float64(boundsHeight)))}
+	default:
+		return []int{boundsX, boundsY + int(math.Round((1-normalized)*float64(boundsHeight)))}
+	}
 }
 
 func needleShadowEnabled(config *NeedleShadowConfig) bool {

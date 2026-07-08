@@ -1120,6 +1120,130 @@ func TestBarSceneClampBehaviourUsesValueMapAndDrawableGeometry(t *testing.T) {
 	}
 }
 
+func TestBarScenePointerMarkersStayHiddenWhenDisabled(t *testing.T) {
+	pkg := loadBarScenePackageWithPointerMarkers(t, "    max: false\n    min: false\n")
+
+	scene, err := BarSceneWithPointerMarkers(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("coolant_temperature", 80), PointerMarkerState{
+		Min: PointerMarkerValueState{Set: true, NormalizedPosition: 0.25},
+		Max: PointerMarkerValueState{Set: true, NormalizedPosition: 0.75},
+	})
+	if err != nil {
+		t.Fatalf("BarSceneWithPointerMarkers returned error: %v", err)
+	}
+
+	if got := partLayerSequence(scene); got != "layer:panel,bar:level,layer:glass" {
+		t.Fatalf("bar part sequence = %q", got)
+	}
+	if got := countSceneParts(scene, ScenePartKindMarkerMin); got != 0 {
+		t.Fatalf("expected no min marker parts, got %d", got)
+	}
+	if got := countSceneParts(scene, ScenePartKindMarkerMax); got != 0 {
+		t.Fatalf("expected no max marker parts, got %d", got)
+	}
+}
+
+func TestBarScenePointerMarkersRenderMinOnly(t *testing.T) {
+	pkg := loadBarScenePackageWithPointerMarkers(t, "    min: true\n")
+
+	scene, err := BarSceneWithPointerMarkers(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("coolant_temperature", 80), PointerMarkerState{
+		Min: PointerMarkerValueState{Set: true, NormalizedPosition: 0.25},
+		Max: PointerMarkerValueState{Set: true, NormalizedPosition: 0.75},
+	})
+	if err != nil {
+		t.Fatalf("BarSceneWithPointerMarkers returned error: %v", err)
+	}
+
+	if got := partLayerSequence(scene); got != "layer:panel,bar:level,marker_min:[40 155],layer:glass" {
+		t.Fatalf("bar part sequence = %q", got)
+	}
+	marker := firstPart(scene, ScenePartKindMarkerMin)
+	if marker.Layer != "marker_min" || marker.AssetPath == "" {
+		t.Fatalf("min marker part = %#v", marker)
+	}
+	if !intSlicesEqual(marker.Position, []int{40, 155}) {
+		t.Fatalf("min marker position = %#v, want [40 155]", marker.Position)
+	}
+	if got := countSceneParts(scene, ScenePartKindMarkerMax); got != 0 {
+		t.Fatalf("expected no max marker parts, got %d", got)
+	}
+}
+
+func TestBarScenePointerMarkersRenderMaxOnly(t *testing.T) {
+	pkg := loadBarScenePackageWithPointerMarkers(t, "    max: true\n")
+
+	scene, err := BarSceneWithPointerMarkers(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("coolant_temperature", 80), PointerMarkerState{
+		Min: PointerMarkerValueState{Set: true, NormalizedPosition: 0.25},
+		Max: PointerMarkerValueState{Set: true, NormalizedPosition: 0.75},
+	})
+	if err != nil {
+		t.Fatalf("BarSceneWithPointerMarkers returned error: %v", err)
+	}
+
+	if got := partLayerSequence(scene); got != "layer:panel,bar:level,marker_max:[40 65],layer:glass" {
+		t.Fatalf("bar part sequence = %q", got)
+	}
+	marker := firstPart(scene, ScenePartKindMarkerMax)
+	if marker.Layer != "marker_max" || marker.AssetPath == "" {
+		t.Fatalf("max marker part = %#v", marker)
+	}
+	if !intSlicesEqual(marker.Position, []int{40, 65}) {
+		t.Fatalf("max marker position = %#v, want [40 65]", marker.Position)
+	}
+	if got := countSceneParts(scene, ScenePartKindMarkerMin); got != 0 {
+		t.Fatalf("expected no min marker parts, got %d", got)
+	}
+}
+
+func TestBarScenePointerMarkersRenderAboveBarBeforeGlass(t *testing.T) {
+	pkg := loadBarScenePackageWithPointerMarkers(t, "    max: true\n    min: true\n")
+
+	scene, err := BarSceneWithPointerMarkers(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("coolant_temperature", 80), PointerMarkerState{
+		Min: PointerMarkerValueState{Set: true, NormalizedPosition: 0.25},
+		Max: PointerMarkerValueState{Set: true, NormalizedPosition: 0.75},
+	})
+	if err != nil {
+		t.Fatalf("BarSceneWithPointerMarkers returned error: %v", err)
+	}
+
+	if got := partLayerSequence(scene); got != "layer:panel,bar:level,marker_min:[40 155],marker_max:[40 65],layer:glass" {
+		t.Fatalf("bar part sequence = %q", got)
+	}
+	if got := countSceneParts(scene, ScenePartKindMarkerMin); got != 1 {
+		t.Fatalf("expected one min marker part, got %d", got)
+	}
+	if got := countSceneParts(scene, ScenePartKindMarkerMax); got != 1 {
+		t.Fatalf("expected one max marker part, got %d", got)
+	}
+}
+
+func TestBarPointerMarkerPositionRespectsAxisAndOrigin(t *testing.T) {
+	bar := BarConfig{
+		Axis:   "vertical",
+		Origin: "bottom",
+		Bounds: []int{40, 20, 24, 180},
+	}
+
+	if got := barPointerMarkerPosition(bar, 0.25); !intSlicesEqual(got, []int{40, 155}) {
+		t.Fatalf("vertical bottom marker position = %#v, want [40 155]", got)
+	}
+
+	bar.Origin = "top"
+	if got := barPointerMarkerPosition(bar, 0.25); !intSlicesEqual(got, []int{40, 65}) {
+		t.Fatalf("vertical top marker position = %#v, want [40 65]", got)
+	}
+
+	bar.Axis = "horizontal"
+	bar.Origin = "left"
+	if got := barPointerMarkerPosition(bar, 0.25); !intSlicesEqual(got, []int{46, 20}) {
+		t.Fatalf("horizontal left marker position = %#v, want [46 20]", got)
+	}
+
+	bar.Origin = "right"
+	if got := barPointerMarkerPosition(bar, 0.25); !intSlicesEqual(got, []int{58, 20}) {
+		t.Fatalf("horizontal right marker position = %#v, want [58 20]", got)
+	}
+}
+
 func TestBarSceneDoesNotRenderLevelForNonOKState(t *testing.T) {
 	pkg := loadBarScenePackage(t)
 
@@ -1327,6 +1451,18 @@ func loadBarScenePackage(t *testing.T) Package {
 	root := makeGaugeFixtures(t)
 	packageDir := filepath.Join(root, "assets", "gauges", "bar", "coolant")
 	writeGaugeYAML(t, packageDir, barGaugeYAML())
+	pkg, err := LoadPackage(packageDir)
+	if err != nil {
+		t.Fatalf("LoadPackage returned error: %v", err)
+	}
+	return pkg
+}
+
+func loadBarScenePackageWithPointerMarkers(t *testing.T, pointerMarkersYAML string) Package {
+	t.Helper()
+	root := makeGaugeFixtures(t)
+	packageDir := filepath.Join(root, "assets", "gauges", "bar", "coolant")
+	writeGaugeYAML(t, packageDir, barGaugeYAMLWithPointerMarkers(pointerMarkersYAML))
 	pkg, err := LoadPackage(packageDir)
 	if err != nil {
 		t.Fatalf("LoadPackage returned error: %v", err)
@@ -1642,6 +1778,39 @@ bar:
 `
 }
 
+func barGaugeYAMLWithPointerMarkers(pointerMarkersYAML string) string {
+	realismBlock := ""
+	if strings.TrimSpace(pointerMarkersYAML) != "" {
+		lines := []string{"realism:", "  pointer_markers:"}
+		for _, line := range strings.Split(strings.TrimSuffix(pointerMarkersYAML, "\n"), "\n") {
+			lines = append(lines, "  "+line)
+		}
+		realismBlock = strings.Join(lines, "\n") + "\n"
+	}
+	return `id: test_coolant_bar
+type: bar
+sensor: coolant_temperature
+` + realismBlock + `size:
+  width: 120
+  height: 220
+layers:
+  panel: panel.png
+  level: level.png
+  marker_min: marker_min.png
+  marker_max: marker_max.png
+  glass: glass.png
+value_map:
+  min: 40
+  max: 120
+  clamp: true
+bar:
+  mode: level
+  axis: vertical
+  origin: bottom
+  bounds: [40, 20, 24, 180]
+`
+}
+
 func okGaugeState(id string, value float64) sensors.SensorState {
 	return sensors.SensorState{ID: id, Value: value, Status: sensors.StatusOK}
 }
@@ -1686,6 +1855,10 @@ func partLayerSequence(scene Scene) string {
 			parts = append(parts, fmt.Sprintf("needle_min:%.0f", part.Angle))
 		case ScenePartKindNeedleMax:
 			parts = append(parts, fmt.Sprintf("needle_max:%.0f", part.Angle))
+		case ScenePartKindMarkerMin:
+			parts = append(parts, fmt.Sprintf("marker_min:%v", part.Position))
+		case ScenePartKindMarkerMax:
+			parts = append(parts, fmt.Sprintf("marker_max:%v", part.Position))
 		case ScenePartKindBar:
 			parts = append(parts, "bar:"+part.Layer)
 		case ScenePartKindWheelStrip:
