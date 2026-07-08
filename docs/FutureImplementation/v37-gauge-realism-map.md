@@ -1,0 +1,31 @@
+# Gauge Realism Map
+
+Origin: `docs/v3.7/PlannedFeatures.md`
+
+This map is a planning aid only. Do not treat it as implementation truth without checking the current code and completed release docs.
+
+| Realism option | Numeric | Radial | Odometer | Indicator | Bar | Segmented |
+| --- | --- | --- | --- | --- | --- | --- |
+| `movement` | 🟡 parse only | 🟡 legacy `movement_policy` | ✅ `odometer.movement` | ❌ | 🟡 via damping only | ❌ |
+| `wraparound` | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ |
+| `drum_slop` | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ |
+| `carry_drag` | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ |
+| `snap_settle` | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ |
+| `backlash` | ❌ | ❌ | ⚠️ marked implemented / no code | ❌ | ❌ | ❌ |
+| `hysteresis` | ❌ | ✅ | ❌ | ❌ | ⚠️ planned / not yet | ❌ |
+| `stiction` | ❌ | ✅ | ❌ | ❌ | ⚠️ planned / not yet | ❌ |
+| `damping` | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ |
+| `overshoot` | ❌ | ✅ | ❌ | ❌ | ⚠️ PR open / in progress | ❌ |
+| `peg_bounce` | ❌ | ✅ | ❌ | ❌ | ⚠️ planned / not yet | ❌ |
+| `thermal_fade` | 🍺 potential candidate / needs beer thought | ❌ | ❌ | ✅ | ❌ | 🍺 potential candidate / needs beer thought |
+| `per_digit_response_lag` | 🍺 potential candidate / needs beer thought | ❌ | ❌ | ❌ | ❌ | 🍺 potential candidate / needs beer thought |
+| `leading_zero_behaviour` | 🍺 potential candidate / needs beer thought | ❌ | ❌ | ❌ | ❌ | 🍺 potential candidate / needs beer thought |
+| `decimal_point_behaviour` | 🍺 potential candidate / needs beer thought | ❌ | ❌ | ❌ | ❌ | 🍺 potential candidate / needs beer thought |
+| `needle_shadow` | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
+| `calibration_offset` | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
+| `segment_bleed` / `digit_bleed` | 🍺 potential candidate / needs beer thought | ❌ | ❌ | ❌ | ❌ | 🍺 potential candidate / needs beer thought |
+| `ghosting` | 🍺 potential candidate / needs beer thought | ❌ | ❌ | ❌ | ❌ | 🍺 potential candidate / needs beer thought |
+| `uneven_brightness` | 🍺 potential candidate / needs beer thought | ❌ | ❌ | ❌ | ❌ | 🍺 potential candidate / needs beer thought |
+| `load_sag` | 🍺 potential candidate / needs beer thought | ❌ | ❌ | ❌ | ❌ | 🍺 potential candidate / needs beer thought |
+| `stepped_fill` | ❌ | ❌ | ❌ | ❌ | 🍺 potential candidate / needs beer thought | 🍺 potential candidate / needs beer thought |
+| `quantized_fill` | ❌ | ❌ | ❌ | ❌ | 🍺 potential candidate / needs beer thought | 🍺 potential candidate / needs beer thought |
