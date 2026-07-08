@@ -1,6 +1,6 @@
 # v3.5 Gauge Realism Release Plan
 
-Status: implemented; planned slice list complete
+Status: implemented except odometer backlash; stale backlash implementation claim corrected
 
 v3.5 adds gauge realism in small, inspectable slices. It builds on the v3.4 gauge package work and keeps the existing asset-driven dashboard model.
 
@@ -13,7 +13,7 @@ v3.5 improves how gauges behave when values change. It focuses on:
 - small deterministic display effects that need renderer support;
 - simple preview support so each behaviour can be judged by eye.
 
-Use `docs/v3.5/RealismBehaviourGuide.md` for the intended visual feel of each realism option.
+Use `docs/v3.5/RealismBehaviourGuide.md` for the intended visual feel of each implemented realism option.
 
 It does not add a general physics engine, idle animation, ambient flicker, dashboard power lifecycle effects, or asset-generation work.
 
@@ -81,7 +81,7 @@ Realism options affect display behaviour only. They must not mutate source value
 
 ## Approved v3.5 realism options
 
-These options are in scope for v3.5 and should be defined, not parked:
+These options are implemented or supported in v3.5:
 
 | Option | Applies to | Summary |
 |---|---|---|
@@ -90,7 +90,6 @@ These options are in scope for v3.5 and should be defined, not parked:
 | `drum_slop` | odometer | Static per-wheel alignment imperfection. |
 | `carry_drag` | odometer | Higher digit creeps during lower digit rollover. |
 | `snap_settle` | odometer | Mechanical snap into final digit position with a small settle. |
-| `backlash` | odometer | Direction-change slack/settle. |
 | `hysteresis` | radial, bar | Direction-dependent displayed offset without changing the source value. |
 | `stiction` | radial, bar | Sticky threshold behaviour before visible movement releases. |
 | `damping` | radial, bar | Lagged/smoothed response to value changes. |
@@ -99,6 +98,12 @@ These options are in scope for v3.5 and should be defined, not parked:
 | `thermal_fade` | indicator | Soft incandescent-style on/off response. |
 | `needle_shadow` | radial | Optional offset/tinted copy of the rotating needle for visual depth. |
 | `calibration_offset` | radial | Optional display-only degree offset for imperfect needle alignment. |
+
+Not implemented in v3.5:
+
+| Option | Applies to | Status |
+|---|---|---|
+| `backlash` | odometer | Planned in old v3.5 docs, but not implemented on `main`; future work only. |
 
 Numeric and segmented gauges do not get extra realism behaviour in v3.5 unless a later slice explicitly adds it. Indicator gauges support `thermal_fade`. These gauge types may still have baseline preview files.
 
@@ -118,7 +123,7 @@ For v3.5.6:
 default route -> none -> instant / linear / ease_out / bell -> none -> existing static offsets
 ```
 
-Future odometer slices fit around this:
+Implemented odometer slices fit around this:
 
 | Slice | Feature | Phase |
 |---|---|---|
@@ -127,7 +132,12 @@ Future odometer slices fit around this:
 | v3.5.6 | `movement` | `travel` curve |
 | v3.5.7 | `carry_drag` / 9-drag | `lead_in` / overlap movement on neighbouring wheels |
 | v3.5.14 | `snap_settle` | `settle` tail |
-| v3.5.15 | `backlash` | `lead_in` / `settle` direction-change slack |
+
+Future odometer slices may add:
+
+| Candidate | Phase |
+|---|---|
+| `backlash` | `lead_in` / `settle` direction-change slack |
 
 The main odometer movement phase must not render by permanently feeding fractional numeric odometer values back into the source display value.
 
@@ -203,9 +213,9 @@ Default odometer order:
 
 ```text
 route: wraparound
-lead_in: carry_drag, backlash
+lead_in: carry_drag
 travel: movement
-settle: snap_settle, backlash
+settle: snap_settle
 rest: drum_slop
 ```
 
@@ -325,7 +335,7 @@ Numeric and segmented gauges should only get baseline previews in v3.5 unless a 
 | v3.5.12 | Indicator thermal fade | Add asymmetric incandescent-style on/off response. |
 | v3.5.13 | Bar smoothing | Add smoothed bar movement and optional rise/fall timing. |
 | v3.5.14 | Odometer snap/settle | Add mechanical snap into digit position. |
-| v3.5.15 | Odometer backlash | Add direction-change slack/settle. |
+| v3.5.15 | Odometer backlash | Not implemented on `main`; moved to future work. |
 | v3.5.16 | Radial display-only hysteresis | Add direction-dependent displayed offset for radial gauges. |
 | v3.5.17 | Radial needle drop shadow | Draw an optional offset/tinted copy of the rotating needle behind the real needle. |
 | v3.5.18 | Radial calibration offset | Add an optional display-only degree offset for imperfect needle alignment. |
@@ -338,6 +348,7 @@ Numeric and segmented gauges should only get baseline previews in v3.5 unless a 
 
 These are good ideas, but not v3.5:
 
+- odometer `backlash`;
 - idle needle vibration;
 - gas/nixie flicker;
 - LED multiplex flicker;
