@@ -1,10 +1,12 @@
 # v3.5 Implementation State
 
-Status: v3.5.22 bar peg bounce implemented; the planned v3.5 slice list is complete
+Status: v3.5.22 bar peg bounce implemented; planned v3.5 slice list complete except stale odometer backlash claim corrected
 
 ## Completion note
 
-- All planned v3.5 slices are complete.
+- All actually implemented v3.5 slices are complete.
+- `v3.5.15 odometer backlash` was previously marked implemented in docs, but a code audit found no `realism.backlash` config key or odometer runtime behaviour on `main`.
+- Odometer `backlash` is therefore not supported in v3.5 and is tracked as future implementation material.
 - Future gauge-realism work should start a new release plan or an explicit follow-up issue/PR rather than reopening the planned v3.5 slice sequence.
 - Stale unresolved review comments on older merged PRs are administrative unless a current code issue is confirmed on `main`.
 
@@ -20,6 +22,7 @@ The final v3.5 tail also includes two small radial-only display refinements that
 
 - v3.5.8 through v3.5.13 were temporarily deferred so the odometer movement stack could be completed while the implementation context was fresh; the later bar tail was then completed by v3.5.19 through v3.5.22.
 - v3.5.10 was intended to cover radial and bar overshoot, but implementation only covered radial behaviour; v3.5.19 adds the missing bar overshoot slice.
+- v3.5.15 was planned as odometer backlash, but it is not implemented on `main`; treat it as future work.
 - v3.5.16 covers radial display-only hysteresis. Bar hysteresis is split into v3.5.20 so the bar implementation can stay small and inspectable.
 - Bar stiction is split into v3.5.21. It may reuse radial transition ideas, but it applies to bar fill/reveal extent, not needle angle.
 - Bar `peg_bounce` is split into v3.5.22. The config key remains `realism.peg_bounce`; for bars it means end-stop bounce on the displayed fill/reveal extent.
@@ -66,7 +69,6 @@ The final v3.5 tail also includes two small radial-only display refinements that
 | `drum_slop` | odometer |
 | `carry_drag` | odometer |
 | `snap_settle` | odometer |
-| `backlash` | odometer |
 | `hysteresis` | radial, bar |
 | `stiction` | radial, bar |
 | `damping` | radial, bar |
@@ -75,6 +77,12 @@ The final v3.5 tail also includes two small radial-only display refinements that
 | `thermal_fade` | indicator |
 | `needle_shadow` | radial |
 | `calibration_offset` | radial |
+
+Not approved / not implemented in v3.5:
+
+| Option | Applies to | Status |
+|---|---|---|
+| `backlash` | odometer | Not implemented on `main`; tracked as future work. |
 
 ## Scope boundaries
 
@@ -118,7 +126,7 @@ Not allowed in v3.5:
 - [x] v3.5.12 indicator thermal fade
 - [x] v3.5.13 bar smoothing
 - [x] v3.5.14 odometer snap / settle
-- [x] v3.5.15 odometer backlash
+- [ ] v3.5.15 odometer backlash — not implemented; moved to future work
 - [x] v3.5.16 radial display-only hysteresis
 - [x] v3.5.17 radial needle drop shadow
 - [x] v3.5.18 radial calibration offset
@@ -129,7 +137,7 @@ Not allowed in v3.5:
 
 ## Historical slice workflow
 
-This workflow is kept for audit and rerun reference only. It no longer applies to planned v3.5 work because no unchecked planned slices remain.
+This workflow is kept for audit and rerun reference only. It no longer applies to planned v3.5 work because no unchecked planned slices remain except the corrected, unimplemented odometer backlash candidate.
 
 When replaying the original slice sequence:
 
