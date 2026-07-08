@@ -1,5 +1,7 @@
 # v3.6 Prompt Index
 
+The planned v3.6 slice list is complete. These prompt files are now historical and remain useful for audit, replay, or tightly scoped follow-up work only; there is no unchecked planned v3.6 slice left to pick up automatically.
+
 These prompt files define the v3.6 pointer marker implementation slices.
 
 If the user says any of the following:
@@ -12,7 +14,7 @@ If the user says any of the following:
 then the agent must:
 
 1. Read `docs/v3.6/ImplementationState.md`.
-2. Use `Current target` only if it is explicitly set and still unchecked; otherwise find the first unchecked allowed slice.
+2. Use `Current target` only if it is explicitly set and still unchecked; otherwise find the first unchecked allowed slice, and if none remain report that the planned v3.6 slice list is complete.
 3. Read `docs/v3.6/ReleasePlan.md`.
 4. Read the matching prompt file under `docs/v3.6/prompts/`.
 5. Make only that slice's changes.
