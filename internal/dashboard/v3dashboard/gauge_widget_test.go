@@ -262,6 +262,62 @@ func TestRuntimeRadialGaugeWidgetRendersPointerMarkersAboveNeedleBeforeOverlay(t
 	}
 }
 
+func TestRuntimeRadialGaugeWidgetKeepsAveragePointerMarkerHiddenWhenDisabled(t *testing.T) {
+	packageDir := makeDashboardRadialGaugePackageWithPointerMarkersAndRealism(t, "    average: false\n", "", false, nil, nil, false, nil, nil, nil, false)
+	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 1024, Height: 600}, Widgets: []v3config.WidgetConfig{{ID: "rpm", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{0, 0}, Scale: 1}}}}}}
+	runtime, err := NewRuntime(plan, testAssetRegistry())
+	if err != nil {
+		t.Fatalf("NewRuntime failed: %v", err)
+	}
+
+	_, _, err = runtime.ApplyEvent(sensorEventAt("rpm", okState("rpm", 3500, "rpm"), time.Unix(1, 0)))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	scenes, err := runtime.Snapshot()
+	if err != nil {
+		t.Fatalf("Snapshot failed: %v", err)
+	}
+	widget := requireWidget(t, scenes[0], "rpm")
+	if got := gaugePartSequence(widget); got != "layer:background,layer:face,layer:ticks,needle:0,layer:overlay" {
+		t.Fatalf("radial part sequence = %q", got)
+	}
+	if got := countParts(widget, PartKindNeedleAverage); got != 0 {
+		t.Fatalf("expected no average marker parts, got %d", got)
+	}
+}
+
+func TestRuntimeRadialGaugeWidgetRendersAveragePointerMarkerAboveNeedleBeforeOverlay(t *testing.T) {
+	packageDir := makeDashboardRadialGaugePackageWithPointerMarkersAndRealism(t, "    max: true\n    min: true\n    average: true\n", "", false, nil, nil, false, nil, nil, nil, false)
+	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 1024, Height: 600}, Widgets: []v3config.WidgetConfig{{ID: "rpm", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{0, 0}, Scale: 1}}}}}}
+	runtime, err := NewRuntime(plan, testAssetRegistry())
+	if err != nil {
+		t.Fatalf("NewRuntime failed: %v", err)
+	}
+
+	start := time.Unix(700, 0)
+	_, _, err = runtime.ApplyEvent(sensorEventAt("rpm", okState("rpm", 0, "rpm"), start))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	scenes, _, err := runtime.ApplyEvent(sensorEventAt("rpm", okState("rpm", 7000, "rpm"), start.Add(10*time.Second)))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+
+	widget := requireWidget(t, scenes[0], "rpm")
+	if got := gaugePartSequence(widget); got != "layer:background,layer:face,layer:ticks,needle:135,needle_min:-135,needle_max:135,needle_average:36,layer:overlay" {
+		t.Fatalf("radial part sequence = %q", got)
+	}
+	marker := firstPartKind(widget, PartKindNeedleAverage)
+	if marker.Layer != "needle_average" || marker.AssetPath == "" {
+		t.Fatalf("average marker part = %#v", marker)
+	}
+	if marker.FacePivot != widget.GaugeFacePivot || marker.NeedlePivot != widget.GaugeNeedlePivot {
+		t.Fatalf("average marker pivots = face %#v needle %#v", marker.FacePivot, marker.NeedlePivot)
+	}
+}
+
 func TestRuntimeRadialGaugeWidgetIncludesNeedleShadowBeforeNeedle(t *testing.T) {
 	packageDir := makeDashboardRadialGaugePackageWithNeedleShadow(t, []int{3, 4}, nil)
 	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 1024, Height: 600}, Widgets: []v3config.WidgetConfig{{ID: "rpm", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{0, 0}, Scale: 1}}}}}}
@@ -3104,6 +3160,56 @@ func TestRuntimeBarGaugeWidgetRendersPointerMarkersAboveBarBeforeGlass(t *testin
 	}
 }
 
+func TestRuntimeBarGaugeWidgetKeepsAveragePointerMarkerHiddenWhenDisabled(t *testing.T) {
+	packageDir := makeDashboardBarGaugePackageWithPointerMarkers(t, "    average: false\n")
+	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 1024, Height: 600}, Widgets: []v3config.WidgetConfig{{ID: "coolant", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{0, 0}, Scale: 1}}}}}}
+	runtime, err := NewRuntime(plan, testAssetRegistry())
+	if err != nil {
+		t.Fatalf("NewRuntime failed: %v", err)
+	}
+
+	runtime.SetState(okState("coolant_temperature", 80, "c"))
+	scenes, err := runtime.Snapshot()
+	if err != nil {
+		t.Fatalf("Snapshot failed: %v", err)
+	}
+	widget := requireWidget(t, scenes[0], "coolant")
+	if got := gaugePartSequence(widget); got != "layer:panel,bar:level,layer:glass" {
+		t.Fatalf("bar part sequence = %q", got)
+	}
+	if got := countParts(widget, PartKindMarkerAverage); got != 0 {
+		t.Fatalf("expected no average marker parts, got %d", got)
+	}
+}
+
+func TestRuntimeBarGaugeWidgetRendersAveragePointerMarkerAboveBarBeforeGlass(t *testing.T) {
+	packageDir := makeDashboardBarGaugePackageWithPointerMarkers(t, "    max: true\n    min: true\n    average: true\n")
+	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 1024, Height: 600}, Widgets: []v3config.WidgetConfig{{ID: "coolant", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{0, 0}, Scale: 1}}}}}}
+	runtime, err := NewRuntime(plan, testAssetRegistry())
+	if err != nil {
+		t.Fatalf("NewRuntime failed: %v", err)
+	}
+
+	start := time.Unix(710, 0)
+	_, _, err = runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 40, "c"), start))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	scenes, _, err := runtime.ApplyEvent(sensorEventAt("coolant_temperature", okState("coolant_temperature", 120, "c"), start.Add(10*time.Second)))
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+
+	widget := requireWidget(t, scenes[0], "coolant")
+	if got := gaugePartSequence(widget); got != "layer:panel,bar:level,marker_min:[40 200],marker_max:[40 20],marker_average:[40 86],layer:glass" {
+		t.Fatalf("bar part sequence = %q", got)
+	}
+	marker := firstPartKind(widget, PartKindMarkerAverage)
+	if marker.Layer != "marker_average" || marker.AssetPath == "" || !intSlicesEqual(marker.Position, []int{40, 86}) {
+		t.Fatalf("average marker part = %#v", marker)
+	}
+}
+
 func TestRuntimeBarGaugeWidgetSceneSignatureChangesWithRevealHeight(t *testing.T) {
 	packageDir := makeDashboardBarGaugePackage(t)
 	plan := v3config.RuntimePlan{Dashboards: []v3config.ResolvedDashboard{{ID: "primary", Config: v3config.DashboardConfig{Display: "HDMI-1", Size: v3config.SizeConfig{Width: 1024, Height: 600}, Widgets: []v3config.WidgetConfig{{ID: "coolant", Type: v3config.WidgetTypeGauge, Gauge: packageDir, Position: []int{120, 80}, Scale: 1}}}}}}
@@ -4637,6 +4743,7 @@ func makeDashboardRadialGaugePackageWithExtendedRealism(t *testing.T, pointerMar
 		"assets/gauges/radial/simple_rpm/needle.png",
 		"assets/gauges/radial/simple_rpm/needle_min.png",
 		"assets/gauges/radial/simple_rpm/needle_max.png",
+		"assets/gauges/radial/simple_rpm/needle_average.png",
 		"assets/gauges/radial/simple_rpm/overlay.png",
 	}
 	for _, path := range files {
@@ -4743,6 +4850,7 @@ func makeDashboardBarGaugePackageWithRealismAndValueMap(t *testing.T, realismYAM
 		"assets/gauges/bar/coolant/level.png",
 		"assets/gauges/bar/coolant/marker_min.png",
 		"assets/gauges/bar/coolant/marker_max.png",
+		"assets/gauges/bar/coolant/marker_average.png",
 		"assets/gauges/bar/coolant/glass.png",
 	}
 	for _, path := range files {
@@ -4924,6 +5032,7 @@ layers:
   needle: needle.png
   needle_min: needle_min.png
   needle_max: needle_max.png
+  needle_average: needle_average.png
   overlay: overlay.png
 pivot:
   face: { x: 0.5, y: 0.55 }
@@ -5028,6 +5137,7 @@ layers:
   level: level.png
   marker_min: marker_min.png
   marker_max: marker_max.png
+  marker_average: marker_average.png
   glass: glass.png
 value_map:
   min: %g
@@ -5211,10 +5321,14 @@ func gaugePartSequence(widget Widget) string {
 			parts = append(parts, fmt.Sprintf("needle_min:%.0f", part.Angle))
 		case PartKindNeedleMax:
 			parts = append(parts, fmt.Sprintf("needle_max:%.0f", part.Angle))
+		case PartKindNeedleAverage:
+			parts = append(parts, fmt.Sprintf("needle_average:%.0f", part.Angle))
 		case PartKindMarkerMin:
 			parts = append(parts, fmt.Sprintf("marker_min:%v", part.Position))
 		case PartKindMarkerMax:
 			parts = append(parts, fmt.Sprintf("marker_max:%v", part.Position))
+		case PartKindMarkerAverage:
+			parts = append(parts, fmt.Sprintf("marker_average:%v", part.Position))
 		case PartKindBar:
 			parts = append(parts, "bar:"+part.Layer)
 		case PartKindWheelStrip:

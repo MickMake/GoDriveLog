@@ -10,19 +10,21 @@ import (
 )
 
 const (
-	ScenePartKindLayer        = "layer"
-	ScenePartKindBackground   = "background"
-	ScenePartKindCharacter    = "character"
-	ScenePartKindDecimalPoint = "decimal_point"
-	ScenePartKindForeground   = "foreground"
-	ScenePartKindNeedleShadow = "needle_shadow"
-	ScenePartKindNeedle       = "needle"
-	ScenePartKindNeedleMin    = "needle_min"
-	ScenePartKindNeedleMax    = "needle_max"
-	ScenePartKindMarkerMin    = "marker_min"
-	ScenePartKindMarkerMax    = "marker_max"
-	ScenePartKindBar          = "bar"
-	ScenePartKindWheelStrip   = "wheel_strip"
+	ScenePartKindLayer         = "layer"
+	ScenePartKindBackground    = "background"
+	ScenePartKindCharacter     = "character"
+	ScenePartKindDecimalPoint  = "decimal_point"
+	ScenePartKindForeground    = "foreground"
+	ScenePartKindNeedleShadow  = "needle_shadow"
+	ScenePartKindNeedle        = "needle"
+	ScenePartKindNeedleMin     = "needle_min"
+	ScenePartKindNeedleMax     = "needle_max"
+	ScenePartKindNeedleAverage = "needle_average"
+	ScenePartKindMarkerMin     = "marker_min"
+	ScenePartKindMarkerMax     = "marker_max"
+	ScenePartKindMarkerAverage = "marker_average"
+	ScenePartKindBar           = "bar"
+	ScenePartKindWheelStrip    = "wheel_strip"
 )
 
 type Placement struct {
@@ -790,13 +792,16 @@ func radialOverlayLayerParts(layers map[string]string) []ScenePart {
 }
 
 func appendRadialPointerMarkerParts(parts []ScenePart, pkg Package, markerState PointerMarkerState, facePivot Point, needlePivot Point) []ScenePart {
-	if pkg.Realism.PointerMarkers == nil || !pkg.Realism.PointerMarkers.MinMaxEnabled() {
+	if pkg.Realism.PointerMarkers == nil || !pkg.Realism.PointerMarkers.Enabled() {
 		return parts
 	}
 	if part, ok := radialPointerMarkerPart(pkg, "needle_min", ScenePartKindNeedleMin, markerState.Min, pkg.Realism.PointerMarkers.Min, facePivot, needlePivot); ok {
 		parts = append(parts, part)
 	}
 	if part, ok := radialPointerMarkerPart(pkg, "needle_max", ScenePartKindNeedleMax, markerState.Max, pkg.Realism.PointerMarkers.Max, facePivot, needlePivot); ok {
+		parts = append(parts, part)
+	}
+	if part, ok := radialPointerMarkerPart(pkg, "needle_average", ScenePartKindNeedleAverage, markerState.Average, pkg.Realism.PointerMarkers.Average, facePivot, needlePivot); ok {
 		parts = append(parts, part)
 	}
 	return parts
@@ -822,13 +827,16 @@ func radialPointerMarkerPart(pkg Package, layer string, kind string, marker Poin
 }
 
 func appendBarPointerMarkerParts(parts []ScenePart, pkg Package, markerState PointerMarkerState) []ScenePart {
-	if pkg.Realism.PointerMarkers == nil || !pkg.Realism.PointerMarkers.MinMaxEnabled() {
+	if pkg.Realism.PointerMarkers == nil || !pkg.Realism.PointerMarkers.Enabled() {
 		return parts
 	}
 	if part, ok := barPointerMarkerPart(pkg, "marker_min", ScenePartKindMarkerMin, markerState.Min, pkg.Realism.PointerMarkers.Min); ok {
 		parts = append(parts, part)
 	}
 	if part, ok := barPointerMarkerPart(pkg, "marker_max", ScenePartKindMarkerMax, markerState.Max, pkg.Realism.PointerMarkers.Max); ok {
+		parts = append(parts, part)
+	}
+	if part, ok := barPointerMarkerPart(pkg, "marker_average", ScenePartKindMarkerAverage, markerState.Average, pkg.Realism.PointerMarkers.Average); ok {
 		parts = append(parts, part)
 	}
 	return parts

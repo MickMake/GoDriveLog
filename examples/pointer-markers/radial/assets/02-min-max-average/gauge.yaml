@@ -1,0 +1,34 @@
+id: pointer_marker_radial_rpm
+type: radial
+sensor: rpm
+
+realism:
+  pointer_markers:
+    min: true
+    max: true
+    average: true
+
+size:
+  width: 1195
+  height: 1207
+
+layers:
+  background: ../../../../gauge-realism/radial/assets/bezel.png
+  face: ../../../../gauge-realism/radial/assets/face.png
+  ticks: ../../../../gauge-realism/radial/assets/ticks.png
+  needle: ../../../../gauge-realism/radial/assets/needle.png
+  needle_min: ../../../../gauge-realism/radial/assets/needle.png
+  needle_max: ../../../../gauge-realism/radial/assets/needle.png
+  needle_average: ../../../../gauge-realism/radial/assets/needle.png
+  overlay: ../../../../gauge-realism/radial/assets/glass.png
+
+pivot:
+  face: { x: 0.5, y: 0.5 }
+  needle: { x: 0.5, y: 0.5 }
+
+value_map:
+  min: 0
+  max: 8000
+  start_angle: -120
+  end_angle: 120
+  clamp: true
