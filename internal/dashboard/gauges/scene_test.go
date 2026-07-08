@@ -350,6 +350,51 @@ func TestRadialScenePointerMarkersRenderAboveNeedleBeforeOverlay(t *testing.T) {
 	}
 }
 
+func TestRadialScenePointerMarkersKeepAverageHiddenWhenDisabled(t *testing.T) {
+	pkg := loadRadialScenePackageWithPointerMarkers(t, "    average: false\n")
+
+	scene, err := RadialSceneWithPointerMarkers(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("rpm", 3500), PointerMarkerState{
+		Average: PointerMarkerValueState{Set: true, NormalizedPosition: 0.60},
+	})
+	if err != nil {
+		t.Fatalf("RadialSceneWithPointerMarkers returned error: %v", err)
+	}
+
+	if got := partLayerSequence(scene); got != "layer:background,layer:face,layer:ticks,needle:0,layer:overlay" {
+		t.Fatalf("part sequence = %q", got)
+	}
+	if got := countSceneParts(scene, ScenePartKindNeedleAverage); got != 0 {
+		t.Fatalf("expected no average marker parts, got %d", got)
+	}
+}
+
+func TestRadialScenePointerMarkersRenderAverageWithAssetAboveNeedleBeforeOverlay(t *testing.T) {
+	pkg := loadRadialScenePackageWithPointerMarkers(t, "    max: true\n    min: true\n    average: true\n")
+
+	scene, err := RadialSceneWithPointerMarkers(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("rpm", 3500), PointerMarkerState{
+		Min:     PointerMarkerValueState{Set: true, NormalizedPosition: 0.20},
+		Max:     PointerMarkerValueState{Set: true, NormalizedPosition: 0.80},
+		Average: PointerMarkerValueState{Set: true, NormalizedPosition: 0.60},
+	})
+	if err != nil {
+		t.Fatalf("RadialSceneWithPointerMarkers returned error: %v", err)
+	}
+
+	if got := partLayerSequence(scene); got != "layer:background,layer:face,layer:ticks,needle:0,needle_min:-81,needle_max:81,needle_average:27,layer:overlay" {
+		t.Fatalf("part sequence = %q", got)
+	}
+	marker := firstPart(scene, ScenePartKindNeedleAverage)
+	if marker.Layer != "needle_average" || marker.AssetPath == "" {
+		t.Fatalf("average marker part = %#v", marker)
+	}
+	if !almostEqual(marker.Angle, 27) {
+		t.Fatalf("average marker angle = %v, want 27", marker.Angle)
+	}
+	if marker.FacePivot != scene.FacePivot || marker.NeedlePivot != scene.NeedlePivot {
+		t.Fatalf("average marker pivots = face %#v needle %#v", marker.FacePivot, marker.NeedlePivot)
+	}
+}
+
 func TestRadialSceneCalibrationOffsetZeroPreservesAngle(t *testing.T) {
 	zero := 0.0
 	basePkg := loadRadialScenePackage(t)
@@ -1216,6 +1261,48 @@ func TestBarScenePointerMarkersRenderAboveBarBeforeGlass(t *testing.T) {
 	}
 }
 
+func TestBarScenePointerMarkersKeepAverageHiddenWhenDisabled(t *testing.T) {
+	pkg := loadBarScenePackageWithPointerMarkers(t, "    average: false\n")
+
+	scene, err := BarSceneWithPointerMarkers(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("coolant_temperature", 80), PointerMarkerState{
+		Average: PointerMarkerValueState{Set: true, NormalizedPosition: 0.50},
+	})
+	if err != nil {
+		t.Fatalf("BarSceneWithPointerMarkers returned error: %v", err)
+	}
+
+	if got := partLayerSequence(scene); got != "layer:panel,bar:level,layer:glass" {
+		t.Fatalf("bar part sequence = %q", got)
+	}
+	if got := countSceneParts(scene, ScenePartKindMarkerAverage); got != 0 {
+		t.Fatalf("expected no average marker parts, got %d", got)
+	}
+}
+
+func TestBarScenePointerMarkersRenderAverageWithAssetAboveBarBeforeGlass(t *testing.T) {
+	pkg := loadBarScenePackageWithPointerMarkers(t, "    max: true\n    min: true\n    average: true\n")
+
+	scene, err := BarSceneWithPointerMarkers(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("coolant_temperature", 80), PointerMarkerState{
+		Min:     PointerMarkerValueState{Set: true, NormalizedPosition: 0.25},
+		Max:     PointerMarkerValueState{Set: true, NormalizedPosition: 0.75},
+		Average: PointerMarkerValueState{Set: true, NormalizedPosition: 0.50},
+	})
+	if err != nil {
+		t.Fatalf("BarSceneWithPointerMarkers returned error: %v", err)
+	}
+
+	if got := partLayerSequence(scene); got != "layer:panel,bar:level,marker_min:[40 155],marker_max:[40 65],marker_average:[40 110],layer:glass" {
+		t.Fatalf("bar part sequence = %q", got)
+	}
+	marker := firstPart(scene, ScenePartKindMarkerAverage)
+	if marker.Layer != "marker_average" || marker.AssetPath == "" {
+		t.Fatalf("average marker part = %#v", marker)
+	}
+	if !intSlicesEqual(marker.Position, []int{40, 110}) {
+		t.Fatalf("average marker position = %#v, want [40 110]", marker.Position)
+	}
+}
+
 func TestBarPointerMarkerPositionRespectsAxisAndOrigin(t *testing.T) {
 	bar := BarConfig{
 		Axis:   "vertical",
@@ -1607,6 +1694,7 @@ layers:
   needle: needle.png
   needle_min: needle_min.png
   needle_max: needle_max.png
+  needle_average: needle_average.png
   overlay: overlay.png
 pivot:
   face: { x: 0.5, y: 0.55 }
@@ -1798,6 +1886,7 @@ layers:
   level: level.png
   marker_min: marker_min.png
   marker_max: marker_max.png
+  marker_average: marker_average.png
   glass: glass.png
 value_map:
   min: 40
@@ -1855,10 +1944,14 @@ func partLayerSequence(scene Scene) string {
 			parts = append(parts, fmt.Sprintf("needle_min:%.0f", part.Angle))
 		case ScenePartKindNeedleMax:
 			parts = append(parts, fmt.Sprintf("needle_max:%.0f", part.Angle))
+		case ScenePartKindNeedleAverage:
+			parts = append(parts, fmt.Sprintf("needle_average:%.0f", part.Angle))
 		case ScenePartKindMarkerMin:
 			parts = append(parts, fmt.Sprintf("marker_min:%v", part.Position))
 		case ScenePartKindMarkerMax:
 			parts = append(parts, fmt.Sprintf("marker_max:%v", part.Position))
+		case ScenePartKindMarkerAverage:
+			parts = append(parts, fmt.Sprintf("marker_average:%v", part.Position))
 		case ScenePartKindBar:
 			parts = append(parts, "bar:"+part.Layer)
 		case ScenePartKindWheelStrip:

@@ -1,0 +1,27 @@
+vehicles:
+  demo:
+    name: Bar Pointer Marker Preview
+    obd:
+      address: preview://manual
+      timeout: 1000
+    dashboards:
+      - preview
+sensors:
+  coolant_temperature:
+    type: obd
+    pid: "0105"
+    unit: c
+    min: 40
+    max: 120
+    poll: 250
+dashboards:
+  preview:
+    display: preview
+    size:
+      width: 240
+      height: 260
+    widgets:
+      - id: coolant_bar
+        type: gauge
+        gauge: assets/02-min-max-average
+        position: [0, 0]
