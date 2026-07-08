@@ -1,10 +1,10 @@
 # v3.6 Implementation State
 
-Status: v3.6.6 average pointer marker rendering complete; v3.6.7 pending
+Status: v3.6 planned slice list complete
 
-Current target: v3.6.7 tests, previews, docs checkpoint
+Current target: none
 
-Current branch: `v3.6.6-average-pointer-marker-rendering`
+Current branch: none
 
 ## Scope
 
@@ -20,6 +20,8 @@ Pointer markers observe the final rendered indicator position for the gauge fami
 If no realism effects are enabled, the rendered indicator path is equivalent to the mapped source value, so pointer marker behaviour naturally reflects true input data. If realism effects are enabled, pointer markers follow the realistic rendered behaviour. For example, a radial max marker may capture overshoot if the live pointer visibly overshoots.
 
 v3.6 must stay focused on pointer markers only. Broader gauge realism audit/backlog material belongs in v3.7 or later.
+
+All planned v3.6 slices are complete. Future pointer-marker or broader gauge-realism follow-up work should start from a new release plan or an explicit follow-up issue/PR rather than quietly reopening this slice list.
 
 ## Current decisions
 
@@ -100,11 +102,11 @@ Not allowed in v3.6:
 - [x] v3.6.4 bar pointer marker rendering
 - [x] v3.6.5 average pointer marker engine
 - [x] v3.6.6 average pointer marker rendering
-- [ ] v3.6.7 tests, previews, docs checkpoint
+- [x] v3.6.7 tests, previews, docs checkpoint
 
-## Next-slice workflow
+## Historical slice workflow
 
-When asked to do the next v3.6 slice:
+This workflow is retained as the record of how the planned v3.6 slices were executed. It no longer points to another unchecked planned v3.6 slice because the list is complete.
 
 1. Read this file.
 2. Use `Current target` only if it is explicitly set and its checklist item is still unchecked; otherwise find the first unchecked allowed slice.
@@ -134,3 +136,8 @@ Stop when either:
 
 - CI passes and review is clear enough to merge; or
 - the review-fix loop hits the limit and needs human direction.
+
+## Future work note
+
+- old unresolved review comments on already merged v3.6 PRs are administrative unless a current `main` issue is confirmed;
+- new pointer-marker or realism work should start in a new release plan or explicit follow-up issue/PR, not by reviving this completed checklist.

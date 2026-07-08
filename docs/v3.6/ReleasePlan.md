@@ -1,8 +1,12 @@
 # v3.6 Release Plan
 
+Status: planned slice list complete
+
 v3.6 follows the completed v3.5 gauge realism pass.
 
 v3.6 is the pointer marker release. It adds optional physical-style min, max, and average pointer markers for radial and bar gauges without reopening v3.5 realism work or turning pointer markers into statistical overlays.
+
+The planned v3.6 slice list is complete. Keep this document as the release contract and implementation history; start any further pointer-marker or realism follow-up in v3.7+ or a separate follow-up issue/PR.
 
 ## Theme
 
