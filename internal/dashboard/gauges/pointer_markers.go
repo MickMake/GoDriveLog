@@ -11,6 +11,7 @@ import (
 )
 
 const pointerMarkerPositionEpsilon = 1e-9
+const averagePointerMarkerTimeConstant = 10 * time.Second
 
 type PointerMarkersConfig struct {
 	Max     bool           `yaml:"max,omitempty"`
@@ -107,6 +108,34 @@ func AdvanceMinMaxPointerMarkers(state PointerMarkerState, config *PointerMarker
 		state = RecordMinMaxPointerMarkerSample(state, config, normalizedPosition, now)
 	}
 	state = UpdatePointerMarkerRenderedPosition(state, normalizedPosition)
+	return state
+}
+
+func AdvanceAveragePointerMarker(state PointerMarkerState, config *PointerMarkersConfig, normalizedPosition *float64, now time.Time) PointerMarkerState {
+	if config == nil || !config.Average {
+		state.Average = PointerMarkerValueState{}
+		return state
+	}
+
+	position, ok := normalizedPointerMarkerPosition(normalizedPosition)
+	if !ok {
+		return state
+	}
+	if !state.Average.Set {
+		state.Average = PointerMarkerValueState{
+			Set:                true,
+			NormalizedPosition: position,
+			RecordedAt:         now,
+		}
+		return state
+	}
+	if now.IsZero() || state.Average.RecordedAt.IsZero() || !now.After(state.Average.RecordedAt) {
+		return state
+	}
+
+	alpha := 1 - math.Exp(-now.Sub(state.Average.RecordedAt).Seconds()/averagePointerMarkerTimeConstant.Seconds())
+	state.Average.NormalizedPosition += alpha * (position - state.Average.NormalizedPosition)
+	state.Average.RecordedAt = now
 	return state
 }
 

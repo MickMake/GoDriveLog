@@ -135,6 +135,86 @@ func TestAdvanceMinMaxPointerMarkersRollingWindowDoesNotRefreshWithoutRecord(t *
 	}
 }
 
+func TestAdvanceAveragePointerMarkerStaysUnsetWhenDisabled(t *testing.T) {
+	config := &PointerMarkersConfig{Average: false}
+	position := 0.4
+
+	state := AdvanceAveragePointerMarker(PointerMarkerState{}, config, &position, time.Unix(1_000, 0).UTC())
+	if state.Average.Set {
+		t.Fatalf("expected disabled average marker to remain unset, got %#v", state.Average)
+	}
+}
+
+func TestAdvanceAveragePointerMarkerInitializesFromFirstValidSample(t *testing.T) {
+	config := &PointerMarkersConfig{Average: true}
+	now := time.Unix(2_000, 0).UTC()
+	position := 0.25
+
+	state := AdvanceAveragePointerMarker(PointerMarkerState{}, config, &position, now)
+	if !state.Average.Set {
+		t.Fatalf("expected first valid sample to initialize average marker, got %#v", state.Average)
+	}
+	if state.Average.NormalizedPosition != 0.25 || !state.Average.RecordedAt.Equal(now) {
+		t.Fatalf("unexpected initial average marker state: %#v", state.Average)
+	}
+}
+
+func TestAdvanceAveragePointerMarkerUsesFixedTenSecondTimeConstant(t *testing.T) {
+	config := &PointerMarkersConfig{Average: true}
+	start := time.Unix(3_000, 0).UTC()
+	initial := 0.0
+	target := 1.0
+
+	state := AdvanceAveragePointerMarker(PointerMarkerState{}, config, &initial, start)
+	state = AdvanceAveragePointerMarker(state, config, &target, start.Add(10*time.Second))
+
+	expected := 1 - math.Exp(-1)
+	if math.Abs(state.Average.NormalizedPosition-expected) > 1e-12 {
+		t.Fatalf("average marker after 10s = %v, want %v", state.Average.NormalizedPosition, expected)
+	}
+	if math.Abs(state.Average.NormalizedPosition-0.5) < 0.01 {
+		t.Fatalf("average marker looks like an arithmetic average, got %v", state.Average.NormalizedPosition)
+	}
+}
+
+func TestAdvanceAveragePointerMarkerIsFrameRateIndependent(t *testing.T) {
+	config := &PointerMarkersConfig{Average: true}
+	start := time.Unix(4_000, 0).UTC()
+	initial := 0.0
+	target := 1.0
+
+	singleStep := AdvanceAveragePointerMarker(PointerMarkerState{}, config, &initial, start)
+	singleStep = AdvanceAveragePointerMarker(singleStep, config, &target, start.Add(10*time.Second))
+
+	multiStep := AdvanceAveragePointerMarker(PointerMarkerState{}, config, &initial, start)
+	for second := 1; second <= 10; second++ {
+		multiStep = AdvanceAveragePointerMarker(multiStep, config, &target, start.Add(time.Duration(second)*time.Second))
+	}
+
+	if math.Abs(singleStep.Average.NormalizedPosition-multiStep.Average.NormalizedPosition) > 1e-12 {
+		t.Fatalf("frame-rate independent average mismatch: single=%v multi=%v", singleStep.Average.NormalizedPosition, multiStep.Average.NormalizedPosition)
+	}
+}
+
+func TestAdvanceAveragePointerMarkerDoesNotCalculateArithmeticMean(t *testing.T) {
+	config := &PointerMarkersConfig{Average: true}
+	start := time.Unix(5_000, 0).UTC()
+	zero := 0.0
+	one := 1.0
+
+	state := AdvanceAveragePointerMarker(PointerMarkerState{}, config, &zero, start)
+	state = AdvanceAveragePointerMarker(state, config, &one, start.Add(10*time.Second))
+	state = AdvanceAveragePointerMarker(state, config, &zero, start.Add(20*time.Second))
+
+	expected := (1 - math.Exp(-1)) * math.Exp(-1)
+	if math.Abs(state.Average.NormalizedPosition-expected) > 1e-12 {
+		t.Fatalf("average marker after damped follow = %v, want %v", state.Average.NormalizedPosition, expected)
+	}
+	if math.Abs(state.Average.NormalizedPosition-(1.0/3.0)) < 0.01 || math.Abs(state.Average.NormalizedPosition-0.5) < 0.01 {
+		t.Fatalf("average marker should not match arithmetic means, got %v", state.Average.NormalizedPosition)
+	}
+}
+
 func TestRenderedPointerMarkerPositionUsesFinalRenderedGeometry(t *testing.T) {
 	offset := 10.0
 	radialPkg := Package{
