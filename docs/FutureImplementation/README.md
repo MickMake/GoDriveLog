@@ -10,25 +10,25 @@ This map came from `docs/v3.7/PlannedFeatures.md`. It is a planning aid only. Do
 
 | Marker | Meaning |
 | --- | --- |
-| ✅ | Implemented or expected to be usable. |
-| ❌ | Not planned for that gauge family. |
-| 🟡 | Partial, legacy, parse-only, or supported indirectly. |
-| ⚠️ | Planned, questionable, in-progress, or needs audit before trusting. |
+| ✅ | Implemented and supported on `main`. |
+| ❌ | Not implemented / not supported for that gauge family. |
+| 🟡 | Partial, legacy, parse-only, fallback-only, or supported indirectly. |
+| ⚠️ | Needs audit before trusting or implementing against it. |
 | 🍺 | Potential candidate / needs beer thought before design or implementation. |
 
 | Realism option | Numeric | Radial | Odometer | Indicator | Bar | Segmented |
 | --- | --- | --- | --- | --- | --- | --- |
-| `movement` | 🟡 parse only | 🟡 legacy `movement_policy` | ✅ `odometer.movement` | ❌ | 🟡 via damping only | ❌ |
+| `movement` | 🟡 parse only | 🟡 legacy `movement_policy` | ✅ `odometer.movement` (`instant`, `linear`, `ease_out`, `bell`) | ❌ | 🟡 via finite movement/damping policy only | ❌ |
 | `wraparound` | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ |
 | `drum_slop` | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ |
 | `carry_drag` | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ |
 | `snap_settle` | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ |
-| `backlash` | ❌ | ❌ | ⚠️ marked implemented / no code | ❌ | ❌ | ❌ |
-| `hysteresis` | ❌ | ✅ | ❌ | ❌ | ⚠️ planned / not yet | ❌ |
-| `stiction` | ❌ | ✅ | ❌ | ❌ | ⚠️ planned / not yet | ❌ |
+| `backlash` | ❌ | ❌ | ❌ not implemented; stale v3.5 docs previously claimed it | ❌ | ❌ | ❌ |
+| `hysteresis` | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ |
+| `stiction` | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ |
 | `damping` | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ |
-| `overshoot` | ❌ | ✅ | ❌ | ❌ | ⚠️ PR open / in progress | ❌ |
-| `peg_bounce` | ❌ | ✅ | ❌ | ❌ | ⚠️ planned / not yet | ❌ |
+| `overshoot` | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ |
+| `peg_bounce` | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ |
 | `thermal_fade` | 🍺 potential candidate / needs beer thought | ❌ | ❌ | ✅ | ❌ | 🍺 potential candidate / needs beer thought |
 | `per_digit_response_lag` | 🍺 potential candidate / needs beer thought | ❌ | ❌ | ❌ | ❌ | 🍺 potential candidate / needs beer thought |
 | `leading_zero_behaviour` | 🍺 potential candidate / needs beer thought | ❌ | ❌ | ❌ | ❌ | 🍺 potential candidate / needs beer thought |
@@ -48,10 +48,10 @@ Effort is rough **Codex hours**, assuming the v3 dashboard/gauge code is already
 
 | # | State | Description | Area | Effort | File |
 |---:|---|---|---|---:|---|
-| 1 | Near / implementation-ready | Bar gauge overshoot follow-up | `gauge/bar`, `realism.overshoot`, animation | 2-4 | [`gauge-bar-overshoot-follow-up.md`](gauge-bar-overshoot-follow-up.md) |
+| 1 | Implemented in v3.5.19 | Bar gauge overshoot follow-up | `gauge/bar`, `realism.overshoot`, animation | IMPLEMENTED | [`gauge-bar-overshoot-follow-up.md`](gauge-bar-overshoot-follow-up.md) |
 | 2 | Near / needs spec tightening | Radial movement options | `gauge/radial`, movement policy, runtime animation | 3-5 | [`gauge-radial-movement-options.md`](gauge-radial-movement-options.md) |
 | 3 | Later / visual feature | Radial needle trail | `gauge/radial`, renderer, animation history | 4-7 | [`gauge-radial-needle-trail.md`](gauge-radial-needle-trail.md) |
-| 4 | Later / visual statistics | Gauge stat markers | `gauge/radial`, `gauge/bar`, renderer, rolling-window statistics, marker assets | IMPLEMENTED | [`gauge-stat-markers.md`](gauge-stat-markers.md) |
+| 4 | Implemented as v3.6 pointer markers | Gauge stat markers | `gauge/radial`, `gauge/bar`, renderer, rolling-window statistics, marker assets | IMPLEMENTED | [`gauge-stat-markers.md`](gauge-stat-markers.md) |
 | 5 | Medium / useful soon | Value zones / warning-danger assets | `gauge/assets`, renderer, config validation | 4-7 | [`gauge-assets-value-zones-warning-danger-assets.md`](gauge-assets-value-zones-warning-danger-assets.md) |
 | 6 | Medium / foundational logging | Canonical GoDriveLog Event Log | logging, sensor events, schema/versioning | 5-9 | [`logger-canonical-event-log.md`](logger-canonical-event-log.md) |
 | 7 | Medium / pairs with event log | Session metadata sidecar | logging, replay metadata, config provenance | 4-7 | [`logger-session-metadata-sidecar.md`](logger-session-metadata-sidecar.md) |
@@ -79,7 +79,8 @@ Effort is rough **Codex hours**, assuming the v3 dashboard/gauge code is already
 
 A few notes from the table:
 
-- **#1, #9, and #11** are the most directly sliceable.
+- **#1 is implemented.** It stays indexed here only as historical follow-up context.
+- **#9 and #11** are the most directly sliceable unimplemented items.
 - **#6-#8** are chunky but important because they form the logging/replay backbone.
 - **#3 is fun, but it’s polish. Nice polish, but still polish.**
 - **#11 should not change the look.** It should protect the look from dropped/undersampled frames. That distinction is the whole ballgame.
