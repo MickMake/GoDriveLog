@@ -1,0 +1,30 @@
+id: pointer_marker_coolant_bar
+type: bar
+sensor: coolant_temperature
+
+realism:
+  pointer_markers:
+    min: true
+    max: true
+
+size:
+  width: 120
+  height: 220
+
+layers:
+  panel: ../../../../gauge-realism/bar/assets/panel.png
+  level: ../../../../gauge-realism/bar/assets/level.png
+  marker_min: ../../../../gauge-realism/bar/assets/level.png
+  marker_max: ../../../../gauge-realism/bar/assets/level.png
+  glass: ../../../../gauge-realism/bar/assets/glass.png
+
+value_map:
+  min: 40
+  max: 120
+  clamp: true
+
+bar:
+  mode: level
+  axis: vertical
+  origin: bottom
+  bounds: [40, 20, 24, 180]

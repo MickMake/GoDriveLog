@@ -30,6 +30,8 @@ const (
 	PartKindNeedle       = "needle"
 	PartKindNeedleMin    = "needle_min"
 	PartKindNeedleMax    = "needle_max"
+	PartKindMarkerMin    = "marker_min"
+	PartKindMarkerMax    = "marker_max"
 	PartKindBar          = "bar"
 	PartKindWheelStrip   = "wheel_strip"
 )
@@ -528,7 +530,7 @@ func (d Dashboard) renderWidget(configWidget v3config.WidgetConfig, states map[s
 				gaugeScene, err = v3gauges.IndicatorScene(pkg, v3gauges.Placement{Position: configWidget.Position, Scale: configWidget.Scale}, state)
 			}
 		case v3gauges.TypeBar:
-			gaugeScene, err = v3gauges.BarScene(pkg, v3gauges.Placement{Position: configWidget.Position, Scale: configWidget.Scale}, state)
+			gaugeScene, err = v3gauges.BarSceneWithPointerMarkers(pkg, v3gauges.Placement{Position: configWidget.Position, Scale: configWidget.Scale}, state, markerState)
 		case v3gauges.TypeSegmented:
 			var previous *v3gauges.SegmentedSelection
 			selectionKey := segmentSelectionKey(d.ID, configWidget.ID, pkg.Path)

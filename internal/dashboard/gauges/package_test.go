@@ -2866,6 +2866,8 @@ func makeGaugeFixtures(t *testing.T) string {
 		"assets/gauges/7Seg/amber/7SegDP.png",
 		"assets/gauges/bar/coolant/panel.png",
 		"assets/gauges/bar/coolant/level.png",
+		"assets/gauges/bar/coolant/marker_min.png",
+		"assets/gauges/bar/coolant/marker_max.png",
 		"assets/gauges/bar/coolant/glass.png",
 		"assets/gauges/shared/radial/simple_rpm/bezel.png",
 		"assets/gauges/shared/radial/simple_rpm/face.png",
