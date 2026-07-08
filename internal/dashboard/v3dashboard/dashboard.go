@@ -342,6 +342,11 @@ func (r *Runtime) HasActiveMovement() bool {
 			return true
 		}
 	}
+	for _, markerState := range r.pointerMarkers {
+		if v3gauges.AveragePointerMarkerActive(markerState) {
+			return true
+		}
+	}
 	return false
 }
 
@@ -568,7 +573,11 @@ func movementKey(dashboardID string, widgetID string) string {
 }
 
 func updatePointerMarkerState(pointerMarkers map[string]v3gauges.PointerMarkerState, key string, pkg v3gauges.Package, state sensors.SensorState, now time.Time, recordSample bool) error {
-	if pointerMarkers == nil || pkg.Realism.PointerMarkers == nil || !pkg.Realism.PointerMarkers.MinMaxEnabled() {
+	if pointerMarkers == nil {
+		return nil
+	}
+	if pkg.Realism.PointerMarkers == nil || !pkg.Realism.PointerMarkers.Enabled() {
+		delete(pointerMarkers, key)
 		return nil
 	}
 
@@ -583,7 +592,10 @@ func updatePointerMarkerState(pointerMarkers map[string]v3gauges.PointerMarkerSt
 		normalizedPosition = &position
 	}
 	recordSample = recordSample || v3gauges.PointerMarkerRenderedPositionChanged(markerState, normalizedPosition)
-	pointerMarkers[key] = v3gauges.AdvanceMinMaxPointerMarkers(markerState, pkg.Realism.PointerMarkers, normalizedPosition, now, recordSample)
+	markerState = v3gauges.AdvanceMinMaxPointerMarkers(markerState, pkg.Realism.PointerMarkers, normalizedPosition, now, recordSample)
+	markerState = v3gauges.AdvanceAveragePointerMarker(markerState, pkg.Realism.PointerMarkers, normalizedPosition, now)
+	markerState = v3gauges.UpdatePointerMarkerRenderedPosition(markerState, normalizedPosition)
+	pointerMarkers[key] = markerState
 	return nil
 }
 

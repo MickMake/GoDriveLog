@@ -1,10 +1,10 @@
 # v3.6 Implementation State
 
-Status: v3.6.4 bar pointer marker rendering complete; v3.6.5 pending
+Status: v3.6.5 average pointer marker engine complete; v3.6.6 pending
 
-Current target: v3.6.5 average pointer marker engine
+Current target: v3.6.6 average pointer marker rendering
 
-Current branch: `v3.6.4-bar-pointer-marker-rendering`
+Current branch: `v3.6.5-average-pointer-marker-engine`
 
 ## Scope
 
@@ -98,7 +98,7 @@ Not allowed in v3.6:
 - [x] v3.6.2 shared min/max marker engine
 - [x] v3.6.3 radial pointer marker rendering
 - [x] v3.6.4 bar pointer marker rendering
-- [ ] v3.6.5 average pointer marker engine
+- [x] v3.6.5 average pointer marker engine
 - [ ] v3.6.6 average pointer marker rendering
 - [ ] v3.6.7 tests, previews, docs checkpoint
 
