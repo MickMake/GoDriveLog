@@ -342,6 +342,11 @@ func (r *Runtime) HasActiveMovement() bool {
 			return true
 		}
 	}
+	for _, markerState := range r.pointerMarkers {
+		if v3gauges.AveragePointerMarkerActive(markerState) {
+			return true
+		}
+	}
 	return false
 }
 
@@ -589,6 +594,7 @@ func updatePointerMarkerState(pointerMarkers map[string]v3gauges.PointerMarkerSt
 	recordSample = recordSample || v3gauges.PointerMarkerRenderedPositionChanged(markerState, normalizedPosition)
 	markerState = v3gauges.AdvanceMinMaxPointerMarkers(markerState, pkg.Realism.PointerMarkers, normalizedPosition, now, recordSample)
 	markerState = v3gauges.AdvanceAveragePointerMarker(markerState, pkg.Realism.PointerMarkers, normalizedPosition, now)
+	markerState = v3gauges.UpdatePointerMarkerRenderedPosition(markerState, normalizedPosition)
 	pointerMarkers[key] = markerState
 	return nil
 }

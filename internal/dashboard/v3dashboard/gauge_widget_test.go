@@ -1492,7 +1492,7 @@ func TestRuntimeRollingPointerMarkersExpireDuringIdleTicks(t *testing.T) {
 	}
 }
 
-func TestRuntimeAveragePointerMarkerTracksRenderedPositionWithoutMutatingSourceState(t *testing.T) {
+func TestRuntimeAverageOnlyGaugeReportsActiveWhileUnsettled(t *testing.T) {
 	runtime := testRadialMovementRuntimeWithPointerMarkersAndRealism(t, "    average: true\n", "", false, nil, nil, false, false)
 	start := time.Unix(600, 0)
 
@@ -1506,10 +1506,13 @@ func TestRuntimeAveragePointerMarkerTracksRenderedPositionWithoutMutatingSourceS
 	if err != nil {
 		t.Fatalf("ApplyEvent failed: %v", err)
 	}
+	if runtime.HasActiveMovement() {
+		t.Fatalf("expected seeded average marker at its initial target to remain inactive")
+	}
 
 	key := movementKey("primary", "rpm")
 	initial := runtime.pointerMarkers[key]
-	if !initial.Average.Set || initial.Average.NormalizedPosition != 0 {
+	if !initial.Average.Set || initial.Average.NormalizedPosition != 0 || !initial.LastRenderedPositionSet || initial.LastRenderedPosition != 0 {
 		t.Fatalf("expected initial rendered position to seed average marker, got %#v", initial)
 	}
 	if initial.Min.Set || initial.Max.Set {
@@ -1529,14 +1532,137 @@ func TestRuntimeAveragePointerMarkerTracksRenderedPositionWithoutMutatingSourceS
 	if !changed {
 		t.Fatalf("expected changed live gauge value to redraw")
 	}
+	if !runtime.HasActiveMovement() {
+		t.Fatalf("expected unsettled average marker to request runtime ticks")
+	}
 
 	updated := runtime.pointerMarkers[key]
 	expected := 1 - math.Exp(-1)
 	if !updated.Average.Set || math.Abs(updated.Average.NormalizedPosition-expected) > 1e-12 {
 		t.Fatalf("expected damped average marker position %v, got %#v", expected, updated)
 	}
+	if !updated.LastRenderedPositionSet || updated.LastRenderedPosition != 1 {
+		t.Fatalf("expected rendered target position 1 to remain tracked, got %#v", updated)
+	}
 	if updated.Min.Set || updated.Max.Set || len(updated.Samples) != 0 {
 		t.Fatalf("expected average-only state without min/max history, got %#v", updated)
+	}
+}
+
+func TestRuntimeTickAdvancesAveragePointerMarkerWithoutNewEvent(t *testing.T) {
+	runtime := testRadialMovementRuntimeWithPointerMarkersAndRealism(t, "    average: true\n", "", false, nil, nil, false, false)
+	start := time.Unix(610, 0)
+
+	_, _, err := runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "rpm",
+		State:     okState("rpm", 0, "rpm"),
+		Timestamp: start,
+		ReadAt:    start,
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	_, _, err = runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "rpm",
+		State:     okState("rpm", 7000, "rpm"),
+		Timestamp: start.Add(10 * time.Second),
+		ReadAt:    start.Add(10 * time.Second),
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+
+	key := movementKey("primary", "rpm")
+	before := runtime.pointerMarkers[key]
+	_, _, err = runtime.Tick(start.Add(20 * time.Second))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+
+	after := runtime.pointerMarkers[key]
+	if after.Average.NormalizedPosition <= before.Average.NormalizedPosition || after.Average.NormalizedPosition >= 1 {
+		t.Fatalf("expected idle tick to advance average marker toward target, before=%#v after=%#v", before, after)
+	}
+	if got := runtime.states["rpm"].Value; got != 7000 {
+		t.Fatalf("expected stored source state to remain raw 7000, got %v", got)
+	}
+}
+
+func TestRuntimeAveragePointerMarkerStopsRequiringTicksWhenSettled(t *testing.T) {
+	runtime := testRadialMovementRuntimeWithPointerMarkersAndRealism(t, "    average: true\n", "", false, nil, nil, false, false)
+	start := time.Unix(620, 0)
+
+	_, _, err := runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "rpm",
+		State:     okState("rpm", 0, "rpm"),
+		Timestamp: start,
+		ReadAt:    start,
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	_, _, err = runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "rpm",
+		State:     okState("rpm", 7000, "rpm"),
+		Timestamp: start.Add(10 * time.Second),
+		ReadAt:    start.Add(10 * time.Second),
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+
+	if !runtime.HasActiveMovement() {
+		t.Fatalf("expected unsettled average marker to begin active")
+	}
+	_, _, err = runtime.Tick(start.Add(220 * time.Second))
+	if err != nil {
+		t.Fatalf("Tick failed: %v", err)
+	}
+
+	if runtime.HasActiveMovement() {
+		t.Fatalf("expected effectively settled average marker to stop requesting ticks")
+	}
+	state := runtime.pointerMarkers[movementKey("primary", "rpm")]
+	if math.Abs(state.Average.NormalizedPosition-state.LastRenderedPosition) > 1e-9 {
+		t.Fatalf("expected settled average marker to be within epsilon of target, got %#v", state)
+	}
+}
+
+func TestRuntimeMinMaxOnlyPointerMarkersDoNotReportActiveMovement(t *testing.T) {
+	runtime := testRadialMovementRuntimeWithPointerMarkersAndRealism(t, "    max: true\n    min: true\n", "", false, nil, nil, false, false)
+	start := time.Unix(630, 0)
+
+	_, _, err := runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "rpm",
+		State:     okState("rpm", 0, "rpm"),
+		Timestamp: start,
+		ReadAt:    start,
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+	_, _, err = runtime.ApplyEvent(sensors.SensorEvent{
+		Kind:      sensors.EventKindValueChange,
+		SensorID:  "rpm",
+		State:     okState("rpm", 7000, "rpm"),
+		Timestamp: start.Add(10 * time.Second),
+		ReadAt:    start.Add(10 * time.Second),
+	})
+	if err != nil {
+		t.Fatalf("ApplyEvent failed: %v", err)
+	}
+
+	if runtime.HasActiveMovement() {
+		t.Fatalf("expected min/max-only pointer markers not to request idle settling ticks")
+	}
+	state := runtime.pointerMarkers[movementKey("primary", "rpm")]
+	if !state.Min.Set || !state.Max.Set || state.Average.Set {
+		t.Fatalf("expected min/max-only state to remain unchanged, got %#v", state)
 	}
 	if got := runtime.states["rpm"].Value; got != 7000 {
 		t.Fatalf("expected stored source state to remain raw 7000, got %v", got)

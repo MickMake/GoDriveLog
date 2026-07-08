@@ -139,6 +139,13 @@ func AdvanceAveragePointerMarker(state PointerMarkerState, config *PointerMarker
 	return state
 }
 
+func AveragePointerMarkerActive(state PointerMarkerState) bool {
+	if !state.Average.Set || !state.LastRenderedPositionSet {
+		return false
+	}
+	return math.Abs(state.Average.NormalizedPosition-state.LastRenderedPosition) > pointerMarkerPositionEpsilon
+}
+
 func PruneMinMaxPointerMarkers(state PointerMarkerState, config *PointerMarkersConfig, now time.Time) PointerMarkerState {
 	if config == nil || !config.MinMaxEnabled() {
 		return PointerMarkerState{}
