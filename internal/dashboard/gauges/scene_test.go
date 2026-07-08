@@ -248,6 +248,108 @@ func TestRadialSceneAddsNeedleShadowBeforeNeedleWhenConfigured(t *testing.T) {
 	}
 }
 
+func TestRadialScenePointerMarkersStayHiddenWhenDisabled(t *testing.T) {
+	pkg := loadRadialScenePackageWithPointerMarkers(t, "    max: false\n    min: false\n")
+
+	scene, err := RadialSceneWithPointerMarkers(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("rpm", 3500), PointerMarkerState{
+		Min: PointerMarkerValueState{Set: true, NormalizedPosition: 0.25},
+		Max: PointerMarkerValueState{Set: true, NormalizedPosition: 0.75},
+	})
+	if err != nil {
+		t.Fatalf("RadialSceneWithPointerMarkers returned error: %v", err)
+	}
+
+	if got := partLayerSequence(scene); got != "layer:background,layer:face,layer:ticks,needle:0,layer:overlay" {
+		t.Fatalf("part sequence = %q", got)
+	}
+	if got := countSceneParts(scene, ScenePartKindNeedleMin); got != 0 {
+		t.Fatalf("expected no min marker parts, got %d", got)
+	}
+	if got := countSceneParts(scene, ScenePartKindNeedleMax); got != 0 {
+		t.Fatalf("expected no max marker parts, got %d", got)
+	}
+}
+
+func TestRadialScenePointerMarkersRenderMinOnly(t *testing.T) {
+	pkg := loadRadialScenePackageWithPointerMarkers(t, "    min: true\n")
+
+	scene, err := RadialSceneWithPointerMarkers(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("rpm", 3500), PointerMarkerState{
+		Min: PointerMarkerValueState{Set: true, NormalizedPosition: 0.25},
+		Max: PointerMarkerValueState{Set: true, NormalizedPosition: 0.75},
+	})
+	if err != nil {
+		t.Fatalf("RadialSceneWithPointerMarkers returned error: %v", err)
+	}
+
+	if got := partLayerSequence(scene); got != "layer:background,layer:face,layer:ticks,needle:0,needle_min:-68,layer:overlay" {
+		t.Fatalf("part sequence = %q", got)
+	}
+	marker := firstPart(scene, ScenePartKindNeedleMin)
+	if marker.Layer != "needle_min" || marker.AssetPath == "" {
+		t.Fatalf("min marker part = %#v", marker)
+	}
+	if !almostEqual(marker.Angle, -67.5) {
+		t.Fatalf("min marker angle = %v, want -67.5", marker.Angle)
+	}
+	if marker.FacePivot != scene.FacePivot || marker.NeedlePivot != scene.NeedlePivot {
+		t.Fatalf("min marker pivots = face %#v needle %#v", marker.FacePivot, marker.NeedlePivot)
+	}
+	if got := countSceneParts(scene, ScenePartKindNeedleMax); got != 0 {
+		t.Fatalf("expected no max marker parts, got %d", got)
+	}
+}
+
+func TestRadialScenePointerMarkersRenderMaxOnly(t *testing.T) {
+	pkg := loadRadialScenePackageWithPointerMarkers(t, "    max: true\n")
+
+	scene, err := RadialSceneWithPointerMarkers(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("rpm", 3500), PointerMarkerState{
+		Min: PointerMarkerValueState{Set: true, NormalizedPosition: 0.25},
+		Max: PointerMarkerValueState{Set: true, NormalizedPosition: 0.75},
+	})
+	if err != nil {
+		t.Fatalf("RadialSceneWithPointerMarkers returned error: %v", err)
+	}
+
+	if got := partLayerSequence(scene); got != "layer:background,layer:face,layer:ticks,needle:0,needle_max:68,layer:overlay" {
+		t.Fatalf("part sequence = %q", got)
+	}
+	marker := firstPart(scene, ScenePartKindNeedleMax)
+	if marker.Layer != "needle_max" || marker.AssetPath == "" {
+		t.Fatalf("max marker part = %#v", marker)
+	}
+	if !almostEqual(marker.Angle, 67.5) {
+		t.Fatalf("max marker angle = %v, want 67.5", marker.Angle)
+	}
+	if marker.FacePivot != scene.FacePivot || marker.NeedlePivot != scene.NeedlePivot {
+		t.Fatalf("max marker pivots = face %#v needle %#v", marker.FacePivot, marker.NeedlePivot)
+	}
+	if got := countSceneParts(scene, ScenePartKindNeedleMin); got != 0 {
+		t.Fatalf("expected no min marker parts, got %d", got)
+	}
+}
+
+func TestRadialScenePointerMarkersRenderAboveNeedleBeforeOverlay(t *testing.T) {
+	pkg := loadRadialScenePackageWithPointerMarkers(t, "    max: true\n    min: true\n")
+
+	scene, err := RadialSceneWithPointerMarkers(pkg, Placement{Position: []int{0, 0}, Scale: 1}, okGaugeState("rpm", 3500), PointerMarkerState{
+		Min: PointerMarkerValueState{Set: true, NormalizedPosition: 0.20},
+		Max: PointerMarkerValueState{Set: true, NormalizedPosition: 0.80},
+	})
+	if err != nil {
+		t.Fatalf("RadialSceneWithPointerMarkers returned error: %v", err)
+	}
+
+	if got := partLayerSequence(scene); got != "layer:background,layer:face,layer:ticks,needle:0,needle_min:-81,needle_max:81,layer:overlay" {
+		t.Fatalf("part sequence = %q", got)
+	}
+	if got := countSceneParts(scene, ScenePartKindNeedleMin); got != 1 {
+		t.Fatalf("expected one min marker part, got %d", got)
+	}
+	if got := countSceneParts(scene, ScenePartKindNeedleMax); got != 1 {
+		t.Fatalf("expected one max marker part, got %d", got)
+	}
+}
+
 func TestRadialSceneCalibrationOffsetZeroPreservesAngle(t *testing.T) {
 	zero := 0.0
 	basePkg := loadRadialScenePackage(t)
@@ -1132,6 +1234,18 @@ func loadRadialScenePackage(t *testing.T) Package {
 	return loadRadialScenePackageWithRealism(t, nil, nil, nil)
 }
 
+func loadRadialScenePackageWithPointerMarkers(t *testing.T, pointerMarkersYAML string) Package {
+	t.Helper()
+	root := makeGaugeFixtures(t)
+	packageDir := filepath.Join(root, "assets", "gauges", "radial", "simple_rpm")
+	writeGaugeYAML(t, packageDir, radialGaugeYAMLWithPointerMarkers(pointerMarkersYAML))
+	pkg, err := LoadPackage(packageDir)
+	if err != nil {
+		t.Fatalf("LoadPackage returned error: %v", err)
+	}
+	return pkg
+}
+
 func loadRadialScenePackageWithNeedleShadow(t *testing.T, offset []int, alpha *float64) Package {
 	return loadRadialScenePackageWithRealism(t, offset, alpha, nil)
 }
@@ -1322,6 +1436,41 @@ layers:
   face: face.png
   ticks: ticks.png
   needle: needle.png
+  overlay: overlay.png
+pivot:
+  face: { x: 0.5, y: 0.55 }
+  needle: { x: 0.5, y: 0.9 }
+value_map:
+  min: 0
+  max: 7000
+  start_angle: -135
+  end_angle: 135
+  clamp: true
+`
+}
+
+func radialGaugeYAMLWithPointerMarkers(pointerMarkersYAML string) string {
+	realismBlock := ""
+	if strings.TrimSpace(pointerMarkersYAML) != "" {
+		lines := []string{"realism:", "  pointer_markers:"}
+		for _, line := range strings.Split(strings.TrimSuffix(pointerMarkersYAML, "\n"), "\n") {
+			lines = append(lines, "  "+line)
+		}
+		realismBlock = strings.Join(lines, "\n") + "\n"
+	}
+	return `id: simple_radial_rpm
+type: radial
+sensor: rpm
+` + realismBlock + `size:
+  width: 512
+  height: 512
+layers:
+  background: background.png
+  face: face.png
+  ticks: ticks.png
+  needle: needle.png
+  needle_min: needle_min.png
+  needle_max: needle_max.png
   overlay: overlay.png
 pivot:
   face: { x: 0.5, y: 0.55 }
@@ -1533,6 +1682,10 @@ func partLayerSequence(scene Scene) string {
 			parts = append(parts, fmt.Sprintf("needle_shadow:%.0f", part.Angle))
 		case ScenePartKindNeedle:
 			parts = append(parts, fmt.Sprintf("needle:%.0f", part.Angle))
+		case ScenePartKindNeedleMin:
+			parts = append(parts, fmt.Sprintf("needle_min:%.0f", part.Angle))
+		case ScenePartKindNeedleMax:
+			parts = append(parts, fmt.Sprintf("needle_max:%.0f", part.Angle))
 		case ScenePartKindBar:
 			parts = append(parts, "bar:"+part.Layer)
 		case ScenePartKindWheelStrip:

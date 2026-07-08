@@ -17,6 +17,8 @@ const (
 	ScenePartKindForeground   = "foreground"
 	ScenePartKindNeedleShadow = "needle_shadow"
 	ScenePartKindNeedle       = "needle"
+	ScenePartKindNeedleMin    = "needle_min"
+	ScenePartKindNeedleMax    = "needle_max"
 	ScenePartKindBar          = "bar"
 	ScenePartKindWheelStrip   = "wheel_strip"
 )
@@ -147,6 +149,10 @@ func NumericScene(pkg Package, placement Placement, state sensors.SensorState) (
 }
 
 func RadialScene(pkg Package, placement Placement, state sensors.SensorState) (Scene, error) {
+	return RadialSceneWithPointerMarkers(pkg, placement, state, PointerMarkerState{})
+}
+
+func RadialSceneWithPointerMarkers(pkg Package, placement Placement, state sensors.SensorState, markerState PointerMarkerState) (Scene, error) {
 	if pkg.Type != TypeRadial {
 		return Scene{}, fmt.Errorf("gauge package %q type %q is not radial", pkg.ID, pkg.Type)
 	}
@@ -206,6 +212,7 @@ func RadialScene(pkg Package, placement Placement, state sensors.SensorState) (S
 		})
 	}
 
+	scene.Parts = appendRadialPointerMarkerParts(scene.Parts, pkg, markerState, scene.FacePivot, scene.NeedlePivot)
 	scene.Parts = append(scene.Parts, radialOverlayLayerParts(pkg.Layers)...)
 	return scene, nil
 }
@@ -772,6 +779,38 @@ func radialUnderlayLayerParts(layers map[string]string) []ScenePart {
 
 func radialOverlayLayerParts(layers map[string]string) []ScenePart {
 	return namedLayerParts(layers, []string{"glass", "overlay", "foreground"})
+}
+
+func appendRadialPointerMarkerParts(parts []ScenePart, pkg Package, markerState PointerMarkerState, facePivot Point, needlePivot Point) []ScenePart {
+	if pkg.Realism.PointerMarkers == nil || !pkg.Realism.PointerMarkers.MinMaxEnabled() {
+		return parts
+	}
+	if part, ok := radialPointerMarkerPart(pkg, "needle_min", ScenePartKindNeedleMin, markerState.Min, pkg.Realism.PointerMarkers.Min, facePivot, needlePivot); ok {
+		parts = append(parts, part)
+	}
+	if part, ok := radialPointerMarkerPart(pkg, "needle_max", ScenePartKindNeedleMax, markerState.Max, pkg.Realism.PointerMarkers.Max, facePivot, needlePivot); ok {
+		parts = append(parts, part)
+	}
+	return parts
+}
+
+func radialPointerMarkerPart(pkg Package, layer string, kind string, marker PointerMarkerValueState, enabled bool, facePivot Point, needlePivot Point) (ScenePart, bool) {
+	if !enabled || !marker.Set {
+		return ScenePart{}, false
+	}
+	assetPath := strings.TrimSpace(pkg.Layers[layer])
+	if assetPath == "" {
+		return ScenePart{}, false
+	}
+	angle := pkg.ValueMap.StartAngle + marker.NormalizedPosition*(pkg.ValueMap.EndAngle-pkg.ValueMap.StartAngle)
+	return ScenePart{
+		Kind:        kind,
+		Layer:       layer,
+		AssetPath:   assetPath,
+		Angle:       angle,
+		FacePivot:   facePivot,
+		NeedlePivot: needlePivot,
+	}, true
 }
 
 func needleShadowEnabled(config *NeedleShadowConfig) bool {
