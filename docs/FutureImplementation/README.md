@@ -4,6 +4,44 @@ This directory is a parking lot for approved or desired follow-on ideas that are
 
 Use this to capture "oh, also implement this later" notes without making the active slice ambiguous. Future prompts may reference this directory, but items here are not current scope unless a later prompt explicitly promotes them.
 
+## Gauge realism map
+
+This map came from `docs/v3.7/PlannedFeatures.md`. It is a planning aid only. Do not treat it as implementation truth without checking the current code and completed release docs.
+
+| Marker | Meaning |
+| --- | --- |
+| ✅ | Implemented or expected to be usable. |
+| ❌ | Not planned for that gauge family. |
+| 🟡 | Partial, legacy, parse-only, or supported indirectly. |
+| ⚠️ | Planned, questionable, in-progress, or needs audit before trusting. |
+| 🍺 | Potential candidate / needs beer thought before design or implementation. |
+
+| Realism option | Numeric | Radial | Odometer | Indicator | Bar | Segmented |
+| --- | --- | --- | --- | --- | --- | --- |
+| `movement` | 🟡 parse only | 🟡 legacy `movement_policy` | ✅ `odometer.movement` | ❌ | 🟡 via damping only | ❌ |
+| `wraparound` | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ |
+| `drum_slop` | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ |
+| `carry_drag` | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ |
+| `snap_settle` | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ |
+| `backlash` | ❌ | ❌ | ⚠️ marked implemented / no code | ❌ | ❌ | ❌ |
+| `hysteresis` | ❌ | ✅ | ❌ | ❌ | ⚠️ planned / not yet | ❌ |
+| `stiction` | ❌ | ✅ | ❌ | ❌ | ⚠️ planned / not yet | ❌ |
+| `damping` | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ |
+| `overshoot` | ❌ | ✅ | ❌ | ❌ | ⚠️ PR open / in progress | ❌ |
+| `peg_bounce` | ❌ | ✅ | ❌ | ❌ | ⚠️ planned / not yet | ❌ |
+| `thermal_fade` | 🍺 potential candidate / needs beer thought | ❌ | ❌ | ✅ | ❌ | 🍺 potential candidate / needs beer thought |
+| `per_digit_response_lag` | 🍺 potential candidate / needs beer thought | ❌ | ❌ | ❌ | ❌ | 🍺 potential candidate / needs beer thought |
+| `leading_zero_behaviour` | 🍺 potential candidate / needs beer thought | ❌ | ❌ | ❌ | ❌ | 🍺 potential candidate / needs beer thought |
+| `decimal_point_behaviour` | 🍺 potential candidate / needs beer thought | ❌ | ❌ | ❌ | ❌ | 🍺 potential candidate / needs beer thought |
+| `needle_shadow` | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
+| `calibration_offset` | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
+| `segment_bleed` / `digit_bleed` | 🍺 potential candidate / needs beer thought | ❌ | ❌ | ❌ | ❌ | 🍺 potential candidate / needs beer thought |
+| `ghosting` | 🍺 potential candidate / needs beer thought | ❌ | ❌ | ❌ | ❌ | 🍺 potential candidate / needs beer thought |
+| `uneven_brightness` | 🍺 potential candidate / needs beer thought | ❌ | ❌ | ❌ | ❌ | 🍺 potential candidate / needs beer thought |
+| `load_sag` | 🍺 potential candidate / needs beer thought | ❌ | ❌ | ❌ | ❌ | 🍺 potential candidate / needs beer thought |
+| `stepped_fill` | ❌ | ❌ | ❌ | ❌ | 🍺 potential candidate / needs beer thought | 🍺 potential candidate / needs beer thought |
+| `quantized_fill` | ❌ | ❌ | ❌ | ❌ | 🍺 potential candidate / needs beer thought | 🍺 potential candidate / needs beer thought |
+
 ## Indexed FutureSlices table
 
 Effort is rough **Codex hours**, assuming the v3 dashboard/gauge code is already loaded in context and tests exist. Not human hours. Codex hours are weird little mushroom hours.
@@ -25,6 +63,19 @@ Effort is rough **Codex hours**, assuming the v3 dashboard/gauge code is already
 | 13 | Later / gauge realism | Gauge lighting mode | `gauge/radial`, `gauge/bar`, indicator, numeric, odometer, dashboard runtime, lights-state events, alternate asset sets | 4-7 | [`gauge-lighting-mode.md`](gauge-lighting-mode.md) |
 | 14 | Later / gauge realism | Gauge imperfections | `gauge/radial`, `gauge/bar`, indicator, numeric, display artefacts, mechanical wear, electrical artefacts | 7-12 | [`gauge-imperfections.md`](gauge-imperfections.md) |
 | 15 | Later / config reuse | Gauge presets | `gauge/config`, `gauge/assets`, `gauge/realism`, config loading, validation, reusable gauge profiles | 5-9 | [`gauge-presets.md`](gauge-presets.md) |
+
+## Extracted v3.7 planning notes
+
+| Description | File |
+|---|---|
+| Status legend | [`v37-status-legend.md`](v37-status-legend.md) |
+| Gauge realism map | [`v37-gauge-realism-map.md`](v37-gauge-realism-map.md) |
+| Candidate: odometer backlash | [`gauge-odometer-backlash.md`](gauge-odometer-backlash.md) |
+| Odometer movement cleanup candidates | [`gauge-odometer-movement-cleanup-candidates.md`](gauge-odometer-movement-cleanup-candidates.md) |
+| Indicator realism scope | [`gauge-indicator-realism-scope.md`](gauge-indicator-realism-scope.md) |
+| Numeric and segmented display realism candidates | [`gauge-numeric-segmented-display-realism-candidates.md`](gauge-numeric-segmented-display-realism-candidates.md) |
+| Bar realism scope | [`gauge-bar-realism-scope.md`](gauge-bar-realism-scope.md) |
+| Planning rule | [`future-implementation-planning-rule.md`](future-implementation-planning-rule.md) |
 
 A few notes from the table:
 
