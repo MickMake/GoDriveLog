@@ -13,7 +13,7 @@ Effort is rough **Codex hours**, assuming the v3 dashboard/gauge code is already
 | 1 | Near / implementation-ready | Bar gauge overshoot follow-up | `gauge/bar`, `realism.overshoot`, animation | 2-4 | [`gauge-bar-overshoot-follow-up.md`](gauge-bar-overshoot-follow-up.md) |
 | 2 | Near / needs spec tightening | Radial movement options | `gauge/radial`, movement policy, runtime animation | 3-5 | [`gauge-radial-movement-options.md`](gauge-radial-movement-options.md) |
 | 3 | Later / visual feature | Radial needle trail | `gauge/radial`, renderer, animation history | 4-7 | [`gauge-radial-needle-trail.md`](gauge-radial-needle-trail.md) |
-| 4 | Later / visual statistics | Gauge stat markers | `gauge/radial`, `gauge/bar`, renderer, rolling-window statistics, marker assets | 6-10 | [`gauge-stat-markers.md`](gauge-stat-markers.md) |
+| 4 | Later / visual statistics | Gauge stat markers | `gauge/radial`, `gauge/bar`, renderer, rolling-window statistics, marker assets | IMPLEMENTED | [`gauge-stat-markers.md`](gauge-stat-markers.md) |
 | 5 | Medium / useful soon | Value zones / warning-danger assets | `gauge/assets`, renderer, config validation | 4-7 | [`gauge-assets-value-zones-warning-danger-assets.md`](gauge-assets-value-zones-warning-danger-assets.md) |
 | 6 | Medium / foundational logging | Canonical GoDriveLog Event Log | logging, sensor events, schema/versioning | 5-9 | [`logger-canonical-event-log.md`](logger-canonical-event-log.md) |
 | 7 | Medium / pairs with event log | Session metadata sidecar | logging, replay metadata, config provenance | 4-7 | [`logger-session-metadata-sidecar.md`](logger-session-metadata-sidecar.md) |
