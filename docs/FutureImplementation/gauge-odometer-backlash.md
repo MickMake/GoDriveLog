@@ -2,21 +2,21 @@
 
 Origin: `docs/v3.7/PlannedFeatures.md`
 
-`backlash` appears in earlier odometer realism planning and may need a focused implementation/audit slice.
+Status: **not implemented on `main`**.
 
-Before implementation, verify the current code state. Do not rely only on old checklists or prompt files.
+Earlier v3.5 docs/checklists claimed `backlash` was implemented. A code audit found no `realism.backlash` config field, no allowed YAML key, and no odometer runtime behaviour for direction-change slack. Treat those older claims as stale documentation, not implementation truth.
 
 Treat odometer `backlash` as:
 
 ```text
-candidate requiring audit before implementation
+candidate requiring implementation before use
 ```
 
 ## Candidate behaviour
 
 `backlash` would model direction-change slack for odometer wheels.
 
-Existing odometer realism can create general mechanical feel, but may not fully create direction-change backlash:
+Existing odometer realism can create general mechanical feel, but does not fully create direction-change backlash:
 
 | Existing option | Why it is not backlash |
 | --- | --- |
