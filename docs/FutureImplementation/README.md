@@ -1,46 +1,30 @@
 # Future Implementation
 
-This directory is a parking lot for approved or desired follow-on ideas that are not part of the current implementation slice.
+This directory is a parking lot for approved or desired follow-on implementation ideas that are not part of the current implementation slice.
 
 Use this to capture "oh, also implement this later" notes without making the active slice ambiguous. Future prompts may reference this directory, but items here are not current scope unless a later prompt explicitly promotes them.
 
-## Gauge realism map
+## Boundary with RealismBehaviourGuide
 
-This map came from `docs/v3.7/PlannedFeatures.md`. It is a planning aid only. Do not treat it as implementation truth without checking the current code and completed release docs.
+Gauge realism behaviour definitions live in [`../RealismBehaviourGuide/`](../RealismBehaviourGuide/).
 
-| Marker | Meaning |
-| --- | --- |
-| ✅ | Implemented and supported on `main`. |
-| ❌ | Not implemented / not supported for that gauge family. |
-| 🟡 | Partial, legacy, parse-only, fallback-only, or supported indirectly. |
-| ⚠️ | Needs audit before trusting or implementing against it. |
-| 🍺 | Potential candidate / needs beer thought before design or implementation. |
+Use this directory for implementation tickets only:
 
-| Realism option | Numeric | Radial | Odometer | Indicator | Bar | Segmented |
-| --- | --- | --- | --- | --- | --- | --- |
-| `movement` | 🟡 parse only | 🟡 legacy `movement_policy` | ✅ `odometer.movement` (`instant`, `linear`, `ease_out`, `bell`) | ❌ | 🟡 via finite movement/damping policy only | ❌ |
-| `wraparound` | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ |
-| `drum_slop` | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ |
-| `carry_drag` | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ |
-| `snap_settle` | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ |
-| `backlash` | ❌ | ❌ | ❌ not implemented; stale v3.5 docs previously claimed it | ❌ | ❌ | ❌ |
-| `hysteresis` | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ |
-| `stiction` | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ |
-| `damping` | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ |
-| `overshoot` | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ |
-| `peg_bounce` | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ |
-| `thermal_fade` | 🍺 potential candidate / needs beer thought | ❌ | ❌ | ✅ | ❌ | 🍺 potential candidate / needs beer thought |
-| `per_digit_response_lag` | 🍺 potential candidate / needs beer thought | ❌ | ❌ | ❌ | ❌ | 🍺 potential candidate / needs beer thought |
-| `leading_zero_behaviour` | 🍺 potential candidate / needs beer thought | ❌ | ❌ | ❌ | ❌ | 🍺 potential candidate / needs beer thought |
-| `decimal_point_behaviour` | 🍺 potential candidate / needs beer thought | ❌ | ❌ | ❌ | ❌ | 🍺 potential candidate / needs beer thought |
-| `needle_shadow` | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
-| `calibration_offset` | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
-| `segment_bleed` / `digit_bleed` | 🍺 potential candidate / needs beer thought | ❌ | ❌ | ❌ | ❌ | 🍺 potential candidate / needs beer thought |
-| `ghosting` | 🍺 potential candidate / needs beer thought | ❌ | ❌ | ❌ | ❌ | 🍺 potential candidate / needs beer thought |
-| `uneven_brightness` | 🍺 potential candidate / needs beer thought | ❌ | ❌ | ❌ | ❌ | 🍺 potential candidate / needs beer thought |
-| `load_sag` | 🍺 potential candidate / needs beer thought | ❌ | ❌ | ❌ | ❌ | 🍺 potential candidate / needs beer thought |
-| `stepped_fill` | ❌ | ❌ | ❌ | ❌ | 🍺 potential candidate / needs beer thought | 🍺 potential candidate / needs beer thought |
-| `quantized_fill` | ❌ | ❌ | ❌ | ❌ | 🍺 potential candidate / needs beer thought | 🍺 potential candidate / needs beer thought |
+- what should be implemented later;
+- why it matters;
+- dependencies and risks;
+- rough effort;
+- suggested implementation order;
+- links to the canonical behaviour definition.
+
+Do not redefine realism behaviour here. If a future implementation item needs to explain what a realism option means, link to the matching Realism Behaviour Guide page instead.
+
+In short:
+
+```text
+RealismBehaviourGuide = definition / behaviour / real-world simulation
+FutureImplementation = implementation ticket / backlog / build plan
+```
 
 ## Indexed FutureSlices table
 
@@ -64,7 +48,7 @@ Effort is rough **Codex hours**, assuming the v3 dashboard/gauge code is already
 | 14 | Later / gauge realism | Gauge imperfections | `gauge/radial`, `gauge/bar`, indicator, numeric, display artefacts, mechanical wear, electrical artefacts | 7-12 | [`gauge-imperfections.md`](gauge-imperfections.md) |
 | 15 | Later / config reuse | Gauge presets | `gauge/config`, `gauge/assets`, `gauge/realism`, config loading, validation, reusable gauge profiles | 5-9 | [`gauge-presets.md`](gauge-presets.md) |
 
-## Extracted v3.7 planning notes
+## Extracted historical/planning notes
 
 | Description | File |
 |---|---|
@@ -76,6 +60,8 @@ Effort is rough **Codex hours**, assuming the v3 dashboard/gauge code is already
 | Numeric and segmented display realism candidates | [`gauge-numeric-segmented-display-realism-candidates.md`](gauge-numeric-segmented-display-realism-candidates.md) |
 | Bar realism scope | [`gauge-bar-realism-scope.md`](gauge-bar-realism-scope.md) |
 | Planning rule | [`future-implementation-planning-rule.md`](future-implementation-planning-rule.md) |
+
+These files may contain historical planning context. Current realism behaviour definitions should be checked in [`../RealismBehaviourGuide/`](../RealismBehaviourGuide/) before using them for implementation work.
 
 A few notes from the table:
 
@@ -92,3 +78,4 @@ A few notes from the table:
 - Do not treat this directory as an implementation checklist.
 - Do not let vague mentions here expand the current slice.
 - Prefer a later dedicated prompt/spec before implementation.
+- Link to `../RealismBehaviourGuide/` for realism behaviour definitions instead of redefining them here.
