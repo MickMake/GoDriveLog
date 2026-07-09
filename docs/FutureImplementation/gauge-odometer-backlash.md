@@ -4,17 +4,21 @@ Origin: `docs/v3.7/PlannedFeatures.md`
 
 Status: **not implemented on `main`**.
 
-Earlier v3.5 docs/checklists claimed `backlash` was implemented. A code audit found no `realism.backlash` config field, no allowed YAML key, and no odometer runtime behaviour for direction-change slack. Treat those older claims as stale documentation, not implementation truth.
+## Canonical behaviour definition
 
-Treat odometer `backlash` as:
+The behaviour definition lives in [`../RealismBehaviourGuide/backlash.md`](../RealismBehaviourGuide/backlash.md).
 
-```text
-candidate requiring implementation before use
-```
+Do not redefine backlash behaviour here. Use this file only as backlog/planning context for a future odometer backlash implementation ticket.
 
-## Candidate behaviour
+## Implementation truth
 
-`backlash` would model direction-change slack for odometer wheels.
+Earlier v3.5 docs/checklists claimed `backlash` was implemented. A code audit found no `realism.backlash` config field, no allowed YAML key, and no odometer runtime behaviour for direction-change slack.
+
+Treat those older claims as stale documentation, not implementation truth.
+
+## Implementation planning notes
+
+If implemented, `backlash` should be its own odometer-only feature.
 
 Existing odometer realism can create general mechanical feel, but does not fully create direction-change backlash:
 
@@ -26,4 +30,8 @@ Existing odometer realism can create general mechanical feel, but does not fully
 | `movement: linear`, `ease_out`, `bell` | Movement curves; not mechanical play. |
 | `wraparound` | Route choice across digit boundaries; not slack. |
 
-If implemented, `backlash` should be its own odometer-only feature.
+## Suggested future implementation ticket
+
+- Add odometer-only `realism.backlash` config validation and runtime behaviour.
+- Test that direction changes briefly take up slack without changing final numeric correctness.
+- Keep `backlash` distinct from `drum_slop`, `carry_drag`, `snap_settle`, and movement curves.
