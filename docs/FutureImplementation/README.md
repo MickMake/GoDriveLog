@@ -11,7 +11,7 @@ RealismBehaviourGuide = definition / behaviour / real-world simulation
 FutureImplementation = intent to implement later
 ```
 
-Use this directory to say:
+Use this file to say:
 
 - what we might implement;
 - why we care;
@@ -45,16 +45,10 @@ Do not use this directory to define detailed architecture. When an item is promo
 
 ## Promotion rule
 
-Before implementing anything from this directory:
+Before implementing anything from this file:
 
 1. choose one small intent;
 2. check whether a canonical definition already exists;
 3. create or update the canonical definition if needed;
 4. write a dedicated implementation prompt/spec;
 5. implement only that promoted slice.
-
-## Historical files
-
-Older files in this directory may contain historical planning notes. Treat them as context only, not current architecture or source of truth.
-
-Current realism behaviour truth lives in [`../RealismBehaviourGuide/`](../RealismBehaviourGuide/).
