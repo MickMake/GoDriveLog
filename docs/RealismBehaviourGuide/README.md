@@ -32,6 +32,7 @@ Use these notes when:
 | [`damping`](damping.md) | radial, bar | mass/fluid/electrical smoothing and lag | implemented |
 | [`overshoot`](overshoot.md) | radial, bar | momentum carrying past target then settling | implemented |
 | [`peg_bounce`](peg-bounce.md) | radial, bar | needle/end-stop contact and rebound | implemented |
+| [`pointer_markers`](pointer-markers.md) | radial, bar | min/max witness markers and damped follower pointer markers | implemented |
 | [`thermal_fade`](thermal-fade.md) | indicator | incandescent bulb warm-up/cool-down | implemented |
 | [`needle_shadow`](needle-shadow.md) | radial | physical needle depth casting a static shadow | implemented |
 | [`calibration_offset`](calibration-offset.md) | radial | slightly misaligned physical needle calibration | implemented |
@@ -41,6 +42,6 @@ Use these notes when:
 These behaviours are not meant to be a physics engine. They are small visual cues that make a digital dashboard feel like it is imitating physical instruments:
 
 - **Odometer options** usually simulate mechanical number drums, gear coupling, detents, and alignment errors.
-- **Radial options** usually simulate analogue needle movement, friction, damping, stop pegs, and physical dial imperfections.
-- **Bar options** simulate a physical or electronically damped level indicator using the bar's displayed fill/reveal extent, not a literal needle.
+- **Radial options** usually simulate analogue needle movement, friction, damping, stop pegs, witness markers, and physical dial imperfections.
+- **Bar options** simulate a physical or electronically damped level indicator using the bar's displayed fill/reveal extent, plus optional witness markers along the bar travel.
 - **Indicator options** simulate lamp behaviour, especially incandescent response, while static lamp appearance still belongs in supplied artwork.
