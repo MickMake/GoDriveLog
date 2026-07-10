@@ -53,6 +53,12 @@ Use these notes when:
 | [`quantized_fill`](quantized-fill.md) | bar, segmented | limited display resolution / thresholded visible changes | candidate |
 | [`realism.imperfections`](imperfections.md) | radial, bar, indicator, numeric, segmented | deterministic ageing, wear, noise, vibration, and display artefacts | desired future layer |
 
+## Architecture notes
+
+These are temporary design notes stored here until GoDriveLog has a dedicated architecture-documentation directory. They are not realism options.
+
+- [`MQTT architecture`](mqtt-architecture.md) — proposed daemon split, telemetry contract, persistence boundaries, implementation order, and risks.
+
 ## Notes on real-world simulation
 
 These behaviours are not meant to be a physics engine. They are small visual cues that make a digital dashboard feel like it is imitating physical instruments:
