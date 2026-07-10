@@ -14,7 +14,45 @@ Gauge types that do not yet have concrete movement behaviour may accept `movemen
 
 `movement` simulates the difference between a display that redraws instantly and a physical mechanism that takes a finite amount of time to reach a new reading.
 
-For odometers, this is the most literal: it simulates number drums rolling between digit positions. For other gauge families, movement is only meaningful when a specific implementation defines what part of the display moves.
+For odometers, this is the most literal: it simulates number drums rolling between digit positions. For radial gauges, it describes how the displayed needle travels from its previous displayed angle to the target angle.
+
+## Radial movement values
+
+Radial gauges should eventually support:
+
+```yaml
+movement: instant | linear | bell
+```
+
+Current radial behaviour is equivalent to `movement: instant`.
+
+### Radial `instant`
+
+The needle is rendered immediately at the target angle with no interpolation.
+
+This must preserve existing radial behaviour and must not be overloaded to mean visible ticking or stepped motion.
+
+### Radial `linear`
+
+The displayed needle angle interpolates from the previous displayed angle to the target angle at constant progress.
+
+The movement should be bounded, deterministic, and settle exactly on the target angle.
+
+### Radial `bell`
+
+The displayed needle starts slowly, moves faster through the middle, then slows into the target.
+
+This is a simple smooth movement curve, not overshoot, damping, stiction, hysteresis, peg bounce, or needle trail.
+
+### Radial implementation rules
+
+- Movement is display-only.
+- Animate displayed angle or position only.
+- Do not mutate source values, logs, exported values, configured ranges, or input data.
+- Keep only small bounded transition state such as previous angle, target angle, elapsed time, duration, movement mode, and active state.
+- Reuse needle geometry and image assets; rotate or transform at render time.
+- Do not pre-render or cache an unbounded set of intermediate needle images.
+- Do not combine radial movement with other realism behaviours unless a later slice explicitly defines composition.
 
 ## Odometer movement values
 
