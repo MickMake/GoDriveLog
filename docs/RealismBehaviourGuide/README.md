@@ -21,7 +21,7 @@ Use these notes when:
 
 | Option | Gauge families | Simulates | Status |
 |---|---|---|---|
-| [`movement`](movement.md) | odometer; other gauges parse/fallback as documented | deliberate mechanical/display movement rather than instant redraw | partial/family-specific |
+| [`movement`](movement.md) | odometer; radial behaviour documented for future support; other gauges parse/fallback as documented | deliberate mechanical/display movement rather than instant redraw | partial/family-specific |
 | [`wraparound`](wraparound.md) | odometer | continuous rolling number drums crossing digit-strip boundaries | implemented |
 | [`drum_slop`](drum-slop.md) | odometer | imperfectly aligned mechanical odometer drums | implemented |
 | [`carry_drag`](carry-drag.md) | odometer | rollover coupling where a lower drum drags the next drum | implemented |
@@ -40,6 +40,7 @@ Use these notes when:
 
 | Option | Gauge families | Simulates | Status |
 |---|---|---|---|
+| [`needle_trail`](needle-trail.md) | radial | bounded fading history of previous displayed needle positions | candidate |
 | [`backlash`](backlash.md) | odometer | direction-change slack in worn gears/drives | not implemented |
 | [`per_digit_response_lag`](per-digit-response-lag.md) | numeric, segmented | slot-level display update lag/stagger | candidate |
 | [`leading_zero_behaviour`](leading-zero-behaviour.md) | numeric, segmented | real display choices for blank, dim, or shown leading zeroes | candidate |
