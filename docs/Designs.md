@@ -1,0 +1,33 @@
+# GoDriveLog Designs
+
+This is the index for permanent design documentation.
+
+Design documents describe intent, behaviour, constraints, interactions and rejected alternatives. They remain valuable whether implementation is complete, partial, superseded or never started.
+
+## Conventions
+
+- Store designs under `docs/Designs/`.
+- Group documents by area.
+- Use lowercase kebab-case filenames.
+- Pair significant designs with an implementation record at the same relative path under `docs/Implementation/`.
+- Record current progress only in [`Status.md`](Status.md).
+- Do not put implementation status into design documents.
+
+## Design and implementation pairing
+
+```text
+docs/Designs/<area>/<name>.md
+docs/Implementation/<area>/<name>.md
+```
+
+## Design index
+
+| Area | Design | Purpose | Implementation record |
+|---|---|---|---|
+| _To classify_ | Existing documentation has not yet been migrated. | Preserve the current repository state while the documentation is reviewed. | _Not yet created_ |
+
+## Canonical behaviour documentation
+
+`docs/RealismBehaviourGuide/` remains the canonical definition of gauge realism behaviour until its documents are deliberately classified and migrated.
+
+The gauge capability matrix belongs with design documentation because it describes conceptual applicability. Current implementation support belongs in [`Status.md`](Status.md).
