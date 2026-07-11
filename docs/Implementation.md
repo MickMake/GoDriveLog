@@ -2,7 +2,7 @@
 
 **Pillar 3:** Implementation — how designs became code.
 
-This is the index for documentation explaining how designs became code.
+This document defines the structure and conventions for implementation records.
 
 Implementation records describe packages touched, implementation approach, important trade-offs, deviations from design, limitations and relevant tests.
 

@@ -2,7 +2,7 @@
 
 **Pillar 1:** Design — what the system should do and why.
 
-This is the index for permanent design documentation.
+This document defines the structure and conventions for permanent design documentation.
 
 Design documents describe intent, behaviour, constraints, interactions and rejected alternatives. They remain valuable whether implementation is complete, partial, superseded or never started.
 
