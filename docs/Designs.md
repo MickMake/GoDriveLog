@@ -28,6 +28,7 @@ docs/Implementation/<area>/<name>.md
 
 ## Canonical behaviour documentation
 
-`docs/RealismBehaviourGuide/` remains the canonical definition of gauge realism behaviour until its documents are deliberately classified and migrated.
+[`Designs/RealismBehaviour/realism-behaviour-guide.md`](Designs/RealismBehaviour/realism-behaviour-guide.md) is the canonical definition of gauge realism behaviour.
 
 The gauge capability matrix belongs with design documentation because it describes conceptual applicability. Current implementation support belongs in [`Status.md`](Status.md).
+
