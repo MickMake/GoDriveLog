@@ -16,6 +16,11 @@ This file is the single source of truth for the current state of documented feat
 | Area | Feature | Design | Implementation | State | Notes |
 |---|---|---|---|---|---|
 | Documentation | Documentation structure | [`Designs.md`](Designs.md) | [`Implementation.md`](Implementation.md) | In Progress | Structure created; existing documents still require classification and migration. |
+| Configuration | How configuration was implemented | Implementation/Configuration/ |
+| Dashboard | Rendering, scene generation and runtime implementation | Implementation/Dashboard/ |
+| Logging | Logging implementation, replay and converter implementation | Implementation/Logging/ |
+| Realism Behaviour | Implementation notes for realism features | Implementation/RealismBehaviour/ |
+| Runtime | Runtime implementation details | Implementation/Runtime/ |
 
 ## Rules
 

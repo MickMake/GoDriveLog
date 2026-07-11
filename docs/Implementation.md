@@ -23,7 +23,12 @@ docs/Implementation/<area>/<name>.md
 
 | Area | Implementation record | Design | Packages or components |
 |---|---|---|---|
-| _To classify_ | Existing implementation documentation has not yet been migrated. | _Pending documentation review_ | _Not yet classified_ |
+| Configuration | How configuration was implemented | Implementation/Configuration/ |
+| Dashboard | Rendering, scene generation and runtime implementation | Implementation/Dashboard/ |
+| Logging | Logging implementation, replay and converter implementation | Implementation/Logging/ |
+| Realism Behaviour | Implementation notes for realism features | Implementation/RealismBehaviour/ |
+| Runtime | Runtime implementation details | Implementation/Runtime/ |
+
 
 ## Implementation principles
 
