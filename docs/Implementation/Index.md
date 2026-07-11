@@ -12,7 +12,7 @@
 
 | Document | Purpose |
 |---|---|
-| [`tools-converters-external-converter-boundary.md`](Implementation/Logging/tools-converters-external-converter-boundary.md) | External converter boundary for tools and converters. |
+| [`tools-converters-external-converter-boundary.md`](Logging/tools-converters-external-converter-boundary.md) | External converter boundary for tools and converters. |
 
 ## RealismBehaviour
 
