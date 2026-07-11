@@ -26,6 +26,21 @@ docs/Implementation/<area>/<name>.md
 |---|---|---|---|
 | _To classify_ | Existing documentation has not yet been migrated. | Preserve the current repository state while the documentation is reviewed. | _Not yet created_ |
 
+## Design principles
+
+Design documents describe **what** the system should do and **why**.
+
+They should remain useful even if:
+
+- implementation changes;
+- implementation never occurs;
+- implementation is replaced;
+- implementation is removed.
+
+Implementation details belong under `docs/Implementation/`.
+
+Current implementation status belongs only in `docs/Status.md`.
+
 ## Canonical behaviour documentation
 
 [`Designs/RealismBehaviour/realism-behaviour-guide.md`](Designs/RealismBehaviour/realism-behaviour-guide.md) is the canonical definition of gauge realism behaviour.
