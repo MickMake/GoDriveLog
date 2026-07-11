@@ -23,11 +23,11 @@ docs/Implementation/<area>/<name>.md
 
 | Area | Purpose | Location |
 |---|---|---|
-| Configuration | Configuration format, loading and validation | [`Designs/Configuration/`](Designs/Configuration/) |
-| Dashboard | Dashboard architecture, rendering and composition | [`Designs/Dashboard/`](Designs/Dashboard/) |
-| Logging | Logging, JSONL replay and event models | [`Designs/Logging/`](Designs/Logging/) |
-| Realism Behaviour | Canonical gauge realism behaviour definitions | [`Designs/RealismBehaviour/realism-behaviour-guide.md`](Designs/RealismBehaviour/realism-behaviour-guide.md) |
-| Runtime | Runtime architecture, kiosk mode and MQTT | [`Designs/Runtime/`](Designs/Runtime/) |
+| Configuration | Configuration loading, validation and resolution implementation | [`Implementation/Configuration/`](Implementation/Configuration/) |
+| Dashboard | Rendering, scene generation and dashboard runtime implementation | [`Implementation/Dashboard/`](Implementation/Dashboard/) |
+| Logging | Logging, replay and converter implementation | [`Implementation/Logging/`](Implementation/Logging/) |
+| Realism Behaviour | Implementation records for gauge realism features | [`Implementation/RealismBehaviour/`](Implementation/RealismBehaviour/) |
+| Runtime | Runtime and deployment implementation details | [`Implementation/Runtime/`](Implementation/Runtime/) |
 
 ## Implementation principles
 
