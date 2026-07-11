@@ -1,18 +1,29 @@
-# `needle_trail`
+# Needle Trail
 
 Applies to: radial.
 
-Status: **candidate / future**.
-
 Config key: `realism.needle_trail`.
 
-## What it does
+## Purpose
 
 `needle_trail` renders a bounded history of previous displayed needle positions as fading ghost needles.
 
 It is a render-history effect, not a movement curve. `movement` controls how the live needle travels from one displayed position to another; `needle_trail` controls how recently displayed positions remain visible after the live needle has moved on.
 
-Proposed config shape:
+## Real-world mechanism
+
+Needle trail simulates persistence or afterimage around a moving pointer.
+
+Depending on the visual treatment, it can resemble:
+
+- optical persistence;
+- a long-exposure effect;
+- phosphor-like persistence;
+- a stylised analogue trace.
+
+It is deliberate visual theatre rather than a source-data effect.
+
+## Proposed configuration
 
 ```yaml
 realism:
@@ -21,18 +32,10 @@ realism:
     decay_ms: 500
 ```
 
-Proposed defaults:
-
 | Option | Default | Meaning |
 |---|---:|---|
 | `length` | `12` | Maximum number of historical displayed needle positions retained. |
 | `decay_ms` | `500` | Time in milliseconds for retained trail samples to fade out. |
-
-## What it simulates in real life
-
-Needle trail simulates persistence or afterimage around a moving pointer. Depending on the visual treatment, it can resemble optical persistence, a long-exposure look, phosphor-like persistence, or a stylised analogue trace.
-
-It is deliberate visual theatre rather than a source-data effect.
 
 ## Source of truth
 
@@ -62,17 +65,26 @@ They must not alter or feed back into:
 
 ## Composition expectations
 
-A later implementation slice must define exact composition with radial movement and other realism options.
+A future implementation must define exact composition with radial movement and other realism options.
 
 Until then:
 
 - trail history should observe the final displayed needle path;
 - movement should remain responsible only for the live needle travel curve;
-- trail should not modify damping, stiction, hysteresis, overshoot, peg bounce, or pointer-marker state.
+- trail should not modify damping, stiction, hysteresis, overshoot, peg bounce, or marker state.
+
+## Constraints
+
+- The live needle must remain easy to read.
+- The effect must remain subtle.
+- Memory use must remain bounded.
+- Trail samples must expire cleanly.
+- The effect must not change the underlying reading.
+- Missing or invalid configuration should disable the effect safely.
 
 ## Good result
 
-The live needle remains easy to read while a short, subtle sequence of fading historical positions follows behind it. The effect ends cleanly, consumes bounded memory, and never changes the underlying reading.
+The live needle remains clear while a short sequence of fading historical positions follows behind it. The effect ends cleanly, consumes bounded memory, and never changes the underlying reading.
 
 ## Bad result
 
