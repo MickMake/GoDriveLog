@@ -1,6 +1,6 @@
 # GoDriveLog Designs
 
-Pillar 1 - The "what and why".
+**Pillar 1:** Design — what the system should do and why.
 
 This is the index for permanent design documentation.
 
@@ -24,13 +24,7 @@ docs/Implementation/<area>/<name>.md
 
 ## Design index
 
-| Area | Purpose | Location |
-|---|---|---|
-| Configuration | Configuration format, loading and validation | [`Designs/Configuration/`](Designs/Configuration/) |
-| Dashboard | Dashboard architecture, rendering and composition | [`Designs/Dashboard/`](Designs/Dashboard/) |
-| Logging | Logging, JSONL replay and event models | [`Designs/Logging/`](Designs/Logging/) |
-| Realism Behaviour | Canonical gauge realism behaviour definitions | [`Designs/RealismBehaviour/realism-behaviour-guide.md`](Designs/RealismBehaviour/realism-behaviour-guide.md) |
-| Runtime | Runtime architecture, kiosk mode and MQTT | [`Designs/Runtime/`](Designs/Runtime/) |
+Refer to the index file [`Designs/Index.md`](Designs/Index.md)
 
 ## Design principles
 

@@ -1,6 +1,6 @@
 # GoDriveLog Implementation Records
 
-Pillar 3 - The "how was the design coded".
+**Pillar 3:** Implementation — how designs became code.
 
 This is the index for documentation explaining how designs became code.
 
@@ -23,13 +23,7 @@ docs/Implementation/<area>/<name>.md
 
 ## Implementation index
 
-| Area | Purpose | Location |
-|---|---|---|
-| Configuration | Configuration loading, validation and resolution implementation | [`Implementation/Configuration/`](Implementation/Configuration/) |
-| Dashboard | Rendering, scene generation and dashboard runtime implementation | [`Implementation/Dashboard/`](Implementation/Dashboard/) |
-| Logging | Logging, replay and converter implementation | [`Implementation/Logging/`](Implementation/Logging/) |
-| Realism Behaviour | Implementation records for gauge realism features | [`Implementation/RealismBehaviour/`](Implementation/RealismBehaviour/) |
-| Runtime | Runtime and deployment implementation details | [`Implementation/Runtime/`](Implementation/Runtime/) |
+Refer to the index file [`Implementation/Index.md`](Implementation/Index.md)
 
 ## Implementation principles
 
@@ -58,4 +52,3 @@ docs/Implementation/Logging/dashboard-jsonl-replay.md
 Implementation records should not redefine design intent.
 
 Current implementation state belongs only in `docs/Status.md`.
-
