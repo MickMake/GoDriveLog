@@ -1,10 +1,12 @@
 ## Configuration
 
-_No design documents yet._
+| Document | Purpose |
+|---|---|
 
 ## Dashboard
 
-_No design documents yet._
+| Document | Purpose |
+|---|---|
 
 ## Logging
 

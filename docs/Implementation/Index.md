@@ -1,14 +1,26 @@
 ## Configuration
 
-_No implementation records yet._
+| Document | Purpose |
+|---|---|
 
 ## Dashboard
 
-_No implementation records yet._
+| Document | Purpose |
+|---|---|
 
 ## Logging
 
 | Document | Purpose |
 |---|---|
 | [`tools-converters-external-converter-boundary.md`](Implementation/Logging/tools-converters-external-converter-boundary.md) | External converter boundary for tools and converters. |
+
+## RealismBehaviour
+
+| Document | Purpose |
+|---|---|
+
+## Runtime
+
+| Document | Purpose |
+|---|---|
 
