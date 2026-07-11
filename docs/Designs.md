@@ -22,13 +22,13 @@ docs/Implementation/<area>/<name>.md
 
 ## Design index
 
-| Area | Design | Purpose | Implementation record |
-|---|---|---|---|
-| Configuration | How configuration was implemented | Implementation/Configuration/ |
-| Dashboard | Rendering, scene generation and runtime implementation | Implementation/Dashboard/ |
-| Logging | Logging implementation, replay and converter implementation | Implementation/Logging/ |
-| Realism Behaviour | Implementation notes for realism features | Implementation/RealismBehaviour/ |
-| Runtime | Runtime implementation details | Implementation/Runtime/ |
+| Area | Purpose | Location |
+|---|---|---|
+| Configuration | Configuration format, loading and validation | [`Designs/Configuration/`](Designs/Configuration/) |
+| Dashboard | Dashboard architecture, rendering and composition | [`Designs/Dashboard/`](Designs/Dashboard/) |
+| Logging | Logging, JSONL replay and event models | [`Designs/Logging/`](Designs/Logging/) |
+| Realism Behaviour | Canonical gauge realism behaviour definitions | [`Designs/RealismBehaviour/realism-behaviour-guide.md`](Designs/RealismBehaviour/realism-behaviour-guide.md) |
+| Runtime | Runtime architecture, kiosk mode and MQTT | [`Designs/Runtime/`](Designs/Runtime/) |
 
 ## Design principles
 
