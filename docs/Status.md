@@ -1,5 +1,7 @@
 # GoDriveLog Documentation Status
 
+Pillar 2 - The "current code truth".
+
 This file is the single source of truth for the current state of documented features.
 
 Design documents define intent. Implementation records explain how designs became code. This register records the current state.

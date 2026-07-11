@@ -1,5 +1,7 @@
 # GoDriveLog Implementation Records
 
+Pillar 3 - The "how was the design coded".
+
 This is the index for documentation explaining how designs became code.
 
 Implementation records describe packages touched, implementation approach, important trade-offs, deviations from design, limitations and relevant tests.

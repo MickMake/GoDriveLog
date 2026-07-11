@@ -1,5 +1,7 @@
 # GoDriveLog Designs
 
+Pillar 1 - The "what and why".
+
 This is the index for permanent design documentation.
 
 Design documents describe intent, behaviour, constraints, interactions and rejected alternatives. They remain valuable whether implementation is complete, partial, superseded or never started.
