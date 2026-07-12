@@ -1,49 +1,83 @@
-# Radial Movement Options
-
-Design reference: [`docs/Designs/RealismBehaviour/radial-movement-options.md`](../../Designs/RealismBehaviour/radial-movement-options.md)
+# Radial Movement Options — Implementation
 
 ## Purpose
-Tracks the planned scalar movement options for radial gauges.
+Audits current radial movement configuration against the radial movement options design.
 
 ## Implementation Status
-Status: **Partially implemented**.
+Partially implemented.
 
-Radial gauges animate through `movement_policy`, not through the scalar `movement` options proposed by this design.
+Verified current code implements part of the design, but the audited scope also has missing or different behaviour.
 
 ## Packages and Files
-- [`internal/dashboard/gauges/package.go`](../../../internal/dashboard/gauges/package.go)
-- [`internal/dashboard/v3dashboard/dashboard.go`](../../../internal/dashboard/v3dashboard/dashboard.go)
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
 
 ## Types
 - `Realism`
 
 ## Functions and Methods
+- `normalizePackage`
+- `validateRealism`
 - `resolveMovementState`
+- `effectiveMovementPolicy`
+- `applyMovementPolicy`
 
 ## Runtime Flow
-Radial movement can already be immediate, linear, bell-shaped, or ease-out through the shared movement planner used by `movement_policy`.
+Radial movement is handled by `resolveMovementState` and shaped by `applyMovementPolicy`.
 
 ## Configuration
-The implemented key is `realism.movement_policy`, not the scalar `movement` contract proposed here.
+Current code uses `Realism.MovementPolicy`, not a scalar `movement` key. `validateRealism` accepts `immediate`, `linear`, and `ease_out` only. `normalizePackage` defaults the field to `immediate`.
 
 ## Behaviour
-The behaviour exists in substance, but the config surface and compatibility story differ from the design note.
+Radial gauges can move immediately, linearly, or with an ease-out curve when movement is active. `effectiveMovementPolicy` forces immediate behaviour when no radial movement feature is active, and promotes active `immediate` movement to `linear` when damping, overshoot, or peg bounce need visible travel.
 
 ## Rendering
-Rendered needle motion follows the resolved movement plan regardless of which config key selected it.
+The render path uses the current resolved display value; radial movement is not implemented inside scene rendering.
 
 ## Tests
-- [`internal/dashboard/gauges/package_test.go`](../../../internal/dashboard/gauges/package_test.go)
-- [`internal/dashboard/v3dashboard/gauge_widget_test.go`](../../../internal/dashboard/v3dashboard/gauge_widget_test.go)
+- `TestLoadPackageAcceptsSharedMovementPolicies`
+- `TestLoadPackageRejectsInvalidSharedMovementPolicy`
+- `TestLoadPackageRejectsMisspelledSharedMovementPolicyKey`
+- `TestRuntimeRadialGaugeMovementDefaultsToImmediateWithoutDamping`
+- `TestRuntimeGaugeMovementEaseOutPolicyAdvancesFurtherThanLinear`
 
 ## Limitations
-Users cannot configure radial movement through the proposed scalar key on `main`.
+The design proposes a scalar `movement` contract and includes `bell`. Current radial implementation does not expose that contract.
 
 ## Deviations from Design
-The runtime behaviour is present, but the public config contract remains the older policy form.
+Current code uses `movement_policy` instead of `movement`, and it does not accept `bell` as a radial configuration value.
 
 ## Remaining Work
-Either adopt the scalar `movement` options for radial gauges or update the design to bless `movement_policy` as the long-term contract.
+Adopt the design contract or update the design only if this feature is still active.
 
 ## Verification Notes
-Verified by reading the linked code and test files on 2026-07-12. This was a documentation audit only; no Go implementation changes were made as part of this pass.
+
+Files inspected:
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
+
+Symbols verified:
+- `Realism`
+- `normalizePackage`
+- `validateRealism`
+- `resolveMovementState`
+- `effectiveMovementPolicy`
+- `applyMovementPolicy`
+
+Configuration verified:
+- `realism.movement_policy`
+- `immediate`
+- `linear`
+- `ease_out`
+
+Tests inspected:
+- `TestLoadPackageAcceptsSharedMovementPolicies`
+- `TestLoadPackageRejectsInvalidSharedMovementPolicy`
+- `TestLoadPackageRejectsMisspelledSharedMovementPolicyKey`
+- `TestRuntimeRadialGaugeMovementDefaultsToImmediateWithoutDamping`
+- `TestRuntimeGaugeMovementEaseOutPolicyAdvancesFurtherThanLinear`
+
+Searches performed:
+- `movement_policy`
+- `MovementPolicyImmediate`
+- `MovementPolicyEaseOut`

@@ -1,51 +1,88 @@
-# `wraparound`
-
-Design reference: [`docs/Designs/RealismBehaviour/wraparound.md`](../../Designs/RealismBehaviour/wraparound.md)
+# `wraparound` — Implementation
 
 ## Purpose
-Tracks continuous odometer wheel routing through digit-strip boundaries.
+Audits current wraparound behaviour and configuration for odometer wheels.
 
 ## Implementation Status
-Status: **Implemented**.
+Partially implemented.
 
-Odometer packages support `realism.wraparound`, and wheel rendering uses circular digit routing instead of disconnected digit jumps.
+Verified current code implements part of the design, but the audited scope also has missing or different behaviour.
 
 ## Packages and Files
-- [`internal/dashboard/gauges/package.go`](../../../internal/dashboard/gauges/package.go)
-- [`internal/dashboard/gauges/scene.go`](../../../internal/dashboard/gauges/scene.go)
-- [`internal/dashboard/v3dashboard/dashboard.go`](../../../internal/dashboard/v3dashboard/dashboard.go)
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/gauges/scene.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
 
 ## Types
 - `Realism`
+- `Odometer`
+- `ScenePart`
 
 ## Functions and Methods
-- `wrappedDigitIndex` and the wheel-offset helpers in `scene.go` implement circular routing.
+- `validateRealism`
+- `OdometerWheelStripOffsets`
+- `OdometerTravelWheelOffsets`
+- `odometerRoutedTargetOffsets`
+- `odometerWheelCircular`
+- `resolveOdometerMovementState`
 
 ## Runtime Flow
-Odometer movement resolves the target wheel offsets, and scene composition maps those offsets through a continuous 0-9 wheel strip.
+Odometer movement routing uses `OdometerTravelWheelOffsets` and `odometerRoutedTargetOffsets` so wheel offsets continue across strip boundaries.
 
 ## Configuration
-Odometer packages accept `realism.wraparound` as a display-only realism option.
+`Realism` declares `Wraparound *bool`, and `validateRealism` accepts the field for odometer gauges only. Current scene rendering does not branch on that field. `odometerWheelCircular` returns `true` unconditionally and is documented in code as compatibility-only for `realism.wraparound`.
 
 ## Behaviour
-Transitions such as `9 -> 0` and `0 -> 9` roll through adjacent wheel positions instead of jumping across the strip.
+Current odometer rendering is circular across wheel boundaries, including `9 -> 0` and `0 -> 9` style transitions.
 
 ## Rendering
-Wheel-strip slices are taken from virtual slots that wrap around the digit strip continuously.
+`OdometerSceneWithWheelOffsets` always marks wheel-strip parts as wraparound, and the wheel-position helpers route offsets as circular strips.
 
 ## Tests
-- [`internal/dashboard/gauges/package_test.go`](../../../internal/dashboard/gauges/package_test.go)
-- [`internal/dashboard/gauges/scene_test.go`](../../../internal/dashboard/gauges/scene_test.go)
-- [`internal/dashboard/v3dashboard/gauge_widget_test.go`](../../../internal/dashboard/v3dashboard/gauge_widget_test.go)
+- `TestLoadPackageLoadsOdometerWraparoundRealism`
+- `TestLoadPackageRejectsWraparoundOnNonOdometerGauge`
+- `TestOdometerSceneAlwaysUsesCircularWheelRendering`
+- `TestOdometerInterpolatedWheelOffsetsUseInfiniteForwardRoutingAcrossNineToZero`
+- `TestOdometerInterpolatedWheelOffsetsUseInfiniteBackwardRoutingAcrossZeroToNine`
 
 ## Limitations
-This effect is odometer-only.
+Current code does not provide a verified way to disable circular wheel rendering with `realism.wraparound: false`.
 
 ## Deviations from Design
-The implementation matches the design intent closely.
+The visual behaviour exists, but the `realism.wraparound` field is compatibility-only in scene code rather than an active on/off switch.
 
 ## Remaining Work
-No known design work remains.
+If the design requires a true configuration switch, current code would need to honor `false` explicitly.
 
 ## Verification Notes
-Verified by reading the linked code and test files on 2026-07-12. This was a documentation audit only; no Go implementation changes were made as part of this pass.
+
+Files inspected:
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/gauges/scene.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
+
+Symbols verified:
+- `Realism`
+- `Odometer`
+- `ScenePart`
+- `validateRealism`
+- `OdometerWheelStripOffsets`
+- `OdometerTravelWheelOffsets`
+- `odometerRoutedTargetOffsets`
+- `odometerWheelCircular`
+- `resolveOdometerMovementState`
+
+Configuration verified:
+- `realism.wraparound`
+
+Tests inspected:
+- `TestLoadPackageLoadsOdometerWraparoundRealism`
+- `TestLoadPackageRejectsWraparoundOnNonOdometerGauge`
+- `TestOdometerSceneAlwaysUsesCircularWheelRendering`
+- `TestOdometerInterpolatedWheelOffsetsUseInfiniteForwardRoutingAcrossNineToZero`
+- `TestOdometerInterpolatedWheelOffsetsUseInfiniteBackwardRoutingAcrossZeroToNine`
+
+Searches performed:
+- `wraparound`
+- `odometerWheelCircular`
+- `OdometerTravelWheelOffsets`

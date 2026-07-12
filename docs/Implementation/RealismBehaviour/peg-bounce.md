@@ -1,50 +1,85 @@
-# `peg_bounce`
-
-Design reference: [`docs/Designs/RealismBehaviour/peg-bounce.md`](../../Designs/RealismBehaviour/peg-bounce.md)
+# `peg_bounce` — Implementation
 
 ## Purpose
-Tracks the tap-rebound-settle behaviour when radial or bar gauges hit display limits.
+Audits current peg-bounce support for radial and bar gauges.
 
 ## Implementation Status
-Status: **Implemented**.
+Implemented.
 
-Radial and bar packages support `realism.peg_bounce`, and runtime applies stop-hit rebound while keeping in-range targets immediate.
+Verified current code provides the behaviour described in the audited scope.
 
 ## Packages and Files
-- [`internal/dashboard/gauges/package.go`](../../../internal/dashboard/gauges/package.go)
-- [`internal/dashboard/v3dashboard/dashboard.go`](../../../internal/dashboard/v3dashboard/dashboard.go)
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
 
 ## Types
 - `Realism`
+- `ValueMap`
 
 ## Functions and Methods
-- `validateRealismForGaugeFamily`
+- `validateRealism`
 - `resolveMovementState`
+- `resolveBarMovementState`
+- `radialPegBounceValues`
+- `radialPegBounceDurations`
 
 ## Runtime Flow
-When the displayed path reaches a configured min or max stop with momentum, the movement resolver schedules a short rebound before settling at the limit.
+Peg bounce is scheduled by the movement resolvers when the displayed target is a clamped stop and the movement conditions qualify.
 
 ## Configuration
-Radial and bar packages accept `realism.peg_bounce` as a boolean display-only effect.
+`Realism` declares `PegBounce *bool`. `validateRealism` restricts the option to radial and bar gauges and requires a clamped `ValueMap` range when the option is enabled.
 
 ## Behaviour
-The effect only appears when the displayed indicator actually hits the stop. In-range changes do not bounce.
+The displayed value can rebound from the minimum or maximum stop and settle back. In-range targets do not trigger peg bounce.
 
 ## Rendering
-Scene composition renders the resolved displayed position; the bounce is entirely a runtime movement effect.
+The render path uses the current movement state; peg bounce itself is resolved before scene generation.
 
 ## Tests
-- [`internal/dashboard/gauges/package_test.go`](../../../internal/dashboard/gauges/package_test.go)
-- [`internal/dashboard/v3dashboard/gauge_widget_test.go`](../../../internal/dashboard/v3dashboard/gauge_widget_test.go)
+- `TestLoadPackageAcceptsRadialPegBounce`
+- `TestLoadPackageAcceptsBarPegBounce`
+- `TestLoadPackageRejectsInvalidPegBounce`
+- `TestRuntimeRadialGaugePegBounceDoesNotTriggerForInRangeTarget`
+- `TestRuntimeRadialGaugePegBounceAtMaxStopSettlesBackToLimit`
+- `TestRuntimeBarGaugePegBounceAtMaxStopSettlesBackToLimit`
+- `TestRuntimeBarGaugePegBounceDoesNotTriggerForInRangeTarget`
 
 ## Limitations
-The effect is intentionally subtle and only applies at display bounds.
+Only radial and bar gauges implement peg bounce.
 
 ## Deviations from Design
-The implementation matches the reviewed contract, including the later fix that kept ordinary in-range movement immediate.
+No verified deviation found in the audited scope.
 
 ## Remaining Work
-No design-specific work remains.
+No remaining work was proven by this audit.
 
 ## Verification Notes
-Verified by reading the linked code and test files on 2026-07-12. This was a documentation audit only; no Go implementation changes were made as part of this pass.
+
+Files inspected:
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
+
+Symbols verified:
+- `Realism`
+- `ValueMap`
+- `validateRealism`
+- `resolveMovementState`
+- `resolveBarMovementState`
+- `radialPegBounceValues`
+- `radialPegBounceDurations`
+
+Configuration verified:
+- `realism.peg_bounce`
+
+Tests inspected:
+- `TestLoadPackageAcceptsRadialPegBounce`
+- `TestLoadPackageAcceptsBarPegBounce`
+- `TestLoadPackageRejectsInvalidPegBounce`
+- `TestRuntimeRadialGaugePegBounceDoesNotTriggerForInRangeTarget`
+- `TestRuntimeRadialGaugePegBounceAtMaxStopSettlesBackToLimit`
+- `TestRuntimeBarGaugePegBounceAtMaxStopSettlesBackToLimit`
+- `TestRuntimeBarGaugePegBounceDoesNotTriggerForInRangeTarget`
+
+Searches performed:
+- `peg_bounce`
+- `radialPegBounceValues`

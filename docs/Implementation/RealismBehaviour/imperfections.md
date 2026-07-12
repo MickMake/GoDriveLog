@@ -1,47 +1,55 @@
-# `realism.imperfections`
-
-Design reference: [`docs/Designs/RealismBehaviour/imperfections.md`](../../Designs/RealismBehaviour/imperfections.md)
+# `realism.imperfections` — Implementation
 
 ## Purpose
-Tracks the proposed umbrella `realism.imperfections` config layer.
+Audits whether the umbrella `realism.imperfections` configuration exists in current code.
 
 ## Implementation Status
-Status: **Not implemented**.
+Not implemented.
 
-There is no `realism.imperfections` field or shared imperfection subsystem on `main`.
+Verified current code does not provide the designed feature in the audited scope.
 
 ## Packages and Files
-- [`internal/dashboard/gauges/package.go`](../../../internal/dashboard/gauges/package.go)
+- `internal/dashboard/gauges/package.go`
 
 ## Types
-- `Realism` does not expose an `imperfections` field.
+- `Realism`
 
 ## Functions and Methods
-- `validateRealismForGaugeFamily` rejects unsupported realism keys.
+- `UnmarshalYAML`
 
 ## Runtime Flow
-Current realism support is implemented as separate concrete keys, not a nested imperfection layer.
+No umbrella imperfections runtime path was found.
 
 ## Configuration
-YAML cannot declare `realism.imperfections` without failing package validation.
+`Realism` does not declare an `Imperfections` field, and `(*Realism).UnmarshalYAML` does not accept `imperfections`.
 
 ## Behaviour
-Wear, noise, ageing, and artefact groups described by this document are not modeled as a single feature.
+No umbrella imperfections behaviour was found.
 
 ## Rendering
-No shared imperfection pass exists in scene composition.
+No umbrella imperfections render path was found.
 
 ## Tests
-- None in current code.
+No feature-specific tests found.
 
 ## Limitations
-Related point features such as needle shadow or thermal fade do not add up to this umbrella contract.
+This record is limited to current repository code.
 
 ## Deviations from Design
-The design intentionally marks this as future work, and the code reflects that.
+The design proposes an umbrella `realism.imperfections` layer. Current code does not implement it.
 
 ## Remaining Work
-Define the config shape and decide which concrete artefacts belong under the umbrella before implementing anything.
+Add the umbrella layer only if this design is scheduled.
 
 ## Verification Notes
-Verified by reading the linked code and test files on 2026-07-12. This was a documentation audit only; no Go implementation changes were made as part of this pass.
+
+Files inspected:
+- `internal/dashboard/gauges/package.go`
+
+Symbols verified:
+- `Realism`
+- `UnmarshalYAML`
+
+Searches performed:
+- `realism.imperfections`
+- `imperfections`

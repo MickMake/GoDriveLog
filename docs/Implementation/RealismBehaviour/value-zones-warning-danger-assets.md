@@ -1,50 +1,73 @@
-# Value Zones / Warning-Danger Assets
-
-Design reference: [`docs/Designs/RealismBehaviour/value-zones-warning-danger-assets.md`](../../Designs/RealismBehaviour/value-zones-warning-danger-assets.md)
+# Value Zones / Warning-Danger Assets — Implementation
 
 ## Purpose
-Tracks the planned asset-switching feature that selects warning or danger variants when values enter configured zones.
+Audits whether gauge-package assets switch by value zone in current code.
 
 ## Implementation Status
-Status: **Not implemented**.
+Not implemented.
 
-Current code does not switch gauge-package assets by value zone, although a separate bar-widget zone mechanism already exists.
+Verified current code does not provide the designed feature in the audited scope.
 
 ## Packages and Files
-- [`internal/dashboard/v3dashboard/dashboard_test.go`](../../../internal/dashboard/v3dashboard/dashboard_test.go)
-- [`internal/dashboard/gauges/package.go`](../../../internal/dashboard/gauges/package.go)
-- [`internal/dashboard/gauges/scene.go`](../../../internal/dashboard/gauges/scene.go)
+- `internal/config/v3config/config.go`
+- `internal/config/v3config/validate.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
 
 ## Types
-- None in current code.
+- `WidgetConfig`
+- `ZoneConfig`
 
 ## Functions and Methods
-- None in current code.
+- `validateZones`
+- `barCellNameForValue`
 
 ## Runtime Flow
-Widget-level bar display zones can choose different cells by value, but gauge packages do not select alternate warning/danger art sets from a `zones` contract.
+Current zone handling is limited to `bar_display` widgets in the dashboard asset system, not gauge packages.
 
 ## Configuration
-There is no package-level `zones` schema for gauge assets. Existing `WidgetConfig.Zones` applies to simple bar-display widgets, not gauge-package realism or asset selection.
+`WidgetConfig` declares `Zones []ZoneConfig` for dashboard `bar_display` widgets. No gauge package `zones` field or gauge-package warning/danger asset switch was found.
 
 ## Behaviour
-Gauge packages cannot swap to warning/danger dial art when values cross configured ranges.
+Current code can choose a bar-set cell name by zone for `bar_display` widgets. It does not switch gauge-package assets by value zone.
 
 ## Rendering
-Bar-display widgets can pick zone cells, but gauge-package scenes render the same configured assets regardless of value zone.
+Zone-based output is handled in `barParts` through `barCellNameForValue` for `bar_display` widgets, not through gauge package scene rendering.
 
 ## Tests
-- [`internal/dashboard/v3dashboard/dashboard_test.go`](../../../internal/dashboard/v3dashboard/dashboard_test.go)
-- [`internal/dashboard/gauges/package_test.go`](../../../internal/dashboard/gauges/package_test.go)
+- `TestBarDisplayUsesZonesBySensorValue`
 
 ## Limitations
-The existence of bar widget zones is related but not equivalent to the feature described here.
+The repository contains a related but narrower zone feature than the design describes.
 
 ## Deviations from Design
-The design describes package-asset switching. Current code only has a narrower, separate zone system for simple bar-display widgets.
+The design describes gauge-package asset switching. Current code implements widget-level bar cell selection only.
 
 ## Remaining Work
-Add package-level zone config, asset selection rules, validation, and tests if the feature remains wanted.
+Add gauge-package zone config and asset selection only if this design is scheduled.
 
 ## Verification Notes
-Verified by reading the linked code and test files on 2026-07-12. This was a documentation audit only; no Go implementation changes were made as part of this pass.
+
+Files inspected:
+- `internal/config/v3config/config.go`
+- `internal/config/v3config/validate.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
+
+Symbols verified:
+- `WidgetConfig`
+- `ZoneConfig`
+- `validateZones`
+- `barCellNameForValue`
+
+Configuration verified:
+- `zones`
+- `up_to`
+- `cell`
+
+Tests inspected:
+- `TestBarDisplayUsesZonesBySensorValue`
+
+Searches performed:
+- `zones`
+- `warning`
+- `danger`
+- `barCellNameForValue`

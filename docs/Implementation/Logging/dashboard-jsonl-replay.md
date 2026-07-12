@@ -1,49 +1,68 @@
-# JSONL Dashboard Replay
-
-Design reference: [`docs/Designs/Logging/dashboard-jsonl-replay.md`](../../Designs/Logging/dashboard-jsonl-replay.md)
+# JSONL Dashboard Replay — Implementation
 
 ## Purpose
-Tracks the missing replay mode for feeding recorded event logs back through the dashboard runtime.
+Audits whether the repository can replay recorded JSONL events back through the dashboard runtime.
 
 ## Implementation Status
-Status: **Not implemented**.
+Not implemented.
 
-No `dashboard replay` command or file-backed replay pipeline exists on `main`.
+Verified current code does not provide the designed feature in the audited scope.
 
 ## Packages and Files
-- [`cmd/GoDriveLog/main_ebiten.go`](../../../cmd/GoDriveLog/main_ebiten.go)
-- [`internal/runtime/v3runtime/run.go`](../../../internal/runtime/v3runtime/run.go)
+- `cmd/GoDriveLog/main_ebiten.go`
+- `cmd/GoDriveLog/v3_preview_ebiten.go`
+- `internal/runtime/v3runtime/run.go`
 
 ## Types
-- None in current code.
+None found in current code.
 
 ## Functions and Methods
-- `Run` starts live runtime wiring only; there is no replay entrypoint.
-- `main` exposes `dashboard run`, `harness`, `examples`, `validate`, and `preview`, but not `replay`.
+- `runDashboardCLI`
+- `runDashboardPreviewCommand`
+- `Run`
 
 ## Runtime Flow
-The current runtime only subscribes to live sensor updates and selected JSONL logging sinks. No component reads a `.jsonl` log and re-emits events into the dashboard path.
+No feature-specific runtime path was found. `Run` connects live readers, polling runtime subscribers, and the dashboard sink; it does not read a log file and emit replayed `sensors.SensorEvent` values.
 
 ## Configuration
-There is no replay-specific CLI flag, config struct, or log source selection for recorded sessions.
+No `dashboard replay` subcommand, `--log` flag, replay config struct, or replay source selection was found. The only replay-related code in the CLI is preview-local `replayPending` state for repeating the last manual preview transition.
 
 ## Behaviour
-Recorded sessions cannot currently drive the dashboard without an external custom tool.
+Recorded JSONL logs cannot be played back through the dashboard command tree in current code.
 
 ## Rendering
-Rendering remains tied to live runtime events or preview/harness flows, not persisted logs.
+Not applicable. No log-replay rendering path was found.
 
 ## Tests
-- [`cmd/GoDriveLog/main_ebiten_test.go`](../../../cmd/GoDriveLog/main_ebiten_test.go)
+No feature-specific tests found.
 
 ## Limitations
-The design depends on a canonical event log format, replay clocking, and CLI plumbing that are all absent.
+This audit only covers the current repository. It does not treat design notes or historical plans as implementation evidence.
 
 ## Deviations from Design
-The design calls this a core validation feature. Current code stops at live logging.
+The design calls for a dashboard replay mode. Current code exposes `dashboard run`, `dashboard harness`, `dashboard preview`, `dashboard examples`, and `dashboard validate`, but not replay.
 
 ## Remaining Work
-Add a replay command, log reader, event scheduler, and dashboard-runtime adapter for recorded sessions.
+Add a replay command, a log reader, event-to-runtime wiring, and replay-specific tests if this design is still wanted.
 
 ## Verification Notes
-Verified by reading the linked code and test files on 2026-07-12. This was a documentation audit only; no Go implementation changes were made as part of this pass.
+
+Files inspected:
+- `cmd/GoDriveLog/main_ebiten.go`
+- `cmd/GoDriveLog/v3_preview_ebiten.go`
+- `internal/runtime/v3runtime/run.go`
+
+Symbols verified:
+- `runDashboardCLI`
+- `runDashboardPreviewCommand`
+- `Run`
+- `replayPending`
+
+Tests inspected:
+- `TestDashboardHelpOutputsIncludeNewCommandTree`
+- `TestDashboardPreviewAcceptsFileBeforeOrAfterFlags`
+
+Searches performed:
+- `dashboard replay`
+- `replayPending`
+- `.gdl.jsonl`

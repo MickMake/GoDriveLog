@@ -1,47 +1,56 @@
-# `load_sag`
-
-Design reference: [`docs/Designs/RealismBehaviour/numeric-load-sag.md`](../../Designs/RealismBehaviour/numeric-load-sag.md)
+# `load_sag` — Implementation
 
 ## Purpose
-Tracks the planned brightness sag effect for high-load numeric and segmented values.
+Audits whether numeric or segmented load sag exists in current code.
 
 ## Implementation Status
-Status: **Not implemented**.
+Not implemented.
 
-There is no brightness model tied to lit-segment count or value-dependent display load.
+Verified current code does not provide the designed feature in the audited scope.
 
 ## Packages and Files
-- [`internal/dashboard/gauges/scene.go`](../../../internal/dashboard/gauges/scene.go)
+- `internal/dashboard/gauges/scene.go`
 
 ## Types
-- None in current code.
+None found in current code.
 
 ## Functions and Methods
-- None in current code.
+- `NumericScene`
+- `SegmentedScene`
 
 ## Runtime Flow
-Runtime does not calculate display electrical load or vary brightness by current value.
+No display-load calculation or brightness sag state was found.
 
 ## Configuration
-There is no `realism.load_sag` key in package loading.
+No `realism.load_sag` key was found in current code.
 
 ## Behaviour
-Values such as `888` and `111` render with the same brightness unless their art already differs.
+No value-dependent dimming behaviour matching this design was found.
 
 ## Rendering
-Numeric and segmented scenes do not have a brightness pass that varies with active segment count.
+No brightness sag render path was found.
 
 ## Tests
-- [`internal/dashboard/gauges/scene_test.go`](../../../internal/dashboard/gauges/scene_test.go)
+No feature-specific tests found.
 
 ## Limitations
-The design would need per-family brightness control and perhaps per-segment awareness.
+This record only covers current repository code.
 
 ## Deviations from Design
-Still a candidate only.
+The design describes load-dependent display sag. Current code does not implement it.
 
 ## Remaining Work
-Define a stable brightness model and family-specific rendering hooks before implementation.
+Add the feature only if this design is scheduled.
 
 ## Verification Notes
-Verified by reading the linked code and test files on 2026-07-12. This was a documentation audit only; no Go implementation changes were made as part of this pass.
+
+Files inspected:
+- `internal/dashboard/gauges/scene.go`
+
+Symbols verified:
+- `NumericScene`
+- `SegmentedScene`
+
+Searches performed:
+- `load_sag`
+- `realism.load_sag`

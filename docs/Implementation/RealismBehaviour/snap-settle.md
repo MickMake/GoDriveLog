@@ -1,51 +1,85 @@
-# `snap_settle`
-
-Design reference: [`docs/Designs/RealismBehaviour/snap-settle.md`](../../Designs/RealismBehaviour/snap-settle.md)
+# `snap_settle` — Implementation
 
 ## Purpose
-Tracks the short landing snap for odometer wheels.
+Audits current odometer snap-settle support.
 
 ## Implementation Status
-Status: **Implemented**.
+Implemented.
 
-Odometer packages support `realism.snap_settle`, and runtime movement adds a bounded settle tail before exact rest.
+Verified current code provides the behaviour described in the audited scope.
 
 ## Packages and Files
-- [`internal/dashboard/gauges/package.go`](../../../internal/dashboard/gauges/package.go)
-- [`internal/dashboard/gauges/scene.go`](../../../internal/dashboard/gauges/scene.go)
-- [`internal/dashboard/v3dashboard/dashboard.go`](../../../internal/dashboard/v3dashboard/dashboard.go)
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/gauges/scene.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
 
 ## Types
 - `Realism`
+- `Odometer`
 
 ## Functions and Methods
-- `validateRealismForGaugeFamily`
+- `validateRealism`
+- `OdometerSnapSettleWheelOffsets`
+- `odometerSnapSettleEnabled`
+- `resolveOdometerMovementState`
+- `applyOdometerMovementRealism`
 
 ## Runtime Flow
-After the main odometer movement reaches the target, the effect can add a short forward settle that returns exactly to the final digit position.
+`resolveOdometerMovementState` computes movement timing and `applyOdometerMovementRealism` applies `OdometerSnapSettleWheelOffsets` during the settle phase when enabled.
 
 ## Configuration
-Odometer packages accept `realism.snap_settle` as a display-only effect.
+`Realism` declares `SnapSettle *bool`. `validateRealism` restricts it to odometer gauges only.
 
 ## Behaviour
-The wheel lands with a small mechanical-feeling snap rather than gliding silently into place.
+After the main odometer travel, wheels can move through a short bounded settle phase and then land exactly on target.
 
 ## Rendering
-Wheel-strip rendering uses the transient settle offset, then returns to the exact target offset.
+Odometer scene rendering consumes the adjusted wheel offsets from movement and snap-settle logic.
 
 ## Tests
-- [`internal/dashboard/gauges/package_test.go`](../../../internal/dashboard/gauges/package_test.go)
-- [`internal/dashboard/gauges/scene_test.go`](../../../internal/dashboard/gauges/scene_test.go)
-- [`internal/dashboard/v3dashboard/gauge_widget_test.go`](../../../internal/dashboard/v3dashboard/gauge_widget_test.go)
+- `TestLoadPackageLoadsOdometerSnapSettleRealism`
+- `TestLoadPackageRejectsSnapSettleOnNonOdometerGauge`
+- `TestOdometerSnapSettleDisabledKeepsBaseWheelOffsets`
+- `TestOdometerSnapSettleEnabledAddsSmallForwardSettleAndReturnsToTarget`
+- `TestOdometerSnapSettleDoesNotOvershootBelowZeroAtLowerBoundary`
+- `TestRuntimeOdometerGaugeSnapSettleAddsShortTailAndSettlesExactlyOnTarget`
 
 ## Limitations
-This effect is odometer-only.
+The feature is odometer-only.
 
 ## Deviations from Design
-The implementation matches the design intent.
+No verified deviation found in the audited scope.
 
 ## Remaining Work
-No known design work remains.
+No remaining work was proven by this audit.
 
 ## Verification Notes
-Verified by reading the linked code and test files on 2026-07-12. This was a documentation audit only; no Go implementation changes were made as part of this pass.
+
+Files inspected:
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/gauges/scene.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
+
+Symbols verified:
+- `Realism`
+- `Odometer`
+- `validateRealism`
+- `OdometerSnapSettleWheelOffsets`
+- `odometerSnapSettleEnabled`
+- `resolveOdometerMovementState`
+- `applyOdometerMovementRealism`
+
+Configuration verified:
+- `realism.snap_settle`
+
+Tests inspected:
+- `TestLoadPackageLoadsOdometerSnapSettleRealism`
+- `TestLoadPackageRejectsSnapSettleOnNonOdometerGauge`
+- `TestOdometerSnapSettleDisabledKeepsBaseWheelOffsets`
+- `TestOdometerSnapSettleEnabledAddsSmallForwardSettleAndReturnsToTarget`
+- `TestOdometerSnapSettleDoesNotOvershootBelowZeroAtLowerBoundary`
+- `TestRuntimeOdometerGaugeSnapSettleAddsShortTailAndSettlesExactlyOnTarget`
+
+Searches performed:
+- `snap_settle`
+- `OdometerSnapSettleWheelOffsets`

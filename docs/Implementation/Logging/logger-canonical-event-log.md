@@ -1,54 +1,92 @@
-# Canonical GoDriveLog Event Log
-
-Design reference: [`docs/Designs/Logging/logger-canonical-event-log.md`](../../Designs/Logging/logger-canonical-event-log.md)
+# Canonical GoDriveLog Event Log — Implementation
 
 ## Purpose
-Records how far the current JSONL event stream has progressed toward a formal GoDriveLog-owned log format.
+Audits the current JSONL event log implementation against the design for a canonical GoDriveLog-owned event log.
 
 ## Implementation Status
-Status: **Partially implemented**.
+Partially implemented.
 
-Structured JSONL event output exists, but it is not yet a branded, versioned, replay-ready canonical format.
+Verified current code implements part of the design, but the audited scope also has missing or different behaviour.
 
 ## Packages and Files
-- [`internal/logger/event_jsonl.go`](../../../internal/logger/event_jsonl.go)
-- [`internal/runtime/v3runtime/run.go`](../../../internal/runtime/v3runtime/run.go)
+- `internal/logger/event_jsonl.go`
+- `internal/runtime/v3runtime/run.go`
+- `internal/config/v3config/config.go`
 
 ## Types
 - `JSONLEventRecord`
 - `JSONLEventWriter`
 - `JSONLSubscriber`
+- `LogConfig`
 
 ## Functions and Methods
 - `NewJSONLEventWriter`
 - `DailyJSONLPath`
+- `NewJSONLSubscribersFromPlan`
 - `Run`
 
 ## Runtime Flow
-`v3runtime.Run` can construct JSONL subscribers from the resolved plan and feed them live sensor and status updates during a run.
+`Run` resolves selected logs from the runtime plan, builds `JSONLSubscriber` instances with `NewJSONLSubscribersFromPlan`, and drains live `sensors.SensorEvent` values into `JSONLEventWriter`.
 
 ## Configuration
-Logging is selected from runtime plan outputs. The emitted filenames rotate daily, but the code still writes generic `.jsonl` files instead of a dedicated GoDriveLog extension.
+Selected logs use `LogConfig.Path` and `LogConfig.Sensors`. `DailyJSONLPath` rotates the output path by day. The writer uses the configured path and appends a date before the existing extension. No `.gdl.jsonl` requirement or schema/version field was found.
 
 ## Behaviour
-Events are written as newline-delimited JSON records with typed values, timestamps, sensor IDs, and duplicate suppression for unchanged events.
+The logger writes one JSON object per line, records timestamps and typed values, rotates daily, and suppresses unchanged duplicate events per sensor/status/value/error combination.
 
 ## Rendering
-This feature does not affect dashboard rendering directly.
+Not applicable. The feature writes logs only.
 
 ## Tests
-- [`internal/logger/event_jsonl_test.go`](../../../internal/logger/event_jsonl_test.go)
-- [`internal/logger/event_jsonl_status_semantics_test.go`](../../../internal/logger/event_jsonl_status_semantics_test.go)
-- [`internal/runtime/v3runtime/run_test.go`](../../../internal/runtime/v3runtime/run_test.go)
+- `TestNewJSONLSubscribersFromPlanUsesSelectedVehicleLogs`
+- `TestJSONLSubscriberWritesSelectedSensorEvents`
+- `TestJSONLEventWriterRotatesDaily`
+- `TestDailyJSONLPathAddsDateBeforeExtension`
+- `TestJSONLSubscriberSuppressesUnchangedDuplicateEvents`
+- `TestJSONLSubscriberWritesUnavailableStatusTypedValues`
+- `TestRunLoadsResolvedVehicleAndWritesSelectedJSONLLog`
 
 ## Limitations
-There is no explicit schema version, no `.gdl.jsonl` contract, no replay-facing guarantees, and no provenance sidecar.
+The current format is repository code, not a formally versioned product contract. No schema marker, sidecar metadata, validator, or replay reader was found.
 
 ## Deviations from Design
-The design promotes the logger output into a formal product format. Current code provides the raw stream but not the finished contract.
+The design requires a canonical `.gdl.jsonl` format that GoDriveLog writes, validates, and replays. Current code only implements the write side of a generic daily-rotated JSONL stream.
 
 ## Remaining Work
-Add schema/version markers, canonical extension and naming rules, metadata sidecar support, validator support, and replay consumers.
+Add a formal file contract, versioning, validator, sidecar metadata, and replay consumer if the design remains active.
 
 ## Verification Notes
-Verified by reading the linked code and test files on 2026-07-12. This was a documentation audit only; no Go implementation changes were made as part of this pass.
+
+Files inspected:
+- `internal/logger/event_jsonl.go`
+- `internal/runtime/v3runtime/run.go`
+- `internal/config/v3config/config.go`
+
+Symbols verified:
+- `JSONLEventRecord`
+- `JSONLEventWriter`
+- `JSONLSubscriber`
+- `LogConfig`
+- `NewJSONLEventWriter`
+- `DailyJSONLPath`
+- `NewJSONLSubscribersFromPlan`
+- `Run`
+
+Configuration verified:
+- `path`
+- `sensors`
+
+Tests inspected:
+- `TestNewJSONLSubscribersFromPlanUsesSelectedVehicleLogs`
+- `TestJSONLSubscriberWritesSelectedSensorEvents`
+- `TestJSONLEventWriterRotatesDaily`
+- `TestDailyJSONLPathAddsDateBeforeExtension`
+- `TestJSONLSubscriberSuppressesUnchangedDuplicateEvents`
+- `TestJSONLSubscriberWritesUnavailableStatusTypedValues`
+- `TestRunLoadsResolvedVehicleAndWritesSelectedJSONLLog`
+
+Searches performed:
+- `gdl.jsonl`
+- `JSONLEventRecord`
+- `DailyJSONLPath`
+- `JSONLSubscriber`

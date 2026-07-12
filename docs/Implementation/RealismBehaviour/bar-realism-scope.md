@@ -1,19 +1,18 @@
-# Bar Realism Scope
-
-Design reference: [`docs/Designs/RealismBehaviour/bar-realism-scope.md`](../../Designs/RealismBehaviour/bar-realism-scope.md)
+# Bar Realism Scope — Implementation
 
 ## Purpose
-Tracks which planned realism behaviours for bar gauges have landed and which remain backlog items.
+Audits the current bar-gauge realism coverage against the scope note.
 
 ## Implementation Status
-Status: **Partially implemented**.
+Partially implemented.
 
-Bar gauges support several shared movement behaviours, but the full scope document is not complete.
+Verified current code implements part of the design, but the audited scope also has missing or different behaviour.
 
 ## Packages and Files
-- [`internal/dashboard/gauges/package.go`](../../../internal/dashboard/gauges/package.go)
-- [`internal/dashboard/gauges/scene.go`](../../../internal/dashboard/gauges/scene.go)
-- [`internal/dashboard/v3dashboard/dashboard.go`](../../../internal/dashboard/v3dashboard/dashboard.go)
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
+- `internal/dashboard/gauges/scene.go`
+- `internal/dashboard/gauges/pointer_markers.go`
 
 ## Types
 - `Realism`
@@ -22,35 +21,88 @@ Bar gauges support several shared movement behaviours, but the full scope docume
 - `PointerMarkersConfig`
 
 ## Functions and Methods
-- `validateRealismForGaugeFamily`
-- `resolveMovementState`
+- `validateRealism`
+- `resolveBarMovementState`
 - `barDampingDuration`
+- `BarSceneWithPointerMarkers`
+- `RenderedPointerMarkerPosition`
 
 ## Runtime Flow
-Bar runtime supports damping, hysteresis, stiction, overshoot, peg bounce, and pointer markers through the shared movement path.
+`resolveBarMovementState` implements bar damping, hysteresis, stiction, overshoot, and peg bounce. Pointer marker state is maintained separately through `updatePointerMarkerState` and the helpers in `pointer_markers.go`.
 
 ## Configuration
-Implemented bar keys are accepted through `realism`. `stepped_fill` and `quantized_fill` remain unsupported and are rejected as unknown realism keys.
+`Realism` includes `Damping`, `Hysteresis`, `Stiction`, `Overshoot`, `PegBounce`, `PointerMarkers`, and `MovementPolicy`. It does not include `stepped_fill` or `quantized_fill`.
 
 ## Behaviour
-Supported features animate the displayed reveal height only. Planned block/quantized fill behaviours are still absent.
+Several planned bar realism behaviours are present. The fill still resolves as a continuous reveal height; no bar-specific stepped or quantized fill behaviour was found.
 
 ## Rendering
-Current rendering is still a continuous reveal model driven by package geometry and final resolved extent.
+`BarSceneWithPointerMarkers` renders the resolved reveal height and optional pointer marker parts. It does not render stepped or quantized fill states.
 
 ## Tests
-- [`internal/dashboard/gauges/package_test.go`](../../../internal/dashboard/gauges/package_test.go)
-- [`internal/dashboard/gauges/scene_test.go`](../../../internal/dashboard/gauges/scene_test.go)
-- [`internal/dashboard/v3dashboard/gauge_widget_test.go`](../../../internal/dashboard/v3dashboard/gauge_widget_test.go)
+- `TestLoadPackageLoadsBarDampingWithDirectionalTiming`
+- `TestLoadPackageAcceptsBarHysteresis`
+- `TestLoadPackageAcceptsBarStiction`
+- `TestLoadPackageAcceptsBarOvershoot`
+- `TestLoadPackageAcceptsBarPegBounce`
+- `TestLoadPackageLoadsPointerMarkersConfig`
+- `TestRuntimeBarGaugeDampingAnimatesRisingReveal`
+- `TestRuntimeBarGaugeHysteresisOffsetsRisingApproach`
+- `TestRuntimeBarGaugeStictionBelowThresholdHoldsDisplay`
+- `TestRuntimeBarGaugeOvershootAnimatesRisingReveal`
+- `TestRuntimeBarGaugePegBounceAtMaxStopSettlesBackToLimit`
 
 ## Limitations
-The document includes behaviours that have no parser, runtime, or rendering support yet.
+This scope note includes behaviours that are not in current code.
 
 ## Deviations from Design
-The scope doc now spans a mixed state: some bar realism options are live, while fill-quantisation concepts remain backlog.
+`stepped_fill` and `quantized_fill` are named in the design note but were not found in current code.
 
 ## Remaining Work
-Implement `stepped_fill` and `quantized_fill` if they remain desirable, or narrow the scope document to current support.
+Implement or explicitly defer `stepped_fill` and `quantized_fill` if this scope note remains active.
 
 ## Verification Notes
-Verified by reading the linked code and test files on 2026-07-12. This was a documentation audit only; no Go implementation changes were made as part of this pass.
+
+Files inspected:
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
+- `internal/dashboard/gauges/scene.go`
+- `internal/dashboard/gauges/pointer_markers.go`
+
+Symbols verified:
+- `Realism`
+- `DampingConfig`
+- `OvershootConfig`
+- `PointerMarkersConfig`
+- `validateRealism`
+- `resolveBarMovementState`
+- `barDampingDuration`
+- `BarSceneWithPointerMarkers`
+- `RenderedPointerMarkerPosition`
+
+Configuration verified:
+- `realism.damping`
+- `realism.hysteresis`
+- `realism.stiction`
+- `realism.overshoot`
+- `realism.peg_bounce`
+- `realism.pointer_markers`
+- `realism.movement_policy`
+
+Tests inspected:
+- `TestLoadPackageLoadsBarDampingWithDirectionalTiming`
+- `TestLoadPackageAcceptsBarHysteresis`
+- `TestLoadPackageAcceptsBarStiction`
+- `TestLoadPackageAcceptsBarOvershoot`
+- `TestLoadPackageAcceptsBarPegBounce`
+- `TestLoadPackageLoadsPointerMarkersConfig`
+- `TestRuntimeBarGaugeDampingAnimatesRisingReveal`
+- `TestRuntimeBarGaugeHysteresisOffsetsRisingApproach`
+- `TestRuntimeBarGaugeStictionBelowThresholdHoldsDisplay`
+- `TestRuntimeBarGaugeOvershootAnimatesRisingReveal`
+- `TestRuntimeBarGaugePegBounceAtMaxStopSettlesBackToLimit`
+
+Searches performed:
+- `stepped_fill`
+- `quantized_fill`
+- `pointer_markers`

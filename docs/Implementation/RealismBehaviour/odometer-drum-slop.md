@@ -1,49 +1,79 @@
-# `drum_slop`
-
-Design reference: [`docs/Designs/RealismBehaviour/odometer-drum-slop.md`](../../Designs/RealismBehaviour/odometer-drum-slop.md)
+# `drum_slop` — Implementation
 
 ## Purpose
-Tracks the fixed per-wheel alignment imperfection for odometers.
+Audits current odometer drum-slop support.
 
 ## Implementation Status
-Status: **Implemented**.
+Implemented.
 
-Odometer packages support `realism.drum_slop`, and scene composition applies stable per-wheel offsets.
+Verified current code provides the behaviour described in the audited scope.
 
 ## Packages and Files
-- [`internal/dashboard/gauges/package.go`](../../../internal/dashboard/gauges/package.go)
-- [`internal/dashboard/gauges/scene.go`](../../../internal/dashboard/gauges/scene.go)
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/gauges/scene.go`
 
 ## Types
 - `Realism`
+- `Odometer`
 
 ## Functions and Methods
-- `validateRealismForGaugeFamily`
+- `validateRealism`
+- `odometerDrumSlop`
+- `OdometerSceneWithWheelOffsets`
 
 ## Runtime Flow
-The runtime resolves the displayed odometer position and scene composition applies configured wheel offsets without changing the value.
+No separate runtime state is required. Drum slop is read when odometer scenes are built from wheel offsets.
 
 ## Configuration
-Odometer packages accept `realism.drum_slop` with per-wheel alignment configuration.
+`Realism` declares `DrumSlop []int` and tracks whether the field was set through `DrumSlopSet`. `validateRealism` restricts the field to odometers, requires one entry per wheel, and bounds each offset by wheel window height.
 
 ## Behaviour
-Each wheel can sit slightly high or low in a stable, deterministic way.
+Each wheel can render with a fixed vertical offset.
 
 ## Rendering
-Wheel slices are shifted by the configured slop during odometer scene assembly.
+`OdometerSceneWithWheelOffsets` adds the configured per-wheel slop to each wheel position before building the `wheel_strip` part.
 
 ## Tests
-- [`internal/dashboard/gauges/package_test.go`](../../../internal/dashboard/gauges/package_test.go)
-- [`internal/dashboard/gauges/scene_test.go`](../../../internal/dashboard/gauges/scene_test.go)
+- `TestLoadPackageLoadsOdometerDrumSlopRealism`
+- `TestLoadPackageRejectsExplicitEmptyDrumSlopOnNonOdometerGauge`
+- `TestLoadPackageRejectsExplicitEmptyOdometerDrumSlop`
+- `TestLoadPackageRejectsInvalidOdometerDrumSlop`
+- `TestOdometerSceneAppliesConfiguredDrumSlopToWheelPositions`
+- `TestOdometerSceneDefaultsToNoDrumSlop`
 
 ## Limitations
-This is static alignment only; it does not create movement jitter or backlash.
+This feature is static; it does not create motion or reversal slack.
 
 ## Deviations from Design
-The implementation matches the design intent.
+No verified deviation found in the audited scope.
 
 ## Remaining Work
-No known design work remains.
+No remaining work was proven by this audit.
 
 ## Verification Notes
-Verified by reading the linked code and test files on 2026-07-12. This was a documentation audit only; no Go implementation changes were made as part of this pass.
+
+Files inspected:
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/gauges/scene.go`
+
+Symbols verified:
+- `Realism`
+- `Odometer`
+- `validateRealism`
+- `odometerDrumSlop`
+- `OdometerSceneWithWheelOffsets`
+
+Configuration verified:
+- `realism.drum_slop`
+
+Tests inspected:
+- `TestLoadPackageLoadsOdometerDrumSlopRealism`
+- `TestLoadPackageRejectsExplicitEmptyDrumSlopOnNonOdometerGauge`
+- `TestLoadPackageRejectsExplicitEmptyOdometerDrumSlop`
+- `TestLoadPackageRejectsInvalidOdometerDrumSlop`
+- `TestOdometerSceneAppliesConfiguredDrumSlopToWheelPositions`
+- `TestOdometerSceneDefaultsToNoDrumSlop`
+
+Searches performed:
+- `drum_slop`
+- `DrumSlopSet`

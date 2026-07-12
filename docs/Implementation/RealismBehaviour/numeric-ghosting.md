@@ -1,49 +1,58 @@
-# `ghosting`
-
-Design reference: [`docs/Designs/RealismBehaviour/numeric-ghosting.md`](../../Designs/RealismBehaviour/numeric-ghosting.md)
+# `ghosting` — Implementation
 
 ## Purpose
-Tracks the planned residual afterimage effect for numeric and segmented displays.
+Audits whether numeric or segmented ghosting exists in current code.
 
 ## Implementation Status
-Status: **Not implemented**.
+Not implemented.
 
-Current numeric and segmented rendering has no previous-character persistence or ghost image path.
+Verified current code does not provide the designed feature in the audited scope.
 
 ## Packages and Files
-- [`internal/dashboard/gauges/scene.go`](../../../internal/dashboard/gauges/scene.go)
-- [`internal/dashboard/v3dashboard/dashboard.go`](../../../internal/dashboard/v3dashboard/dashboard.go)
+- `internal/dashboard/gauges/scene.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
 
 ## Types
-- None in current code.
+None found in current code.
 
 ## Functions and Methods
-- None in current code.
+- `NumericScene`
+- `SegmentedScene`
 
 ## Runtime Flow
-The dashboard runtime stores the current displayed state only. It does not preserve previous displayed glyphs for decay rendering.
+No previous-glyph history or decay state was found in numeric or segmented runtime paths.
 
 ## Configuration
-There is no `realism.ghosting` key in package loading.
+No `realism.ghosting` key was found in current code.
 
 ## Behaviour
-Digit changes replace the previous display immediately within the current formatting and scene-signature pipeline.
+Numeric and segmented displays render the current state only.
 
 ## Rendering
-Numeric and segmented scenes render active output only; no faded previous-character overlay is composed.
+No ghost-image render path was found.
 
 ## Tests
-- [`internal/dashboard/gauges/scene_test.go`](../../../internal/dashboard/gauges/scene_test.go)
-- [`internal/dashboard/v3dashboard/dashboard_test.go`](../../../internal/dashboard/v3dashboard/dashboard_test.go)
+No feature-specific tests found.
 
 ## Limitations
-Adding ghosting would need glyph-history retention and family-specific render treatment.
+This record only covers current repository code.
 
 ## Deviations from Design
-The design remains a candidate and has not started in code.
+The design describes bounded display ghosting. Current code has no matching config or render path.
 
 ## Remaining Work
-Define history timing, alpha rules, and asset expectations before implementation.
+Add history state and rendering only if this design is scheduled.
 
 ## Verification Notes
-Verified by reading the linked code and test files on 2026-07-12. This was a documentation audit only; no Go implementation changes were made as part of this pass.
+
+Files inspected:
+- `internal/dashboard/gauges/scene.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
+
+Symbols verified:
+- `NumericScene`
+- `SegmentedScene`
+
+Searches performed:
+- `ghosting`
+- `realism.ghosting`

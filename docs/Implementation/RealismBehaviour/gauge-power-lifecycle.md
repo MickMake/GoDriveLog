@@ -1,49 +1,62 @@
-# Gauge Power Lifecycle
-
-Design reference: [`docs/Designs/RealismBehaviour/gauge-power-lifecycle.md`](../../Designs/RealismBehaviour/gauge-power-lifecycle.md)
+# Gauge Power Lifecycle — Implementation
 
 ## Purpose
-Tracks the planned gauge-level power-on and power-off realism driven by a dashboard power signal.
+Audits whether gauges react to a dashboard power-state lifecycle in current code.
 
 ## Implementation Status
-Status: **Not implemented**.
+Not implemented.
 
-Current runtime has no dashboard power-state signal or per-gauge power lifecycle support.
+Verified current code does not provide the designed feature in the audited scope.
 
 ## Packages and Files
-- [`internal/dashboard/v3dashboard/dashboard.go`](../../../internal/dashboard/v3dashboard/dashboard.go)
-- [`internal/runtime/v3runtime/run.go`](../../../internal/runtime/v3runtime/run.go)
-- [`internal/dashboard/gauges/package.go`](../../../internal/dashboard/gauges/package.go)
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
+- `internal/runtime/v3runtime/run.go`
 
 ## Types
-- None in current code.
+None found in current code.
 
 ## Functions and Methods
-- `Run` wires live sensor and dashboard streams, but not dashboard power-state events.
+- `Run`
+- `NewRuntime`
 
 ## Runtime Flow
-The dashboard runtime reacts to live sensor snapshots and gauge realism movement only. There is no ACC-style power event path into gauges.
+No power-state signal, power event type, or per-gauge power lifecycle state machine was found in runtime code.
 
 ## Configuration
-No package config keys exist for power-up sweep, blanking, drop, or shutdown behaviour.
+No gauge package config for power lifecycle was found in `Realism` or elsewhere in `Package`.
 
 ## Behaviour
-Gauges do not wake, blank, or settle differently when external dashboard power changes because no such signal is modeled.
+Gauges do not implement power-on or power-off choreography from this design.
 
 ## Rendering
-Rendered state only reflects current sensor and movement state.
+No power lifecycle render path was found.
 
 ## Tests
-- None in current code.
+No feature-specific tests found.
 
 ## Limitations
-Both the runtime signal and gauge-level contracts are absent.
+This audit did not treat historical plans as implementation evidence.
 
 ## Deviations from Design
-The design expects a new runtime event axis that current code has not started.
+The design requires a gauge-owned response to dashboard power events. Current code has no such event path.
 
 ## Remaining Work
-Add runtime power-state inputs, per-gauge config, and lifecycle render behaviours.
+Add runtime power events, gauge config, and tests only if this design is scheduled.
 
 ## Verification Notes
-Verified by reading the linked code and test files on 2026-07-12. This was a documentation audit only; no Go implementation changes were made as part of this pass.
+
+Files inspected:
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
+- `internal/runtime/v3runtime/run.go`
+
+Symbols verified:
+- `Run`
+- `NewRuntime`
+- `Realism`
+
+Searches performed:
+- `power lifecycle`
+- `power_state`
+- `acc`

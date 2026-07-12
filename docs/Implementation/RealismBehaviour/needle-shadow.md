@@ -1,52 +1,80 @@
-# `needle_shadow`
-
-Design reference: [`docs/Designs/RealismBehaviour/needle-shadow.md`](../../Designs/RealismBehaviour/needle-shadow.md)
+# `needle_shadow` — Implementation
 
 ## Purpose
-Tracks the static shadow/depth cue for radial needles.
+Audits current radial needle-shadow support.
 
 ## Implementation Status
-Status: **Implemented**.
+Implemented.
 
-Radial packages support `realism.needle_shadow`, including default alpha handling and scene-layer placement.
+Verified current code provides the behaviour described in the audited scope.
 
 ## Packages and Files
-- [`internal/dashboard/gauges/package.go`](../../../internal/dashboard/gauges/package.go)
-- [`internal/dashboard/gauges/scene.go`](../../../internal/dashboard/gauges/scene.go)
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/gauges/scene.go`
 
 ## Types
 - `Realism`
 - `NeedleShadowConfig`
 
 ## Functions and Methods
-- `validateRealismForGaugeFamily`
-- `buildNeedleShadowParts`
+- `validateRealism`
+- `RadialSceneWithPointerMarkers`
+- `needleShadowEnabled`
+- `needleShadowAlpha`
 
 ## Runtime Flow
-The runtime does not animate the shadow separately; it resolves the displayed angle and scene composition adds the shadow part before the live needle.
+The option does not create its own runtime state. Radial scene generation checks `NeedleShadow` directly when building the current scene.
 
 ## Configuration
-Radial packages accept the shadow config and default a sensible alpha when enabled without custom tuning.
+`NeedleShadowConfig` accepts `offset` and `alpha`. `normalizePackage` fills in the default alpha when a shadow is configured without one. `validateRealism` restricts the option to radial gauges, requires a two-element offset, and requires `alpha` to be finite and between 0 and 1.
 
 ## Behaviour
-The effect is a static display-only depth cue tied to the rendered needle angle.
+When enabled, a shadow copy of the needle is drawn behind the main needle using the configured offset and alpha.
 
 ## Rendering
-Scene composition inserts the shadow layer before the needle and clamps/positions it with the same radial geometry.
+`RadialSceneWithPointerMarkers` appends a `needle_shadow` scene part before the live needle. Angle calculation happens first through `radialAngle` and `radialCalibrationAngle`; the shadow does not perform its own clamping logic.
 
 ## Tests
-- [`internal/dashboard/gauges/package_test.go`](../../../internal/dashboard/gauges/package_test.go)
-- [`internal/dashboard/gauges/scene_test.go`](../../../internal/dashboard/gauges/scene_test.go)
-- [`internal/dashboard/v3dashboard/gauge_widget_test.go`](../../../internal/dashboard/v3dashboard/gauge_widget_test.go)
+- `TestLoadPackageAcceptsRadialNeedleShadow`
+- `TestLoadPackageRejectsInvalidRadialNeedleShadow`
+- `TestRadialSceneAddsNeedleShadowBeforeNeedleWhenConfigured`
+- `TestRuntimeRadialGaugeWidgetIncludesNeedleShadowBeforeNeedle`
 
 ## Limitations
-There is no dynamic lighting or parallax model.
+Only radial gauges implement this option.
 
 ## Deviations from Design
-The implementation matches the design intent closely.
+No verified deviation found in the audited scope.
 
 ## Remaining Work
-No known design work remains.
+No remaining work was proven by this audit.
 
 ## Verification Notes
-Verified by reading the linked code and test files on 2026-07-12. This was a documentation audit only; no Go implementation changes were made as part of this pass.
+
+Files inspected:
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/gauges/scene.go`
+
+Symbols verified:
+- `Realism`
+- `NeedleShadowConfig`
+- `validateRealism`
+- `RadialSceneWithPointerMarkers`
+- `needleShadowEnabled`
+- `needleShadowAlpha`
+
+Configuration verified:
+- `realism.needle_shadow`
+- `offset`
+- `alpha`
+
+Tests inspected:
+- `TestLoadPackageAcceptsRadialNeedleShadow`
+- `TestLoadPackageRejectsInvalidRadialNeedleShadow`
+- `TestRadialSceneAddsNeedleShadowBeforeNeedleWhenConfigured`
+- `TestRuntimeRadialGaugeWidgetIncludesNeedleShadowBeforeNeedle`
+
+Searches performed:
+- `needle_shadow`
+- `NeedleShadowConfig`
+- `needleShadowAlpha`

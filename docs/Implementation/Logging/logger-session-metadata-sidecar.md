@@ -1,50 +1,74 @@
-# Session Metadata Sidecar
-
-Design reference: [`docs/Designs/Logging/logger-session-metadata-sidecar.md`](../../Designs/Logging/logger-session-metadata-sidecar.md)
+# Session Metadata Sidecar — Implementation
 
 ## Purpose
-Tracks the proposed sidecar file that would capture replay and provenance metadata next to each event log.
+Audits whether JSONL log writes also create a session metadata sidecar.
 
 ## Implementation Status
-Status: **Not implemented**.
+Not implemented.
 
-Current logging writes event lines only; it does not emit a session metadata sidecar.
+Verified current code does not provide the designed feature in the audited scope.
 
 ## Packages and Files
-- [`internal/logger/event_jsonl.go`](../../../internal/logger/event_jsonl.go)
-- [`internal/runtime/v3runtime/run.go`](../../../internal/runtime/v3runtime/run.go)
+- `internal/logger/event_jsonl.go`
+- `internal/runtime/v3runtime/run.go`
 
 ## Types
-- None in current code.
+- `JSONLEventWriter`
+- `JSONLSubscriber`
 
 ## Functions and Methods
 - `NewJSONLEventWriter`
+- `WriteEvent`
 - `Run`
 
 ## Runtime Flow
-Runtime logging creates writers for event lines only. No second output file is opened or populated with session metadata.
+`Run` builds JSONL subscribers and drains events into `WriteEvent`. No second writer, sidecar path, or metadata emission path was found.
 
 ## Configuration
-The runtime plan can choose log destinations, but no metadata schema or sidecar path is configured.
+`LogConfig` exposes `path` and `sensors` only. No sidecar path or metadata fields were found.
 
 ## Behaviour
-Captured logs cannot self-describe the config, asset set, vehicle selection, or runtime context needed for later replay.
+Current code writes only the event stream.
 
 ## Rendering
-No rendering impact.
+Not applicable.
 
 ## Tests
-- [`internal/logger/event_jsonl_test.go`](../../../internal/logger/event_jsonl_test.go)
-- [`internal/runtime/v3runtime/run_test.go`](../../../internal/runtime/v3runtime/run_test.go)
+No feature-specific tests found.
 
 ## Limitations
-Without the sidecar, replay and audit tooling would need external context or ad hoc conventions.
+No repository code was found for metadata capture, version stamping, or provenance sidecar output.
 
 ## Deviations from Design
-The design wants replay-safe provenance next to every log. Current code writes only the event stream.
+The design calls for a separate metadata file next to each event log. Current code writes JSONL lines only.
 
 ## Remaining Work
-Define the metadata schema, emit the file alongside logs, and thread config provenance into the writer setup.
+Add sidecar schema, output path rules, and writer integration if the design remains active.
 
 ## Verification Notes
-Verified by reading the linked code and test files on 2026-07-12. This was a documentation audit only; no Go implementation changes were made as part of this pass.
+
+Files inspected:
+- `internal/logger/event_jsonl.go`
+- `internal/runtime/v3runtime/run.go`
+- `internal/config/v3config/config.go`
+
+Symbols verified:
+- `JSONLEventWriter`
+- `JSONLSubscriber`
+- `NewJSONLEventWriter`
+- `WriteEvent`
+- `Run`
+- `LogConfig`
+
+Configuration verified:
+- `path`
+- `sensors`
+
+Tests inspected:
+- `TestRunLoadsResolvedVehicleAndWritesSelectedJSONLLog`
+
+Searches performed:
+- `sidecar`
+- `metadata`
+- `.gdl.meta.json`
+- `session metadata`

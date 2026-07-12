@@ -1,51 +1,66 @@
-# Gauge Stat Markers
-
-Design reference: [`docs/Designs/RealismBehaviour/stat-markers.md`](../../Designs/RealismBehaviour/stat-markers.md)
+# Gauge Stat Markers — Implementation
 
 ## Purpose
-Preserves the historical note for an older statistical marker concept that should not be implemented as written.
+Audits the superseded statistical-marker note against current code.
 
 ## Implementation Status
-Status: **Not implemented**.
+Not implemented.
 
-The document is superseded. Current code implements pointer markers, not the original statistical-marker idea.
+Verified current code does not provide the designed feature in the audited scope.
 
 ## Packages and Files
-- [`internal/dashboard/gauges/pointer_markers.go`](../../../internal/dashboard/gauges/pointer_markers.go)
-- [`internal/dashboard/gauges/scene.go`](../../../internal/dashboard/gauges/scene.go)
-- [`internal/dashboard/v3dashboard/dashboard.go`](../../../internal/dashboard/v3dashboard/dashboard.go)
+- `internal/dashboard/gauges/pointer_markers.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
+- `internal/dashboard/gauges/scene.go`
 
 ## Types
 - `PointerMarkersConfig`
+- `PointerMarkerState`
 
 ## Functions and Methods
-- Pointer-marker update and render helpers exist, but there is no stat-marker feature keyed to this historical note.
+- `AdvanceMinMaxPointerMarkers`
+- `AdvanceAveragePointerMarker`
+- `updatePointerMarkerState`
 
 ## Runtime Flow
-Runtime tracks pointer markers for min, max, and average rendered positions. It does not implement the earlier historical concept as a separate feature.
+Current code implements pointer markers as a separate design. No statistical-marker feature or config named by this historical note was found.
 
 ## Configuration
-Supported config is `realism.pointer_markers`, not a stat-marker schema.
+Current code accepts `realism.pointer_markers`. No stat-marker config key was found.
 
 ## Behaviour
-Users get the newer pointer-marker feature set rather than the superseded design.
+Pointer markers are implemented. The older stat-marker design is not.
 
 ## Rendering
-Pointer markers render as dedicated marker assets above the gauge, using final displayed geometry.
+Pointer markers render through the radial and bar scene helpers. No stat-marker-specific render path was found.
 
 ## Tests
-- [`internal/dashboard/gauges/pointer_markers_test.go`](../../../internal/dashboard/gauges/pointer_markers_test.go)
-- [`internal/dashboard/gauges/scene_test.go`](../../../internal/dashboard/gauges/scene_test.go)
-- [`internal/dashboard/v3dashboard/gauge_widget_test.go`](../../../internal/dashboard/v3dashboard/gauge_widget_test.go)
+No feature-specific tests found.
 
 ## Limitations
-This implementation record exists mainly to prevent the historical note from being mistaken for live scope.
+This record distinguishes the superseded design from its replacement feature.
 
 ## Deviations from Design
-The design explicitly says not to implement the file as written. The code correctly implements the replacement feature instead.
+The design explicitly says not to implement the file as written. Current code instead implements the replacement pointer-marker feature.
 
 ## Remaining Work
-No work should target this superseded design. Use the pointer-marker records instead.
+No work should target this superseded design unless the design itself changes.
 
 ## Verification Notes
-Verified by reading the linked code and test files on 2026-07-12. This was a documentation audit only; no Go implementation changes were made as part of this pass.
+
+Files inspected:
+- `internal/dashboard/gauges/pointer_markers.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
+- `internal/dashboard/gauges/scene.go`
+
+Symbols verified:
+- `PointerMarkersConfig`
+- `PointerMarkerState`
+- `AdvanceMinMaxPointerMarkers`
+- `AdvanceAveragePointerMarker`
+- `updatePointerMarkerState`
+
+Searches performed:
+- `stat markers`
+- `pointer_markers`
+- `stat_markers`

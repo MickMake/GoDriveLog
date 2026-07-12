@@ -1,55 +1,104 @@
-# `pointer_markers`
-
-Design reference: [`docs/Designs/RealismBehaviour/witness-markers.md`](../../Designs/RealismBehaviour/witness-markers.md)
+# `pointer_markers` — Implementation
 
 ## Purpose
-Tracks the pointer-marker feature that records and renders reference positions for final displayed indicator geometry.
+Audits current pointer-marker support for radial and bar gauges.
 
 ## Implementation Status
-Status: **Implemented**.
+Implemented.
 
-Radial and bar gauges support `realism.pointer_markers` with min, max, and average marker behaviour.
+Verified current code provides the behaviour described in the audited scope.
 
 ## Packages and Files
-- [`internal/dashboard/gauges/package.go`](../../../internal/dashboard/gauges/package.go)
-- [`internal/dashboard/gauges/pointer_markers.go`](../../../internal/dashboard/gauges/pointer_markers.go)
-- [`internal/dashboard/gauges/scene.go`](../../../internal/dashboard/gauges/scene.go)
-- [`internal/dashboard/v3dashboard/dashboard.go`](../../../internal/dashboard/v3dashboard/dashboard.go)
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/gauges/pointer_markers.go`
+- `internal/dashboard/gauges/scene.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
 
 ## Types
 - `Realism`
 - `PointerMarkersConfig`
+- `PointerMarkerState`
+- `PointerMarkerValueState`
 
 ## Functions and Methods
-- Pointer-marker advance helpers in `pointer_markers.go`
-- `resolveMovementState`
+- `validateRealism`
+- `AdvanceMinMaxPointerMarkers`
+- `AdvanceAveragePointerMarker`
+- `RenderedPointerMarkerPosition`
+- `updatePointerMarkerState`
+- `appendRadialPointerMarkerParts`
+- `appendBarPointerMarkerParts`
 
 ## Runtime Flow
-Runtime records markers from final displayed geometry, including overshoot and other movement effects, and can keep average markers active across idle ticks until settled.
+Runtime stores pointer-marker state separately from movement state and updates it through `updatePointerMarkerState` using the current rendered gauge position.
 
 ## Configuration
-Radial and bar packages accept `realism.pointer_markers` with per-marker enablement and supporting options.
+`PointerMarkersConfig` accepts `min`, `max`, `average`, and optional `window`. `validateRealism` restricts pointer markers to radial and bar gauges.
 
 ## Behaviour
-Markers can track min, max, and running average positions while remaining display-only and deterministic.
+Current code supports min, max, and average pointer markers. Daily reset or rolling-window behaviour is selected by whether `window` is configured.
 
 ## Rendering
-Scene composition renders marker assets above the live pointer/bar and before overlay layers, using family-appropriate geometry.
+Radial and bar scenes append dedicated pointer-marker parts after the live indicator and before overlay layers.
 
 ## Tests
-- [`internal/dashboard/gauges/package_test.go`](../../../internal/dashboard/gauges/package_test.go)
-- [`internal/dashboard/gauges/pointer_markers_test.go`](../../../internal/dashboard/gauges/pointer_markers_test.go)
-- [`internal/dashboard/gauges/scene_test.go`](../../../internal/dashboard/gauges/scene_test.go)
-- [`internal/dashboard/v3dashboard/gauge_widget_test.go`](../../../internal/dashboard/v3dashboard/gauge_widget_test.go)
+- `TestLoadPackageLoadsPointerMarkersConfig`
+- `TestLoadPackageLoadsDisabledPointerMarkersConfig`
+- `TestAdvanceMinMaxPointerMarkersResetsAtLocalMidnight`
+- `TestAdvanceAveragePointerMarkerUsesFixedTenSecondTimeConstant`
+- `TestRenderedPointerMarkerPositionUsesFinalRenderedGeometry`
+- `TestRuntimeInitializesPointerMarkerStateStore`
+- `TestRuntimeRadialGaugeWidgetRendersPointerMarkersAboveNeedleBeforeOverlay`
+- `TestRuntimeBarGaugeWidgetRendersPointerMarkersAboveBarBeforeGlass`
 
 ## Limitations
-The feature applies only to radial and bar families.
+Only radial and bar gauges implement pointer markers.
 
 ## Deviations from Design
-The implementation matches the current pointer-marker design rather than the older superseded stat-marker note.
+No verified deviation found in the audited scope.
 
 ## Remaining Work
-No known design work remains.
+No remaining work was proven by this audit.
 
 ## Verification Notes
-Verified by reading the linked code and test files on 2026-07-12. This was a documentation audit only; no Go implementation changes were made as part of this pass.
+
+Files inspected:
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/gauges/pointer_markers.go`
+- `internal/dashboard/gauges/scene.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
+
+Symbols verified:
+- `Realism`
+- `PointerMarkersConfig`
+- `PointerMarkerState`
+- `PointerMarkerValueState`
+- `validateRealism`
+- `AdvanceMinMaxPointerMarkers`
+- `AdvanceAveragePointerMarker`
+- `RenderedPointerMarkerPosition`
+- `updatePointerMarkerState`
+- `appendRadialPointerMarkerParts`
+- `appendBarPointerMarkerParts`
+
+Configuration verified:
+- `realism.pointer_markers`
+- `min`
+- `max`
+- `average`
+- `window`
+
+Tests inspected:
+- `TestLoadPackageLoadsPointerMarkersConfig`
+- `TestLoadPackageLoadsDisabledPointerMarkersConfig`
+- `TestAdvanceMinMaxPointerMarkersResetsAtLocalMidnight`
+- `TestAdvanceAveragePointerMarkerUsesFixedTenSecondTimeConstant`
+- `TestRenderedPointerMarkerPositionUsesFinalRenderedGeometry`
+- `TestRuntimeInitializesPointerMarkerStateStore`
+- `TestRuntimeRadialGaugeWidgetRendersPointerMarkersAboveNeedleBeforeOverlay`
+- `TestRuntimeBarGaugeWidgetRendersPointerMarkersAboveBarBeforeGlass`
+
+Searches performed:
+- `pointer_markers`
+- `PointerMarkersConfig`
+- `RenderedPointerMarkerPosition`

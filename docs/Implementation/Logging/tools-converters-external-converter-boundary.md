@@ -1,47 +1,59 @@
-# External Converter Boundary
-
-Design reference: [`docs/Designs/Logging/tools-converters-external-converter-boundary.md`](../../Designs/Logging/tools-converters-external-converter-boundary.md)
+# External Converter Boundary — Implementation
 
 ## Purpose
-Tracks the planned boundary that keeps foreign-format conversion out of GoDriveLog core runtime.
+Audits whether the repository contains the external converter boundary described by the design.
 
 ## Implementation Status
-Status: **Not implemented**.
+Not implemented.
 
-There is no `tools/converters` implementation or converter boundary in the current tree.
+Verified current code does not provide the designed feature in the audited scope.
 
 ## Packages and Files
-- [`internal/logger/event_jsonl.go`](../../../internal/logger/event_jsonl.go)
+- `internal/logger/event_jsonl.go`
+- `scripts/generate-example-assets/main.go`
 
 ## Types
-- None in current code.
+- `JSONLEventWriter`
 
 ## Functions and Methods
-- `JSONLEventWriter` can emit the current event stream, but there are no first-party converter entrypoints.
+- `NewJSONLEventWriter`
 
 ## Runtime Flow
-The runtime only produces native live events and optional JSONL logs. It does not import or convert external formats.
+No feature-specific runtime path was found. Current code can write JSONL logs, but no converter entrypoint or `tools/converters` workflow was found.
 
 ## Configuration
-No converter registration, import CLI, or external-format mapping layer exists.
+No converter command, package, or repository `tools/` directory was found.
 
 ## Behaviour
-Any foreign-format conversion remains outside the repo or must be written ad hoc.
+Foreign-format conversion is not implemented in current repository code.
 
 ## Rendering
-No rendering impact.
+Not applicable.
 
 ## Tests
-- None in current code.
+No feature-specific tests found.
 
 ## Limitations
-The converter boundary depends on a formal canonical event log and companion tooling that are not present yet.
+Repository structure was used as evidence here: the codebase has `scripts/` but no `tools/converters` implementation.
 
 ## Deviations from Design
-The design names an explicit tools area. Current code has not created it.
+The design places foreign-format conversion outside core runtime under `tools/converters`. Current code does not implement that boundary.
 
 ## Remaining Work
-Add the `tools/converters` layout, define import/export boundaries, and target the canonical event log format.
+Add converter packages and commands only if this design is scheduled.
 
 ## Verification Notes
-Verified by reading the linked code and test files on 2026-07-12. This was a documentation audit only; no Go implementation changes were made as part of this pass.
+
+Files inspected:
+- `internal/logger/event_jsonl.go`
+- `scripts/generate-example-assets/main.go`
+
+Symbols verified:
+- `JSONLEventWriter`
+- `NewJSONLEventWriter`
+
+Searches performed:
+- `tools/converters`
+- `converter`
+- `csv-to-gdl-jsonl`
+- `racechrono-to-gdl-jsonl`

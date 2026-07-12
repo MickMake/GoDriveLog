@@ -1,51 +1,64 @@
-# `backlash`
-
-Design reference: [`docs/Designs/RealismBehaviour/backlash.md`](../../Designs/RealismBehaviour/backlash.md)
+# `backlash` — Implementation
 
 ## Purpose
-Tracks the planned odometer backlash effect for direction-change slack.
+Audits whether odometer backlash exists in current code.
 
 ## Implementation Status
-Status: **Not implemented**.
+Not implemented.
 
-No `realism.backlash` field, parser allowance, or odometer runtime behaviour exists on `main`.
+Verified current code does not provide the designed feature in the audited scope.
 
 ## Packages and Files
-- [`internal/dashboard/gauges/package.go`](../../../internal/dashboard/gauges/package.go)
-- [`internal/dashboard/gauges/scene.go`](../../../internal/dashboard/gauges/scene.go)
-- [`internal/dashboard/v3dashboard/dashboard.go`](../../../internal/dashboard/v3dashboard/dashboard.go)
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/gauges/scene.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
 
 ## Types
-- `Realism` does not contain a backlash field.
+- `Realism`
 
 ## Functions and Methods
-- `validateRealismForGaugeFamily` rejects unsupported realism keys.
+- `UnmarshalYAML`
+- `validateRealism`
+- `resolveOdometerMovementState`
 
 ## Runtime Flow
-Odometer runtime movement uses existing movement curves, carry drag, snap settle, wraparound, and drum slop only.
+No backlash-specific runtime phase or state was found in odometer movement handling. Odometer movement currently routes through `resolveOdometerMovementState` and the existing carry-drag and snap-settle helpers only.
 
 ## Configuration
-`gauge.yaml` cannot declare `realism.backlash` without failing validation.
+`Realism` does not declare a `Backlash` field, and `(*Realism).UnmarshalYAML` does not accept a `backlash` key.
 
 ## Behaviour
-Direction changes do not show any explicit slack phase before the wheel follows the new direction.
+No direction-change slack behaviour matching this design was found.
 
 ## Rendering
-Rendered odometer wheel positions move directly according to the implemented movement pipeline.
+No backlash-specific rendering path was found in odometer scene code.
 
 ## Tests
-- [`internal/dashboard/gauges/package_test.go`](../../../internal/dashboard/gauges/package_test.go)
-- [`internal/dashboard/gauges/scene_test.go`](../../../internal/dashboard/gauges/scene_test.go)
-- [`internal/dashboard/v3dashboard/gauge_widget_test.go`](../../../internal/dashboard/v3dashboard/gauge_widget_test.go)
+No feature-specific tests found.
 
 ## Limitations
-There is no reserved config shape or runtime placeholder for backlash.
+This audit did not treat older planning documents as implementation evidence.
 
 ## Deviations from Design
-The design is still future work, and the code agrees with that.
+The design describes odometer backlash. Current code has no parser key, runtime state, or scene logic for it.
 
 ## Remaining Work
-Add config support, direction-change slack rules, and odometer tests for reversal behaviour.
+Add `realism.backlash` parsing, validation, runtime state, and tests if this design is scheduled.
 
 ## Verification Notes
-Verified by reading the linked code and test files on 2026-07-12. This was a documentation audit only; no Go implementation changes were made as part of this pass.
+
+Files inspected:
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/gauges/scene.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
+
+Symbols verified:
+- `Realism`
+- `UnmarshalYAML`
+- `validateRealism`
+- `resolveOdometerMovementState`
+
+Searches performed:
+- `backlash`
+- `realism.backlash`
+- `direction-change slack`

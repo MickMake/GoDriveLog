@@ -1,47 +1,58 @@
-# Gauge Presets
-
-Design reference: [`docs/Designs/RealismBehaviour/gauge-presets.md`](../../Designs/RealismBehaviour/gauge-presets.md)
+# Gauge Presets — Implementation
 
 ## Purpose
-Tracks the planned reusable preset/profile layer for gauge visuals and realism.
+Audits whether gauge presets or preset inheritance exist in current code.
 
 ## Implementation Status
-Status: **Not implemented**.
+Not implemented.
 
-Gauge packages are loaded as self-contained YAML files today; there is no preset inheritance or named profile system.
+Verified current code does not provide the designed feature in the audited scope.
 
 ## Packages and Files
-- [`internal/dashboard/gauges/package.go`](../../../internal/dashboard/gauges/package.go)
+- `internal/dashboard/gauges/package.go`
 
 ## Types
-- None in current code.
+- `Package`
 
 ## Functions and Methods
-- Package loading validates a single package definition with local realism config only.
+- `LoadPackage`
+- `parsePackage`
 
 ## Runtime Flow
-Packages are resolved and rendered directly from their own YAML definitions.
+No preset-resolution phase was found. Gauge packages are loaded directly from one `gauge.yaml` file.
 
 ## Configuration
-There is no `preset`, profile include, or pre-merge config stage in current package loading.
+No `gauge_presets` root, preset reference field, or preset merge step was found in current code.
 
 ## Behaviour
-Every gauge repeats its own realism and asset settings instead of reusing named preset blocks.
+Current gauge packages are self-contained.
 
 ## Rendering
-Rendering only sees the final explicit package config loaded from each package.
+Not applicable.
 
 ## Tests
-- [`internal/dashboard/gauges/package_test.go`](../../../internal/dashboard/gauges/package_test.go)
+No feature-specific tests found.
 
 ## Limitations
-Introducing presets would affect loading order, validation, and override precedence.
+This audit only covers current repository code.
 
 ## Deviations from Design
-The design describes a preset/profile system that does not exist in the current loader.
+The design describes named reusable presets. Current code loads gauge packages directly without a preset system.
 
 ## Remaining Work
-Define preset resolution, merging rules, and validation boundaries before implementation.
+Add preset loading and override rules only if this design is scheduled.
 
 ## Verification Notes
-Verified by reading the linked code and test files on 2026-07-12. This was a documentation audit only; no Go implementation changes were made as part of this pass.
+
+Files inspected:
+- `internal/dashboard/gauges/package.go`
+
+Symbols verified:
+- `Package`
+- `LoadPackage`
+- `parsePackage`
+
+Searches performed:
+- `gauge_presets`
+- `preset`
+- `LoadPackage`

@@ -1,49 +1,77 @@
-# `decimal_point_behaviour`
-
-Design reference: [`docs/Designs/RealismBehaviour/numeric-decimal-point-behaviour.md`](../../Designs/RealismBehaviour/numeric-decimal-point-behaviour.md)
+# `decimal_point_behaviour` — Implementation
 
 ## Purpose
-Tracks the planned independent behaviour rules for decimal points in numeric and segmented displays.
+Audits current decimal-point handling against the decimal-point behaviour design.
 
 ## Implementation Status
-Status: **Not implemented**.
+Partially implemented.
 
-Numeric formatting can render decimal points, but there is no dedicated decimal-point realism behaviour layer.
+Verified current code implements part of the design, but the audited scope also has missing or different behaviour.
 
 ## Packages and Files
-- [`internal/dashboard/gauges/scene.go`](../../../internal/dashboard/gauges/scene.go)
-- [`internal/dashboard/v3dashboard/dashboard_test.go`](../../../internal/dashboard/v3dashboard/dashboard_test.go)
+- `internal/dashboard/gauges/scene.go`
+- `internal/config/v3config/validate.go`
+- `internal/dashboard/v3dashboard/dashboard_test.go`
 
 ## Types
-- None in current code.
+- `DigitSet`
 
 ## Functions and Methods
-- Numeric scene formatting handles decimal point placement but not decimal-point-specific realism.
+- `NumericScene`
+- `splitTextIntoSlots`
+- `formatUsesDecimalPoint`
 
 ## Runtime Flow
-Numeric rendering uses formatted output directly and does not model separate point fade, bleed, lag, or brightness behaviour.
+No decimal-point-specific runtime state was found. Decimal point handling is part of numeric formatting and scene generation.
 
 ## Configuration
-There is no `realism.decimal_point_behaviour` key in package loading.
+Current code verifies `digit_set.decimal_point` when the configured numeric format requires a decimal point. No `realism.decimal_point_behaviour` key was found.
 
 ## Behaviour
-Decimal points render as part of current glyph/layout rules only.
+Numeric scenes can render decimal point assets in specific slots, and validation rejects formats that need a decimal point when the digit set lacks one. No fade, bleed, or ghosting behaviour specific to decimal points was found.
 
 ## Rendering
-Scene composition supports decimal point placement in numeric gauges, but not independent display artefacts for the point element.
+`NumericScene` renders a `decimal_point` part after the character part for a slot and before the foreground layer.
 
 ## Tests
-- [`internal/dashboard/gauges/scene_test.go`](../../../internal/dashboard/gauges/scene_test.go)
-- [`internal/dashboard/v3dashboard/dashboard_test.go`](../../../internal/dashboard/v3dashboard/dashboard_test.go)
+- `TestNumericSceneRejectsMissingDecimalPointWhenFormatNeedsIt`
+- `TestDigitDecimalPointDoesNotConsumeSlot`
+- `TestDigitDefaultFormatDoesNotRequireDecimalPoint`
+- `TestDigitDecimalPointRendersBeforeForegroundForSlot`
 
 ## Limitations
-Basic decimal-point rendering exists, which can make the missing realism layer easy to over-assume.
+Current code covers basic decimal-point rendering and validation only.
 
 ## Deviations from Design
-The design is about point-specific realism, not mere decimal formatting; that realism layer is absent.
+The design calls for decimal-point-specific realism behaviour. Current code only implements base decimal-point layout and asset requirements.
 
 ## Remaining Work
-Define the config model and separate point-level rendering behaviour if the feature stays desirable.
+Add a dedicated decimal-point realism contract only if this design is scheduled.
 
 ## Verification Notes
-Verified by reading the linked code and test files on 2026-07-12. This was a documentation audit only; no Go implementation changes were made as part of this pass.
+
+Files inspected:
+- `internal/dashboard/gauges/scene.go`
+- `internal/config/v3config/validate.go`
+- `internal/dashboard/v3dashboard/dashboard_test.go`
+
+Symbols verified:
+- `DigitSet`
+- `NumericScene`
+- `splitTextIntoSlots`
+- `formatUsesDecimalPoint`
+
+Configuration verified:
+- `digit_set.decimal_point`
+- `format`
+
+Tests inspected:
+- `TestNumericSceneRejectsMissingDecimalPointWhenFormatNeedsIt`
+- `TestDigitDecimalPointDoesNotConsumeSlot`
+- `TestDigitDefaultFormatDoesNotRequireDecimalPoint`
+- `TestDigitDecimalPointRendersBeforeForegroundForSlot`
+
+Searches performed:
+- `decimal_point_behaviour`
+- `decimal_point`
+- `splitTextIntoSlots`

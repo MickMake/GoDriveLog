@@ -1,47 +1,56 @@
-# `segment_bleed` / `digit_bleed`
-
-Design reference: [`docs/Designs/RealismBehaviour/segment-bleed-digit-bleed.md`](../../Designs/RealismBehaviour/segment-bleed-digit-bleed.md)
+# `segment_bleed` / `digit_bleed` — Implementation
 
 ## Purpose
-Tracks the planned faint inactive-segment visibility for numeric and segmented displays.
+Audits whether segment or digit bleed exists in current code.
 
 ## Implementation Status
-Status: **Not implemented**.
+Not implemented.
 
-There is no `segment_bleed` or `digit_bleed` config, history, or render layer on `main`.
+Verified current code does not provide the designed feature in the audited scope.
 
 ## Packages and Files
-- [`internal/dashboard/gauges/scene.go`](../../../internal/dashboard/gauges/scene.go)
+- `internal/dashboard/gauges/scene.go`
 
 ## Types
-- None in current code.
+None found in current code.
 
 ## Functions and Methods
-- None in current code.
+- `NumericScene`
+- `SegmentedScene`
 
 ## Runtime Flow
-Runtime passes current formatted output to display scenes only; it does not track inactive-element persistence.
+No inactive-mask or bleed state was found.
 
 ## Configuration
-Package loading does not accept `realism.segment_bleed` or `realism.digit_bleed`.
+No `realism.segment_bleed` or `realism.digit_bleed` key was found in current code.
 
 ## Behaviour
-Inactive segments are not rendered as a deliberate faint mask unless artwork already bakes that in.
+Current numeric and segmented scenes render active state only.
 
 ## Rendering
-Scene composition renders active output only, with no inactive-segment overlay pass.
+No inactive-segment or inactive-digit overlay path was found.
 
 ## Tests
-- [`internal/dashboard/gauges/scene_test.go`](../../../internal/dashboard/gauges/scene_test.go)
+No feature-specific tests found.
 
 ## Limitations
-Any future implementation would need asset strategy for inactive masks across families.
+This record only covers current repository code.
 
 ## Deviations from Design
-Still a candidate only.
+The design describes segment and digit bleed. Current code does not implement them.
 
 ## Remaining Work
-Define asset expectations and alpha rules before implementation.
+Add the feature only if this design is scheduled.
 
 ## Verification Notes
-Verified by reading the linked code and test files on 2026-07-12. This was a documentation audit only; no Go implementation changes were made as part of this pass.
+
+Files inspected:
+- `internal/dashboard/gauges/scene.go`
+
+Symbols verified:
+- `NumericScene`
+- `SegmentedScene`
+
+Searches performed:
+- `segment_bleed`
+- `digit_bleed`

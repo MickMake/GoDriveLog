@@ -1,49 +1,62 @@
-# MQTT Architecture Notes
-
-Design reference: [`docs/Designs/Runtime/mqtt-architecture.md`](../../Designs/Runtime/mqtt-architecture.md)
+# MQTT Architecture Notes — Implementation
 
 ## Purpose
-Tracks the future architectural direction for decoupling telemetry producers and consumers through MQTT.
+Audits whether the repository has implemented the MQTT architecture note.
 
 ## Implementation Status
-Status: **Not implemented**.
+Not implemented.
 
-Current runtime remains direct and in-process; it does not use MQTT anywhere in the main execution path.
+Verified current code does not provide the designed feature in the audited scope.
 
 ## Packages and Files
-- [`internal/runtime/v3runtime/run.go`](../../../internal/runtime/v3runtime/run.go)
-- [`internal/config/v3config/resolve.go`](../../../internal/config/v3config/resolve.go)
+- `internal/runtime/v3runtime/run.go`
+- `internal/config/v3config/resolve.go`
 
 ## Types
 - `Options`
+- `RuntimePlan`
 
 ## Functions and Methods
 - `Run`
 - `Resolve`
 
 ## Runtime Flow
-`v3runtime.Run` resolves the selected vehicle, constructs the connector, polling runtime, and subscribers directly, and then feeds dashboard/log sinks in-process.
+`Run` loads a config file, resolves a `RuntimePlan`, connects a vehicle reader, starts the polling runtime, and delivers events directly to log subscribers and the dashboard sink. No MQTT publish or subscribe path was found.
 
 ## Configuration
-There is no MQTT broker config, topic schema, publish/subscribe client, or daemon split in runtime config.
+No MQTT broker, topic, or transport config was found in current runtime configuration types.
 
 ## Behaviour
-Telemetry producers and consumers remain tightly coupled inside one process runtime.
+Current telemetry flow is direct and in-process.
 
 ## Rendering
-Dashboard rendering consumes direct runtime events, not MQTT messages.
+Dashboard rendering receives direct runtime scenes, not MQTT-delivered messages.
 
 ## Tests
-- [`internal/runtime/v3runtime/run_test.go`](../../../internal/runtime/v3runtime/run_test.go)
+No feature-specific tests found.
 
 ## Limitations
-The design is architectural guidance only. The code has not started the MQTT slice.
+This record covers current repository code only.
 
 ## Deviations from Design
-The future architecture note is intentionally ahead of current implementation.
+The design note describes a future MQTT-based architecture. Current code does not implement it.
 
 ## Remaining Work
-Introduce a first slice such as daemon-to-MQTT-to-dashboard only when the architecture work is explicitly scheduled.
+Add MQTT transport only if that architecture work is explicitly scheduled.
 
 ## Verification Notes
-Verified by reading the linked code and test files on 2026-07-12. This was a documentation audit only; no Go implementation changes were made as part of this pass.
+
+Files inspected:
+- `internal/runtime/v3runtime/run.go`
+- `internal/config/v3config/resolve.go`
+
+Symbols verified:
+- `Options`
+- `RuntimePlan`
+- `Run`
+- `Resolve`
+
+Searches performed:
+- `mqtt`
+- `broker`
+- `topic`

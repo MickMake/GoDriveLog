@@ -1,51 +1,85 @@
-# `carry_drag`
-
-Design reference: [`docs/Designs/RealismBehaviour/odometer-carry-drag.md`](../../Designs/RealismBehaviour/odometer-carry-drag.md)
+# `carry_drag` — Implementation
 
 ## Purpose
-Tracks the early-coupling movement of higher odometer digits near rollover.
+Audits current odometer carry-drag support.
 
 ## Implementation Status
-Status: **Implemented**.
+Implemented.
 
-Odometer packages support `realism.carry_drag`, and wheel interpolation applies the effect near rollover.
+Verified current code provides the behaviour described in the audited scope.
 
 ## Packages and Files
-- [`internal/dashboard/gauges/package.go`](../../../internal/dashboard/gauges/package.go)
-- [`internal/dashboard/gauges/scene.go`](../../../internal/dashboard/gauges/scene.go)
-- [`internal/dashboard/v3dashboard/dashboard.go`](../../../internal/dashboard/v3dashboard/dashboard.go)
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/gauges/scene.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
 
 ## Types
 - `Realism`
+- `Odometer`
 
 ## Functions and Methods
-- `validateRealismForGaugeFamily`
+- `validateRealism`
+- `OdometerCarryDragWheelOffsets`
+- `odometerCarryDragEnabled`
+- `resolveOdometerMovementState`
+- `applyOdometerMovementRealism`
 
 ## Runtime Flow
-Odometer movement resolves the displayed wheel positions, then carry-drag logic advances the higher wheel slightly as the lower wheel approaches rollover.
+`resolveOdometerMovementState` updates wheel offsets, and `applyOdometerMovementRealism` applies `OdometerCarryDragWheelOffsets` when carry drag is enabled and forward movement is in flight.
 
 ## Configuration
-Odometer packages accept `realism.carry_drag` as a display-only realism option.
+`Realism` declares `CarryDrag *bool`. `validateRealism` restricts it to odometer gauges only.
 
 ## Behaviour
-Higher wheels start to creep before the lower wheel fully rolls over, but still settle on the exact target value.
+Higher wheels begin to advance before the lower wheel reaches rollover during qualifying forward movement.
 
 ## Rendering
-Wheel-strip rendering uses the adjusted fractional offsets so the effect appears as physical pre-load rather than digit substitution.
+Odometer scene rendering consumes the adjusted wheel offsets produced by movement and carry-drag logic.
 
 ## Tests
-- [`internal/dashboard/gauges/package_test.go`](../../../internal/dashboard/gauges/package_test.go)
-- [`internal/dashboard/gauges/scene_test.go`](../../../internal/dashboard/gauges/scene_test.go)
-- [`internal/dashboard/v3dashboard/gauge_widget_test.go`](../../../internal/dashboard/v3dashboard/gauge_widget_test.go)
+- `TestLoadPackageLoadsOdometerCarryDragRealism`
+- `TestLoadPackageRejectsCarryDragOnNonOdometerGauge`
+- `TestOdometerCarryDragDisabledKeepsBaseWheelOffsets`
+- `TestOdometerCarryDragEnabledAdvancesHigherWheelNearRollover`
+- `TestOdometerCarryDragStraddlingUpdateStartsBeforeLowerWheelPassesRollover`
+- `TestRuntimeOdometerGaugeCarryDragAdvancesHigherWheelNearRolloverAndSettlesExactlyOnTarget`
 
 ## Limitations
-Only odometer families implement this effect.
+The current implementation only applies carry drag to forward rollover movement.
 
 ## Deviations from Design
-The implementation matches the documented effect closely.
+No verified deviation found in the audited scope.
 
 ## Remaining Work
-No known design work remains.
+No remaining work was proven by this audit.
 
 ## Verification Notes
-Verified by reading the linked code and test files on 2026-07-12. This was a documentation audit only; no Go implementation changes were made as part of this pass.
+
+Files inspected:
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/gauges/scene.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
+
+Symbols verified:
+- `Realism`
+- `Odometer`
+- `validateRealism`
+- `OdometerCarryDragWheelOffsets`
+- `odometerCarryDragEnabled`
+- `resolveOdometerMovementState`
+- `applyOdometerMovementRealism`
+
+Configuration verified:
+- `realism.carry_drag`
+
+Tests inspected:
+- `TestLoadPackageLoadsOdometerCarryDragRealism`
+- `TestLoadPackageRejectsCarryDragOnNonOdometerGauge`
+- `TestOdometerCarryDragDisabledKeepsBaseWheelOffsets`
+- `TestOdometerCarryDragEnabledAdvancesHigherWheelNearRollover`
+- `TestOdometerCarryDragStraddlingUpdateStartsBeforeLowerWheelPassesRollover`
+- `TestRuntimeOdometerGaugeCarryDragAdvancesHigherWheelNearRolloverAndSettlesExactlyOnTarget`
+
+Searches performed:
+- `carry_drag`
+- `OdometerCarryDragWheelOffsets`

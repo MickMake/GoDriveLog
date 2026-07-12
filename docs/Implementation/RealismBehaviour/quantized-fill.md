@@ -1,50 +1,61 @@
-# `quantized_fill`
-
-Design reference: [`docs/Designs/RealismBehaviour/quantized-fill.md`](../../Designs/RealismBehaviour/quantized-fill.md)
+# `quantized_fill` — Implementation
 
 ## Purpose
-Tracks the planned discrete-resolution fill behaviour for bar and segmented displays.
+Audits whether quantized fill exists in current code.
 
 ## Implementation Status
-Status: **Not implemented**.
+Not implemented.
 
-Current bar rendering remains continuous, and there is no `quantized_fill` parser or runtime support.
+Verified current code does not provide the designed feature in the audited scope.
 
 ## Packages and Files
-- [`internal/dashboard/gauges/package.go`](../../../internal/dashboard/gauges/package.go)
-- [`internal/dashboard/gauges/scene.go`](../../../internal/dashboard/gauges/scene.go)
-- [`internal/dashboard/v3dashboard/dashboard.go`](../../../internal/dashboard/v3dashboard/dashboard.go)
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/gauges/scene.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
 
 ## Types
-- None in current code.
+- `Realism`
 
 ## Functions and Methods
-- `validateRealismForGaugeFamily` rejects unsupported realism keys.
+- `UnmarshalYAML`
+- `BarSceneWithPointerMarkers`
 
 ## Runtime Flow
-Bar movement resolves continuous displayed extents rather than snapping them to discrete thresholds.
+No quantized-fill runtime path was found.
 
 ## Configuration
-There is no `realism.quantized_fill` key in package loading.
+`Realism` does not declare a `QuantizedFill` field, and `(*Realism).UnmarshalYAML` does not accept `quantized_fill`.
 
 ## Behaviour
-Displayed fill updates can be smooth or animated, but not quantised into fixed visible increments.
+Bar rendering remains continuous and reveal-based.
 
 ## Rendering
-Bar scenes render the final reveal height directly from continuous geometry.
+No quantized-fill render path was found.
 
 ## Tests
-- [`internal/dashboard/gauges/package_test.go`](../../../internal/dashboard/gauges/package_test.go)
-- [`internal/dashboard/gauges/scene_test.go`](../../../internal/dashboard/gauges/scene_test.go)
+No feature-specific tests found.
 
 ## Limitations
-Segmented gauges exist, but this specific realism behaviour is still absent.
+This record only covers current repository code.
 
 ## Deviations from Design
-The candidate design remains backlog only.
+The design describes quantized fill. Current code does not implement it.
 
 ## Remaining Work
-Add parser support, quantisation rules, and family-specific rendering if the feature stays desirable.
+Add the feature only if this design is scheduled.
 
 ## Verification Notes
-Verified by reading the linked code and test files on 2026-07-12. This was a documentation audit only; no Go implementation changes were made as part of this pass.
+
+Files inspected:
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/gauges/scene.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
+
+Symbols verified:
+- `Realism`
+- `UnmarshalYAML`
+- `BarSceneWithPointerMarkers`
+
+Searches performed:
+- `quantized_fill`
+- `realism.quantized_fill`

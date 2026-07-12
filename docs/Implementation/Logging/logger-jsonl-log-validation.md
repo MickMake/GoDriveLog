@@ -1,49 +1,64 @@
-# JSONL Log Validation
-
-Design reference: [`docs/Designs/Logging/logger-jsonl-log-validation.md`](../../Designs/Logging/logger-jsonl-log-validation.md)
+# JSONL Log Validation — Implementation
 
 ## Purpose
-Tracks the absent validator for canonical GoDriveLog event logs.
+Audits whether the repository can validate JSONL event logs as a first-party feature.
 
 ## Implementation Status
-Status: **Not implemented**.
+Not implemented.
 
-There is no `logs validate` command or schema-validation package on `main`.
+Verified current code does not provide the designed feature in the audited scope.
 
 ## Packages and Files
-- [`cmd/GoDriveLog/main_ebiten.go`](../../../cmd/GoDriveLog/main_ebiten.go)
-- [`internal/logger/event_jsonl.go`](../../../internal/logger/event_jsonl.go)
+- `cmd/GoDriveLog/main_ebiten.go`
+- `internal/logger/event_jsonl.go`
 
 ## Types
-- None in current code.
+None found in current code.
 
 ## Functions and Methods
-- `main` does not register a `logs` command tree.
-- `JSONLEventWriter` emits events but does not expose a standalone validator.
+- `runDashboardCLI`
+- `runDashboardValidateCommand`
 
 ## Runtime Flow
-Logs are produced during runtime, but there is no offline validation step before replay or conversion.
+No feature-specific runtime path was found. Current code can write logs and validate dashboard configs, but it does not validate log files.
 
 ## Configuration
-No validator flags, schema options, or CLI entrypoints exist.
+No `logs` command tree, no `logs validate` subcommand, and no log-schema validation entrypoint were found.
 
 ## Behaviour
-Malformed or incomplete log files are not checked by first-party tooling.
+Current code does not provide a first-party log validation command.
 
 ## Rendering
-No rendering impact.
+Not applicable.
 
 ## Tests
-- [`cmd/GoDriveLog/main_ebiten_test.go`](../../../cmd/GoDriveLog/main_ebiten_test.go)
+No feature-specific tests found.
 
 ## Limitations
-Validation depends on a formal schema and canonical log contract that have not been finished.
+This record only covers current repository code.
 
 ## Deviations from Design
-The design expects an explicit CLI validation pass. Current code has none.
+The design proposes `godrivelog logs validate drive.gdl.jsonl`. No matching command or validator was found.
 
 ## Remaining Work
-Add a `logs validate` command, parse-and-check logic, and tests against good and bad canonical logs.
+Add a log-validation command and schema checks if this design is still wanted.
 
 ## Verification Notes
-Verified by reading the linked code and test files on 2026-07-12. This was a documentation audit only; no Go implementation changes were made as part of this pass.
+
+Files inspected:
+- `cmd/GoDriveLog/main_ebiten.go`
+- `internal/logger/event_jsonl.go`
+
+Symbols verified:
+- `runDashboardCLI`
+- `runDashboardValidateCommand`
+- `JSONLEventWriter`
+
+Tests inspected:
+- `TestDashboardValidateRejectsPositionalAndFlagConfig`
+- `TestDashboardValidateDiscoversMultiVehicleConfigWithoutVehicle`
+
+Searches performed:
+- `logs validate`
+- `dashboard validate`
+- `.gdl.jsonl`

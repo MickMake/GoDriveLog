@@ -1,49 +1,58 @@
-# `per_digit_response_lag`
-
-Design reference: [`docs/Designs/RealismBehaviour/per-digit-response-lag.md`](../../Designs/RealismBehaviour/per-digit-response-lag.md)
+# `per_digit_response_lag` — Implementation
 
 ## Purpose
-Tracks the planned slot-by-slot update lag for numeric and segmented displays.
+Audits whether per-digit response lag exists in current code.
 
 ## Implementation Status
-Status: **Not implemented**.
+Not implemented.
 
-Current digit updates are not staggered per slot by a dedicated realism layer.
+Verified current code does not provide the designed feature in the audited scope.
 
 ## Packages and Files
-- [`internal/dashboard/gauges/scene.go`](../../../internal/dashboard/gauges/scene.go)
-- [`internal/dashboard/v3dashboard/dashboard.go`](../../../internal/dashboard/v3dashboard/dashboard.go)
+- `internal/dashboard/gauges/scene.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
 
 ## Types
-- None in current code.
+None found in current code.
 
 ## Functions and Methods
-- None in current code.
+- `NumericScene`
+- `SegmentedScene`
 
 ## Runtime Flow
-The dashboard runtime keeps one current displayed value per widget rather than a timed lag state per digit slot.
+No per-slot timing or lag state was found for numeric or segmented displays.
 
 ## Configuration
-There is no `realism.per_digit_response_lag` key in package loading.
+No `realism.per_digit_response_lag` key was found in current code.
 
 ## Behaviour
-Multi-digit displays update as a single formatted output rather than slot-by-slot delayed transitions.
+Current multi-digit displays update as one current state.
 
 ## Rendering
-Numeric and segmented scenes render the current display state without per-slot timing offsets.
+No per-digit lag render path was found.
 
 ## Tests
-- [`internal/dashboard/gauges/scene_test.go`](../../../internal/dashboard/gauges/scene_test.go)
-- [`internal/dashboard/v3dashboard/dashboard_test.go`](../../../internal/dashboard/v3dashboard/dashboard_test.go)
+No feature-specific tests found.
 
 ## Limitations
-Implementing this would need slot history and timing per digit, not just current formatted output.
+This record only covers current repository code.
 
 ## Deviations from Design
-Still a candidate only.
+The design calls for slot-level response lag. Current code does not implement it.
 
 ## Remaining Work
-Define the lag model and state retention rules before implementation.
+Add slot-level timing only if this design is scheduled.
 
 ## Verification Notes
-Verified by reading the linked code and test files on 2026-07-12. This was a documentation audit only; no Go implementation changes were made as part of this pass.
+
+Files inspected:
+- `internal/dashboard/gauges/scene.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
+
+Symbols verified:
+- `NumericScene`
+- `SegmentedScene`
+
+Searches performed:
+- `per_digit_response_lag`
+- `realism.per_digit_response_lag`

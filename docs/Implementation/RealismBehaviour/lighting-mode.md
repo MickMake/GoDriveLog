@@ -1,49 +1,63 @@
-# Gauge Lighting Mode
-
-Design reference: [`docs/Designs/RealismBehaviour/lighting-mode.md`](../../Designs/RealismBehaviour/lighting-mode.md)
+# Gauge Lighting Mode — Implementation
 
 ## Purpose
-Tracks the planned per-gauge reaction to dashboard lights-state changes.
+Audits whether gauges react to a lighting-mode signal in current code.
 
 ## Implementation Status
-Status: **Not implemented**.
+Not implemented.
 
-There is no dashboard lights-state signal or gauge asset switching tied to vehicle lighting on `main`.
+Verified current code does not provide the designed feature in the audited scope.
 
 ## Packages and Files
-- [`internal/dashboard/v3dashboard/dashboard.go`](../../../internal/dashboard/v3dashboard/dashboard.go)
-- [`internal/runtime/v3runtime/run.go`](../../../internal/runtime/v3runtime/run.go)
-- [`internal/dashboard/gauges/package.go`](../../../internal/dashboard/gauges/package.go)
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
+- `internal/runtime/v3runtime/run.go`
 
 ## Types
-- None in current code.
+None found in current code.
 
 ## Functions and Methods
-- `Run` and dashboard runtime do not expose a lighting-state event path.
+- `Run`
+- `NewRuntime`
 
 ## Runtime Flow
-The runtime has no dedicated concept of headlights, illumination, or day/night mode for gauges.
+No lights-state event, lighting-mode state, or asset-selection path was found in current runtime code.
 
 ## Configuration
-Package loading does not support alternate light-on asset sets or a `lighting_mode` config block.
+No gauge package lighting-mode config was found in `Package` or `Realism`.
 
 ## Behaviour
-Gauge appearance does not change when dashboard lighting would change in a real vehicle.
+Current gauges do not implement a lights-on or lights-off visual mode from this design.
 
 ## Rendering
-All art selection remains static except for currently supported indicator state layers and bar zones.
+No lighting-mode render path was found.
 
 ## Tests
-- None in current code.
+No feature-specific tests found.
 
 ## Limitations
-The feature depends on both runtime signal delivery and gauge-level asset contracts that do not exist.
+This record only covers current repository code.
 
 ## Deviations from Design
-The design expects a new dashboard event axis and asset-switching logic that current code lacks.
+The design requires a runtime lights signal and gauge-owned visual response. Current code has neither.
 
 ## Remaining Work
-Add lighting-state inputs, package config, and scene selection rules for alternate assets.
+Add signal plumbing, package config, and tests only if this design is scheduled.
 
 ## Verification Notes
-Verified by reading the linked code and test files on 2026-07-12. This was a documentation audit only; no Go implementation changes were made as part of this pass.
+
+Files inspected:
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
+- `internal/runtime/v3runtime/run.go`
+
+Symbols verified:
+- `Run`
+- `NewRuntime`
+- `Package`
+- `Realism`
+
+Searches performed:
+- `lighting_mode`
+- `lights`
+- `lighting mode`

@@ -1,48 +1,56 @@
-# `leading_zero_behaviour`
-
-Design reference: [`docs/Designs/RealismBehaviour/numeric-leading-zero-behaviour.md`](../../Designs/RealismBehaviour/numeric-leading-zero-behaviour.md)
+# `leading_zero_behaviour` — Implementation
 
 ## Purpose
-Tracks the planned deliberate handling of leading zero slots for numeric and segmented displays.
+Audits whether current code implements a dedicated leading-zero behaviour feature.
 
 ## Implementation Status
-Status: **Not implemented**.
+Not implemented.
 
-Current formatting does not expose a dedicated leading-zero realism control.
+Verified current code does not provide the designed feature in the audited scope.
 
 ## Packages and Files
-- [`internal/dashboard/gauges/scene.go`](../../../internal/dashboard/gauges/scene.go)
+- `internal/dashboard/gauges/scene.go`
 
 ## Types
-- None in current code.
+None found in current code.
 
 ## Functions and Methods
-- None in current code.
+- `NumericScene`
+- `formatValue`
 
 ## Runtime Flow
-Numeric output is formatted according to existing package display rules, without a separate realism decision for leading zeroes.
+No leading-zero-specific runtime state was found.
 
 ## Configuration
-There is no `realism.leading_zero_behaviour` key in package loading.
+No `realism.leading_zero_behaviour` key was found in current code.
 
 ## Behaviour
-Leading-zero presentation is determined by existing formatting behaviour, not by a dedicated realism layer.
+Numeric output follows the current formatting path only. No separate configurable leading-zero behaviour was found.
 
 ## Rendering
-Digit scene composition uses whatever formatted output it receives and does not add special dim/blank/ghost states for leading zero slots.
+No leading-zero-specific render path was found.
 
 ## Tests
-- [`internal/dashboard/gauges/scene_test.go`](../../../internal/dashboard/gauges/scene_test.go)
-- [`internal/dashboard/v3dashboard/dashboard_test.go`](../../../internal/dashboard/v3dashboard/dashboard_test.go)
+No feature-specific tests found.
 
 ## Limitations
-The current code may already hide or show zeroes through formatting, but not in the explicit, configurable way described by the design.
+This record only covers current repository code.
 
 ## Deviations from Design
-The candidate design remains unimplemented.
+The design calls for a dedicated leading-zero behaviour. Current code does not provide one.
 
 ## Remaining Work
-Define the config model and interaction with numeric formatting before implementation.
+Add a dedicated contract only if this design is scheduled.
 
 ## Verification Notes
-Verified by reading the linked code and test files on 2026-07-12. This was a documentation audit only; no Go implementation changes were made as part of this pass.
+
+Files inspected:
+- `internal/dashboard/gauges/scene.go`
+
+Symbols verified:
+- `NumericScene`
+- `formatValue`
+
+Searches performed:
+- `leading_zero_behaviour`
+- `leading zero`

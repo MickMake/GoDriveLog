@@ -1,49 +1,61 @@
-# `stepped_fill`
-
-Design reference: [`docs/Designs/RealismBehaviour/stepped-fill.md`](../../Designs/RealismBehaviour/stepped-fill.md)
+# `stepped_fill` — Implementation
 
 ## Purpose
-Tracks the planned block-style fill behaviour for bar and segmented displays.
+Audits whether stepped fill exists in current code.
 
 ## Implementation Status
-Status: **Not implemented**.
+Not implemented.
 
-Current bar rendering remains continuous, and segmented rendering does not expose `stepped_fill` as a realism option.
+Verified current code does not provide the designed feature in the audited scope.
 
 ## Packages and Files
-- [`internal/dashboard/gauges/package.go`](../../../internal/dashboard/gauges/package.go)
-- [`internal/dashboard/gauges/scene.go`](../../../internal/dashboard/gauges/scene.go)
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/gauges/scene.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
 
 ## Types
-- None in current code.
+- `Realism`
 
 ## Functions and Methods
-- None in current code.
+- `UnmarshalYAML`
+- `BarSceneWithPointerMarkers`
 
 ## Runtime Flow
-Display state is resolved as continuous bar extent or current segmented display state, not a visible block-step progression keyed by this feature.
+No stepped-fill runtime path was found.
 
 ## Configuration
-There is no `realism.stepped_fill` key in package loading.
+`Realism` does not declare a `SteppedFill` field, and `(*Realism).UnmarshalYAML` does not accept `stepped_fill`.
 
 ## Behaviour
-Displayed fill does not deliberately advance in discrete visible steps under a dedicated realism control.
+Current bar rendering remains reveal-based rather than step-based under a dedicated realism option.
 
 ## Rendering
-Bar and segmented scenes do not switch into a stepped/block fill mode.
+No stepped-fill render path was found.
 
 ## Tests
-- [`internal/dashboard/gauges/package_test.go`](../../../internal/dashboard/gauges/package_test.go)
-- [`internal/dashboard/gauges/scene_test.go`](../../../internal/dashboard/gauges/scene_test.go)
+No feature-specific tests found.
 
 ## Limitations
-Segmented rendering exists, but not as the configurable stepped-fill behaviour described here.
+This record only covers current repository code.
 
 ## Deviations from Design
-Still a candidate only.
+The design describes stepped fill. Current code does not implement it.
 
 ## Remaining Work
-Define the config and family-specific render model before implementation.
+Add the feature only if this design is scheduled.
 
 ## Verification Notes
-Verified by reading the linked code and test files on 2026-07-12. This was a documentation audit only; no Go implementation changes were made as part of this pass.
+
+Files inspected:
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/gauges/scene.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
+
+Symbols verified:
+- `Realism`
+- `UnmarshalYAML`
+- `BarSceneWithPointerMarkers`
+
+Searches performed:
+- `stepped_fill`
+- `realism.stepped_fill`

@@ -1,51 +1,89 @@
-# `hysteresis`
-
-Design reference: [`docs/Designs/RealismBehaviour/hysteresis.md`](../../Designs/RealismBehaviour/hysteresis.md)
+# `hysteresis` — Implementation
 
 ## Purpose
-Tracks direction-dependent displayed offsets for radial and bar gauges.
+Audits current hysteresis support for radial and bar gauges.
 
 ## Implementation Status
-Status: **Implemented**.
+Implemented.
 
-Hysteresis is supported for radial and bar gauges in both package validation and runtime movement resolution.
+Verified current code provides the behaviour described in the audited scope.
 
 ## Packages and Files
-- [`internal/dashboard/gauges/package.go`](../../../internal/dashboard/gauges/package.go)
-- [`internal/dashboard/v3dashboard/dashboard.go`](../../../internal/dashboard/v3dashboard/dashboard.go)
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
+- `internal/dashboard/gauges/scene.go`
 
 ## Types
 - `Realism`
-- `HysteresisConfig`
+- `ValueMap`
 
 ## Functions and Methods
-- `validateRealismForGaugeFamily`
+- `validateRealism`
 - `resolveMovementState`
+- `resolveBarMovementState`
+- `radialHysteresisDisplayTarget`
+- `barHysteresisDisplayTarget`
 
 ## Runtime Flow
-The movement resolver applies rising or falling display bias while preserving the stored raw source value.
+Radial hysteresis is applied in `resolveMovementState`. Bar hysteresis is applied in `resolveBarMovementState`. Both use approach direction and value-map span to shift the displayed target.
 
 ## Configuration
-Radial and bar packages accept `realism.hysteresis` with family-appropriate tuning.
+`Realism` declares `Hysteresis *bool`. `validateRealism` accepts the field for radial and bar gauges only.
 
 ## Behaviour
-The same source value can render slightly differently depending on approach direction, matching the display-only contract.
+The displayed target can shift slightly depending on whether the value approached from above or below. Stored raw source values remain unchanged.
 
 ## Rendering
-Rendering uses the resolved displayed state after hysteresis adjustments and optional clamp handling.
+The renderer uses the resolved display value. Hysteresis itself is handled before scene construction.
 
 ## Tests
-- [`internal/dashboard/gauges/package_test.go`](../../../internal/dashboard/gauges/package_test.go)
-- [`internal/dashboard/v3dashboard/gauge_widget_test.go`](../../../internal/dashboard/v3dashboard/gauge_widget_test.go)
+- `TestLoadPackageAcceptsRadialHysteresis`
+- `TestLoadPackageAcceptsBarHysteresis`
+- `TestLoadPackageRejectsHysteresisOnUnsupportedGaugeType`
+- `TestRuntimeRadialGaugeHysteresisOffsetsRisingApproach`
+- `TestRuntimeRadialGaugeHysteresisOffsetsFallingApproach`
+- `TestRuntimeBarGaugeHysteresisOffsetsRisingApproach`
+- `TestRuntimeBarGaugeHysteresisOffsetsFallingApproach`
 
 ## Limitations
-Only radial and bar families implement hysteresis.
+Only radial and bar gauges implement hysteresis.
 
 ## Deviations from Design
-The implementation aligns with the documented scope.
+No verified deviation found in the audited scope.
 
 ## Remaining Work
-No design-specific work remains unless more families adopt the effect.
+No remaining work was proven by this audit.
 
 ## Verification Notes
-Verified by reading the linked code and test files on 2026-07-12. This was a documentation audit only; no Go implementation changes were made as part of this pass.
+
+Files inspected:
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
+- `internal/dashboard/gauges/scene.go`
+
+Symbols verified:
+- `Realism`
+- `ValueMap`
+- `validateRealism`
+- `resolveMovementState`
+- `resolveBarMovementState`
+- `radialHysteresisDisplayTarget`
+- `barHysteresisDisplayTarget`
+
+Configuration verified:
+- `realism.hysteresis`
+
+Tests inspected:
+- `TestLoadPackageAcceptsRadialHysteresis`
+- `TestLoadPackageAcceptsBarHysteresis`
+- `TestLoadPackageRejectsHysteresisOnUnsupportedGaugeType`
+- `TestRuntimeRadialGaugeHysteresisOffsetsRisingApproach`
+- `TestRuntimeRadialGaugeHysteresisOffsetsFallingApproach`
+- `TestRuntimeBarGaugeHysteresisOffsetsRisingApproach`
+- `TestRuntimeBarGaugeHysteresisOffsetsFallingApproach`
+
+Searches performed:
+- `hysteresis`
+- `realism.hysteresis`
+- `radialHysteresisDisplayTarget`
+- `barHysteresisDisplayTarget`

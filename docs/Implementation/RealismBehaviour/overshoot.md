@@ -1,51 +1,97 @@
-# `overshoot`
-
-Design reference: [`docs/Designs/RealismBehaviour/overshoot.md`](../../Designs/RealismBehaviour/overshoot.md)
+# `overshoot` — Implementation
 
 ## Purpose
-Tracks bounded pass-and-settle movement for radial and bar gauges.
+Audits current overshoot support for radial and bar gauges.
 
 ## Implementation Status
-Status: **Implemented**.
+Implemented.
 
-Radial and bar packages support `realism.overshoot`, and runtime movement resolves a bounded overshoot before settling at target.
+Verified current code provides the behaviour described in the audited scope.
 
 ## Packages and Files
-- [`internal/dashboard/gauges/package.go`](../../../internal/dashboard/gauges/package.go)
-- [`internal/dashboard/v3dashboard/dashboard.go`](../../../internal/dashboard/v3dashboard/dashboard.go)
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
 
 ## Types
 - `Realism`
 - `OvershootConfig`
+- `ValueMap`
 
 ## Functions and Methods
-- `validateRealismForGaugeFamily`
+- `validateRealism`
 - `resolveMovementState`
+- `resolveBarMovementState`
+- `radialOvershootTarget`
+- `radialOvershootTravelDuration`
 
 ## Runtime Flow
-The movement resolver can extend the displayed path beyond the target and then settle back while preserving the raw source value.
+Radial overshoot is handled in `resolveMovementState`. Bar overshoot is handled in `resolveBarMovementState`. Both use `radialOvershootTarget` and the overshoot travel/settle timing helpers.
 
 ## Configuration
-Radial and bar packages accept shared overshoot tuning, including thresholding and bounded travel parameters.
+`OvershootConfig` accepts `ratio`, `min_change_ratio`, `max_span_ratio`, `settle_mode`, `settle_cycles`, `settle_damping`, and `allow_extremes`. `validateRealism` restricts the configuration by gauge family.
 
 ## Behaviour
-Displayed movement can briefly pass the target then return, remaining finite and display-only.
+The displayed value can move past the target and settle back while the stored raw source value remains unchanged.
 
 ## Rendering
-Rendering uses the current interpolated displayed state; there is no separate overshoot art layer.
+The render path uses the current movement state; overshoot itself is resolved before scene generation.
 
 ## Tests
-- [`internal/dashboard/gauges/package_test.go`](../../../internal/dashboard/gauges/package_test.go)
-- [`internal/dashboard/v3dashboard/gauge_widget_test.go`](../../../internal/dashboard/v3dashboard/gauge_widget_test.go)
+- `TestLoadPackageAcceptsRadialOvershoot`
+- `TestLoadPackageAcceptsBarOvershoot`
+- `TestLoadPackageRejectsUnknownRadialOvershootKey`
+- `TestLoadPackageRejectsInvalidRadialOvershoot`
+- `TestRuntimeRadialGaugeOvershootAnimatesWithoutDamping`
+- `TestRuntimeRadialGaugeOvershootStaysBoundedAndSettlesOnTarget`
+- `TestRuntimeBarGaugeOvershootAnimatesRisingReveal`
+- `TestRuntimeBarGaugeOvershootStaysBoundedAndSettlesOnTarget`
 
 ## Limitations
-Only radial and bar families implement overshoot.
+Only radial and bar gauges implement overshoot.
 
 ## Deviations from Design
-The implementation matches the documented feature well.
+No verified deviation found in the audited scope.
 
 ## Remaining Work
-No design-specific work remains.
+No remaining work was proven by this audit.
 
 ## Verification Notes
-Verified by reading the linked code and test files on 2026-07-12. This was a documentation audit only; no Go implementation changes were made as part of this pass.
+
+Files inspected:
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
+
+Symbols verified:
+- `Realism`
+- `OvershootConfig`
+- `ValueMap`
+- `validateRealism`
+- `resolveMovementState`
+- `resolveBarMovementState`
+- `radialOvershootTarget`
+- `radialOvershootTravelDuration`
+
+Configuration verified:
+- `realism.overshoot`
+- `ratio`
+- `min_change_ratio`
+- `max_span_ratio`
+- `settle_mode`
+- `settle_cycles`
+- `settle_damping`
+- `allow_extremes`
+
+Tests inspected:
+- `TestLoadPackageAcceptsRadialOvershoot`
+- `TestLoadPackageAcceptsBarOvershoot`
+- `TestLoadPackageRejectsUnknownRadialOvershootKey`
+- `TestLoadPackageRejectsInvalidRadialOvershoot`
+- `TestRuntimeRadialGaugeOvershootAnimatesWithoutDamping`
+- `TestRuntimeRadialGaugeOvershootStaysBoundedAndSettlesOnTarget`
+- `TestRuntimeBarGaugeOvershootAnimatesRisingReveal`
+- `TestRuntimeBarGaugeOvershootStaysBoundedAndSettlesOnTarget`
+
+Searches performed:
+- `overshoot`
+- `OvershootConfig`
+- `radialOvershootTarget`

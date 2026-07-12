@@ -1,52 +1,84 @@
-# `calibration_offset`
-
-Design reference: [`docs/Designs/RealismBehaviour/calibration-offset.md`](../../Designs/RealismBehaviour/calibration-offset.md)
+# `calibration_offset` — Implementation
 
 ## Purpose
-Tracks the fixed angular display offset for radial needles.
+Audits radial calibration offset support in current code.
 
 ## Implementation Status
-Status: **Implemented**.
+Implemented.
 
-Radial packages support `realism.calibration_offset`, and runtime rendering applies the offset without changing source values.
+Verified current code provides the behaviour described in the audited scope.
 
 ## Packages and Files
-- [`internal/dashboard/gauges/package.go`](../../../internal/dashboard/gauges/package.go)
-- [`internal/dashboard/gauges/scene.go`](../../../internal/dashboard/gauges/scene.go)
-- [`internal/dashboard/v3dashboard/dashboard.go`](../../../internal/dashboard/v3dashboard/dashboard.go)
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/gauges/scene.go`
+- `internal/dashboard/gauges/pointer_markers.go`
 
 ## Types
 - `Realism`
+- `ValueMap`
 
 ## Functions and Methods
-- `validateRealismForGaugeFamily`
+- `validateRealism`
 - `radialCalibrationAngle`
+- `RenderedPointerMarkerPosition`
 
 ## Runtime Flow
-The runtime preserves source values and hands the final displayed state to radial scene building, where the configured offset shifts the displayed angle.
+The current display angle is adjusted by `radialCalibrationAngle` when radial scenes and radial pointer-marker positions are built.
 
 ## Configuration
-Radial packages accept `realism.calibration_offset` as a display-only degree offset.
+`Realism` declares `CalibrationOffset *float64`. `validateRealism` accepts it for radial gauges only and rejects non-finite values.
 
 ## Behaviour
-The needle can render slightly high or low while the underlying sensor value, value map, and stored state remain unchanged.
+A configured offset changes the displayed radial angle without changing the source value.
 
 ## Rendering
-Offset is applied at radial scene composition time, including out-of-range handling based on the package value-map clamp rules.
+The offset is applied in radial scene building and in radial pointer-marker position calculation. Clamp behaviour follows `ValueMap.Clamp`.
 
 ## Tests
-- [`internal/dashboard/gauges/package_test.go`](../../../internal/dashboard/gauges/package_test.go)
-- [`internal/dashboard/gauges/scene_test.go`](../../../internal/dashboard/gauges/scene_test.go)
-- [`internal/dashboard/v3dashboard/gauge_widget_test.go`](../../../internal/dashboard/v3dashboard/gauge_widget_test.go)
+- `TestLoadPackageAcceptsRadialCalibrationOffset`
+- `TestLoadPackageRejectsInvalidRadialCalibrationOffset`
+- `TestRadialSceneCalibrationOffsetZeroPreservesAngle`
+- `TestRadialSceneCalibrationOffsetAppliesPositiveAndNegativeDegrees`
+- `TestRadialSceneCalibrationOffsetClampsToDialBounds`
+- `TestRuntimeRadialGaugeWidgetCalibrationOffsetChangesOnlyDisplayedAngle`
+- `TestRenderedPointerMarkerPositionPreservesUnclampedRadialCalibrationOffset`
 
 ## Limitations
-This is a fixed display offset only; there is no drift, noise, or dynamic recalibration model.
+Only radial gauges implement this option.
 
 ## Deviations from Design
-The implementation matches the design intent closely.
+No verified deviation found in the audited scope.
 
 ## Remaining Work
-No known design work remains beyond routine maintenance.
+No remaining work was proven by this audit.
 
 ## Verification Notes
-Verified by reading the linked code and test files on 2026-07-12. This was a documentation audit only; no Go implementation changes were made as part of this pass.
+
+Files inspected:
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/gauges/scene.go`
+- `internal/dashboard/gauges/pointer_markers.go`
+
+Symbols verified:
+- `Realism`
+- `ValueMap`
+- `validateRealism`
+- `radialCalibrationAngle`
+- `RenderedPointerMarkerPosition`
+
+Configuration verified:
+- `realism.calibration_offset`
+
+Tests inspected:
+- `TestLoadPackageAcceptsRadialCalibrationOffset`
+- `TestLoadPackageRejectsInvalidRadialCalibrationOffset`
+- `TestRadialSceneCalibrationOffsetZeroPreservesAngle`
+- `TestRadialSceneCalibrationOffsetAppliesPositiveAndNegativeDegrees`
+- `TestRadialSceneCalibrationOffsetClampsToDialBounds`
+- `TestRuntimeRadialGaugeWidgetCalibrationOffsetChangesOnlyDisplayedAngle`
+- `TestRenderedPointerMarkerPositionPreservesUnclampedRadialCalibrationOffset`
+
+Searches performed:
+- `calibration_offset`
+- `realism.calibration_offset`
+- `radialCalibrationAngle`

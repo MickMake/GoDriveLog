@@ -1,55 +1,62 @@
-# Gauge Imperfections
-
-Design reference: [`docs/Designs/RealismBehaviour/gauge-imperfections.md`](../../Designs/RealismBehaviour/gauge-imperfections.md)
+# Gauge Imperfections — Implementation
 
 ## Purpose
-Tracks the broader backlog for visible gauge imperfections across multiple gauge families.
+Audits the design for a gauge-level `realism.imperfections` layer and related umbrella behaviour.
 
 ## Implementation Status
-Status: **Partially implemented**.
+Not implemented.
 
-Some specific imperfection-style features exist, but there is no umbrella implementation for the backlog described here.
+Verified current code does not provide the designed feature in the audited scope.
 
 ## Packages and Files
-- [`internal/dashboard/gauges/package.go`](../../../internal/dashboard/gauges/package.go)
-- [`internal/dashboard/gauges/scene.go`](../../../internal/dashboard/gauges/scene.go)
-- [`internal/dashboard/v3dashboard/dashboard.go`](../../../internal/dashboard/v3dashboard/dashboard.go)
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/gauges/scene.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
 
 ## Types
 - `Realism`
-- `NeedleShadowConfig`
-- `ThermalFadeConfig`
 
 ## Functions and Methods
-- `validateRealismForGaugeFamily`
-- `radialCalibrationAngle`
-- `resolveIndicatorThermalFadeState`
+- `UnmarshalYAML`
+- `validateRealism`
 
 ## Runtime Flow
-Current realism support covers a subset of related behaviours such as calibration offset, needle shadow, and thermal fade, each as separate keys.
+No gauge-level imperfections runtime path was found. The current runtime implements individual behaviours such as `needle_shadow`, `thermal_fade`, and `calibration_offset` separately.
 
 ## Configuration
-There is no shared `imperfections` group or cross-family backlog switch. Only individual implemented keys are accepted.
+`Realism` does not declare an `Imperfections` field, and `(*Realism).UnmarshalYAML` does not accept `imperfections`.
 
 ## Behaviour
-GoDriveLog can already add a few deterministic display artefacts, but the larger wear/noise/ageing backlog is still absent.
+No umbrella imperfections feature matching this design was found.
 
 ## Rendering
-Existing imperfections are rendered through family-specific scene logic, not a unified display-layer system.
+No shared imperfections render layer was found.
 
 ## Tests
-- [`internal/dashboard/gauges/package_test.go`](../../../internal/dashboard/gauges/package_test.go)
-- [`internal/dashboard/gauges/scene_test.go`](../../../internal/dashboard/gauges/scene_test.go)
-- [`internal/dashboard/v3dashboard/gauge_widget_test.go`](../../../internal/dashboard/v3dashboard/gauge_widget_test.go)
+No feature-specific tests found.
 
 ## Limitations
-The document describes a broad catalogue that is much larger than the current code surface.
+Separate implemented behaviours were not treated as evidence for this umbrella design.
 
 ## Deviations from Design
-Implementation is fragmented into specific options rather than the broader umbrella backlog named here.
+The design calls for a gauge-level `realism.imperfections` feature. Current code implements only separate named behaviours.
 
 ## Remaining Work
-Decide whether to keep the umbrella document as backlog context or split it into concrete implementation slices.
+Add a dedicated `realism.imperfections` model only if this design is scheduled.
 
 ## Verification Notes
-Verified by reading the linked code and test files on 2026-07-12. This was a documentation audit only; no Go implementation changes were made as part of this pass.
+
+Files inspected:
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/gauges/scene.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
+
+Symbols verified:
+- `Realism`
+- `UnmarshalYAML`
+- `validateRealism`
+
+Searches performed:
+- `imperfections`
+- `realism.imperfections`
+- `gauge imperfections`

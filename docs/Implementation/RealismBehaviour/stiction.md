@@ -1,50 +1,83 @@
-# `stiction`
-
-Design reference: [`docs/Designs/RealismBehaviour/stiction.md`](../../Designs/RealismBehaviour/stiction.md)
+# `stiction` — Implementation
 
 ## Purpose
-Tracks thresholded release behaviour for small radial and bar changes.
+Audits current stiction support for radial and bar gauges.
 
 ## Implementation Status
-Status: **Implemented**.
+Implemented.
 
-Radial and bar packages support `realism.stiction`, and runtime can hold tiny changes until the threshold is exceeded.
+Verified current code provides the behaviour described in the audited scope.
 
 ## Packages and Files
-- [`internal/dashboard/gauges/package.go`](../../../internal/dashboard/gauges/package.go)
-- [`internal/dashboard/v3dashboard/dashboard.go`](../../../internal/dashboard/v3dashboard/dashboard.go)
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
 
 ## Types
 - `Realism`
+- `ValueMap`
 
 ## Functions and Methods
-- `validateRealismForGaugeFamily`
+- `validateRealism`
 - `resolveMovementState`
+- `resolveBarMovementState`
+- `stictionShouldHold`
 
 ## Runtime Flow
-The movement resolver can hold the displayed state against small source changes, then release it into a catch-up movement when the configured threshold is crossed.
+Stiction is evaluated by the movement resolvers through `stictionShouldHold` before a new movement phase is started.
 
 ## Configuration
-Radial and bar packages accept `realism.stiction` as a thresholded display-only effect.
+`Realism` declares `Stiction *float64`. `validateRealism` restricts the field to radial and bar gauges, requires a finite positive threshold, and bounds the value by the `ValueMap` span.
 
 ## Behaviour
-Small changes can appear to stick, while larger changes still move promptly.
+Small changes can be held at the previous display value until the threshold is exceeded.
 
 ## Rendering
-Rendering uses the currently held or released displayed state; no extra art layers are involved.
+The render path uses the current resolved display value; stiction is handled before scene generation.
 
 ## Tests
-- [`internal/dashboard/gauges/package_test.go`](../../../internal/dashboard/gauges/package_test.go)
-- [`internal/dashboard/v3dashboard/gauge_widget_test.go`](../../../internal/dashboard/v3dashboard/gauge_widget_test.go)
+- `TestLoadPackageAcceptsRadialStiction`
+- `TestLoadPackageAcceptsBarStiction`
+- `TestLoadPackageRejectsInvalidStiction`
+- `TestRuntimeRadialGaugeStictionBelowThresholdHoldsDisplay`
+- `TestRuntimeRadialGaugeStictionReleasesAboveThreshold`
+- `TestRuntimeBarGaugeStictionBelowThresholdHoldsDisplay`
+- `TestRuntimeBarGaugeStictionReleasesAboveThreshold`
 
 ## Limitations
-Only radial and bar families implement stiction.
+Only radial and bar gauges implement stiction.
 
 ## Deviations from Design
-The implementation matches the documented scope.
+No verified deviation found in the audited scope.
 
 ## Remaining Work
-No design-specific work remains.
+No remaining work was proven by this audit.
 
 ## Verification Notes
-Verified by reading the linked code and test files on 2026-07-12. This was a documentation audit only; no Go implementation changes were made as part of this pass.
+
+Files inspected:
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
+
+Symbols verified:
+- `Realism`
+- `ValueMap`
+- `validateRealism`
+- `resolveMovementState`
+- `resolveBarMovementState`
+- `stictionShouldHold`
+
+Configuration verified:
+- `realism.stiction`
+
+Tests inspected:
+- `TestLoadPackageAcceptsRadialStiction`
+- `TestLoadPackageAcceptsBarStiction`
+- `TestLoadPackageRejectsInvalidStiction`
+- `TestRuntimeRadialGaugeStictionBelowThresholdHoldsDisplay`
+- `TestRuntimeRadialGaugeStictionReleasesAboveThreshold`
+- `TestRuntimeBarGaugeStictionBelowThresholdHoldsDisplay`
+- `TestRuntimeBarGaugeStictionReleasesAboveThreshold`
+
+Searches performed:
+- `stiction`
+- `stictionShouldHold`

@@ -1,49 +1,75 @@
-# Radial Animation Performance
-
-Design reference: [`docs/Designs/RealismBehaviour/radial-animation-performance.md`](../../Designs/RealismBehaviour/radial-animation-performance.md)
+# Radial Animation Performance — Implementation
 
 ## Purpose
-Tracks the reliability of subtle radial animations on slower render targets.
+Audits current repository evidence for the radial animation performance design.
 
 ## Implementation Status
-Status: **Partially implemented**.
+Partially implemented.
 
-The repo has a latest-frame scenesink to reduce stale renders, but it does not implement the full radial-performance slice described here.
+Verified current code implements part of the design, but the audited scope also has missing or different behaviour.
 
 ## Packages and Files
-- [`internal/dashboard/scenesink/latest.go`](../../../internal/dashboard/scenesink/latest.go)
-- [`internal/dashboard/v3dashboard/dashboard.go`](../../../internal/dashboard/v3dashboard/dashboard.go)
+- `internal/dashboard/scenesink/latest.go`
+- `internal/dashboard/scenesink/latest_test.go`
+- `cmd/GoDriveLog/v3_renderer_ebiten.go`
 
 ## Types
 - `LatestSink`
+- `Stats`
 
 ## Functions and Methods
-- `SubmitLatest` and the latest-sink submission path coalesce pending frames instead of queueing stale work.
+- `NewLatestSink`
+- `SubmitLatest`
+- `runV3EbitenCommand`
+- `runV3EbitenHarnessCommand`
 
 ## Runtime Flow
-Dashboard rendering already has a latest-only sink path that helps short animations survive backlog pressure by discarding stale pending frames.
+The Ebiten runtime and harness both send dashboard scenes through `LatestSink.SubmitLatest`, which coalesces pending frames so stale frames are superseded instead of queued.
 
 ## Configuration
-There is no radial-animation-specific config or tuning surface.
+No radial-animation-specific config key or tuning surface was found.
 
 ## Behaviour
-Short radial animations may benefit from latest-frame coalescing, but there is no dedicated radial-tail retention or effect-specific scheduling improvement.
+The repository contains a latest-frame coalescing sink that directly affects dashboard update delivery under load. No radial-only performance path was found.
 
 ## Rendering
-The scenesink can prefer the newest frame, which is helpful under load, but scene composition itself is unchanged.
+`LatestSink` sits between runtime scene production and the Ebiten adapter update function. It changes frame delivery behaviour, not gauge scene composition.
 
 ## Tests
-- [`internal/dashboard/scenesink/latest_test.go`](../../../internal/dashboard/scenesink/latest_test.go)
-- [`internal/dashboard/v3dashboard/gauge_widget_test.go`](../../../internal/dashboard/v3dashboard/gauge_widget_test.go)
+- `TestLatestSinkDropsStalePendingFrames`
+- `TestLatestSinkSubmitLatestDoesNotWaitForRender`
+- `TestLatestSinkStatsRecordRenderTiming`
 
 ## Limitations
-The current support is an infrastructure improvement, not a completed implementation of the design investigation.
+This audit verified coalescing infrastructure, not a radial-only guarantee about every short animation tail.
 
 ## Deviations from Design
-The design discusses targeted reliability work for subtle radial effects. Current code only covers the broader latest-frame infrastructure piece.
+The design is radial-specific. Current code provides a general latest-frame sink used by the Ebiten runtime and harness.
 
 ## Remaining Work
-Measure the remaining radial failure modes and implement any effect-specific scheduling or minimum-visibility logic only if still needed.
+If the radial-specific reliability problem still exists, additional targeted work would still be needed.
 
 ## Verification Notes
-Verified by reading the linked code and test files on 2026-07-12. This was a documentation audit only; no Go implementation changes were made as part of this pass.
+
+Files inspected:
+- `internal/dashboard/scenesink/latest.go`
+- `internal/dashboard/scenesink/latest_test.go`
+- `cmd/GoDriveLog/v3_renderer_ebiten.go`
+
+Symbols verified:
+- `LatestSink`
+- `Stats`
+- `NewLatestSink`
+- `SubmitLatest`
+- `runV3EbitenCommand`
+- `runV3EbitenHarnessCommand`
+
+Tests inspected:
+- `TestLatestSinkDropsStalePendingFrames`
+- `TestLatestSinkSubmitLatestDoesNotWaitForRender`
+- `TestLatestSinkStatsRecordRenderTiming`
+
+Searches performed:
+- `LatestSink`
+- `SubmitLatest`
+- `runV3EbitenCommand`

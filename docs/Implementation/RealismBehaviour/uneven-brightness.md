@@ -1,47 +1,56 @@
-# `uneven_brightness`
-
-Design reference: [`docs/Designs/RealismBehaviour/uneven-brightness.md`](../../Designs/RealismBehaviour/uneven-brightness.md)
+# `uneven_brightness` — Implementation
 
 ## Purpose
-Tracks the planned stable slot/region brightness variation for numeric and segmented displays.
+Audits whether uneven brightness exists in current code.
 
 ## Implementation Status
-Status: **Not implemented**.
+Not implemented.
 
-There is no `uneven_brightness` config or per-slot brightness model on `main`.
+Verified current code does not provide the designed feature in the audited scope.
 
 ## Packages and Files
-- [`internal/dashboard/gauges/scene.go`](../../../internal/dashboard/gauges/scene.go)
+- `internal/dashboard/gauges/scene.go`
 
 ## Types
-- None in current code.
+None found in current code.
 
 ## Functions and Methods
-- None in current code.
+- `NumericScene`
+- `SegmentedScene`
 
 ## Runtime Flow
-Runtime does not calculate per-slot brightness adjustments for numeric or segmented displays.
+No brightness-variation state was found.
 
 ## Configuration
-Package loading does not accept `realism.uneven_brightness`.
+No `realism.uneven_brightness` key was found in current code.
 
 ## Behaviour
-All slots render at the same brightness unless the asset art itself differs.
+No stable per-slot brightness variation matching this design was found.
 
 ## Rendering
-No post-processing or per-slot alpha/brightness pass exists in scene composition.
+No uneven-brightness render path was found.
 
 ## Tests
-- [`internal/dashboard/gauges/scene_test.go`](../../../internal/dashboard/gauges/scene_test.go)
+No feature-specific tests found.
 
 ## Limitations
-A future implementation would need stable deterministic brightness offsets and likely family-specific asset assumptions.
+This record only covers current repository code.
 
 ## Deviations from Design
-Still a candidate only.
+The design describes uneven brightness. Current code does not implement it.
 
 ## Remaining Work
-Define the brightness model and rendering hooks before implementation.
+Add the feature only if this design is scheduled.
 
 ## Verification Notes
-Verified by reading the linked code and test files on 2026-07-12. This was a documentation audit only; no Go implementation changes were made as part of this pass.
+
+Files inspected:
+- `internal/dashboard/gauges/scene.go`
+
+Symbols verified:
+- `NumericScene`
+- `SegmentedScene`
+
+Searches performed:
+- `uneven_brightness`
+- `realism.uneven_brightness`

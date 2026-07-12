@@ -1,49 +1,77 @@
-# Odometer Movement Cleanup Candidates
-
-Design reference: [`docs/Designs/RealismBehaviour/odometer-movement-cleanup-candidates.md`](../../Designs/RealismBehaviour/odometer-movement-cleanup-candidates.md)
+# Odometer Movement Cleanup Candidates — Implementation
 
 ## Purpose
-Tracks the cleanup note for reserved odometer movement values such as `smooth` and `click`.
+Audits the cleanup note for reserved odometer movement values.
 
 ## Implementation Status
-Status: **Partially implemented**.
+Partially implemented.
 
-Current loading recognises the reserved values and falls back to `instant`, but they do not have distinct runtime meanings.
+Verified current code implements part of the design, but the audited scope also has missing or different behaviour.
 
 ## Packages and Files
-- [`internal/dashboard/gauges/package.go`](../../../internal/dashboard/gauges/package.go)
-- [`internal/dashboard/v3dashboard/gauge_widget_test.go`](../../../internal/dashboard/v3dashboard/gauge_widget_test.go)
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
 
 ## Types
-- None in current code.
+- `Odometer`
 
 ## Functions and Methods
-- `validateOdometerMovementMode`
+- `normalizePackage`
+- `validateOdometer`
+- `resolveOdometerMovementState`
+- `applyOdometerMovementCurve`
 
 ## Runtime Flow
-Odometer runtime implements `instant`, `linear`, `ease_out`, and `bell`. Reserved `smooth` and `click` values warn and behave like immediate movement.
+`resolveOdometerMovementState` implements `instant`, `linear`, `ease_out`, and `bell` through `applyOdometerMovementCurve`.
 
 ## Configuration
-The parser accepts the reserved values only as compatibility fallbacks; they are not separate features.
+`validateOdometer` accepts `smooth` and `click`, but `normalizePackage` logs that both are recognised but not implemented and falls them back to `instant`.
 
 ## Behaviour
-Users can load older or speculative configs without a hard failure, but they do not get special smooth/click semantics.
+Reserved values remain loadable for compatibility, but they do not create distinct movement behaviour.
 
 ## Rendering
-Rendering stays on the existing odometer movement curves; there is no extra click-phase or alternate curve for the reserved names.
+Rendering follows the actual movement mode after normalization.
 
 ## Tests
-- [`internal/dashboard/gauges/package_test.go`](../../../internal/dashboard/gauges/package_test.go)
-- [`internal/dashboard/v3dashboard/gauge_widget_test.go`](../../../internal/dashboard/v3dashboard/gauge_widget_test.go)
+- `TestLoadPackageWarnsAndFallsBackForRecognizedOdometerMovementValues`
+- `TestRuntimeOdometerGaugeRecognizedMovementFallbacksStayInstant`
 
 ## Limitations
-The reserved values still exist in a limbo state that can confuse readers.
+The reserved values are compatibility paths, not distinct implementations.
 
 ## Deviations from Design
-The note argues against inventing meaning without a dedicated slice. Current code follows that advice by warning and falling back.
+The design note leaves `smooth` and `click` undefined until a later focused slice. Current code follows that by normalizing them to `instant`.
 
 ## Remaining Work
-Either remove the compatibility names later or define them explicitly in a focused odometer movement slice.
+Define or remove the reserved values only if a later design requires that work.
 
 ## Verification Notes
-Verified by reading the linked code and test files on 2026-07-12. This was a documentation audit only; no Go implementation changes were made as part of this pass.
+
+Files inspected:
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
+
+Symbols verified:
+- `Odometer`
+- `normalizePackage`
+- `validateOdometer`
+- `resolveOdometerMovementState`
+- `applyOdometerMovementCurve`
+
+Configuration verified:
+- `smooth`
+- `click`
+- `instant`
+- `linear`
+- `ease_out`
+- `bell`
+
+Tests inspected:
+- `TestLoadPackageWarnsAndFallsBackForRecognizedOdometerMovementValues`
+- `TestRuntimeOdometerGaugeRecognizedMovementFallbacksStayInstant`
+
+Searches performed:
+- `smooth`
+- `click`
+- `normalizePackage`

@@ -1,52 +1,90 @@
-# `damping`
-
-Design reference: [`docs/Designs/RealismBehaviour/damping.md`](../../Designs/RealismBehaviour/damping.md)
+# `damping` — Implementation
 
 ## Purpose
-Tracks the lag-and-catch-up behaviour for radial and bar gauges.
+Audits current damping support for radial and bar gauges.
 
 ## Implementation Status
-Status: **Implemented**.
+Implemented.
 
-Damping is supported for radial and bar gauges, including directional timing for bars.
+Verified current code provides the behaviour described in the audited scope.
 
 ## Packages and Files
-- [`internal/dashboard/gauges/package.go`](../../../internal/dashboard/gauges/package.go)
-- [`internal/dashboard/v3dashboard/dashboard.go`](../../../internal/dashboard/v3dashboard/dashboard.go)
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
 
 ## Types
 - `Realism`
 - `DampingConfig`
 
 ## Functions and Methods
-- `validateRealismForGaugeFamily`
+- `validateRealism`
 - `resolveMovementState`
+- `resolveBarMovementState`
 - `barDampingDuration`
+- `effectiveMovementPolicy`
 
 ## Runtime Flow
-The movement resolver can retain a prior displayed position and advance it over time toward the target according to the configured damping policy.
+Radial damping is resolved in `resolveMovementState`. Bar damping is resolved in `resolveBarMovementState`, with `barDampingDuration` choosing direction-specific durations when configured.
 
 ## Configuration
-Radial packages accept shared damping config. Bar packages also accept directional `rise_ms` and `fall_ms` timing.
+`DampingConfig` accepts a boolean scalar or a mapping. Mapping fields are `enabled`, `rise_ms`, and `fall_ms`. `normalizePackage` does not create damping by default. `validateRealism` restricts `rise_ms` and `fall_ms` to bar gauges and requires positive durations.
 
 ## Behaviour
-Displayed motion lags the source value and settles smoothly at the final position without altering stored raw input.
+When enabled, the displayed value moves over time instead of jumping immediately. For bars, rising and falling moves can use different durations.
 
 ## Rendering
-Rendering consumes the current interpolated displayed state; there is no special damping-only art layer.
+The scene layer renders the current resolved display value; damping itself is handled in runtime movement state.
 
 ## Tests
-- [`internal/dashboard/gauges/package_test.go`](../../../internal/dashboard/gauges/package_test.go)
-- [`internal/dashboard/v3dashboard/gauge_widget_test.go`](../../../internal/dashboard/v3dashboard/gauge_widget_test.go)
+- `TestLoadPackageAcceptsRadialDamping`
+- `TestLoadPackageLoadsBarDampingWithDirectionalTiming`
+- `TestLoadPackageRejectsInvalidDamping`
+- `TestRuntimeRadialGaugeDampingAnimatesWithDefaultLinearCurve`
+- `TestRuntimeBarGaugeDampingAnimatesRisingReveal`
+- `TestRuntimeBarGaugeDampingAnimatesFallingReveal`
+- `TestRuntimeBarGaugeDampingSettlesAtFinalReveal`
 
 ## Limitations
-Only radial and bar families implement damping today.
+Only radial and bar gauges implement damping.
 
 ## Deviations from Design
-The implementation matches the documented family scope.
+No verified deviation found in the audited scope.
 
 ## Remaining Work
-No design-specific work is required unless additional families adopt damping later.
+No remaining work was proven by this audit.
 
 ## Verification Notes
-Verified by reading the linked code and test files on 2026-07-12. This was a documentation audit only; no Go implementation changes were made as part of this pass.
+
+Files inspected:
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
+
+Symbols verified:
+- `Realism`
+- `DampingConfig`
+- `validateRealism`
+- `resolveMovementState`
+- `resolveBarMovementState`
+- `barDampingDuration`
+- `effectiveMovementPolicy`
+
+Configuration verified:
+- `realism.damping`
+- `enabled`
+- `rise_ms`
+- `fall_ms`
+
+Tests inspected:
+- `TestLoadPackageAcceptsRadialDamping`
+- `TestLoadPackageLoadsBarDampingWithDirectionalTiming`
+- `TestLoadPackageRejectsInvalidDamping`
+- `TestRuntimeRadialGaugeDampingAnimatesWithDefaultLinearCurve`
+- `TestRuntimeBarGaugeDampingAnimatesRisingReveal`
+- `TestRuntimeBarGaugeDampingAnimatesFallingReveal`
+- `TestRuntimeBarGaugeDampingSettlesAtFinalReveal`
+
+Searches performed:
+- `damping`
+- `rise_ms`
+- `fall_ms`
+- `barDampingDuration`

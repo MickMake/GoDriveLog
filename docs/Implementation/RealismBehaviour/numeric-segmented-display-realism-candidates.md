@@ -1,49 +1,67 @@
-# Numeric and Segmented Display Realism Candidates
-
-Design reference: [`docs/Designs/RealismBehaviour/numeric-segmented-display-realism-candidates.md`](../../Designs/RealismBehaviour/numeric-segmented-display-realism-candidates.md)
+# Numeric and Segmented Display Realism Candidates — Implementation
 
 ## Purpose
-Tracks the backlog of candidate realism behaviours for numeric and segmented displays.
+Audits the backlog note for numeric and segmented display realism candidates.
 
 ## Implementation Status
-Status: **Not implemented**.
+Not implemented.
 
-The candidate realism set named by this document has not been implemented on `main`.
+Verified current code does not provide the designed feature in the audited scope.
 
 ## Packages and Files
-- [`internal/dashboard/gauges/package.go`](../../../internal/dashboard/gauges/package.go)
-- [`internal/dashboard/gauges/scene.go`](../../../internal/dashboard/gauges/scene.go)
+- `internal/dashboard/gauges/scene.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
+- `internal/dashboard/gauges/package.go`
 
 ## Types
-- None in current code.
+None found in current code.
 
 ## Functions and Methods
-- None in current code.
+- `NumericScene`
+- `SegmentedScene`
+- `validateRealism`
 
 ## Runtime Flow
-Numeric and segmented gauges render correctly as families, but the candidate realism options listed by this backlog note remain absent.
+No dedicated runtime support was found for the candidate realism features named by this backlog note.
 
 ## Configuration
-Package loading does not accept the candidate keys from this backlog note.
+No keys were found for `per_digit_response_lag`, `leading_zero_behaviour`, `segment_bleed`, `digit_bleed`, `ghosting`, `uneven_brightness`, or `load_sag`.
 
 ## Behaviour
-The current families provide base rendering, not the richer realism catalogue described here.
+Current numeric and segmented scenes render base display behaviour, not the candidate realism set from this note.
 
 ## Rendering
-Rendering focuses on current digits, sparse thresholds, and package-owned layout rather than display artefact realism.
+No candidate-specific render paths were found beyond base decimal point and segmented threshold rendering.
 
 ## Tests
-- [`internal/dashboard/gauges/scene_test.go`](../../../internal/dashboard/gauges/scene_test.go)
-- [`internal/dashboard/v3dashboard/dashboard_test.go`](../../../internal/dashboard/v3dashboard/dashboard_test.go)
+No feature-specific tests found.
 
 ## Limitations
-Basic numeric/segmented support can be mistaken for realism support; they are separate concerns.
+Base display rendering was not treated as evidence that the named realism candidates are implemented.
 
 ## Deviations from Design
-This file remains backlog context rather than an implemented contract.
+The backlog note lists candidate realism features that were not found in current code.
 
 ## Remaining Work
-Implement concrete candidate slices individually if they remain valuable.
+Implement individual candidates only if they are explicitly scheduled.
 
 ## Verification Notes
-Verified by reading the linked code and test files on 2026-07-12. This was a documentation audit only; no Go implementation changes were made as part of this pass.
+
+Files inspected:
+- `internal/dashboard/gauges/scene.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
+- `internal/dashboard/gauges/package.go`
+
+Symbols verified:
+- `NumericScene`
+- `SegmentedScene`
+- `validateRealism`
+
+Searches performed:
+- `per_digit_response_lag`
+- `leading_zero_behaviour`
+- `segment_bleed`
+- `digit_bleed`
+- `ghosting`
+- `uneven_brightness`
+- `load_sag`

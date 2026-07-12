@@ -1,53 +1,83 @@
-# `thermal_fade`
-
-Design reference: [`docs/Designs/RealismBehaviour/thermal-fade.md`](../../Designs/RealismBehaviour/thermal-fade.md)
+# `thermal_fade` — Implementation
 
 ## Purpose
-Tracks incandescent-style warm-up and cool-down for indicators.
+Audits current indicator thermal-fade support.
 
 ## Implementation Status
-Status: **Implemented**.
+Implemented.
 
-Indicator packages support `realism.thermal_fade`, and runtime resolves separate on/off fade timing.
+Verified current code provides the behaviour described in the audited scope.
 
 ## Packages and Files
-- [`internal/dashboard/gauges/package.go`](../../../internal/dashboard/gauges/package.go)
-- [`internal/dashboard/gauges/scene.go`](../../../internal/dashboard/gauges/scene.go)
-- [`internal/dashboard/v3dashboard/dashboard.go`](../../../internal/dashboard/v3dashboard/dashboard.go)
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/gauges/scene.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
 
 ## Types
 - `Realism`
 - `ThermalFadeConfig`
 
 ## Functions and Methods
-- `validateRealismForGaugeFamily`
+- `validateRealism`
 - `resolveIndicatorThermalFadeState`
+- `indicatorFadeDuration`
+- `IndicatorSceneWithOnAlpha`
 
 ## Runtime Flow
-Indicator movement state stores fade timing and updates display alpha across off-to-on and on-to-off transitions.
+Indicator fade state is handled by `resolveIndicatorThermalFadeState`, which updates display alpha over time using `indicatorFadeDuration`.
 
 ## Configuration
-Indicator packages accept `realism.thermal_fade` with separate rise and fall timing.
+`ThermalFadeConfig` accepts `rise_ms` and `fall_ms`. `validateRealism` restricts it to indicator gauges and requires both values to be positive.
 
 ## Behaviour
-Indicator lamps fade on and off softly rather than switching instantly.
+Indicator transitions can warm up and cool down over time instead of changing state immediately.
 
 ## Rendering
-Scene composition blends `off` and `on` layers according to the resolved fade alpha.
+`IndicatorSceneWithOnAlpha` renders the current alpha by blending the `off` and `on` layers.
 
 ## Tests
-- [`internal/dashboard/gauges/package_test.go`](../../../internal/dashboard/gauges/package_test.go)
-- [`internal/dashboard/gauges/scene_test.go`](../../../internal/dashboard/gauges/scene_test.go)
-- [`internal/dashboard/v3dashboard/gauge_widget_test.go`](../../../internal/dashboard/v3dashboard/gauge_widget_test.go)
+- `TestLoadPackageLoadsIndicatorThermalFade`
+- `TestLoadPackageRejectsInvalidIndicatorThermalFade`
+- `TestRuntimeIndicatorThermalFadeDisabledRemainsImmediate`
+- `TestRuntimeIndicatorThermalFadeOnTransition`
+- `TestRuntimeIndicatorThermalFadeOffTransition`
 
 ## Limitations
-The feature models timing only; it does not add random flicker or ageing effects.
+Only indicator gauges implement thermal fade.
 
 ## Deviations from Design
-The implementation matches the design intent closely.
+No verified deviation found in the audited scope.
 
 ## Remaining Work
-No known design work remains.
+No remaining work was proven by this audit.
 
 ## Verification Notes
-Verified by reading the linked code and test files on 2026-07-12. This was a documentation audit only; no Go implementation changes were made as part of this pass.
+
+Files inspected:
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/gauges/scene.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
+
+Symbols verified:
+- `Realism`
+- `ThermalFadeConfig`
+- `validateRealism`
+- `resolveIndicatorThermalFadeState`
+- `indicatorFadeDuration`
+- `IndicatorSceneWithOnAlpha`
+
+Configuration verified:
+- `realism.thermal_fade`
+- `rise_ms`
+- `fall_ms`
+
+Tests inspected:
+- `TestLoadPackageLoadsIndicatorThermalFade`
+- `TestLoadPackageRejectsInvalidIndicatorThermalFade`
+- `TestRuntimeIndicatorThermalFadeDisabledRemainsImmediate`
+- `TestRuntimeIndicatorThermalFadeOnTransition`
+- `TestRuntimeIndicatorThermalFadeOffTransition`
+
+Searches performed:
+- `thermal_fade`
+- `indicatorFadeDuration`

@@ -1,47 +1,65 @@
-# GoDriveLog Pi4 Fyne Kiosk Setup
-
-Design reference: [`docs/Designs/Runtime/setup-kiosk-mode-on-pi4.md`](../../Designs/Runtime/setup-kiosk-mode-on-pi4.md)
+# GoDriveLog Pi4 Fyne Kiosk Setup — Implementation
 
 ## Purpose
-Tracks the Raspberry Pi kiosk setup note for a Fyne-based display stack.
+Audits whether the repository implements the Raspberry Pi 4 kiosk setup described by the design.
 
 ## Implementation Status
-Status: **Not implemented**.
+Not implemented.
 
-The current repo does not implement the documented Fyne kiosk stack.
+Verified current code does not provide the designed feature in the audited scope.
 
 ## Packages and Files
-- [`cmd/GoDriveLog/main_ebiten.go`](../../../cmd/GoDriveLog/main_ebiten.go)
+- `cmd/GoDriveLog/main.go`
+- `cmd/GoDriveLog/main_ebiten.go`
+- `README.md`
 
 ## Types
-- None in current code.
+None found in current code.
 
 ## Functions and Methods
-- `main` builds the current Ebiten-based app/CLI surface, not the documented Fyne display flow.
+- `main`
+- `runCLI`
 
 ## Runtime Flow
-There is no Pi4 kiosk bootstrap path, packaging flow, or service setup in the repo that matches this note.
+The default runnable command path is the Ebiten CLI. The `fyne_legacy` build target prints a message that Fyne is legacy and directs users to older v3.2.x builds for supported Fyne use.
 
 ## Configuration
-The note describes deployment and OS setup rather than in-repo runtime config; none of that is wired into current code.
+No Pi4 kiosk setup command, deployment automation, or Raspberry Pi-specific runtime config was found.
 
 ## Behaviour
-GoDriveLog can be built and run in its current desktop/runtime modes, but not as the specific documented Pi4 Fyne kiosk stack.
+Current repository code does not implement the designed Pi4 Fyne kiosk path.
 
 ## Rendering
-Current dashboard rendering is Ebiten-based, which is a different stack from the Fyne setup described here.
+Current default rendering is Ebiten. The current Fyne legacy entrypoint does not start a kiosk renderer.
 
 ## Tests
-- [`cmd/GoDriveLog/main_ebiten_test.go`](../../../cmd/GoDriveLog/main_ebiten_test.go)
+No feature-specific tests found.
 
 ## Limitations
-This document is closer to a deployment recipe than a code slice, and the named stack does not match current implementation.
+Visible Raspberry Pi hardware behaviour was not verified in this audit.
 
 ## Deviations from Design
-The codebase has moved around a different rendering/runtime path than the note describes.
+The design describes a Fyne-based Pi4 kiosk stack. Current repository code uses Ebiten by default and keeps Fyne only as a legacy message stub.
 
 ## Remaining Work
-Either rewrite the deployment doc to match the actual stack or implement a dedicated kiosk/deployment path intentionally.
+Reintroduce a supported Pi4 kiosk path only if that deployment target is still wanted.
 
 ## Verification Notes
-Verified by reading the linked code and test files on 2026-07-12. This was a documentation audit only; no Go implementation changes were made as part of this pass.
+
+Files inspected:
+- `cmd/GoDriveLog/main.go`
+- `cmd/GoDriveLog/main_ebiten.go`
+- `README.md`
+
+Symbols verified:
+- `main`
+- `runCLI`
+
+Searches performed:
+- `fyne_legacy`
+- `kiosk`
+- `Raspberry Pi`
+- `Ebiten renderer is legacy`
+
+Unable to verify:
+- Visible behaviour on Raspberry Pi hardware.

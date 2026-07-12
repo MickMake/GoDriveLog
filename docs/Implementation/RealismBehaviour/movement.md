@@ -1,52 +1,107 @@
-# `movement`
-
-Design reference: [`docs/Designs/RealismBehaviour/movement.md`](../../Designs/RealismBehaviour/movement.md)
+# `movement` — Implementation
 
 ## Purpose
-Tracks the single movement knob and its family-specific behaviour across gauges.
+Audits current movement support across gauge families.
 
 ## Implementation Status
-Status: **Partially implemented**.
+Partially implemented.
 
-Movement support exists, but it is family-specific and incomplete relative to the guide.
+Verified current code implements part of the design, but the audited scope also has missing or different behaviour.
 
 ## Packages and Files
-- [`internal/dashboard/gauges/package.go`](../../../internal/dashboard/gauges/package.go)
-- [`internal/dashboard/gauges/scene.go`](../../../internal/dashboard/gauges/scene.go)
-- [`internal/dashboard/v3dashboard/dashboard.go`](../../../internal/dashboard/v3dashboard/dashboard.go)
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
+- `internal/dashboard/gauges/scene.go`
 
 ## Types
 - `Realism`
+- `Odometer`
 
 ## Functions and Methods
-- `validateOdometerMovementMode`
+- `normalizePackage`
+- `validateOdometer`
+- `validateRealism`
 - `resolveMovementState`
+- `resolveBarMovementState`
+- `resolveOdometerMovementState`
+- `effectiveMovementPolicy`
+- `applyMovementPolicy`
+- `applyOdometerMovementCurve`
 
 ## Runtime Flow
-Odometers implement `instant`, `linear`, `ease_out`, and `bell`. Radial and bar gauges still use `movement_policy` rather than the scalar `movement` key described here. Other families remain immediate.
+Odometer movement is handled by `resolveOdometerMovementState`. Radial movement is handled by `resolveMovementState`. Bar movement is handled by `resolveBarMovementState`.
 
 ## Configuration
-The parser accepts odometer movement values, warns and falls back for reserved `smooth` and `click`, and separately accepts shared `movement_policy` for radial/bar movement runtime.
+Odometer movement uses `Odometer.Movement` and accepts `instant`, `linear`, `ease_out`, `bell`, `smooth`, and `click`. `normalizePackage` defaults odometers to `instant` and converts `smooth` and `click` to `instant` with a log message. Radial and bar movement use `Realism.MovementPolicy`, which `validateRealism` restricts to `immediate`, `linear`, and `ease_out`. `normalizePackage` defaults the policy to `immediate`.
 
 ## Behaviour
-Movement is not a single uniform feature yet. Odometer movement is explicit, radial/bar movement is policy-based, and several families still remain immediate.
+Odometers implement finite movement curves. Radial and bar gauges use movement policy only when damping, overshoot, or peg bounce make movement active; otherwise `effectiveMovementPolicy` forces immediate display updates.
 
 ## Rendering
-Scene composition uses the currently resolved displayed state, with odometer wheel offsets or radial/bar positions driven by whichever movement path applies.
+Movement is resolved before scene generation. Scenes render the current movement state rather than performing interpolation themselves.
 
 ## Tests
-- [`internal/dashboard/gauges/package_test.go`](../../../internal/dashboard/gauges/package_test.go)
-- [`internal/dashboard/gauges/scene_test.go`](../../../internal/dashboard/gauges/scene_test.go)
-- [`internal/dashboard/v3dashboard/gauge_widget_test.go`](../../../internal/dashboard/v3dashboard/gauge_widget_test.go)
+- `TestLoadPackageAcceptsImplementedOdometerMovementValues`
+- `TestLoadPackageWarnsAndFallsBackForRecognizedOdometerMovementValues`
+- `TestLoadPackageAcceptsSharedMovementPolicies`
+- `TestLoadPackageRejectsInvalidSharedMovementPolicy`
+- `TestRuntimeGaugeMovementLifecycle`
+- `TestRuntimeGaugeMovementEaseOutPolicyAdvancesFurtherThanLinear`
+- `TestRuntimeOdometerGaugeBellMovementStartsSlowerThanLinearAndSettlesExactlyOnTarget`
+- `TestRuntimeOdometerGaugeRecognizedMovementFallbacksStayInstant`
 
 ## Limitations
-The documented scalar contract is not implemented consistently across families.
+The scalar `movement` design is not implemented uniformly across families.
 
 ## Deviations from Design
-Current code preserves older shared movement-policy behaviour for radial/bar gauges instead of the planned scalar key.
+Radial and bar gauges use `movement_policy`, not the scalar `movement` key described by the design. Radial movement does not accept `bell` as a configured policy.
 
 ## Remaining Work
-Either unify movement semantics across families or keep the guide explicit about the split contracts.
+Unify or explicitly separate the movement contracts if this design remains active.
 
 ## Verification Notes
-Verified by reading the linked code and test files on 2026-07-12. This was a documentation audit only; no Go implementation changes were made as part of this pass.
+
+Files inspected:
+- `internal/dashboard/gauges/package.go`
+- `internal/dashboard/v3dashboard/dashboard.go`
+- `internal/dashboard/gauges/scene.go`
+
+Symbols verified:
+- `Realism`
+- `Odometer`
+- `normalizePackage`
+- `validateOdometer`
+- `validateRealism`
+- `resolveMovementState`
+- `resolveBarMovementState`
+- `resolveOdometerMovementState`
+- `effectiveMovementPolicy`
+- `applyMovementPolicy`
+- `applyOdometerMovementCurve`
+
+Configuration verified:
+- `movement`
+- `movement_policy`
+- `instant`
+- `linear`
+- `ease_out`
+- `bell`
+- `smooth`
+- `click`
+- `immediate`
+
+Tests inspected:
+- `TestLoadPackageAcceptsImplementedOdometerMovementValues`
+- `TestLoadPackageWarnsAndFallsBackForRecognizedOdometerMovementValues`
+- `TestLoadPackageAcceptsSharedMovementPolicies`
+- `TestLoadPackageRejectsInvalidSharedMovementPolicy`
+- `TestRuntimeGaugeMovementLifecycle`
+- `TestRuntimeGaugeMovementEaseOutPolicyAdvancesFurtherThanLinear`
+- `TestRuntimeOdometerGaugeBellMovementStartsSlowerThanLinearAndSettlesExactlyOnTarget`
+- `TestRuntimeOdometerGaugeRecognizedMovementFallbacksStayInstant`
+
+Searches performed:
+- `movement_policy`
+- `MovementBell`
+- `MovementSmooth`
+- `MovementClick`
