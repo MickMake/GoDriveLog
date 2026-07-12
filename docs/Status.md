@@ -13,10 +13,10 @@ This file is the single source of truth for current implementation status across
 
 ## Summary
 
-- Implemented: 13
-- Partially implemented: 10
-- Not implemented: 25
-- Unable to verify: 0
+Implemented: 14
+Partially implemented: 9
+Not implemented: 25
+Unable to verify: 0
 
 ## Status register
 
