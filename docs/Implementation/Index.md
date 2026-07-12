@@ -41,7 +41,6 @@ No implementation records currently exist.
 | [`movement`](RealismBehaviour/movement.md) | Partially implemented |
 | [`needle_shadow`](RealismBehaviour/needle-shadow.md) | Implemented |
 | [Needle Trail](RealismBehaviour/needle-trail.md) | Not implemented |
-| [`decimal_point_behaviour`](RealismBehaviour/numeric-decimal-point-behaviour.md) | Partially implemented |
 | [`ghosting`](RealismBehaviour/numeric-ghosting.md) | Not implemented |
 | [`leading_zero_behaviour`](RealismBehaviour/numeric-leading-zero-behaviour.md) | Not implemented |
 | [`load_sag`](RealismBehaviour/numeric-load-sag.md) | Not implemented |
