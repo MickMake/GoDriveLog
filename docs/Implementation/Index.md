@@ -8,7 +8,9 @@ No implementation records currently exist.
 
 ## Dashboard
 
-No implementation records currently exist.
+| Document | Status |
+|---|---|
+| [Numeric Display](Dashboard/numeric-display.md) | Implemented |
 
 ## Logging
 
