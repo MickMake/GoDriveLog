@@ -7,6 +7,7 @@
 
 | Document | Purpose |
 |---|---|
+| [`numeric-display.md`](Dashboard/numeric-display.md) | Numeric display formatting, digit assets, slot allocation and decimal-point overlay. |
 
 ## Logging
 
