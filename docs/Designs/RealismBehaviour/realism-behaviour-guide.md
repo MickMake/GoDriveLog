@@ -41,7 +41,6 @@ This matrix describes conceptual applicability. It does not state whether a beha
 | [`backlash`](backlash.md) | odometer, radial, bar | Direction-change slack in worn gears, linkages, or drives. |
 | [`per-digit-response-lag`](per-digit-response-lag.md) | numeric, segmented | Slot-level display update lag or stagger. |
 | [`numeric-leading-zero-behaviour`](numeric-leading-zero-behaviour.md) | numeric, segmented | Display-specific treatment of leading zeroes. |
-| [`numeric-decimal-point-behaviour`](numeric-decimal-point-behaviour.md) | numeric, segmented | Decimal points treated as separate display elements. |
 | [`segment-bleed-digit-bleed`](segment-bleed-digit-bleed.md) | numeric, segmented | Faint visibility from inactive segments or digit masks. |
 | [`numeric-ghosting`](numeric-ghosting.md) | numeric, segmented | Persistence of the previous character or image. |
 | [`uneven-brightness`](uneven-brightness.md) | numeric, segmented, indicator | Stable brightness variation between slots, segments, or lamps. |
