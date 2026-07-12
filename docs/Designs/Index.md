@@ -7,6 +7,7 @@
 
 | Document | Purpose |
 |---|---|
+| [`numeric-display.md`](Dashboard/numeric-display.md) | Numeric display formatting, digit assets, slot allocation and decimal-point overlay. |
 
 ## Logging
 
@@ -37,7 +38,6 @@
 | [`movement.md`](RealismBehaviour/movement.md) | Movement. |
 | [`needle-shadow.md`](RealismBehaviour/needle-shadow.md) | Needle shadow. |
 | [`needle-trail.md`](RealismBehaviour/needle-trail.md) | Needle trail. |
-| [`numeric-decimal-point-behaviour.md`](RealismBehaviour/numeric-decimal-point-behaviour.md) | Numeric decimal-point behaviour. |
 | [`numeric-ghosting.md`](RealismBehaviour/numeric-ghosting.md) | Numeric ghosting. |
 | [`numeric-leading-zero-behaviour.md`](RealismBehaviour/numeric-leading-zero-behaviour.md) | Numeric leading-zero behaviour. |
 | [`numeric-load-sag.md`](RealismBehaviour/numeric-load-sag.md) | Numeric load sag. |

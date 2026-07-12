@@ -6,6 +6,8 @@ This document defines the structure and conventions for implementation records.
 
 Implementation records describe packages touched, implementation approach, important trade-offs, deviations from design, limitations and relevant tests.
 
+Implementation documents describe only behaviour verified in the current codebase. They must never document intended behaviour, proposed designs or assumed implementations. Where behaviour cannot be verified from code, the document must explicitly state that it could not be verified.
+
 ## Conventions
 
 - Store records under `docs/Implementation/`.
