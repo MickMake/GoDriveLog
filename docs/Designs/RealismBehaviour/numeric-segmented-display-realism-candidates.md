@@ -10,7 +10,6 @@ Numeric and segmented display realism behaviour definitions now live in `docs/Re
 
 - [`per_digit_response_lag`](../RealismBehaviourGuide/per-digit-response-lag.md)
 - [`leading_zero_behaviour`](../RealismBehaviourGuide/leading-zero-behaviour.md)
-- [`decimal_point_behaviour`](../RealismBehaviourGuide/decimal-point-behaviour.md)
 - [`segment_bleed` / `digit_bleed`](../RealismBehaviourGuide/segment-bleed-digit-bleed.md)
 - [`ghosting`](../RealismBehaviourGuide/ghosting.md)
 - [`uneven_brightness`](../RealismBehaviourGuide/uneven-brightness.md)
@@ -33,5 +32,4 @@ Do not redefine those behaviours here. Use this file only as backlog/planning co
 - Implement numeric/segmented `load_sag`.
 - Implement numeric/segmented `uneven_brightness`.
 - Specify and implement numeric/segmented `per_digit_response_lag`.
-- Specify decimal point realism before implementing bleed/ghosting.
 - Defer `segment_bleed` / `digit_bleed` and `ghosting` until the display-mask abstraction and config naming are clear.
