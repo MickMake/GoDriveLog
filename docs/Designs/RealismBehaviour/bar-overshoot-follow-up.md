@@ -2,8 +2,6 @@
 
 Index: 1
 
-Status: deferred
-
 Area: `gauge/bar`, `realism.overshoot`, animation
 
 Effort: 2-4 Codex hours
@@ -22,9 +20,3 @@ Bar gauges should eventually support `realism.overshoot`, but this was intention
 - Clamp final settled display to the real target/range after the overshoot tail completes.
 - Consider vertical and horizontal bars, plus different origins, when defining the later prompt.
 - Keep radial overshoot behaviour unchanged when this is implemented.
-
-## Possible future slice
-
-```text
-v3.5.x bar overshoot
-```
