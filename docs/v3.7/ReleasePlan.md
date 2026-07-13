@@ -207,19 +207,6 @@ v3.7 is complete when:
 - the Realism Behaviour Guide accurately marks the implemented state;
 - the implementation checklist is complete.
 
-## Deferred to v3.8+
-
-The following remain outside v3.7 unless explicitly promoted in a separate release decision:
-
-- decimal-point-specific realism;
-- stepped or quantized fill;
-- general `realism.imperfections`;
-- random ageing/noise/vibration systems;
-- per-segment procedural rendering;
-- generic display technology simulation;
-- broad bar, radial, indicator, or pointer-marker follow-up work;
-- persistence of transient realism state.
-
 ## Non-goals
 
 - Do not redesign the numeric renderer.
