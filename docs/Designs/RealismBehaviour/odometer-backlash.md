@@ -1,9 +1,5 @@
 # Candidate: Odometer Backlash
 
-Origin: `docs/v3.7/PlannedFeatures.md`
-
-Status: **not implemented on `main`**.
-
 ## Canonical behaviour definition
 
 The behaviour definition lives in [`../RealismBehaviourGuide/backlash.md`](../RealismBehaviourGuide/backlash.md).
