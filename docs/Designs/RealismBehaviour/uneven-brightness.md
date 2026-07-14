@@ -192,7 +192,7 @@ Add or update tests for:
 - excess slot warnings;
 - invalid value rejection;
 - deterministic behaviour;
-- disabled behaviour.
+- absent configuration behaviour;
 
 ## Preview and documentation
 
