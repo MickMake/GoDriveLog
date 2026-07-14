@@ -2,8 +2,6 @@
 
 Applies to: numeric.
 
-Status: **candidate / not implemented**.
-
 ## Purpose
 
 Control how unused high-order integer zero digits are displayed.
