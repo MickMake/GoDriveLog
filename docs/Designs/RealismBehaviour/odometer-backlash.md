@@ -54,10 +54,13 @@ Same-direction odometer movement must not be visibly affected by backlash.
 
 When direction reverses:
 
-1. displayed wheel movement briefly takes up a small amount of slack;
-2. the wheel then follows the new direction;
-3. the effect remains bounded;
-4. final wheel offsets settle exactly on the correct target offsets.
+1. retain a small bounded wheel offset in the previous direction;
+2. reduce that offset smoothly to zero while movement continues in the new direction;
+3. apply the effect only to wheels that are moving;
+4. do not restart or accumulate the effect during repeated updates;
+5. settle all wheel offsets exactly on the target when movement completes.
+
+Backlash is a display offset, not a delay to the source value or a separate physics simulation.
 
 ## Implementation requirements
 
