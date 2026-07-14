@@ -55,7 +55,7 @@ Same-direction odometer movement must not be visibly affected by backlash.
 When direction reverses:
 
 1. retain a small bounded wheel offset in the previous direction;
-2. reduce that offset smoothly to zero while movement continues in the new direction;
+2. reduce the temporary backlash offset smoothly to zero while movement continues toward the new target;
 3. apply the effect only to wheels that are moving;
 4. do not restart or accumulate the effect during repeated updates;
 5. settle all wheel offsets exactly on the target when movement completes.
