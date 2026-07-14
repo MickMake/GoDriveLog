@@ -71,7 +71,7 @@ If confirmed missing:
 - Add runtime behaviour for direction-change slack during odometer wheel movement.
 - Preserve existing behaviour when `backlash` is absent or false.
 - Ensure same-direction odometer movement is not visibly affected.
-- Ensure direction reversal produces a small slack or lag before the wheel follows the new direction.
+- Ensure direction reversal produces a small bounded temporary offset that is fully removed before settling exactly on the target position.
 - Ensure final wheel offsets settle exactly on the target offsets.
 - Keep the behaviour deterministic.
 - Do not introduce random jitter.
