@@ -2,8 +2,6 @@
 
 Applies to: numeric.
 
-Status: **candidate / not implemented**.
-
 ## Purpose
 
 Simulate the slight reduction in display brightness caused by increased electrical load as more display segments become illuminated.
