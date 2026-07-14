@@ -118,7 +118,7 @@ If confirmed missing:
 - add configuration parsing;
 - validate configuration values;
 - implement the three behaviour modes;
-- preserve existing behaviour when disabled or absent;
+- preserve existing behaviour when the configuration is absent;
 - keep behaviour deterministic;
 - keep implementation local unless an existing helper cleanly fits.
 
