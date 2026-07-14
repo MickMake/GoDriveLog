@@ -2,8 +2,6 @@
 
 Applies to: numeric.
 
-Status: **candidate / not implemented**.
-
 ## Purpose
 
 Simulate the short-lived persistence of a previously displayed digit after a digit changes.
