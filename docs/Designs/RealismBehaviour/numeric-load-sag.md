@@ -55,6 +55,8 @@ Where:
 - `impact: 0.0` disables visible sag.
 - `impact: 1.0` produces the maximum supported sag while remaining readable.
 
+At `impact: 1.0`, the sag must be clearly visible and unmistakable while preserving legibility.
+
 Values must be within:
 
 ```text
