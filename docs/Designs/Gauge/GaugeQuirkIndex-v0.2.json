@@ -1,0 +1,5887 @@
+{
+  "title": "Gauge Quirk Frequency Index",
+  "version": "0.2",
+  "generated": "2026-07-15",
+  "source_catalogue": "gauge_display_research_catalog_v0.2.json",
+  "count_basis": "Distinct gauges containing the canonical quirk; a gauge is counted once per quirk.",
+  "gauge_count": 136,
+  "canonical_quirk_count": 149,
+  "quirks": [
+    {
+      "quirk": "response speed, lag and delay",
+      "gauge_count": 41,
+      "percentage_of_catalogue": 30.15,
+      "source_statement_count": 46,
+      "gauge_ids": [
+        "D03",
+        "D11",
+        "D19",
+        "D20",
+        "D21",
+        "D24",
+        "E04",
+        "E06",
+        "E07",
+        "E09",
+        "E13",
+        "E14",
+        "E21",
+        "P02",
+        "P07",
+        "P09",
+        "P13",
+        "P21",
+        "P22",
+        "P23",
+        "P24",
+        "P25",
+        "P26",
+        "P27",
+        "P29",
+        "P33",
+        "P40",
+        "P44",
+        "X01",
+        "X03",
+        "X05",
+        "X07",
+        "X08",
+        "X09",
+        "X11",
+        "X22",
+        "X25",
+        "X26",
+        "X27",
+        "X30",
+        "X35"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P02",
+          "gauge_name": "Mercury barometer: cistern, Fortin and wheel forms",
+          "source_phrase": "slow weather motion"
+        },
+        {
+          "gauge_id": "P02",
+          "gauge_name": "Mercury barometer: cistern, Fortin and wheel forms",
+          "source_phrase": "wheel mechanisms add backlash and pointer lag"
+        },
+        {
+          "gauge_id": "P07",
+          "gauge_name": "Magnetic-coupled differential gauge",
+          "source_phrase": "very lively response unless restricted"
+        },
+        {
+          "gauge_id": "P09",
+          "gauge_name": "Liquid-filled, snubbed and damped pressure gauge",
+          "source_phrase": "pointer becomes deliberately sluggish"
+        },
+        {
+          "gauge_id": "P13",
+          "gauge_name": "Thermal-conductivity vacuum gauges: Pirani and thermocouple",
+          "source_phrase": "rapid pressure changes lag thermally"
+        }
+      ]
+    },
+    {
+      "quirk": "thermal behaviour and temperature effects",
+      "gauge_count": 34,
+      "percentage_of_catalogue": 25.0,
+      "source_statement_count": 40,
+      "gauge_ids": [
+        "D01",
+        "D11",
+        "D13",
+        "D15",
+        "D18",
+        "D20",
+        "D21",
+        "D22",
+        "D23",
+        "D24",
+        "E01",
+        "E05",
+        "E06",
+        "E13",
+        "P01",
+        "P02",
+        "P03",
+        "P04",
+        "P05",
+        "P06",
+        "P09",
+        "P16",
+        "P20",
+        "P21",
+        "P23",
+        "P24",
+        "P25",
+        "P28",
+        "P29",
+        "P32",
+        "P34",
+        "P39",
+        "X22",
+        "X26"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P01",
+          "gauge_name": "Liquid-column manometer: U-tube, well-type and inclined",
+          "source_phrase": "density and temperature dependence"
+        },
+        {
+          "gauge_id": "P02",
+          "gauge_name": "Mercury barometer: cistern, Fortin and wheel forms",
+          "source_phrase": "temperature, gravity and capillary corrections"
+        },
+        {
+          "gauge_id": "P03",
+          "gauge_name": "Aneroid barometer and pressure capsule mechanism",
+          "source_phrase": "temperature compensation errors"
+        },
+        {
+          "gauge_id": "P04",
+          "gauge_name": "Bourdon-tube pressure gauge, including C, spiral and helical tubes",
+          "source_phrase": "temperature zero shift"
+        },
+        {
+          "gauge_id": "P05",
+          "gauge_name": "Diaphragm pressure gauge",
+          "source_phrase": "orientation and temperature sensitivity"
+        }
+      ]
+    },
+    {
+      "quirk": "display geometry and motion mode",
+      "gauge_count": 23,
+      "percentage_of_catalogue": 16.91,
+      "source_statement_count": 30,
+      "gauge_ids": [
+        "D04",
+        "D06",
+        "D07",
+        "D08",
+        "D15",
+        "D17",
+        "D18",
+        "D19",
+        "D20",
+        "D23",
+        "D27",
+        "E09",
+        "E18",
+        "E22",
+        "E23",
+        "E26",
+        "P04",
+        "P05",
+        "P06",
+        "P23",
+        "X06",
+        "X24",
+        "X28"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P04",
+          "gauge_name": "Bourdon-tube pressure gauge, including C, spiral and helical tubes",
+          "source_phrase": "spiral/helical tubes allow greater motion"
+        },
+        {
+          "gauge_id": "P05",
+          "gauge_name": "Diaphragm pressure gauge",
+          "source_phrase": "broad, shallow cases and large pointer travel"
+        },
+        {
+          "gauge_id": "P06",
+          "gauge_name": "Capsule and bellows pressure gauges",
+          "source_phrase": "Large travel at low pressure"
+        },
+        {
+          "gauge_id": "P23",
+          "gauge_name": "Bimetal dial thermometer",
+          "source_phrase": "long helical coils give broad sweep"
+        },
+        {
+          "gauge_id": "E09",
+          "gauge_name": "Mirror / light-spot galvanometer",
+          "source_phrase": "No physical pointer: a light spot sweeps a distant scale"
+        }
+      ]
+    },
+    {
+      "quirk": "scale linearity and nonlinearity",
+      "gauge_count": 23,
+      "percentage_of_catalogue": 16.91,
+      "source_statement_count": 24,
+      "gauge_ids": [
+        "D03",
+        "D10",
+        "D15",
+        "E01",
+        "E04",
+        "E07",
+        "E12",
+        "E14",
+        "P01",
+        "P04",
+        "P05",
+        "P12",
+        "P16",
+        "P20",
+        "P24",
+        "P26",
+        "P32",
+        "P37",
+        "P39",
+        "X04",
+        "X05",
+        "X19",
+        "X34"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P01",
+          "gauge_name": "Liquid-column manometer: U-tube, well-type and inclined",
+          "source_phrase": "inclined scales magnify low pressure and become strongly nonlinear if geometry is wrong"
+        },
+        {
+          "gauge_id": "P04",
+          "gauge_name": "Bourdon-tube pressure gauge, including C, spiral and helical tubes",
+          "source_phrase": "Linkage nonlinearity"
+        },
+        {
+          "gauge_id": "P05",
+          "gauge_name": "Diaphragm pressure gauge",
+          "source_phrase": "Deflection is nonlinear without linkage compensation"
+        },
+        {
+          "gauge_id": "P12",
+          "gauge_name": "McLeod compression vacuum gauge",
+          "source_phrase": "scale is highly nonlinear"
+        },
+        {
+          "gauge_id": "P16",
+          "gauge_name": "Capacitance diaphragm manometer",
+          "source_phrase": "excellent linearity but limited range per sensor"
+        }
+      ]
+    },
+    {
+      "quirk": "colour variation and colour shift",
+      "gauge_count": 21,
+      "percentage_of_catalogue": 15.44,
+      "source_statement_count": 28,
+      "gauge_ids": [
+        "D01",
+        "D05",
+        "D11",
+        "D12",
+        "D13",
+        "D15",
+        "D18",
+        "D19",
+        "D21",
+        "D22",
+        "D24",
+        "D25",
+        "D29",
+        "D30",
+        "P08",
+        "P25",
+        "P44",
+        "X10",
+        "X15",
+        "X20",
+        "X29"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P08",
+          "gauge_name": "Compound, duplex and twin-pointer pressure gauges",
+          "source_phrase": "colour-coded hands"
+        },
+        {
+          "gauge_id": "P25",
+          "gauge_name": "Thermochromic liquid-crystal strip and leuco-dye indicator",
+          "source_phrase": "Discrete colour bands"
+        },
+        {
+          "gauge_id": "P25",
+          "gauge_name": "Thermochromic liquid-crystal strip and leuco-dye indicator",
+          "source_phrase": "sunlight and ageing alter colour"
+        },
+        {
+          "gauge_id": "P44",
+          "gauge_name": "Disappearing-filament optical pyrometer",
+          "source_phrase": "colour-vision and fatigue errors"
+        },
+        {
+          "gauge_id": "P44",
+          "gauge_name": "Disappearing-filament optical pyrometer",
+          "source_phrase": "tinted optics"
+        }
+      ]
+    },
+    {
+      "quirk": "drift and long-term stability",
+      "gauge_count": 20,
+      "percentage_of_catalogue": 14.71,
+      "source_statement_count": 21,
+      "gauge_ids": [
+        "D13",
+        "E05",
+        "E06",
+        "E09",
+        "E10",
+        "E17",
+        "P03",
+        "P13",
+        "P14",
+        "P16",
+        "P26",
+        "P36",
+        "P42",
+        "P43",
+        "X05",
+        "X06",
+        "X18",
+        "X28",
+        "X30",
+        "X31"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P03",
+          "gauge_name": "Aneroid barometer and pressure capsule mechanism",
+          "source_phrase": "slow drift"
+        },
+        {
+          "gauge_id": "P13",
+          "gauge_name": "Thermal-conductivity vacuum gauges: Pirani and thermocouple",
+          "source_phrase": "zero and span drift with contamination"
+        },
+        {
+          "gauge_id": "P14",
+          "gauge_name": "Cold-cathode ionisation gauge",
+          "source_phrase": "contamination causes drift"
+        },
+        {
+          "gauge_id": "P16",
+          "gauge_name": "Capacitance diaphragm manometer",
+          "source_phrase": "zero drift and tare routines"
+        },
+        {
+          "gauge_id": "P26",
+          "gauge_name": "Hair hygrometer and hygrograph",
+          "source_phrase": "chart versions add pen friction, clock drift and a daily/weekly trace"
+        }
+      ]
+    },
+    {
+      "quirk": "damping",
+      "gauge_count": 19,
+      "percentage_of_catalogue": 13.97,
+      "source_statement_count": 19,
+      "gauge_ids": [
+        "E01",
+        "E04",
+        "E09",
+        "E10",
+        "E11",
+        "E22",
+        "E25",
+        "P07",
+        "P08",
+        "P09",
+        "P28",
+        "P32",
+        "P33",
+        "P39",
+        "X07",
+        "X10",
+        "X21",
+        "X30",
+        "X31"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P07",
+          "gauge_name": "Magnetic-coupled differential gauge",
+          "source_phrase": "very lively response unless restricted"
+        },
+        {
+          "gauge_id": "P08",
+          "gauge_name": "Compound, duplex and twin-pointer pressure gauges",
+          "source_phrase": "unequal damping"
+        },
+        {
+          "gauge_id": "P09",
+          "gauge_name": "Liquid-filled, snubbed and damped pressure gauge",
+          "source_phrase": "Viscous damping changes with temperature"
+        },
+        {
+          "gauge_id": "P28",
+          "gauge_name": "Hydrometer and floating density gauges",
+          "source_phrase": "Bobbing and damped settling"
+        },
+        {
+          "gauge_id": "P32",
+          "gauge_name": "Bubble level, ball inclinometer and pendulum clinometer",
+          "source_phrase": "Bubble/ball has viscous damping and wall friction"
+        }
+      ]
+    },
+    {
+      "quirk": "stiction and sticking",
+      "gauge_count": 18,
+      "percentage_of_catalogue": 13.24,
+      "source_statement_count": 19,
+      "gauge_ids": [
+        "D29",
+        "E02",
+        "E07",
+        "E10",
+        "E19",
+        "E20",
+        "E23",
+        "P03",
+        "P04",
+        "P11",
+        "P18",
+        "P19",
+        "P20",
+        "P22",
+        "P28",
+        "P31",
+        "P41",
+        "X07"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P03",
+          "gauge_name": "Aneroid barometer and pressure capsule mechanism",
+          "source_phrase": "gearing lash and stiction"
+        },
+        {
+          "gauge_id": "P04",
+          "gauge_name": "Bourdon-tube pressure gauge, including C, spiral and helical tubes",
+          "source_phrase": "stiction"
+        },
+        {
+          "gauge_id": "P11",
+          "gauge_name": "Drag, tell-tale and witness-pointer gauge",
+          "source_phrase": "witness may creep, stick or be left at an old event"
+        },
+        {
+          "gauge_id": "P18",
+          "gauge_name": "Float-and-tape tank gauge",
+          "source_phrase": "staircase-like movement after stiction releases"
+        },
+        {
+          "gauge_id": "P19",
+          "gauge_name": "Magnetic level indicator with flip flags",
+          "source_phrase": "one flag can stick or reverse"
+        }
+      ]
+    },
+    {
+      "quirk": "calibration, correction and compensation",
+      "gauge_count": 17,
+      "percentage_of_catalogue": 12.5,
+      "source_statement_count": 18,
+      "gauge_ids": [
+        "D21",
+        "E02",
+        "E06",
+        "P01",
+        "P03",
+        "P05",
+        "P18",
+        "P20",
+        "P26",
+        "P27",
+        "P28",
+        "P44",
+        "X14",
+        "X16",
+        "X18",
+        "X26",
+        "X30"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P01",
+          "gauge_name": "Liquid-column manometer: U-tube, well-type and inclined",
+          "source_phrase": "local gravity correction"
+        },
+        {
+          "gauge_id": "P03",
+          "gauge_name": "Aneroid barometer and pressure capsule mechanism",
+          "source_phrase": "temperature compensation errors"
+        },
+        {
+          "gauge_id": "P05",
+          "gauge_name": "Diaphragm pressure gauge",
+          "source_phrase": "Deflection is nonlinear without linkage compensation"
+        },
+        {
+          "gauge_id": "P18",
+          "gauge_name": "Float-and-tape tank gauge",
+          "source_phrase": "manual checks and datum offsets"
+        },
+        {
+          "gauge_id": "P20",
+          "gauge_name": "Variable-area flowmeter / rotameter",
+          "source_phrase": "density, viscosity, pressure and temperature affect calibration"
+        }
+      ]
+    },
+    {
+      "quirk": "flutter, jitter, tremor and quiver",
+      "gauge_count": 17,
+      "percentage_of_catalogue": 12.5,
+      "source_statement_count": 17,
+      "gauge_ids": [
+        "D10",
+        "D14",
+        "E03",
+        "E12",
+        "E13",
+        "P04",
+        "P31",
+        "P41",
+        "X02",
+        "X04",
+        "X08",
+        "X16",
+        "X19",
+        "X20",
+        "X21",
+        "X25",
+        "X33"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P04",
+          "gauge_name": "Bourdon-tube pressure gauge, including C, spiral and helical tubes",
+          "source_phrase": "pulsation flutter"
+        },
+        {
+          "gauge_id": "P31",
+          "gauge_name": "Cup, propeller and vane anemometers",
+          "source_phrase": "mechanical dials can flutter while totalisers ratchet"
+        },
+        {
+          "gauge_id": "P41",
+          "gauge_name": "Mechanical odometer, cyclometer and utility-meter register",
+          "source_phrase": "least-significant wheel jitters"
+        },
+        {
+          "gauge_id": "E03",
+          "gauge_name": "Moving-iron meter",
+          "source_phrase": "pointer may tremble on distorted AC"
+        },
+        {
+          "gauge_id": "E12",
+          "gauge_name": "Cross-coil / ratiometer gauge",
+          "source_phrase": "sender noise makes small tremors"
+        }
+      ]
+    },
+    {
+      "quirk": "brightness and contrast variation",
+      "gauge_count": 16,
+      "percentage_of_catalogue": 11.76,
+      "source_statement_count": 19,
+      "gauge_ids": [
+        "D01",
+        "D03",
+        "D04",
+        "D07",
+        "D08",
+        "D10",
+        "D11",
+        "D12",
+        "D13",
+        "D16",
+        "D18",
+        "D19",
+        "D20",
+        "D27",
+        "P19",
+        "X29"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P19",
+          "gauge_name": "Magnetic level indicator with flip flags",
+          "source_phrase": "strong viewing-angle contrast"
+        },
+        {
+          "gauge_id": "D01",
+          "gauge_name": "Incandescent pilot lamp and annunciator",
+          "source_phrase": "brightness and colour temperature vary strongly with voltage"
+        },
+        {
+          "gauge_id": "D03",
+          "gauge_name": "Shadow meter / moving-vane tuning indicator",
+          "source_phrase": "lamp ageing changes contrast"
+        },
+        {
+          "gauge_id": "D04",
+          "gauge_name": "Electron-ray “magic eye” tube",
+          "source_phrase": "phosphor burn and weak emission"
+        },
+        {
+          "gauge_id": "D04",
+          "gauge_name": "Electron-ray “magic eye” tube",
+          "source_phrase": "room light strongly affects apparent contrast"
+        }
+      ]
+    },
+    {
+      "quirk": "hysteresis",
+      "gauge_count": 16,
+      "percentage_of_catalogue": 11.76,
+      "source_statement_count": 16,
+      "gauge_ids": [
+        "D10",
+        "E03",
+        "E13",
+        "P03",
+        "P04",
+        "P05",
+        "P06",
+        "P14",
+        "P23",
+        "P25",
+        "P26",
+        "P34",
+        "P35",
+        "P37",
+        "P38",
+        "X22"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P03",
+          "gauge_name": "Aneroid barometer and pressure capsule mechanism",
+          "source_phrase": "Elastic hysteresis and creep"
+        },
+        {
+          "gauge_id": "P04",
+          "gauge_name": "Bourdon-tube pressure gauge, including C, spiral and helical tubes",
+          "source_phrase": "elastic hysteresis"
+        },
+        {
+          "gauge_id": "P05",
+          "gauge_name": "Diaphragm pressure gauge",
+          "source_phrase": "hysteresis and creep"
+        },
+        {
+          "gauge_id": "P06",
+          "gauge_name": "Capsule and bellows pressure gauges",
+          "source_phrase": "elastic hysteresis"
+        },
+        {
+          "gauge_id": "P14",
+          "gauge_name": "Cold-cathode ionisation gauge",
+          "source_phrase": "hysteresis between striking and sustaining pressure"
+        }
+      ]
+    },
+    {
+      "quirk": "overload, saturation and damage",
+      "gauge_count": 16,
+      "percentage_of_catalogue": 11.76,
+      "source_statement_count": 16,
+      "gauge_ids": [
+        "D04",
+        "E04",
+        "E05",
+        "E06",
+        "E10",
+        "P04",
+        "P05",
+        "P07",
+        "P15",
+        "P16",
+        "P31",
+        "P36",
+        "P37",
+        "X06",
+        "X17",
+        "X19"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P04",
+          "gauge_name": "Bourdon-tube pressure gauge, including C, spiral and helical tubes",
+          "source_phrase": "overpressure can permanently shift zero"
+        },
+        {
+          "gauge_id": "P05",
+          "gauge_name": "Diaphragm pressure gauge",
+          "source_phrase": "overpressure stops"
+        },
+        {
+          "gauge_id": "P07",
+          "gauge_name": "Magnetic-coupled differential gauge",
+          "source_phrase": "overpressure relief and a characteristic broad 270-degree scale"
+        },
+        {
+          "gauge_id": "P15",
+          "gauge_name": "Hot-cathode ionisation gauge",
+          "source_phrase": "abrupt overpressure trip to protect filament"
+        },
+        {
+          "gauge_id": "P16",
+          "gauge_name": "Capacitance diaphragm manometer",
+          "source_phrase": "finite overpressure recovery"
+        }
+      ]
+    },
+    {
+      "quirk": "contamination, dirt and fouling",
+      "gauge_count": 15,
+      "percentage_of_catalogue": 11.03,
+      "source_statement_count": 15,
+      "gauge_ids": [
+        "D28",
+        "E07",
+        "E18",
+        "E19",
+        "P02",
+        "P12",
+        "P13",
+        "P14",
+        "P15",
+        "P17",
+        "P20",
+        "P26",
+        "X23",
+        "X30",
+        "X34"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P02",
+          "gauge_name": "Mercury barometer: cistern, Fortin and wheel forms",
+          "source_phrase": "trapped air and dirty glass"
+        },
+        {
+          "gauge_id": "P12",
+          "gauge_name": "McLeod compression vacuum gauge",
+          "source_phrase": "orientation and cleanliness dominate"
+        },
+        {
+          "gauge_id": "P13",
+          "gauge_name": "Thermal-conductivity vacuum gauges: Pirani and thermocouple",
+          "source_phrase": "zero and span drift with contamination"
+        },
+        {
+          "gauge_id": "P14",
+          "gauge_name": "Cold-cathode ionisation gauge",
+          "source_phrase": "contamination causes drift"
+        },
+        {
+          "gauge_id": "P15",
+          "gauge_name": "Hot-cathode ionisation gauge",
+          "source_phrase": "contamination and outgassing"
+        }
+      ]
+    },
+    {
+      "quirk": "discrete, quantised or stepwise motion",
+      "gauge_count": 15,
+      "percentage_of_catalogue": 11.03,
+      "source_statement_count": 19,
+      "gauge_ids": [
+        "D09",
+        "D15",
+        "E08",
+        "E15",
+        "E20",
+        "E26",
+        "P06",
+        "P18",
+        "P19",
+        "P25",
+        "P29",
+        "P30",
+        "P40",
+        "X27",
+        "X32"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P06",
+          "gauge_name": "Capsule and bellows pressure gauges",
+          "source_phrase": "capsule stacks may have slight stepwise motion"
+        },
+        {
+          "gauge_id": "P18",
+          "gauge_name": "Float-and-tape tank gauge",
+          "source_phrase": "staircase-like movement after stiction releases"
+        },
+        {
+          "gauge_id": "P19",
+          "gauge_name": "Magnetic level indicator with flip flags",
+          "source_phrase": "Flags flip discretely in a travelling wave"
+        },
+        {
+          "gauge_id": "P19",
+          "gauge_name": "Magnetic level indicator with flip flags",
+          "source_phrase": "level is quantised by flag pitch"
+        },
+        {
+          "gauge_id": "P25",
+          "gauge_name": "Thermochromic liquid-crystal strip and leuco-dye indicator",
+          "source_phrase": "Discrete colour bands"
+        }
+      ]
+    },
+    {
+      "quirk": "friction and drag",
+      "gauge_count": 15,
+      "percentage_of_catalogue": 11.03,
+      "source_statement_count": 15,
+      "gauge_ids": [
+        "E01",
+        "E02",
+        "E06",
+        "P06",
+        "P07",
+        "P10",
+        "P11",
+        "P18",
+        "P23",
+        "P26",
+        "P31",
+        "P32",
+        "P37",
+        "P42",
+        "X30"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P06",
+          "gauge_name": "Capsule and bellows pressure gauges",
+          "source_phrase": "convolution friction"
+        },
+        {
+          "gauge_id": "P07",
+          "gauge_name": "Magnetic-coupled differential gauge",
+          "source_phrase": "Diaphragm motion couples through magnet and helix with little gear friction"
+        },
+        {
+          "gauge_id": "P10",
+          "gauge_name": "Contact, alarm and meter-relay gauge",
+          "source_phrase": "contact drag causes a tiny hitch"
+        },
+        {
+          "gauge_id": "P11",
+          "gauge_name": "Drag, tell-tale and witness-pointer gauge",
+          "source_phrase": "added friction changes dynamics"
+        },
+        {
+          "gauge_id": "P18",
+          "gauge_name": "Float-and-tape tank gauge",
+          "source_phrase": "Counterweight motion, cable sag and pulley friction"
+        }
+      ]
+    },
+    {
+      "quirk": "ageing and material degradation",
+      "gauge_count": 14,
+      "percentage_of_catalogue": 10.29,
+      "source_statement_count": 16,
+      "gauge_ids": [
+        "D01",
+        "D02",
+        "D03",
+        "D07",
+        "D11",
+        "D12",
+        "D20",
+        "D24",
+        "D25",
+        "E06",
+        "E21",
+        "P25",
+        "P26",
+        "X29"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P25",
+          "gauge_name": "Thermochromic liquid-crystal strip and leuco-dye indicator",
+          "source_phrase": "sunlight and ageing alter colour"
+        },
+        {
+          "gauge_id": "P26",
+          "gauge_name": "Hair hygrometer and hygrograph",
+          "source_phrase": "contamination and ageing"
+        },
+        {
+          "gauge_id": "E06",
+          "gauge_name": "Thermocouple RF meter",
+          "source_phrase": "calibration changes after ageing"
+        },
+        {
+          "gauge_id": "E21",
+          "gauge_name": "Split-flap display",
+          "source_phrase": "faded print"
+        },
+        {
+          "gauge_id": "D01",
+          "gauge_name": "Incandescent pilot lamp and annunciator",
+          "source_phrase": "filament sag, blackened bulbs and random failures"
+        }
+      ]
+    },
+    {
+      "quirk": "shock and vibration effects",
+      "gauge_count": 14,
+      "percentage_of_catalogue": 10.29,
+      "source_statement_count": 14,
+      "gauge_ids": [
+        "E01",
+        "E02",
+        "E08",
+        "E09",
+        "P35",
+        "P36",
+        "P38",
+        "P40",
+        "X01",
+        "X02",
+        "X11",
+        "X25",
+        "X34",
+        "X36"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P35",
+          "gauge_name": "Mercury and aneroid sphygmomanometer",
+          "source_phrase": "aneroid gear hysteresis and shock damage"
+        },
+        {
+          "gauge_id": "P36",
+          "gauge_name": "Quartz-fibre self-reading pocket dosimeter",
+          "source_phrase": "shock sensitivity"
+        },
+        {
+          "gauge_id": "P38",
+          "gauge_name": "Dial indicator, test indicator and dial torque wrench",
+          "source_phrase": "shock can skip teeth"
+        },
+        {
+          "gauge_id": "P40",
+          "gauge_name": "Chronometric tachometer",
+          "source_phrase": "lively but oddly steady under vibration"
+        },
+        {
+          "gauge_id": "E01",
+          "gauge_name": "D’Arsonval / Weston moving-coil meter",
+          "source_phrase": "magnetic shock, bearing friction and pointer balance affect zero"
+        }
+      ]
+    },
+    {
+      "quirk": "bubble, void and separated-column behaviour",
+      "gauge_count": 13,
+      "percentage_of_catalogue": 9.56,
+      "source_statement_count": 15,
+      "gauge_ids": [
+        "P01",
+        "P02",
+        "P09",
+        "P17",
+        "P21",
+        "P24",
+        "P28",
+        "P29",
+        "P32",
+        "P33",
+        "P34",
+        "X07",
+        "X26"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P01",
+          "gauge_name": "Liquid-column manometer: U-tube, well-type and inclined",
+          "source_phrase": "bubbles or separated columns"
+        },
+        {
+          "gauge_id": "P02",
+          "gauge_name": "Mercury barometer: cistern, Fortin and wheel forms",
+          "source_phrase": "trapped air and dirty glass"
+        },
+        {
+          "gauge_id": "P09",
+          "gauge_name": "Liquid-filled, snubbed and damped pressure gauge",
+          "source_phrase": "fill bubble moves with orientation"
+        },
+        {
+          "gauge_id": "P17",
+          "gauge_name": "Tubular, reflex and transparent sight-level gauges",
+          "source_phrase": "boiling, froth and bubbles"
+        },
+        {
+          "gauge_id": "P21",
+          "gauge_name": "Liquid-in-glass thermometer",
+          "source_phrase": "separated liquid column"
+        }
+      ]
+    },
+    {
+      "quirk": "latching and state-retention behaviour",
+      "gauge_count": 13,
+      "percentage_of_catalogue": 9.56,
+      "source_statement_count": 13,
+      "gauge_ids": [
+        "D09",
+        "D17",
+        "D22",
+        "D23",
+        "D24",
+        "D27",
+        "E18",
+        "E19",
+        "E20",
+        "E21",
+        "P10",
+        "X15",
+        "X34"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P10",
+          "gauge_name": "Contact, alarm and meter-relay gauge",
+          "source_phrase": "latching alarms"
+        },
+        {
+          "gauge_id": "E18",
+          "gauge_name": "Magnetic latching flag, ball and shutter annunciator",
+          "source_phrase": "bistable retention in some designs"
+        },
+        {
+          "gauge_id": "E19",
+          "gauge_name": "Contact meter relay / limit meter",
+          "source_phrase": "latching"
+        },
+        {
+          "gauge_id": "E20",
+          "gauge_name": "Flip-dot / flip-disc display",
+          "source_phrase": "bistable image with no holding power"
+        },
+        {
+          "gauge_id": "E21",
+          "gauge_name": "Split-flap display",
+          "source_phrase": "power loss freezes the last state"
+        }
+      ]
+    },
+    {
+      "quirk": "parallax",
+      "gauge_count": 13,
+      "percentage_of_catalogue": 9.56,
+      "source_statement_count": 13,
+      "gauge_ids": [
+        "D05",
+        "D06",
+        "D26",
+        "D28",
+        "E01",
+        "E22",
+        "E25",
+        "P01",
+        "P17",
+        "P21",
+        "P33",
+        "X10",
+        "X20"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P01",
+          "gauge_name": "Liquid-column manometer: U-tube, well-type and inclined",
+          "source_phrase": "parallax"
+        },
+        {
+          "gauge_id": "P17",
+          "gauge_name": "Tubular, reflex and transparent sight-level gauges",
+          "source_phrase": "parallax"
+        },
+        {
+          "gauge_id": "P21",
+          "gauge_name": "Liquid-in-glass thermometer",
+          "source_phrase": "meniscus/parallax"
+        },
+        {
+          "gauge_id": "P33",
+          "gauge_name": "Liquid magnetic compass card",
+          "source_phrase": "glass and fluid add lens distortion and parallax"
+        },
+        {
+          "gauge_id": "E01",
+          "gauge_name": "D’Arsonval / Weston moving-coil meter",
+          "source_phrase": "mirror scale to cancel parallax"
+        }
+      ]
+    },
+    {
+      "quirk": "shadows, depth and occlusion",
+      "gauge_count": 13,
+      "percentage_of_catalogue": 9.56,
+      "source_statement_count": 18,
+      "gauge_ids": [
+        "D03",
+        "D05",
+        "D06",
+        "D07",
+        "D08",
+        "E20",
+        "E23",
+        "E25",
+        "P08",
+        "P17",
+        "X09",
+        "X10",
+        "X11"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P08",
+          "gauge_name": "Compound, duplex and twin-pointer pressure gauges",
+          "source_phrase": "Two pointers may cross or obscure each other"
+        },
+        {
+          "gauge_id": "P17",
+          "gauge_name": "Tubular, reflex and transparent sight-level gauges",
+          "source_phrase": "staining and scale obscure the line"
+        },
+        {
+          "gauge_id": "E20",
+          "gauge_name": "Flip-dot / flip-disc display",
+          "source_phrase": "oblique views reveal disc thickness"
+        },
+        {
+          "gauge_id": "E23",
+          "gauge_name": "Ribbon and tape meter",
+          "source_phrase": "digits can be half hidden at the window edge"
+        },
+        {
+          "gauge_id": "E25",
+          "gauge_name": "Concentric multi-pointer instrument",
+          "source_phrase": "Pointers cross, overlap and cast separate shadows"
+        }
+      ]
+    },
+    {
+      "quirk": "viewing-angle dependence",
+      "gauge_count": 13,
+      "percentage_of_catalogue": 9.56,
+      "source_statement_count": 15,
+      "gauge_ids": [
+        "D12",
+        "D18",
+        "D20",
+        "D21",
+        "D22",
+        "D25",
+        "D29",
+        "E08",
+        "E20",
+        "E22",
+        "P19",
+        "P25",
+        "X25"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P19",
+          "gauge_name": "Magnetic level indicator with flip flags",
+          "source_phrase": "strong viewing-angle contrast"
+        },
+        {
+          "gauge_id": "P25",
+          "gauge_name": "Thermochromic liquid-crystal strip and leuco-dye indicator",
+          "source_phrase": "narrow viewing angle"
+        },
+        {
+          "gauge_id": "E08",
+          "gauge_name": "Vibrating-reed frequency meter",
+          "source_phrase": "vibration and viewing angle make the answer ambiguous"
+        },
+        {
+          "gauge_id": "E20",
+          "gauge_name": "Flip-dot / flip-disc display",
+          "source_phrase": "oblique views reveal disc thickness"
+        },
+        {
+          "gauge_id": "E22",
+          "gauge_name": "Edgewise meter",
+          "source_phrase": "scale often viewed from below"
+        }
+      ]
+    },
+    {
+      "quirk": "zero drift and offset",
+      "gauge_count": 13,
+      "percentage_of_catalogue": 9.56,
+      "source_statement_count": 15,
+      "gauge_ids": [
+        "E03",
+        "E05",
+        "E09",
+        "E15",
+        "P04",
+        "P08",
+        "P09",
+        "P16",
+        "P24",
+        "P36",
+        "P37",
+        "X05",
+        "X30"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P04",
+          "gauge_name": "Bourdon-tube pressure gauge, including C, spiral and helical tubes",
+          "source_phrase": "temperature zero shift"
+        },
+        {
+          "gauge_id": "P04",
+          "gauge_name": "Bourdon-tube pressure gauge, including C, spiral and helical tubes",
+          "source_phrase": "overpressure can permanently shift zero"
+        },
+        {
+          "gauge_id": "P08",
+          "gauge_name": "Compound, duplex and twin-pointer pressure gauges",
+          "source_phrase": "separate zero errors"
+        },
+        {
+          "gauge_id": "P09",
+          "gauge_name": "Liquid-filled, snubbed and damped pressure gauge",
+          "source_phrase": "case pressure can shift zero"
+        },
+        {
+          "gauge_id": "P16",
+          "gauge_name": "Capacitance diaphragm manometer",
+          "source_phrase": "zero drift and tare routines"
+        }
+      ]
+    },
+    {
+      "quirk": "ghosting, crosstalk and light leakage",
+      "gauge_count": 12,
+      "percentage_of_catalogue": 8.82,
+      "source_statement_count": 12,
+      "gauge_ids": [
+        "D02",
+        "D05",
+        "D06",
+        "D08",
+        "D12",
+        "D13",
+        "D19",
+        "D20",
+        "D21",
+        "D23",
+        "D28",
+        "X29"
+      ],
+      "examples": [
+        {
+          "gauge_id": "D02",
+          "gauge_name": "Edge-lit engraved acrylic and light-pipe display",
+          "source_phrase": "adjacent legends leak light"
+        },
+        {
+          "gauge_id": "D05",
+          "gauge_name": "Nixie numeric cold-cathode tube",
+          "source_phrase": "multiplex ghosting"
+        },
+        {
+          "gauge_id": "D06",
+          "gauge_name": "Alphanumeric Nixie tube",
+          "source_phrase": "slow or ghosted character changes under multiplex drive"
+        },
+        {
+          "gauge_id": "D08",
+          "gauge_name": "Panaplex planar gas-discharge display",
+          "source_phrase": "neighbouring-segment crosstalk"
+        },
+        {
+          "gauge_id": "D12",
+          "gauge_name": "Vacuum fluorescent display",
+          "source_phrase": "multiplex ghosting unless blanked"
+        }
+      ]
+    },
+    {
+      "quirk": "human-factor ambiguity and misreading",
+      "gauge_count": 12,
+      "percentage_of_catalogue": 8.82,
+      "source_statement_count": 15,
+      "gauge_ids": [
+        "E08",
+        "E14",
+        "E16",
+        "P03",
+        "P08",
+        "P22",
+        "P27",
+        "P29",
+        "P43",
+        "X01",
+        "X03",
+        "X24"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P03",
+          "gauge_name": "Aneroid barometer and pressure capsule mechanism",
+          "source_phrase": "altitude versions wrap repeatedly and can be misread by a full revolution"
+        },
+        {
+          "gauge_id": "P08",
+          "gauge_name": "Compound, duplex and twin-pointer pressure gauges",
+          "source_phrase": "operator can mistake which needle belongs to which circuit"
+        },
+        {
+          "gauge_id": "P22",
+          "gauge_name": "Six’s maximum-minimum thermometer",
+          "source_phrase": "users often read the wrong end"
+        },
+        {
+          "gauge_id": "P27",
+          "gauge_name": "Wet- and dry-bulb psychrometer",
+          "source_phrase": "insufficient ventilation reads too humid"
+        },
+        {
+          "gauge_id": "P29",
+          "gauge_name": "Galileo thermometer",
+          "source_phrase": "two adjacent bulbs can straddle the answer"
+        }
+      ]
+    },
+    {
+      "quirk": "operator procedure and ritual",
+      "gauge_count": 12,
+      "percentage_of_catalogue": 8.82,
+      "source_statement_count": 14,
+      "gauge_ids": [
+        "E10",
+        "P12",
+        "P18",
+        "P27",
+        "P35",
+        "P36",
+        "P44",
+        "X27",
+        "X28",
+        "X32",
+        "X33",
+        "X35"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P12",
+          "gauge_name": "McLeod compression vacuum gauge",
+          "source_phrase": "Reading requires trapping and compressing gas"
+        },
+        {
+          "gauge_id": "P12",
+          "gauge_name": "McLeod compression vacuum gauge",
+          "source_phrase": "slow, procedural and discontinuous"
+        },
+        {
+          "gauge_id": "P18",
+          "gauge_name": "Float-and-tape tank gauge",
+          "source_phrase": "manual checks and datum offsets"
+        },
+        {
+          "gauge_id": "P27",
+          "gauge_name": "Wet- and dry-bulb psychrometer",
+          "source_phrase": "Requires a genuinely wet clean wick and airflow"
+        },
+        {
+          "gauge_id": "P35",
+          "gauge_name": "Mercury and aneroid sphygmomanometer",
+          "source_phrase": "operator timing and Korotkoff sounds are part of the reading ritual"
+        }
+      ]
+    },
+    {
+      "quirk": "power-off and power-loss behaviour",
+      "gauge_count": 12,
+      "percentage_of_catalogue": 8.82,
+      "source_statement_count": 13,
+      "gauge_ids": [
+        "D23",
+        "D24",
+        "E11",
+        "E14",
+        "E16",
+        "E17",
+        "E18",
+        "E21",
+        "P19",
+        "X07",
+        "X09",
+        "X25"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P19",
+          "gauge_name": "Magnetic level indicator with flip flags",
+          "source_phrase": "no power needed"
+        },
+        {
+          "gauge_id": "E11",
+          "gauge_name": "Ferraris induction meter",
+          "source_phrase": "power-off coast-down"
+        },
+        {
+          "gauge_id": "E14",
+          "gauge_name": "Air-core gauge",
+          "source_phrase": "No return spring, so power-off position may be arbitrary"
+        },
+        {
+          "gauge_id": "E14",
+          "gauge_name": "Air-core gauge",
+          "source_phrase": "supply loss may leave the pointer stranded"
+        },
+        {
+          "gauge_id": "E16",
+          "gauge_name": "Synchro / selsyn remote indicator",
+          "source_phrase": "power-off pointer is free or parked"
+        }
+      ]
+    },
+    {
+      "quirk": "settling and return behaviour",
+      "gauge_count": 12,
+      "percentage_of_catalogue": 8.82,
+      "source_statement_count": 12,
+      "gauge_ids": [
+        "E01",
+        "E02",
+        "E11",
+        "E12",
+        "E14",
+        "P01",
+        "P28",
+        "P39",
+        "X05",
+        "X06",
+        "X19",
+        "X23"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P01",
+          "gauge_name": "Liquid-column manometer: U-tube, well-type and inclined",
+          "source_phrase": "slosh and oscillatory settling"
+        },
+        {
+          "gauge_id": "P28",
+          "gauge_name": "Hydrometer and floating density gauges",
+          "source_phrase": "Bobbing and damped settling"
+        },
+        {
+          "gauge_id": "P39",
+          "gauge_name": "Mechanical tachometer and eddy-current speedometer",
+          "source_phrase": "slow return"
+        },
+        {
+          "gauge_id": "E01",
+          "gauge_name": "D’Arsonval / Weston moving-coil meter",
+          "source_phrase": "spring return and eddy-current damping"
+        },
+        {
+          "gauge_id": "E02",
+          "gauge_name": "Taut-band meter movement",
+          "source_phrase": "slower, silkier return than cheap pivots"
+        }
+      ]
+    },
+    {
+      "quirk": "wraparound and multi-turn indication",
+      "gauge_count": 12,
+      "percentage_of_catalogue": 8.82,
+      "source_statement_count": 13,
+      "gauge_ids": [
+        "E14",
+        "E15",
+        "E23",
+        "P03",
+        "P31",
+        "P33",
+        "P38",
+        "X01",
+        "X03",
+        "X09",
+        "X20",
+        "X24"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P03",
+          "gauge_name": "Aneroid barometer and pressure capsule mechanism",
+          "source_phrase": "altitude versions wrap repeatedly and can be misread by a full revolution"
+        },
+        {
+          "gauge_id": "P31",
+          "gauge_name": "Cup, propeller and vane anemometers",
+          "source_phrase": "direction vane hunts around north"
+        },
+        {
+          "gauge_id": "P33",
+          "gauge_name": "Liquid magnetic compass card",
+          "source_phrase": "north crossing is a wrap"
+        },
+        {
+          "gauge_id": "P38",
+          "gauge_name": "Dial indicator, test indicator and dial torque wrench",
+          "source_phrase": "pointer can whirl through multiple turns"
+        },
+        {
+          "gauge_id": "E14",
+          "gauge_name": "Air-core gauge",
+          "source_phrase": "fast response and 360-degree capability"
+        }
+      ]
+    },
+    {
+      "quirk": "ambient-light readability",
+      "gauge_count": 11,
+      "percentage_of_catalogue": 8.09,
+      "source_statement_count": 11,
+      "gauge_ids": [
+        "D03",
+        "D04",
+        "D18",
+        "D19",
+        "D23",
+        "D28",
+        "D30",
+        "E20",
+        "P25",
+        "P43",
+        "P44"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P25",
+          "gauge_name": "Thermochromic liquid-crystal strip and leuco-dye indicator",
+          "source_phrase": "sunlight and ageing alter colour"
+        },
+        {
+          "gauge_id": "P43",
+          "gauge_name": "Stroboscopic tachometer",
+          "source_phrase": "flash persistence and ambient light alter readability"
+        },
+        {
+          "gauge_id": "P44",
+          "gauge_name": "Disappearing-filament optical pyrometer",
+          "source_phrase": "no contact lag but line-of-sight obstruction and smoke matter"
+        },
+        {
+          "gauge_id": "E20",
+          "gauge_name": "Flip-dot / flip-disc display",
+          "source_phrase": "excellent sunlight visibility"
+        },
+        {
+          "gauge_id": "D03",
+          "gauge_name": "Shadow meter / moving-vane tuning indicator",
+          "source_phrase": "room light can wash it out"
+        }
+      ]
+    },
+    {
+      "quirk": "bloom, halo and penumbra",
+      "gauge_count": 11,
+      "percentage_of_catalogue": 8.09,
+      "source_statement_count": 11,
+      "gauge_ids": [
+        "D01",
+        "D03",
+        "D07",
+        "D08",
+        "D12",
+        "D17",
+        "D26",
+        "D27",
+        "D28",
+        "E09",
+        "X15"
+      ],
+      "examples": [
+        {
+          "gauge_id": "E09",
+          "gauge_name": "Mirror / light-spot galvanometer",
+          "source_phrase": "spot blooms and defocuses"
+        },
+        {
+          "gauge_id": "D01",
+          "gauge_name": "Incandescent pilot lamp and annunciator",
+          "source_phrase": "warm lenses bloom into nearby legends"
+        },
+        {
+          "gauge_id": "D03",
+          "gauge_name": "Shadow meter / moving-vane tuning indicator",
+          "source_phrase": "fuzzy penumbra"
+        },
+        {
+          "gauge_id": "D07",
+          "gauge_name": "Pixie / top-view cold-cathode display",
+          "source_phrase": "lower contrast and more halo"
+        },
+        {
+          "gauge_id": "D08",
+          "gauge_name": "Panaplex planar gas-discharge display",
+          "source_phrase": "broad glow and edge bloom"
+        }
+      ]
+    },
+    {
+      "quirk": "bounce",
+      "gauge_count": 11,
+      "percentage_of_catalogue": 8.09,
+      "source_statement_count": 11,
+      "gauge_ids": [
+        "E18",
+        "E21",
+        "P04",
+        "P20",
+        "P28",
+        "P30",
+        "P35",
+        "P39",
+        "X20",
+        "X23",
+        "X36"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P04",
+          "gauge_name": "Bourdon-tube pressure gauge, including C, spiral and helical tubes",
+          "source_phrase": "hard-stop impact and peg bounce"
+        },
+        {
+          "gauge_id": "P20",
+          "gauge_name": "Variable-area flowmeter / rotameter",
+          "source_phrase": "Float bobs, spins and may chatter under pulsation"
+        },
+        {
+          "gauge_id": "P28",
+          "gauge_name": "Hydrometer and floating density gauges",
+          "source_phrase": "Bobbing and damped settling"
+        },
+        {
+          "gauge_id": "P30",
+          "gauge_name": "Rain gauge and tipping-bucket recorder",
+          "source_phrase": "mechanical bounce may generate duplicate electrical pulses"
+        },
+        {
+          "gauge_id": "P35",
+          "gauge_name": "Mercury and aneroid sphygmomanometer",
+          "source_phrase": "mercury meniscus and bounce"
+        }
+      ]
+    },
+    {
+      "quirk": "end stops, pegging and overflow",
+      "gauge_count": 11,
+      "percentage_of_catalogue": 8.09,
+      "source_statement_count": 11,
+      "gauge_ids": [
+        "E07",
+        "E15",
+        "E17",
+        "E23",
+        "P04",
+        "P05",
+        "P39",
+        "X04",
+        "X20",
+        "X26",
+        "X30"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P04",
+          "gauge_name": "Bourdon-tube pressure gauge, including C, spiral and helical tubes",
+          "source_phrase": "hard-stop impact and peg bounce"
+        },
+        {
+          "gauge_id": "P05",
+          "gauge_name": "Diaphragm pressure gauge",
+          "source_phrase": "overpressure stops"
+        },
+        {
+          "gauge_id": "P39",
+          "gauge_name": "Mechanical tachometer and eddy-current speedometer",
+          "source_phrase": "hard-stop chatter at zero"
+        },
+        {
+          "gauge_id": "E07",
+          "gauge_name": "Electrostatic voltmeter",
+          "source_phrase": "electrostatic attraction may pull into a stop"
+        },
+        {
+          "gauge_id": "E15",
+          "gauge_name": "Stepper-motor gauge",
+          "source_phrase": "startup homing sweep into a mechanical stop"
+        }
+      ]
+    },
+    {
+      "quirk": "mechanical noise and cadence",
+      "gauge_count": 11,
+      "percentage_of_catalogue": 8.09,
+      "source_statement_count": 13,
+      "gauge_ids": [
+        "E20",
+        "E21",
+        "P39",
+        "P40",
+        "X13",
+        "X14",
+        "X15",
+        "X19",
+        "X23",
+        "X27",
+        "X32"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P39",
+          "gauge_name": "Mechanical tachometer and eddy-current speedometer",
+          "source_phrase": "odometer gearing noise"
+        },
+        {
+          "gauge_id": "P40",
+          "gauge_name": "Chronometric tachometer",
+          "source_phrase": "escapement tick"
+        },
+        {
+          "gauge_id": "E20",
+          "gauge_name": "Flip-dot / flip-disc display",
+          "source_phrase": "loud clicks"
+        },
+        {
+          "gauge_id": "E21",
+          "gauge_name": "Split-flap display",
+          "source_phrase": "loud clatter"
+        },
+        {
+          "gauge_id": "X13",
+          "gauge_name": "Engine-order telegraph / Chadburn",
+          "source_phrase": "Bridge handle moves command pointer and rings a bell"
+        }
+      ]
+    },
+    {
+      "quirk": "warm-up behaviour",
+      "gauge_count": 11,
+      "percentage_of_catalogue": 8.09,
+      "source_statement_count": 11,
+      "gauge_ids": [
+        "D01",
+        "D03",
+        "D04",
+        "D11",
+        "D12",
+        "D25",
+        "P13",
+        "P15",
+        "P16",
+        "X06",
+        "X29"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P13",
+          "gauge_name": "Thermal-conductivity vacuum gauges: Pirani and thermocouple",
+          "source_phrase": "hot filament warm-up"
+        },
+        {
+          "gauge_id": "P15",
+          "gauge_name": "Hot-cathode ionisation gauge",
+          "source_phrase": "Filament warm-up and degassing"
+        },
+        {
+          "gauge_id": "P16",
+          "gauge_name": "Capacitance diaphragm manometer",
+          "source_phrase": "warm-up and controlled-head temperature"
+        },
+        {
+          "gauge_id": "D01",
+          "gauge_name": "Incandescent pilot lamp and annunciator",
+          "source_phrase": "Thermal fade-in and fade-out"
+        },
+        {
+          "gauge_id": "D03",
+          "gauge_name": "Shadow meter / moving-vane tuning indicator",
+          "source_phrase": "warm-up"
+        }
+      ]
+    },
+    {
+      "quirk": "backlash and lash",
+      "gauge_count": 10,
+      "percentage_of_catalogue": 7.35,
+      "source_statement_count": 10,
+      "gauge_ids": [
+        "E11",
+        "E15",
+        "E17",
+        "E24",
+        "P02",
+        "P03",
+        "P04",
+        "P38",
+        "P41",
+        "P42"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P02",
+          "gauge_name": "Mercury barometer: cistern, Fortin and wheel forms",
+          "source_phrase": "wheel mechanisms add backlash and pointer lag"
+        },
+        {
+          "gauge_id": "P03",
+          "gauge_name": "Aneroid barometer and pressure capsule mechanism",
+          "source_phrase": "gearing lash and stiction"
+        },
+        {
+          "gauge_id": "P04",
+          "gauge_name": "Bourdon-tube pressure gauge, including C, spiral and helical tubes",
+          "source_phrase": "gear backlash"
+        },
+        {
+          "gauge_id": "P38",
+          "gauge_name": "Dial indicator, test indicator and dial torque wrench",
+          "source_phrase": "Gear train magnifies backlash"
+        },
+        {
+          "gauge_id": "P41",
+          "gauge_name": "Mechanical odometer, cyclometer and utility-meter register",
+          "source_phrase": "backlash"
+        }
+      ]
+    },
+    {
+      "quirk": "channel mismatch and unequal dynamics",
+      "gauge_count": 10,
+      "percentage_of_catalogue": 7.35,
+      "source_statement_count": 12,
+      "gauge_ids": [
+        "D14",
+        "E21",
+        "E25",
+        "P08",
+        "P27",
+        "X10",
+        "X13",
+        "X17",
+        "X32",
+        "X35"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P08",
+          "gauge_name": "Compound, duplex and twin-pointer pressure gauges",
+          "source_phrase": "unequal damping"
+        },
+        {
+          "gauge_id": "P08",
+          "gauge_name": "Compound, duplex and twin-pointer pressure gauges",
+          "source_phrase": "separate zero errors"
+        },
+        {
+          "gauge_id": "P27",
+          "gauge_name": "Wet- and dry-bulb psychrometer",
+          "source_phrase": "two separate columns can have different lag and calibration"
+        },
+        {
+          "gauge_id": "E21",
+          "gauge_name": "Split-flap display",
+          "source_phrase": "one module can lag the rest"
+        },
+        {
+          "gauge_id": "E25",
+          "gauge_name": "Concentric multi-pointer instrument",
+          "source_phrase": "failures can leave one hand frozen while others continue"
+        }
+      ]
+    },
+    {
+      "quirk": "meniscus behaviour",
+      "gauge_count": 10,
+      "percentage_of_catalogue": 7.35,
+      "source_statement_count": 10,
+      "gauge_ids": [
+        "D29",
+        "P01",
+        "P02",
+        "P12",
+        "P17",
+        "P21",
+        "P28",
+        "P34",
+        "P35",
+        "X26"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P01",
+          "gauge_name": "Liquid-column manometer: U-tube, well-type and inclined",
+          "source_phrase": "Moving meniscus, capillary depression and wetting"
+        },
+        {
+          "gauge_id": "P02",
+          "gauge_name": "Mercury barometer: cistern, Fortin and wheel forms",
+          "source_phrase": "Convex mercury meniscus"
+        },
+        {
+          "gauge_id": "P12",
+          "gauge_name": "McLeod compression vacuum gauge",
+          "source_phrase": "mercury menisci and capillary effects"
+        },
+        {
+          "gauge_id": "P17",
+          "gauge_name": "Tubular, reflex and transparent sight-level gauges",
+          "source_phrase": "Meniscus and wetting"
+        },
+        {
+          "gauge_id": "P21",
+          "gauge_name": "Liquid-in-glass thermometer",
+          "source_phrase": "meniscus/parallax"
+        }
+      ]
+    },
+    {
+      "quirk": "scale markings, zones and legends",
+      "gauge_count": 10,
+      "percentage_of_catalogue": 7.35,
+      "source_statement_count": 12,
+      "gauge_ids": [
+        "P04",
+        "P42",
+        "X03",
+        "X04",
+        "X07",
+        "X10",
+        "X17",
+        "X19",
+        "X21",
+        "X23"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P04",
+          "gauge_name": "Bourdon-tube pressure gauge, including C, spiral and helical tubes",
+          "source_phrase": "dual scales and redlines"
+        },
+        {
+          "gauge_id": "P42",
+          "gauge_name": "Strip-chart and circular-chart recorder",
+          "source_phrase": "range-change marks"
+        },
+        {
+          "gauge_id": "X03",
+          "gauge_name": "Drum-pointer and counter-drum altimeter",
+          "source_phrase": "baro setting and low-altitude warning sectors"
+        },
+        {
+          "gauge_id": "X04",
+          "gauge_name": "Airspeed indicator with coloured operating arcs",
+          "source_phrase": "coloured arcs and redline"
+        },
+        {
+          "gauge_id": "X07",
+          "gauge_name": "Turn-and-bank, turn coordinator and slip-skid ball",
+          "source_phrase": "standard-rate marks"
+        }
+      ]
+    },
+    {
+      "quirk": "segment, pixel, lamp or flag failure",
+      "gauge_count": 10,
+      "percentage_of_catalogue": 7.35,
+      "source_statement_count": 10,
+      "gauge_ids": [
+        "D01",
+        "D02",
+        "D13",
+        "D14",
+        "D15",
+        "D16",
+        "D20",
+        "E18",
+        "P19",
+        "X29"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P19",
+          "gauge_name": "Magnetic level indicator with flip flags",
+          "source_phrase": "one flag can stick or reverse"
+        },
+        {
+          "gauge_id": "E18",
+          "gauge_name": "Magnetic latching flag, ball and shutter annunciator",
+          "source_phrase": "weak coil can leave a half flag"
+        },
+        {
+          "gauge_id": "D01",
+          "gauge_name": "Incandescent pilot lamp and annunciator",
+          "source_phrase": "filament sag, blackened bulbs and random failures"
+        },
+        {
+          "gauge_id": "D02",
+          "gauge_name": "Edge-lit engraved acrylic and light-pipe display",
+          "source_phrase": "failed bulbs create asymmetric pools rather than uniform darkness"
+        },
+        {
+          "gauge_id": "D13",
+          "gauge_name": "LED seven-segment display",
+          "source_phrase": "dead or weak segments"
+        }
+      ]
+    },
+    {
+      "quirk": "witness, peak-hold and retained extrema",
+      "gauge_count": 10,
+      "percentage_of_catalogue": 7.35,
+      "source_statement_count": 13,
+      "gauge_ids": [
+        "D15",
+        "D30",
+        "P11",
+        "P21",
+        "P22",
+        "P25",
+        "P37",
+        "P38",
+        "X17",
+        "X36"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P11",
+          "gauge_name": "Drag, tell-tale and witness-pointer gauge",
+          "source_phrase": "Main hand physically pushes a loose memory hand"
+        },
+        {
+          "gauge_id": "P11",
+          "gauge_name": "Drag, tell-tale and witness-pointer gauge",
+          "source_phrase": "witness remains after input falls"
+        },
+        {
+          "gauge_id": "P11",
+          "gauge_name": "Drag, tell-tale and witness-pointer gauge",
+          "source_phrase": "witness may creep, stick or be left at an old event"
+        },
+        {
+          "gauge_id": "P21",
+          "gauge_name": "Liquid-in-glass thermometer",
+          "source_phrase": "maximum clinical constriction"
+        },
+        {
+          "gauge_id": "P22",
+          "gauge_name": "Six’s maximum-minimum thermometer",
+          "source_phrase": "markers stay put through surface tension"
+        }
+      ]
+    },
+    {
+      "quirk": "brightness nonuniformity and gradients",
+      "gauge_count": 9,
+      "percentage_of_catalogue": 6.62,
+      "source_statement_count": 12,
+      "gauge_ids": [
+        "D01",
+        "D02",
+        "D06",
+        "D12",
+        "D14",
+        "D21",
+        "D23",
+        "D26",
+        "X20"
+      ],
+      "examples": [
+        {
+          "gauge_id": "D01",
+          "gauge_name": "Incandescent pilot lamp and annunciator",
+          "source_phrase": "uneven diffuser hotspots"
+        },
+        {
+          "gauge_id": "D02",
+          "gauge_name": "Edge-lit engraved acrylic and light-pipe display",
+          "source_phrase": "lamp position creates bright and dim regions"
+        },
+        {
+          "gauge_id": "D02",
+          "gauge_name": "Edge-lit engraved acrylic and light-pipe display",
+          "source_phrase": "failed bulbs create asymmetric pools rather than uniform darkness"
+        },
+        {
+          "gauge_id": "D06",
+          "gauge_name": "Alphanumeric Nixie tube",
+          "source_phrase": "joints glow brighter"
+        },
+        {
+          "gauge_id": "D12",
+          "gauge_name": "Vacuum fluorescent display",
+          "source_phrase": "filament voltage causes luminance gradient/slant"
+        }
+      ]
+    },
+    {
+      "quirk": "chatter",
+      "gauge_count": 9,
+      "percentage_of_catalogue": 6.62,
+      "source_statement_count": 9,
+      "gauge_ids": [
+        "D15",
+        "E15",
+        "E19",
+        "E26",
+        "P10",
+        "P20",
+        "P31",
+        "P39",
+        "X35"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P10",
+          "gauge_name": "Contact, alarm and meter-relay gauge",
+          "source_phrase": "snap action and chatter near threshold"
+        },
+        {
+          "gauge_id": "P20",
+          "gauge_name": "Variable-area flowmeter / rotameter",
+          "source_phrase": "Float bobs, spins and may chatter under pulsation"
+        },
+        {
+          "gauge_id": "P31",
+          "gauge_name": "Cup, propeller and vane anemometers",
+          "source_phrase": "bearing chatter"
+        },
+        {
+          "gauge_id": "P39",
+          "gauge_name": "Mechanical tachometer and eddy-current speedometer",
+          "source_phrase": "hard-stop chatter at zero"
+        },
+        {
+          "gauge_id": "E15",
+          "gauge_name": "Stepper-motor gauge",
+          "source_phrase": "stop chatter"
+        }
+      ]
+    },
+    {
+      "quirk": "compressed or expanded scale",
+      "gauge_count": 9,
+      "percentage_of_catalogue": 6.62,
+      "source_statement_count": 9,
+      "gauge_ids": [
+        "E03",
+        "P01",
+        "P08",
+        "P13",
+        "P34",
+        "X04",
+        "X05",
+        "X08",
+        "X18"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P01",
+          "gauge_name": "Liquid-column manometer: U-tube, well-type and inclined",
+          "source_phrase": "inclined scales magnify low pressure and become strongly nonlinear if geometry is wrong"
+        },
+        {
+          "gauge_id": "P08",
+          "gauge_name": "Compound, duplex and twin-pointer pressure gauges",
+          "source_phrase": "compound scales often compress one side"
+        },
+        {
+          "gauge_id": "P13",
+          "gauge_name": "Thermal-conductivity vacuum gauges: Pirani and thermocouple",
+          "source_phrase": "logarithmic or compressed scale"
+        },
+        {
+          "gauge_id": "P34",
+          "gauge_name": "Diving depth gauge: capillary and Bourdon",
+          "source_phrase": "Capillary scale is severely compressed with depth by Boyle’s law"
+        },
+        {
+          "gauge_id": "E03",
+          "gauge_name": "Moving-iron meter",
+          "source_phrase": "Strongly compressed lower scale"
+        }
+      ]
+    },
+    {
+      "quirk": "creep",
+      "gauge_count": 9,
+      "percentage_of_catalogue": 6.62,
+      "source_statement_count": 9,
+      "gauge_ids": [
+        "E11",
+        "P03",
+        "P05",
+        "P06",
+        "P11",
+        "P23",
+        "P37",
+        "P42",
+        "X11"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P03",
+          "gauge_name": "Aneroid barometer and pressure capsule mechanism",
+          "source_phrase": "Elastic hysteresis and creep"
+        },
+        {
+          "gauge_id": "P05",
+          "gauge_name": "Diaphragm pressure gauge",
+          "source_phrase": "hysteresis and creep"
+        },
+        {
+          "gauge_id": "P06",
+          "gauge_name": "Capsule and bellows pressure gauges",
+          "source_phrase": "bellows can breathe, creep or buckle"
+        },
+        {
+          "gauge_id": "P11",
+          "gauge_name": "Drag, tell-tale and witness-pointer gauge",
+          "source_phrase": "witness may creep, stick or be left at an old event"
+        },
+        {
+          "gauge_id": "P23",
+          "gauge_name": "Bimetal dial thermometer",
+          "source_phrase": "pointer may creep after temperature stabilises"
+        }
+      ]
+    },
+    {
+      "quirk": "flicker, scan and PWM artefacts",
+      "gauge_count": 9,
+      "percentage_of_catalogue": 6.62,
+      "source_statement_count": 11,
+      "gauge_ids": [
+        "D05",
+        "D13",
+        "D14",
+        "D16",
+        "D25",
+        "D26",
+        "E20",
+        "X15",
+        "X29"
+      ],
+      "examples": [
+        {
+          "gauge_id": "E20",
+          "gauge_name": "Flip-dot / flip-disc display",
+          "source_phrase": "row/column update wave"
+        },
+        {
+          "gauge_id": "D05",
+          "gauge_name": "Nixie numeric cold-cathode tube",
+          "source_phrase": "high-voltage striking flicker"
+        },
+        {
+          "gauge_id": "D13",
+          "gauge_name": "LED seven-segment display",
+          "source_phrase": "Multiplex flicker and scan order"
+        },
+        {
+          "gauge_id": "D14",
+          "gauge_name": "LED 14- and 16-segment starburst display",
+          "source_phrase": "multiplex shimmer"
+        },
+        {
+          "gauge_id": "D16",
+          "gauge_name": "LED dot-matrix and smart alphanumeric module",
+          "source_phrase": "Row/column scan lines"
+        }
+      ]
+    },
+    {
+      "quirk": "manual reset, tare and caging",
+      "gauge_count": 9,
+      "percentage_of_catalogue": 6.62,
+      "source_statement_count": 10,
+      "gauge_ids": [
+        "D30",
+        "P10",
+        "P11",
+        "P22",
+        "P36",
+        "P41",
+        "X06",
+        "X28",
+        "X36"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P10",
+          "gauge_name": "Contact, alarm and meter-relay gauge",
+          "source_phrase": "test/reset knobs"
+        },
+        {
+          "gauge_id": "P11",
+          "gauge_name": "Drag, tell-tale and witness-pointer gauge",
+          "source_phrase": "manual reset can disturb the main pointer"
+        },
+        {
+          "gauge_id": "P22",
+          "gauge_name": "Six’s maximum-minimum thermometer",
+          "source_phrase": "magnetic reset"
+        },
+        {
+          "gauge_id": "P36",
+          "gauge_name": "Quartz-fibre self-reading pocket dosimeter",
+          "source_phrase": "recharge/reset step can shift zero"
+        },
+        {
+          "gauge_id": "P41",
+          "gauge_name": "Mechanical odometer, cyclometer and utility-meter register",
+          "source_phrase": "tamper seals and reset pawls"
+        }
+      ]
+    },
+    {
+      "quirk": "orientation sensitivity",
+      "gauge_count": 9,
+      "percentage_of_catalogue": 6.62,
+      "source_statement_count": 9,
+      "gauge_ids": [
+        "E02",
+        "P05",
+        "P07",
+        "P09",
+        "P12",
+        "P13",
+        "P20",
+        "P33",
+        "P37"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P05",
+          "gauge_name": "Diaphragm pressure gauge",
+          "source_phrase": "orientation and temperature sensitivity"
+        },
+        {
+          "gauge_id": "P07",
+          "gauge_name": "Magnetic-coupled differential gauge",
+          "source_phrase": "case orientation matters"
+        },
+        {
+          "gauge_id": "P09",
+          "gauge_name": "Liquid-filled, snubbed and damped pressure gauge",
+          "source_phrase": "fill bubble moves with orientation"
+        },
+        {
+          "gauge_id": "P12",
+          "gauge_name": "McLeod compression vacuum gauge",
+          "source_phrase": "orientation and cleanliness dominate"
+        },
+        {
+          "gauge_id": "P13",
+          "gauge_name": "Thermal-conductivity vacuum gauges: Pirani and thermocouple",
+          "source_phrase": "convection introduces orientation dependence"
+        }
+      ]
+    },
+    {
+      "quirk": "pen, stylus and trace artefacts",
+      "gauge_count": 9,
+      "percentage_of_catalogue": 6.62,
+      "source_statement_count": 16,
+      "gauge_ids": [
+        "D27",
+        "E10",
+        "P26",
+        "P38",
+        "P42",
+        "X30",
+        "X31",
+        "X32",
+        "X35"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P26",
+          "gauge_name": "Hair hygrometer and hygrograph",
+          "source_phrase": "chart versions add pen friction, clock drift and a daily/weekly trace"
+        },
+        {
+          "gauge_id": "P38",
+          "gauge_name": "Dial indicator, test indicator and dial torque wrench",
+          "source_phrase": "stylus cosine error"
+        },
+        {
+          "gauge_id": "P42",
+          "gauge_name": "Strip-chart and circular-chart recorder",
+          "source_phrase": "Pen friction and deadband"
+        },
+        {
+          "gauge_id": "P42",
+          "gauge_name": "Strip-chart and circular-chart recorder",
+          "source_phrase": "ink blobs, skipping and dried nibs"
+        },
+        {
+          "gauge_id": "P42",
+          "gauge_name": "Strip-chart and circular-chart recorder",
+          "source_phrase": "multi-pen offsets in time"
+        }
+      ]
+    },
+    {
+      "quirk": "pressure pulsation and pneumatic-line dynamics",
+      "gauge_count": 9,
+      "percentage_of_catalogue": 6.62,
+      "source_statement_count": 10,
+      "gauge_ids": [
+        "P04",
+        "P07",
+        "P09",
+        "P20",
+        "P35",
+        "X01",
+        "X05",
+        "X11",
+        "X21"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P04",
+          "gauge_name": "Bourdon-tube pressure gauge, including C, spiral and helical tubes",
+          "source_phrase": "pulsation flutter"
+        },
+        {
+          "gauge_id": "P07",
+          "gauge_name": "Magnetic-coupled differential gauge",
+          "source_phrase": "pointer can oscillate with fan pulses"
+        },
+        {
+          "gauge_id": "P09",
+          "gauge_name": "Liquid-filled, snubbed and damped pressure gauge",
+          "source_phrase": "pulsations are averaged"
+        },
+        {
+          "gauge_id": "P20",
+          "gauge_name": "Variable-area flowmeter / rotameter",
+          "source_phrase": "Float bobs, spins and may chatter under pulsation"
+        },
+        {
+          "gauge_id": "P35",
+          "gauge_name": "Mercury and aneroid sphygmomanometer",
+          "source_phrase": "Pulsating column or needle"
+        }
+      ]
+    },
+    {
+      "quirk": "thresholds, deadband and switching points",
+      "gauge_count": 9,
+      "percentage_of_catalogue": 6.62,
+      "source_statement_count": 11,
+      "gauge_ids": [
+        "D30",
+        "E17",
+        "E19",
+        "E26",
+        "P07",
+        "P10",
+        "P31",
+        "P42",
+        "X14"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P07",
+          "gauge_name": "Magnetic-coupled differential gauge",
+          "source_phrase": "overpressure relief and a characteristic broad 270-degree scale"
+        },
+        {
+          "gauge_id": "P10",
+          "gauge_name": "Contact, alarm and meter-relay gauge",
+          "source_phrase": "snap action and chatter near threshold"
+        },
+        {
+          "gauge_id": "P10",
+          "gauge_name": "Contact, alarm and meter-relay gauge",
+          "source_phrase": "deadband between make and break"
+        },
+        {
+          "gauge_id": "P31",
+          "gauge_name": "Cup, propeller and vane anemometers",
+          "source_phrase": "Starting-threshold friction"
+        },
+        {
+          "gauge_id": "P42",
+          "gauge_name": "Strip-chart and circular-chart recorder",
+          "source_phrase": "Pen friction and deadband"
+        }
+      ]
+    },
+    {
+      "quirk": "capillary, wetting and surface-tension effects",
+      "gauge_count": 8,
+      "percentage_of_catalogue": 5.88,
+      "source_statement_count": 8,
+      "gauge_ids": [
+        "P01",
+        "P02",
+        "P12",
+        "P17",
+        "P21",
+        "P22",
+        "P24",
+        "P34"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P01",
+          "gauge_name": "Liquid-column manometer: U-tube, well-type and inclined",
+          "source_phrase": "Moving meniscus, capillary depression and wetting"
+        },
+        {
+          "gauge_id": "P02",
+          "gauge_name": "Mercury barometer: cistern, Fortin and wheel forms",
+          "source_phrase": "temperature, gravity and capillary corrections"
+        },
+        {
+          "gauge_id": "P12",
+          "gauge_name": "McLeod compression vacuum gauge",
+          "source_phrase": "mercury menisci and capillary effects"
+        },
+        {
+          "gauge_id": "P17",
+          "gauge_name": "Tubular, reflex and transparent sight-level gauges",
+          "source_phrase": "Meniscus and wetting"
+        },
+        {
+          "gauge_id": "P21",
+          "gauge_name": "Liquid-in-glass thermometer",
+          "source_phrase": "alcohol can wet the glass and produce a fuzzy edge"
+        }
+      ]
+    },
+    {
+      "quirk": "readout masking and narrow-window transitions",
+      "gauge_count": 8,
+      "percentage_of_catalogue": 5.88,
+      "source_statement_count": 9,
+      "gauge_ids": [
+        "E23",
+        "E24",
+        "P21",
+        "P36",
+        "X02",
+        "X03",
+        "X20",
+        "X24"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P21",
+          "gauge_name": "Liquid-in-glass thermometer",
+          "source_phrase": "alcohol can wet the glass and produce a fuzzy edge"
+        },
+        {
+          "gauge_id": "P36",
+          "gauge_name": "Quartz-fibre self-reading pocket dosimeter",
+          "source_phrase": "Tiny hairline viewed through an eyepiece"
+        },
+        {
+          "gauge_id": "E23",
+          "gauge_name": "Ribbon and tape meter",
+          "source_phrase": "A coloured band or printed tape moves behind a narrow window"
+        },
+        {
+          "gauge_id": "E23",
+          "gauge_name": "Ribbon and tape meter",
+          "source_phrase": "digits can be half hidden at the window edge"
+        },
+        {
+          "gauge_id": "E24",
+          "gauge_name": "Roller, drum and cyclometer indicator",
+          "source_phrase": "two numerals may be partly visible"
+        }
+      ]
+    },
+    {
+      "quirk": "zero adjustment and checking",
+      "gauge_count": 8,
+      "percentage_of_catalogue": 5.88,
+      "source_statement_count": 8,
+      "gauge_ids": [
+        "E01",
+        "P07",
+        "P16",
+        "P23",
+        "P35",
+        "P37",
+        "X19",
+        "X25"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P07",
+          "gauge_name": "Magnetic-coupled differential gauge",
+          "source_phrase": "zero adjust"
+        },
+        {
+          "gauge_id": "P16",
+          "gauge_name": "Capacitance diaphragm manometer",
+          "source_phrase": "zero drift and tare routines"
+        },
+        {
+          "gauge_id": "P23",
+          "gauge_name": "Bimetal dial thermometer",
+          "source_phrase": "zero adjust at rear"
+        },
+        {
+          "gauge_id": "P35",
+          "gauge_name": "Mercury and aneroid sphygmomanometer",
+          "source_phrase": "zero checking"
+        },
+        {
+          "gauge_id": "P37",
+          "gauge_name": "Spring balance, dial force gauge and dynamometer",
+          "source_phrase": "tare knob and peak-hold pointer"
+        }
+      ]
+    },
+    {
+      "quirk": "cable, belt, tape and roller errors",
+      "gauge_count": 7,
+      "percentage_of_catalogue": 5.15,
+      "source_statement_count": 12,
+      "gauge_ids": [
+        "E23",
+        "P18",
+        "P39",
+        "X20",
+        "X24",
+        "X28",
+        "X30"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P18",
+          "gauge_name": "Float-and-tape tank gauge",
+          "source_phrase": "Counterweight motion, cable sag and pulley friction"
+        },
+        {
+          "gauge_id": "P18",
+          "gauge_name": "Float-and-tape tank gauge",
+          "source_phrase": "tape stretch"
+        },
+        {
+          "gauge_id": "P39",
+          "gauge_name": "Mechanical tachometer and eddy-current speedometer",
+          "source_phrase": "Cable whip and needle bounce"
+        },
+        {
+          "gauge_id": "E23",
+          "gauge_name": "Ribbon and tape meter",
+          "source_phrase": "wrap seams and end limits"
+        },
+        {
+          "gauge_id": "E23",
+          "gauge_name": "Ribbon and tape meter",
+          "source_phrase": "belt stretch"
+        }
+      ]
+    },
+    {
+      "quirk": "electrical contacts, grounds and wiring",
+      "gauge_count": 7,
+      "percentage_of_catalogue": 5.15,
+      "source_statement_count": 8,
+      "gauge_ids": [
+        "D20",
+        "E12",
+        "E16",
+        "E19",
+        "P10",
+        "X23",
+        "X29"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P10",
+          "gauge_name": "Contact, alarm and meter-relay gauge",
+          "source_phrase": "electrical arcs can mark contacts"
+        },
+        {
+          "gauge_id": "E12",
+          "gauge_name": "Cross-coil / ratiometer gauge",
+          "source_phrase": "open-circuit faults can drive to an extreme"
+        },
+        {
+          "gauge_id": "E16",
+          "gauge_name": "Synchro / selsyn remote indicator",
+          "source_phrase": "phase and wiring errors"
+        },
+        {
+          "gauge_id": "E16",
+          "gauge_name": "Synchro / selsyn remote indicator",
+          "source_phrase": "loss of one phase creates wrong or weak positions"
+        },
+        {
+          "gauge_id": "E19",
+          "gauge_name": "Contact meter relay / limit meter",
+          "source_phrase": "contact pressure can momentarily pin the indicating hand"
+        }
+      ]
+    },
+    {
+      "quirk": "electrical or mechanical remote coupling",
+      "gauge_count": 7,
+      "percentage_of_catalogue": 5.15,
+      "source_statement_count": 7,
+      "gauge_ids": [
+        "E12",
+        "E13",
+        "E16",
+        "P07",
+        "P18",
+        "X25",
+        "X30"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P07",
+          "gauge_name": "Magnetic-coupled differential gauge",
+          "source_phrase": "Diaphragm motion couples through magnet and helix with little gear friction"
+        },
+        {
+          "gauge_id": "P18",
+          "gauge_name": "Float-and-tape tank gauge",
+          "source_phrase": "scale can run vertically or drive a dial"
+        },
+        {
+          "gauge_id": "E12",
+          "gauge_name": "Cross-coil / ratiometer gauge",
+          "source_phrase": "sender noise makes small tremors"
+        },
+        {
+          "gauge_id": "E13",
+          "gauge_name": "Thermal bimetal automotive gauge",
+          "source_phrase": "sender slosh is averaged"
+        },
+        {
+          "gauge_id": "E16",
+          "gauge_name": "Synchro / selsyn remote indicator",
+          "source_phrase": "Pointer follows a transmitter electrically"
+        }
+      ]
+    },
+    {
+      "quirk": "fluid surge, slosh and foam",
+      "gauge_count": 7,
+      "percentage_of_catalogue": 5.15,
+      "source_statement_count": 10,
+      "gauge_ids": [
+        "E13",
+        "P01",
+        "P17",
+        "P18",
+        "X07",
+        "X12",
+        "X30"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P01",
+          "gauge_name": "Liquid-column manometer: U-tube, well-type and inclined",
+          "source_phrase": "slosh and oscillatory settling"
+        },
+        {
+          "gauge_id": "P17",
+          "gauge_name": "Tubular, reflex and transparent sight-level gauges",
+          "source_phrase": "boiling, froth and bubbles"
+        },
+        {
+          "gauge_id": "P17",
+          "gauge_name": "Tubular, reflex and transparent sight-level gauges",
+          "source_phrase": "drain and blow-down events make the level leap"
+        },
+        {
+          "gauge_id": "P18",
+          "gauge_name": "Float-and-tape tank gauge",
+          "source_phrase": "float follows waves and foam"
+        },
+        {
+          "gauge_id": "E13",
+          "gauge_name": "Thermal bimetal automotive gauge",
+          "source_phrase": "sender slosh is averaged"
+        }
+      ]
+    },
+    {
+      "quirk": "invalid, out-of-range and warning flags",
+      "gauge_count": 7,
+      "percentage_of_catalogue": 5.15,
+      "source_statement_count": 8,
+      "gauge_ids": [
+        "E17",
+        "E18",
+        "X02",
+        "X03",
+        "X06",
+        "X08",
+        "X09"
+      ],
+      "examples": [
+        {
+          "gauge_id": "E17",
+          "gauge_name": "Servo and torque-motor indicator",
+          "source_phrase": "power loss may drop a warning flag or let the pointer drift"
+        },
+        {
+          "gauge_id": "E18",
+          "gauge_name": "Magnetic latching flag, ball and shutter annunciator",
+          "source_phrase": "power-loss state is intentionally conspicuous"
+        },
+        {
+          "gauge_id": "X02",
+          "gauge_name": "Counter-pointer altimeter",
+          "source_phrase": "mechanical flag for negative/out-of-range"
+        },
+        {
+          "gauge_id": "X03",
+          "gauge_name": "Drum-pointer and counter-drum altimeter",
+          "source_phrase": "drum can be masked until valid"
+        },
+        {
+          "gauge_id": "X03",
+          "gauge_name": "Drum-pointer and counter-drum altimeter",
+          "source_phrase": "baro setting and low-altitude warning sectors"
+        }
+      ]
+    },
+    {
+      "quirk": "magnetic-field, deviation and remanence effects",
+      "gauge_count": 7,
+      "percentage_of_catalogue": 5.15,
+      "source_statement_count": 8,
+      "gauge_ids": [
+        "E03",
+        "E04",
+        "E10",
+        "E20",
+        "P14",
+        "P33",
+        "P39"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P14",
+          "gauge_name": "Cold-cathode ionisation gauge",
+          "source_phrase": "magnetic-field dependent"
+        },
+        {
+          "gauge_id": "P33",
+          "gauge_name": "Liquid magnetic compass card",
+          "source_phrase": "compass dip and card tilt"
+        },
+        {
+          "gauge_id": "P33",
+          "gauge_name": "Liquid magnetic compass card",
+          "source_phrase": "magnetic deviation"
+        },
+        {
+          "gauge_id": "P39",
+          "gauge_name": "Mechanical tachometer and eddy-current speedometer",
+          "source_phrase": "eddy-current drag depends on magnet strength and temperature"
+        },
+        {
+          "gauge_id": "E03",
+          "gauge_name": "Moving-iron meter",
+          "source_phrase": "residual magnetism leaves a small zero offset"
+        }
+      ]
+    },
+    {
+      "quirk": "mechanical wear, stretch and permanent set",
+      "gauge_count": 7,
+      "percentage_of_catalogue": 5.15,
+      "source_statement_count": 7,
+      "gauge_ids": [
+        "E02",
+        "E23",
+        "P18",
+        "P37",
+        "P38",
+        "P40",
+        "P41"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P18",
+          "gauge_name": "Float-and-tape tank gauge",
+          "source_phrase": "tape stretch"
+        },
+        {
+          "gauge_id": "P37",
+          "gauge_name": "Spring balance, dial force gauge and dynamometer",
+          "source_phrase": "overload leaves permanent set"
+        },
+        {
+          "gauge_id": "P38",
+          "gauge_name": "Dial indicator, test indicator and dial torque wrench",
+          "source_phrase": "shock can skip teeth"
+        },
+        {
+          "gauge_id": "P40",
+          "gauge_name": "Chronometric tachometer",
+          "source_phrase": "mechanical wear creates periodic hunting"
+        },
+        {
+          "gauge_id": "P41",
+          "gauge_name": "Mechanical odometer, cyclometer and utility-meter register",
+          "source_phrase": "worn gears may stick then jump"
+        }
+      ]
+    },
+    {
+      "quirk": "multi-pointer and multi-channel interaction",
+      "gauge_count": 7,
+      "percentage_of_catalogue": 5.15,
+      "source_statement_count": 15,
+      "gauge_ids": [
+        "E25",
+        "P08",
+        "X09",
+        "X10",
+        "X11",
+        "X13",
+        "X25"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P08",
+          "gauge_name": "Compound, duplex and twin-pointer pressure gauges",
+          "source_phrase": "Two pointers may cross or obscure each other"
+        },
+        {
+          "gauge_id": "E25",
+          "gauge_name": "Concentric multi-pointer instrument",
+          "source_phrase": "Pointers cross, overlap and cast separate shadows"
+        },
+        {
+          "gauge_id": "E25",
+          "gauge_name": "Concentric multi-pointer instrument",
+          "source_phrase": "one movement may obscure another’s hub"
+        },
+        {
+          "gauge_id": "E25",
+          "gauge_name": "Concentric multi-pointer instrument",
+          "source_phrase": "failures can leave one hand frozen while others continue"
+        },
+        {
+          "gauge_id": "X09",
+          "gauge_name": "RMI and HSI multi-pointer navigation indicator",
+          "source_phrase": "Rotating compass card plus one or two bearing needles"
+        }
+      ]
+    },
+    {
+      "quirk": "overshoot",
+      "gauge_count": 7,
+      "percentage_of_catalogue": 5.15,
+      "source_statement_count": 7,
+      "gauge_ids": [
+        "E01",
+        "E21",
+        "P33",
+        "X16",
+        "X17",
+        "X24",
+        "X36"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P33",
+          "gauge_name": "Liquid magnetic compass card",
+          "source_phrase": "card can lag then swing past"
+        },
+        {
+          "gauge_id": "E01",
+          "gauge_name": "D’Arsonval / Weston moving-coil meter",
+          "source_phrase": "one or two overshoots"
+        },
+        {
+          "gauge_id": "E21",
+          "gauge_name": "Split-flap display",
+          "source_phrase": "flap overshoot, bounce and mis-seating"
+        },
+        {
+          "gauge_id": "X16",
+          "gauge_name": "VU meter / standard volume indicator",
+          "source_phrase": "characteristic overshoot and return"
+        },
+        {
+          "gauge_id": "X17",
+          "gauge_name": "Peak programme meter",
+          "source_phrase": "little pointer overshoot"
+        }
+      ]
+    },
+    {
+      "quirk": "persistence and afterglow",
+      "gauge_count": 7,
+      "percentage_of_catalogue": 5.15,
+      "source_statement_count": 8,
+      "gauge_ids": [
+        "D09",
+        "D17",
+        "D26",
+        "D27",
+        "P43",
+        "X14",
+        "X15"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P43",
+          "gauge_name": "Stroboscopic tachometer",
+          "source_phrase": "flash persistence and ambient light alter readability"
+        },
+        {
+          "gauge_id": "D09",
+          "gauge_name": "Dekatron / glow-transfer counting tube",
+          "source_phrase": "warm orange afterglow"
+        },
+        {
+          "gauge_id": "D17",
+          "gauge_name": "Monochrome storage plasma panel",
+          "source_phrase": "persistence is electrical memory, not merely phosphor decay"
+        },
+        {
+          "gauge_id": "D26",
+          "gauge_name": "CRT oscilloscope, vector and radar display",
+          "source_phrase": "Phosphor persistence and afterglow"
+        },
+        {
+          "gauge_id": "D27",
+          "gauge_name": "Storage CRT",
+          "source_phrase": "Trace remains until erased"
+        }
+      ]
+    },
+    {
+      "quirk": "scale direction and interpretation",
+      "gauge_count": 7,
+      "percentage_of_catalogue": 5.15,
+      "source_statement_count": 9,
+      "gauge_ids": [
+        "P08",
+        "P20",
+        "P22",
+        "P28",
+        "P41",
+        "X15",
+        "X21"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P08",
+          "gauge_name": "Compound, duplex and twin-pointer pressure gauges",
+          "source_phrase": "operator can mistake which needle belongs to which circuit"
+        },
+        {
+          "gauge_id": "P20",
+          "gauge_name": "Variable-area flowmeter / rotameter",
+          "source_phrase": "read at a specified edge of the float"
+        },
+        {
+          "gauge_id": "P22",
+          "gauge_name": "Six’s maximum-minimum thermometer",
+          "source_phrase": "Two opposite-reading scales"
+        },
+        {
+          "gauge_id": "P22",
+          "gauge_name": "Six’s maximum-minimum thermometer",
+          "source_phrase": "users often read the wrong end"
+        },
+        {
+          "gauge_id": "P28",
+          "gauge_name": "Hydrometer and floating density gauges",
+          "source_phrase": "read top or bottom of meniscus depending standard"
+        }
+      ]
+    },
+    {
+      "quirk": "averaging and integration",
+      "gauge_count": 6,
+      "percentage_of_catalogue": 4.41,
+      "source_statement_count": 6,
+      "gauge_ids": [
+        "E13",
+        "P09",
+        "P40",
+        "X16",
+        "X17",
+        "X19"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P09",
+          "gauge_name": "Liquid-filled, snubbed and damped pressure gauge",
+          "source_phrase": "pulsations are averaged"
+        },
+        {
+          "gauge_id": "P40",
+          "gauge_name": "Chronometric tachometer",
+          "source_phrase": "brief input changes are averaged"
+        },
+        {
+          "gauge_id": "E13",
+          "gauge_name": "Thermal bimetal automotive gauge",
+          "source_phrase": "sender slosh is averaged"
+        },
+        {
+          "gauge_id": "X16",
+          "gauge_name": "VU meter / standard volume indicator",
+          "source_phrase": "Specified mechanical ballistics deliberately average audio and miss short peaks"
+        },
+        {
+          "gauge_id": "X17",
+          "gauge_name": "Peak programme meter",
+          "source_phrase": "short peaks are integrated rather than shown literally"
+        }
+      ]
+    },
+    {
+      "quirk": "burn-in and permanent image wear",
+      "gauge_count": 6,
+      "percentage_of_catalogue": 4.41,
+      "source_statement_count": 7,
+      "gauge_ids": [
+        "D04",
+        "D17",
+        "D24",
+        "D25",
+        "D26",
+        "D27"
+      ],
+      "examples": [
+        {
+          "gauge_id": "D04",
+          "gauge_name": "Electron-ray “magic eye” tube",
+          "source_phrase": "phosphor burn and weak emission"
+        },
+        {
+          "gauge_id": "D17",
+          "gauge_name": "Monochrome storage plasma panel",
+          "source_phrase": "burn-in"
+        },
+        {
+          "gauge_id": "D24",
+          "gauge_name": "Electrochromic segmented display",
+          "source_phrase": "limited cycle life and permanent staining"
+        },
+        {
+          "gauge_id": "D25",
+          "gauge_name": "Segmented OLED and passive-matrix OLED",
+          "source_phrase": "differential ageing and burn-in"
+        },
+        {
+          "gauge_id": "D25",
+          "gauge_name": "Segmented OLED and passive-matrix OLED",
+          "source_phrase": "bright static segments dim over years"
+        }
+      ]
+    },
+    {
+      "quirk": "chart and paper transport",
+      "gauge_count": 6,
+      "percentage_of_catalogue": 4.41,
+      "source_statement_count": 7,
+      "gauge_ids": [
+        "P26",
+        "P42",
+        "X30",
+        "X31",
+        "X32",
+        "X35"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P26",
+          "gauge_name": "Hair hygrometer and hygrograph",
+          "source_phrase": "chart versions add pen friction, clock drift and a daily/weekly trace"
+        },
+        {
+          "gauge_id": "P42",
+          "gauge_name": "Strip-chart and circular-chart recorder",
+          "source_phrase": "chart paper creep"
+        },
+        {
+          "gauge_id": "P42",
+          "gauge_name": "Strip-chart and circular-chart recorder",
+          "source_phrase": "circular charts create a seam at each revolution"
+        },
+        {
+          "gauge_id": "X30",
+          "gauge_name": "Mechanical float tide gauge and stilling-well recorder",
+          "source_phrase": "pen traces on rotating paper"
+        },
+        {
+          "gauge_id": "X31",
+          "gauge_name": "Mechanical seismograph and smoked-paper drum",
+          "source_phrase": "pen scratches smoked paper or light exposes photographic paper"
+        }
+      ]
+    },
+    {
+      "quirk": "construction tolerances and unit variation",
+      "gauge_count": 6,
+      "percentage_of_catalogue": 4.41,
+      "source_statement_count": 8,
+      "gauge_ids": [
+        "D10",
+        "E06",
+        "P01",
+        "P21",
+        "P29",
+        "X18"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P01",
+          "gauge_name": "Liquid-column manometer: U-tube, well-type and inclined",
+          "source_phrase": "inclined scales magnify low pressure and become strongly nonlinear if geometry is wrong"
+        },
+        {
+          "gauge_id": "P21",
+          "gauge_name": "Liquid-in-glass thermometer",
+          "source_phrase": "nonuniform bore"
+        },
+        {
+          "gauge_id": "P29",
+          "gauge_name": "Galileo thermometer",
+          "source_phrase": "density tolerances and bubbles matter"
+        },
+        {
+          "gauge_id": "E06",
+          "gauge_name": "Thermocouple RF meter",
+          "source_phrase": "frequency response depends on construction"
+        },
+        {
+          "gauge_id": "E06",
+          "gauge_name": "Thermocouple RF meter",
+          "source_phrase": "calibration changes after ageing"
+        }
+      ]
+    },
+    {
+      "quirk": "filament behaviour and failure",
+      "gauge_count": 6,
+      "percentage_of_catalogue": 4.41,
+      "source_statement_count": 12,
+      "gauge_ids": [
+        "D01",
+        "D11",
+        "D12",
+        "P13",
+        "P15",
+        "P44"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P13",
+          "gauge_name": "Thermal-conductivity vacuum gauges: Pirani and thermocouple",
+          "source_phrase": "hot filament warm-up"
+        },
+        {
+          "gauge_id": "P15",
+          "gauge_name": "Hot-cathode ionisation gauge",
+          "source_phrase": "Filament warm-up and degassing"
+        },
+        {
+          "gauge_id": "P15",
+          "gauge_name": "Hot-cathode ionisation gauge",
+          "source_phrase": "abrupt overpressure trip to protect filament"
+        },
+        {
+          "gauge_id": "P44",
+          "gauge_name": "Disappearing-filament optical pyrometer",
+          "source_phrase": "Operator turns current until filament visually disappears"
+        },
+        {
+          "gauge_id": "P44",
+          "gauge_name": "Disappearing-filament optical pyrometer",
+          "source_phrase": "filament glows from dark red to bright"
+        }
+      ]
+    },
+    {
+      "quirk": "float and buoyancy behaviour",
+      "gauge_count": 6,
+      "percentage_of_catalogue": 4.41,
+      "source_statement_count": 9,
+      "gauge_ids": [
+        "P18",
+        "P19",
+        "P20",
+        "P28",
+        "P29",
+        "X30"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P18",
+          "gauge_name": "Float-and-tape tank gauge",
+          "source_phrase": "float follows waves and foam"
+        },
+        {
+          "gauge_id": "P19",
+          "gauge_name": "Magnetic level indicator with flip flags",
+          "source_phrase": "float may sink or hang"
+        },
+        {
+          "gauge_id": "P19",
+          "gauge_name": "Magnetic level indicator with flip flags",
+          "source_phrase": "interface floats can produce two boundaries"
+        },
+        {
+          "gauge_id": "P20",
+          "gauge_name": "Variable-area flowmeter / rotameter",
+          "source_phrase": "Float bobs, spins and may chatter under pulsation"
+        },
+        {
+          "gauge_id": "P20",
+          "gauge_name": "Variable-area flowmeter / rotameter",
+          "source_phrase": "read at a specified edge of the float"
+        }
+      ]
+    },
+    {
+      "quirk": "frequency, waveform and source dependence",
+      "gauge_count": 6,
+      "percentage_of_catalogue": 4.41,
+      "source_statement_count": 10,
+      "gauge_ids": [
+        "D20",
+        "E03",
+        "E05",
+        "E06",
+        "X16",
+        "X18"
+      ],
+      "examples": [
+        {
+          "gauge_id": "E03",
+          "gauge_name": "Moving-iron meter",
+          "source_phrase": "buzzing at line frequency"
+        },
+        {
+          "gauge_id": "E03",
+          "gauge_name": "Moving-iron meter",
+          "source_phrase": "frequency and waveform errors"
+        },
+        {
+          "gauge_id": "E03",
+          "gauge_name": "Moving-iron meter",
+          "source_phrase": "pointer may tremble on distorted AC"
+        },
+        {
+          "gauge_id": "E05",
+          "gauge_name": "Hot-wire ammeter",
+          "source_phrase": "true thermal response to waveform"
+        },
+        {
+          "gauge_id": "E06",
+          "gauge_name": "Thermocouple RF meter",
+          "source_phrase": "approximately RMS response"
+        }
+      ]
+    },
+    {
+      "quirk": "glyph, segment and aperture geometry",
+      "gauge_count": 6,
+      "percentage_of_catalogue": 4.41,
+      "source_statement_count": 11,
+      "gauge_ids": [
+        "D05",
+        "D06",
+        "D07",
+        "D08",
+        "D14",
+        "D16"
+      ],
+      "examples": [
+        {
+          "gauge_id": "D05",
+          "gauge_name": "Nixie numeric cold-cathode tube",
+          "source_phrase": "parallax and digit-specific shadows"
+        },
+        {
+          "gauge_id": "D06",
+          "gauge_name": "Alphanumeric Nixie tube",
+          "source_phrase": "Characters are assembled from unusual long cathode segments or individual shapes"
+        },
+        {
+          "gauge_id": "D06",
+          "gauge_name": "Alphanumeric Nixie tube",
+          "source_phrase": "limited alphabet forces peculiar glyphs"
+        },
+        {
+          "gauge_id": "D07",
+          "gauge_name": "Pixie / top-view cold-cathode display",
+          "source_phrase": "Digits glow through shaped apertures in a top electrode rather than as free wire numerals"
+        },
+        {
+          "gauge_id": "D07",
+          "gauge_name": "Pixie / top-view cold-cathode display",
+          "source_phrase": "aperture position and obscuration differ by digit"
+        }
+      ]
+    },
+    {
+      "quirk": "illumination and backlighting",
+      "gauge_count": 6,
+      "percentage_of_catalogue": 4.41,
+      "source_statement_count": 7,
+      "gauge_ids": [
+        "D02",
+        "D19",
+        "X12",
+        "X16",
+        "X20",
+        "X28"
+      ],
+      "examples": [
+        {
+          "gauge_id": "D02",
+          "gauge_name": "Edge-lit engraved acrylic and light-pipe display",
+          "source_phrase": "Only engraved scratches/lettering glow"
+        },
+        {
+          "gauge_id": "D02",
+          "gauge_name": "Edge-lit engraved acrylic and light-pipe display",
+          "source_phrase": "scratches become accidental luminous lines"
+        },
+        {
+          "gauge_id": "D19",
+          "gauge_name": "Dynamic-scattering-mode LCD",
+          "source_phrase": "illumination geometry matters"
+        },
+        {
+          "gauge_id": "X12",
+          "gauge_name": "Steam-boiler water gauge glass",
+          "source_phrase": "protective shields and illumination"
+        },
+        {
+          "gauge_id": "X16",
+          "gauge_name": "VU meter / standard volume indicator",
+          "source_phrase": "backlit cream face"
+        }
+      ]
+    },
+    {
+      "quirk": "logarithmic scale",
+      "gauge_count": 6,
+      "percentage_of_catalogue": 4.41,
+      "source_statement_count": 6,
+      "gauge_ids": [
+        "D15",
+        "P13",
+        "P15",
+        "X16",
+        "X19",
+        "X25"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P13",
+          "gauge_name": "Thermal-conductivity vacuum gauges: Pirani and thermocouple",
+          "source_phrase": "logarithmic or compressed scale"
+        },
+        {
+          "gauge_id": "P15",
+          "gauge_name": "Hot-cathode ionisation gauge",
+          "source_phrase": "readings may span many decades on logarithmic scales"
+        },
+        {
+          "gauge_id": "D15",
+          "gauge_name": "LED bargraph and moving-dot display",
+          "source_phrase": "logarithmic and linear driver variants"
+        },
+        {
+          "gauge_id": "X16",
+          "gauge_name": "VU meter / standard volume indicator",
+          "source_phrase": "logarithmic dB scale with 0 VU near the right"
+        },
+        {
+          "gauge_id": "X19",
+          "gauge_name": "Geiger-counter analog ratemeter",
+          "source_phrase": "logarithmic faces common"
+        }
+      ]
+    },
+    {
+      "quirk": "movement torque and sensitivity",
+      "gauge_count": 6,
+      "percentage_of_catalogue": 4.41,
+      "source_statement_count": 6,
+      "gauge_ids": [
+        "E03",
+        "E04",
+        "E07",
+        "E10",
+        "E11",
+        "E16"
+      ],
+      "examples": [
+        {
+          "gauge_id": "E03",
+          "gauge_name": "Moving-iron meter",
+          "source_phrase": "relatively high torque"
+        },
+        {
+          "gauge_id": "E04",
+          "gauge_name": "Electrodynamometer instrument",
+          "source_phrase": "Low torque and slow response"
+        },
+        {
+          "gauge_id": "E07",
+          "gauge_name": "Electrostatic voltmeter",
+          "source_phrase": "Extremely small torque"
+        },
+        {
+          "gauge_id": "E10",
+          "gauge_name": "String galvanometer",
+          "source_phrase": "tension sets sensitivity and bandwidth"
+        },
+        {
+          "gauge_id": "E11",
+          "gauge_name": "Ferraris induction meter",
+          "source_phrase": "Disc accelerates and coasts under eddy-current torque"
+        }
+      ]
+    },
+    {
+      "quirk": "optical distortion and refraction",
+      "gauge_count": 6,
+      "percentage_of_catalogue": 4.41,
+      "source_statement_count": 8,
+      "gauge_ids": [
+        "D26",
+        "D28",
+        "P17",
+        "P33",
+        "X12",
+        "X28"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P17",
+          "gauge_name": "Tubular, reflex and transparent sight-level gauges",
+          "source_phrase": "refraction makes liquid dark/light in reflex glass"
+        },
+        {
+          "gauge_id": "P33",
+          "gauge_name": "Liquid magnetic compass card",
+          "source_phrase": "glass and fluid add lens distortion and parallax"
+        },
+        {
+          "gauge_id": "D26",
+          "gauge_name": "CRT oscilloscope, vector and radar display",
+          "source_phrase": "curved glass and parallax"
+        },
+        {
+          "gauge_id": "D26",
+          "gauge_name": "CRT oscilloscope, vector and radar display",
+          "source_phrase": "geometry distortion"
+        },
+        {
+          "gauge_id": "D26",
+          "gauge_name": "CRT oscilloscope, vector and radar display",
+          "source_phrase": "reflections in thick safety glass"
+        }
+      ]
+    },
+    {
+      "quirk": "phosphor behaviour and ageing",
+      "gauge_count": 6,
+      "percentage_of_catalogue": 4.41,
+      "source_statement_count": 8,
+      "gauge_ids": [
+        "D04",
+        "D12",
+        "D17",
+        "D25",
+        "D26",
+        "D28"
+      ],
+      "examples": [
+        {
+          "gauge_id": "D04",
+          "gauge_name": "Electron-ray “magic eye” tube",
+          "source_phrase": "Green phosphor wedge or bar opens/closes rather than moving like a pointer"
+        },
+        {
+          "gauge_id": "D04",
+          "gauge_name": "Electron-ray “magic eye” tube",
+          "source_phrase": "phosphor burn and weak emission"
+        },
+        {
+          "gauge_id": "D12",
+          "gauge_name": "Vacuum fluorescent display",
+          "source_phrase": "Blue-green phosphor with visible filament wires"
+        },
+        {
+          "gauge_id": "D12",
+          "gauge_name": "Vacuum fluorescent display",
+          "source_phrase": "phosphor and cathode ageing"
+        },
+        {
+          "gauge_id": "D17",
+          "gauge_name": "Monochrome storage plasma panel",
+          "source_phrase": "persistence is electrical memory, not merely phosphor decay"
+        }
+      ]
+    },
+    {
+      "quirk": "ringing and oscillation",
+      "gauge_count": 6,
+      "percentage_of_catalogue": 4.41,
+      "source_statement_count": 6,
+      "gauge_ids": [
+        "E09",
+        "E10",
+        "P01",
+        "P07",
+        "P37",
+        "X31"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P01",
+          "gauge_name": "Liquid-column manometer: U-tube, well-type and inclined",
+          "source_phrase": "slosh and oscillatory settling"
+        },
+        {
+          "gauge_id": "P07",
+          "gauge_name": "Magnetic-coupled differential gauge",
+          "source_phrase": "pointer can oscillate with fan pulses"
+        },
+        {
+          "gauge_id": "P37",
+          "gauge_name": "Spring balance, dial force gauge and dynamometer",
+          "source_phrase": "oscillation after load changes"
+        },
+        {
+          "gauge_id": "E09",
+          "gauge_name": "Mirror / light-spot galvanometer",
+          "source_phrase": "multiple oscillations"
+        },
+        {
+          "gauge_id": "E10",
+          "gauge_name": "String galvanometer",
+          "source_phrase": "damped ringing"
+        }
+      ]
+    },
+    {
+      "quirk": "shared-current or shared-supply dimming",
+      "gauge_count": 6,
+      "percentage_of_catalogue": 4.41,
+      "source_statement_count": 6,
+      "gauge_ids": [
+        "D01",
+        "D11",
+        "D13",
+        "D14",
+        "D15",
+        "D16"
+      ],
+      "examples": [
+        {
+          "gauge_id": "D01",
+          "gauge_name": "Incandescent pilot lamp and annunciator",
+          "source_phrase": "shared supply droops when many lamps light"
+        },
+        {
+          "gauge_id": "D11",
+          "gauge_name": "Numitron / Minitron incandescent segment display",
+          "source_phrase": "more lit segments can visibly load a weak/shared supply"
+        },
+        {
+          "gauge_id": "D13",
+          "gauge_name": "LED seven-segment display",
+          "source_phrase": "count-dependent dimming occurs with a weak supply, shared resistor or shared current budget—not with a correctly regulated constant-current design"
+        },
+        {
+          "gauge_id": "D14",
+          "gauge_name": "LED 14- and 16-segment starburst display",
+          "source_phrase": "shared current limits can dim dense letters"
+        },
+        {
+          "gauge_id": "D15",
+          "gauge_name": "LED bargraph and moving-dot display",
+          "source_phrase": "current budget makes full bars dimmer in poor designs"
+        }
+      ]
+    },
+    {
+      "quirk": "snap action",
+      "gauge_count": 6,
+      "percentage_of_catalogue": 4.41,
+      "source_statement_count": 6,
+      "gauge_ids": [
+        "E18",
+        "E24",
+        "E26",
+        "P05",
+        "P10",
+        "X23"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P05",
+          "gauge_name": "Diaphragm pressure gauge",
+          "source_phrase": "diaphragm can snap or oil-can under abuse"
+        },
+        {
+          "gauge_id": "P10",
+          "gauge_name": "Contact, alarm and meter-relay gauge",
+          "source_phrase": "snap action and chatter near threshold"
+        },
+        {
+          "gauge_id": "E18",
+          "gauge_name": "Magnetic latching flag, ball and shutter annunciator",
+          "source_phrase": "Snap action"
+        },
+        {
+          "gauge_id": "E24",
+          "gauge_name": "Roller, drum and cyclometer indicator",
+          "source_phrase": "a decimal drum can move continuously while higher drums snap"
+        },
+        {
+          "gauge_id": "E26",
+          "gauge_name": "Barber-pole warning indicator",
+          "source_phrase": "snap action, chatter near threshold and partial exposure"
+        }
+      ]
+    },
+    {
+      "quirk": "carry, rollover and digit transition",
+      "gauge_count": 5,
+      "percentage_of_catalogue": 3.68,
+      "source_statement_count": 11,
+      "gauge_ids": [
+        "E24",
+        "P41",
+        "X02",
+        "X03",
+        "X20"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P41",
+          "gauge_name": "Mechanical odometer, cyclometer and utility-meter register",
+          "source_phrase": "Carry events reveal half-turned digits"
+        },
+        {
+          "gauge_id": "P41",
+          "gauge_name": "Mechanical odometer, cyclometer and utility-meter register",
+          "source_phrase": "non-simultaneous drum rollovers"
+        },
+        {
+          "gauge_id": "E24",
+          "gauge_name": "Roller, drum and cyclometer indicator",
+          "source_phrase": "Digits roll through carry transitions"
+        },
+        {
+          "gauge_id": "E24",
+          "gauge_name": "Roller, drum and cyclometer indicator",
+          "source_phrase": "two numerals may be partly visible"
+        },
+        {
+          "gauge_id": "E24",
+          "gauge_name": "Roller, drum and cyclometer indicator",
+          "source_phrase": "a decimal drum can move continuously while higher drums snap"
+        }
+      ]
+    },
+    {
+      "quirk": "clock drift, timing and seams",
+      "gauge_count": 5,
+      "percentage_of_catalogue": 3.68,
+      "source_statement_count": 7,
+      "gauge_ids": [
+        "P26",
+        "P42",
+        "X30",
+        "X31",
+        "X35"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P26",
+          "gauge_name": "Hair hygrometer and hygrograph",
+          "source_phrase": "chart versions add pen friction, clock drift and a daily/weekly trace"
+        },
+        {
+          "gauge_id": "P42",
+          "gauge_name": "Strip-chart and circular-chart recorder",
+          "source_phrase": "clock drift"
+        },
+        {
+          "gauge_id": "P42",
+          "gauge_name": "Strip-chart and circular-chart recorder",
+          "source_phrase": "circular charts create a seam at each revolution"
+        },
+        {
+          "gauge_id": "X30",
+          "gauge_name": "Mechanical float tide gauge and stilling-well recorder",
+          "source_phrase": "clock drift"
+        },
+        {
+          "gauge_id": "X31",
+          "gauge_name": "Mechanical seismograph and smoked-paper drum",
+          "source_phrase": "clock marks"
+        }
+      ]
+    },
+    {
+      "quirk": "cool-down, heat soak and continued motion",
+      "gauge_count": 5,
+      "percentage_of_catalogue": 3.68,
+      "source_statement_count": 6,
+      "gauge_ids": [
+        "D01",
+        "D11",
+        "E05",
+        "E13",
+        "P24"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P24",
+          "gauge_name": "Filled-system capillary thermometer",
+          "source_phrase": "pointer can move after the process has already stopped changing"
+        },
+        {
+          "gauge_id": "E05",
+          "gauge_name": "Hot-wire ammeter",
+          "source_phrase": "Slow heating and cooling"
+        },
+        {
+          "gauge_id": "E05",
+          "gauge_name": "Hot-wire ammeter",
+          "source_phrase": "needle may continue climbing after the signal is removed"
+        },
+        {
+          "gauge_id": "E13",
+          "gauge_name": "Thermal bimetal automotive gauge",
+          "source_phrase": "heat soak after shutdown"
+        },
+        {
+          "gauge_id": "D01",
+          "gauge_name": "Incandescent pilot lamp and annunciator",
+          "source_phrase": "Thermal fade-in and fade-out"
+        }
+      ]
+    },
+    {
+      "quirk": "electrical hum, buzz and whine",
+      "gauge_count": 5,
+      "percentage_of_catalogue": 3.68,
+      "source_statement_count": 5,
+      "gauge_ids": [
+        "D17",
+        "D18",
+        "E11",
+        "E16",
+        "E17"
+      ],
+      "examples": [
+        {
+          "gauge_id": "E11",
+          "gauge_name": "Ferraris induction meter",
+          "source_phrase": "shaded-pole hum"
+        },
+        {
+          "gauge_id": "E16",
+          "gauge_name": "Synchro / selsyn remote indicator",
+          "source_phrase": "400 Hz aircraft systems may hum"
+        },
+        {
+          "gauge_id": "E17",
+          "gauge_name": "Servo and torque-motor indicator",
+          "source_phrase": "motor buzz"
+        },
+        {
+          "gauge_id": "D17",
+          "gauge_name": "Monochrome storage plasma panel",
+          "source_phrase": "panel hum and high-voltage drive"
+        },
+        {
+          "gauge_id": "D18",
+          "gauge_name": "Powder and thin-film electroluminescent display",
+          "source_phrase": "AC inverter whine"
+        }
+      ]
+    },
+    {
+      "quirk": "gas or medium dependence",
+      "gauge_count": 5,
+      "percentage_of_catalogue": 3.68,
+      "source_statement_count": 5,
+      "gauge_ids": [
+        "P12",
+        "P13",
+        "P14",
+        "P15",
+        "P16"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P12",
+          "gauge_name": "McLeod compression vacuum gauge",
+          "source_phrase": "cannot measure condensable vapours accurately"
+        },
+        {
+          "gauge_id": "P13",
+          "gauge_name": "Thermal-conductivity vacuum gauges: Pirani and thermocouple",
+          "source_phrase": "Gas-species dependent"
+        },
+        {
+          "gauge_id": "P14",
+          "gauge_name": "Cold-cathode ionisation gauge",
+          "source_phrase": "gas-species dependent"
+        },
+        {
+          "gauge_id": "P15",
+          "gauge_name": "Hot-cathode ionisation gauge",
+          "source_phrase": "gas-species sensitivity"
+        },
+        {
+          "gauge_id": "P16",
+          "gauge_name": "Capacitance diaphragm manometer",
+          "source_phrase": "True force measurement is largely gas independent"
+        }
+      ]
+    },
+    {
+      "quirk": "gas-discharge striking and ignition",
+      "gauge_count": 5,
+      "percentage_of_catalogue": 3.68,
+      "source_statement_count": 6,
+      "gauge_ids": [
+        "D05",
+        "D07",
+        "D08",
+        "D10",
+        "P14"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P14",
+          "gauge_name": "Cold-cathode ionisation gauge",
+          "source_phrase": "Needs ignition and may suddenly jump on"
+        },
+        {
+          "gauge_id": "P14",
+          "gauge_name": "Cold-cathode ionisation gauge",
+          "source_phrase": "hysteresis between striking and sustaining pressure"
+        },
+        {
+          "gauge_id": "D05",
+          "gauge_name": "Nixie numeric cold-cathode tube",
+          "source_phrase": "high-voltage striking flicker"
+        },
+        {
+          "gauge_id": "D07",
+          "gauge_name": "Pixie / top-view cold-cathode display",
+          "source_phrase": "high-voltage ignition and ageing remain gas-discharge behaviours"
+        },
+        {
+          "gauge_id": "D08",
+          "gauge_name": "Panaplex planar gas-discharge display",
+          "source_phrase": "high-voltage striking"
+        }
+      ]
+    },
+    {
+      "quirk": "hunting and following error",
+      "gauge_count": 5,
+      "percentage_of_catalogue": 3.68,
+      "source_statement_count": 6,
+      "gauge_ids": [
+        "E16",
+        "E17",
+        "P31",
+        "P40",
+        "X09"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P31",
+          "gauge_name": "Cup, propeller and vane anemometers",
+          "source_phrase": "direction vane hunts around north"
+        },
+        {
+          "gauge_id": "P40",
+          "gauge_name": "Chronometric tachometer",
+          "source_phrase": "mechanical wear creates periodic hunting"
+        },
+        {
+          "gauge_id": "E16",
+          "gauge_name": "Synchro / selsyn remote indicator",
+          "source_phrase": "null hunting"
+        },
+        {
+          "gauge_id": "E17",
+          "gauge_name": "Servo and torque-motor indicator",
+          "source_phrase": "Closed-loop hunting"
+        },
+        {
+          "gauge_id": "E17",
+          "gauge_name": "Servo and torque-motor indicator",
+          "source_phrase": "following error"
+        }
+      ]
+    },
+    {
+      "quirk": "inertia and coasting",
+      "gauge_count": 5,
+      "percentage_of_catalogue": 3.68,
+      "source_statement_count": 6,
+      "gauge_ids": [
+        "E11",
+        "E24",
+        "P31",
+        "P39",
+        "X31"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P31",
+          "gauge_name": "Cup, propeller and vane anemometers",
+          "source_phrase": "inertia smooths gusts"
+        },
+        {
+          "gauge_id": "P39",
+          "gauge_name": "Mechanical tachometer and eddy-current speedometer",
+          "source_phrase": "centrifugal linkage nonlinearity"
+        },
+        {
+          "gauge_id": "E11",
+          "gauge_name": "Ferraris induction meter",
+          "source_phrase": "Disc accelerates and coasts under eddy-current torque"
+        },
+        {
+          "gauge_id": "E11",
+          "gauge_name": "Ferraris induction meter",
+          "source_phrase": "power-off coast-down"
+        },
+        {
+          "gauge_id": "E24",
+          "gauge_name": "Roller, drum and cyclometer indicator",
+          "source_phrase": "mechanical inertia and uneven timing"
+        }
+      ]
+    },
+    {
+      "quirk": "qualitative or non-precision indication",
+      "gauge_count": 5,
+      "percentage_of_catalogue": 3.68,
+      "source_statement_count": 6,
+      "gauge_ids": [
+        "P29",
+        "X21",
+        "X22",
+        "X26",
+        "X34"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P29",
+          "gauge_name": "Galileo thermometer",
+          "source_phrase": "visually rich but not precision instrumentation"
+        },
+        {
+          "gauge_id": "X21",
+          "gauge_name": "Automotive econometer / manifold-vacuum gauge",
+          "source_phrase": "coloured ECON/POWER sectors overstate precision—it is not a true fuel-flow measurement"
+        },
+        {
+          "gauge_id": "X22",
+          "gauge_name": "Storm glass / FitzRoy weather glass",
+          "source_phrase": "no needle or numeric scale"
+        },
+        {
+          "gauge_id": "X22",
+          "gauge_name": "Storm glass / FitzRoy weather glass",
+          "source_phrase": "patterns are beautiful but scientifically weak"
+        },
+        {
+          "gauge_id": "X26",
+          "gauge_name": "Goethe weather glass / water barometer",
+          "source_phrase": "scale is often qualitative “storm/change/fair” rather than calibrated"
+        }
+      ]
+    },
+    {
+      "quirk": "random, statistical and batch variation",
+      "gauge_count": 5,
+      "percentage_of_catalogue": 3.68,
+      "source_statement_count": 5,
+      "gauge_ids": [
+        "D01",
+        "D16",
+        "D30",
+        "X19",
+        "X27"
+      ],
+      "examples": [
+        {
+          "gauge_id": "D01",
+          "gauge_name": "Incandescent pilot lamp and annunciator",
+          "source_phrase": "filament sag, blackened bulbs and random failures"
+        },
+        {
+          "gauge_id": "D16",
+          "gauge_name": "LED dot-matrix and smart alphanumeric module",
+          "source_phrase": "power-up test patterns, random garbage or a brief blank are period-authentic"
+        },
+        {
+          "gauge_id": "D30",
+          "gauge_name": "Irreversible chemical and time-temperature indicator",
+          "source_phrase": "batch variation"
+        },
+        {
+          "gauge_id": "X19",
+          "gauge_name": "Geiger-counter analog ratemeter",
+          "source_phrase": "Individual random pulses create authentic Poisson twitch and clicks"
+        },
+        {
+          "gauge_id": "X27",
+          "gauge_name": "Tempest Prognosticator / leech barometer",
+          "source_phrase": "events are discrete, delayed and biologically inconsistent"
+        }
+      ]
+    },
+    {
+      "quirk": "reference bugs and set markers",
+      "gauge_count": 5,
+      "percentage_of_catalogue": 3.68,
+      "source_statement_count": 5,
+      "gauge_ids": [
+        "E19",
+        "P10",
+        "P22",
+        "X04",
+        "X08"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P10",
+          "gauge_name": "Contact, alarm and meter-relay gauge",
+          "source_phrase": "Movable set bugs sit above or below the pointer"
+        },
+        {
+          "gauge_id": "P22",
+          "gauge_name": "Six’s maximum-minimum thermometer",
+          "source_phrase": "alcohol/mercury interfaces move separate index markers"
+        },
+        {
+          "gauge_id": "E19",
+          "gauge_name": "Contact meter relay / limit meter",
+          "source_phrase": "Set pointers are manually dragged around the scale"
+        },
+        {
+          "gauge_id": "X04",
+          "gauge_name": "Airspeed indicator with coloured operating arcs",
+          "source_phrase": "adjustable reference bug"
+        },
+        {
+          "gauge_id": "X08",
+          "gauge_name": "Radar altimeter dial",
+          "source_phrase": "adjustable decision-height bug triggers lamp/tone"
+        }
+      ]
+    },
+    {
+      "quirk": "refresh, erase and update artefacts",
+      "gauge_count": 5,
+      "percentage_of_catalogue": 3.68,
+      "source_statement_count": 8,
+      "gauge_ids": [
+        "D17",
+        "D23",
+        "D27",
+        "E20",
+        "E21"
+      ],
+      "examples": [
+        {
+          "gauge_id": "E20",
+          "gauge_name": "Flip-dot / flip-disc display",
+          "source_phrase": "row/column update wave"
+        },
+        {
+          "gauge_id": "E21",
+          "gauge_name": "Split-flap display",
+          "source_phrase": "Characters appear only after cycling through intervening flaps"
+        },
+        {
+          "gauge_id": "E21",
+          "gauge_name": "Split-flap display",
+          "source_phrase": "position-dependent update delay"
+        },
+        {
+          "gauge_id": "D17",
+          "gauge_name": "Monochrome storage plasma panel",
+          "source_phrase": "write/erase flashes"
+        },
+        {
+          "gauge_id": "D23",
+          "gauge_name": "Segmented electrophoretic / e-paper display",
+          "source_phrase": "full refresh often flashes black/white"
+        }
+      ]
+    },
+    {
+      "quirk": "safety, guarding and fail-safe behaviour",
+      "gauge_count": 5,
+      "percentage_of_catalogue": 3.68,
+      "source_statement_count": 7,
+      "gauge_ids": [
+        "P07",
+        "P17",
+        "P21",
+        "X12",
+        "X23"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P07",
+          "gauge_name": "Magnetic-coupled differential gauge",
+          "source_phrase": "overpressure relief and a characteristic broad 270-degree scale"
+        },
+        {
+          "gauge_id": "P17",
+          "gauge_name": "Tubular, reflex and transparent sight-level gauges",
+          "source_phrase": "glass breakage guards"
+        },
+        {
+          "gauge_id": "P21",
+          "gauge_name": "Liquid-in-glass thermometer",
+          "source_phrase": "expansion chamber at top"
+        },
+        {
+          "gauge_id": "X12",
+          "gauge_name": "Steam-boiler water gauge glass",
+          "source_phrase": "glass can appear full when passages are blocked"
+        },
+        {
+          "gauge_id": "X12",
+          "gauge_name": "Steam-boiler water gauge glass",
+          "source_phrase": "protective shields and illumination"
+        }
+      ]
+    },
+    {
+      "quirk": "ambient-pressure and altitude sensitivity",
+      "gauge_count": 4,
+      "percentage_of_catalogue": 2.94,
+      "source_statement_count": 4,
+      "gauge_ids": [
+        "P06",
+        "P20",
+        "X21",
+        "X26"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P06",
+          "gauge_name": "Capsule and bellows pressure gauges",
+          "source_phrase": "temperature and ambient-pressure cross-sensitivity"
+        },
+        {
+          "gauge_id": "P20",
+          "gauge_name": "Variable-area flowmeter / rotameter",
+          "source_phrase": "density, viscosity, pressure and temperature affect calibration"
+        },
+        {
+          "gauge_id": "X21",
+          "gauge_name": "Automotive econometer / manifold-vacuum gauge",
+          "source_phrase": "altitude shifts baseline"
+        },
+        {
+          "gauge_id": "X26",
+          "gauge_name": "Goethe weather glass / water barometer",
+          "source_phrase": "Liquid rises in the spout as external pressure falls"
+        }
+      ]
+    },
+    {
+      "quirk": "bistable display memory and update",
+      "gauge_count": 4,
+      "percentage_of_catalogue": 2.94,
+      "source_statement_count": 5,
+      "gauge_ids": [
+        "D17",
+        "D22",
+        "D24",
+        "E20"
+      ],
+      "examples": [
+        {
+          "gauge_id": "E20",
+          "gauge_name": "Flip-dot / flip-disc display",
+          "source_phrase": "bistable image with no holding power"
+        },
+        {
+          "gauge_id": "D17",
+          "gauge_name": "Monochrome storage plasma panel",
+          "source_phrase": "Each orange cell behaves like a tiny neon lamp and can be electrically bistable"
+        },
+        {
+          "gauge_id": "D22",
+          "gauge_name": "Cholesteric and other bistable LCD",
+          "source_phrase": "update can sweep or flash"
+        },
+        {
+          "gauge_id": "D22",
+          "gauge_name": "Cholesteric and other bistable LCD",
+          "source_phrase": "partial updates leave remnants"
+        },
+        {
+          "gauge_id": "D24",
+          "gauge_name": "Electrochromic segmented display",
+          "source_phrase": "write/erase asymmetry"
+        }
+      ]
+    },
+    {
+      "quirk": "cross-axis and acceleration sensitivity",
+      "gauge_count": 4,
+      "percentage_of_catalogue": 2.94,
+      "source_statement_count": 4,
+      "gauge_ids": [
+        "P32",
+        "P33",
+        "X05",
+        "X07"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P32",
+          "gauge_name": "Bubble level, ball inclinometer and pendulum clinometer",
+          "source_phrase": "aircraft ball responds to combined gravity and lateral acceleration, not bank angle alone"
+        },
+        {
+          "gauge_id": "P33",
+          "gauge_name": "Liquid magnetic compass card",
+          "source_phrase": "turning and acceleration errors"
+        },
+        {
+          "gauge_id": "X05",
+          "gauge_name": "Vertical-speed indicator",
+          "source_phrase": "brief acceleration causes a transient"
+        },
+        {
+          "gauge_id": "X07",
+          "gauge_name": "Turn-and-bank, turn coordinator and slip-skid ball",
+          "source_phrase": "turn coordinator senses roll as well as yaw"
+        }
+      ]
+    },
+    {
+      "quirk": "dead time, missed events and duplicate counts",
+      "gauge_count": 4,
+      "percentage_of_catalogue": 2.94,
+      "source_statement_count": 6,
+      "gauge_ids": [
+        "D09",
+        "E15",
+        "P30",
+        "X19"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P30",
+          "gauge_name": "Rain gauge and tipping-bucket recorder",
+          "source_phrase": "dead time while tipping"
+        },
+        {
+          "gauge_id": "P30",
+          "gauge_name": "Rain gauge and tipping-bucket recorder",
+          "source_phrase": "high-rate under-read"
+        },
+        {
+          "gauge_id": "P30",
+          "gauge_name": "Rain gauge and tipping-bucket recorder",
+          "source_phrase": "mechanical bounce may generate duplicate electrical pulses"
+        },
+        {
+          "gauge_id": "E15",
+          "gauge_name": "Stepper-motor gauge",
+          "source_phrase": "missed steps and lost zero"
+        },
+        {
+          "gauge_id": "D09",
+          "gauge_name": "Dekatron / glow-transfer counting tube",
+          "source_phrase": "missed counts, reverse stepping and stalls"
+        }
+      ]
+    },
+    {
+      "quirk": "density and viscosity dependence",
+      "gauge_count": 4,
+      "percentage_of_catalogue": 2.94,
+      "source_statement_count": 4,
+      "gauge_ids": [
+        "P01",
+        "P20",
+        "P29",
+        "P32"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P01",
+          "gauge_name": "Liquid-column manometer: U-tube, well-type and inclined",
+          "source_phrase": "density and temperature dependence"
+        },
+        {
+          "gauge_id": "P20",
+          "gauge_name": "Variable-area flowmeter / rotameter",
+          "source_phrase": "density, viscosity, pressure and temperature affect calibration"
+        },
+        {
+          "gauge_id": "P29",
+          "gauge_name": "Galileo thermometer",
+          "source_phrase": "density tolerances and bubbles matter"
+        },
+        {
+          "gauge_id": "P32",
+          "gauge_name": "Bubble level, ball inclinometer and pendulum clinometer",
+          "source_phrase": "temperature changes fluid viscosity and bubble size"
+        }
+      ]
+    },
+    {
+      "quirk": "humidity and moisture sensitivity",
+      "gauge_count": 4,
+      "percentage_of_catalogue": 2.94,
+      "source_statement_count": 4,
+      "gauge_ids": [
+        "D30",
+        "E07",
+        "P36",
+        "X34"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P36",
+          "gauge_name": "Quartz-fibre self-reading pocket dosimeter",
+          "source_phrase": "moisture affects insulation"
+        },
+        {
+          "gauge_id": "E07",
+          "gauge_name": "Electrostatic voltmeter",
+          "source_phrase": "dust and humidity effects"
+        },
+        {
+          "gauge_id": "D30",
+          "gauge_name": "Irreversible chemical and time-temperature indicator",
+          "source_phrase": "ambient light and humidity effects"
+        },
+        {
+          "gauge_id": "X34",
+          "gauge_name": "Gold-leaf or aluminium-leaf electroscope",
+          "source_phrase": "humidity and dirty insulation accelerate decay"
+        }
+      ]
+    },
+    {
+      "quirk": "immersion, stem-conduction and contact error",
+      "gauge_count": 4,
+      "percentage_of_catalogue": 2.94,
+      "source_statement_count": 4,
+      "gauge_ids": [
+        "P21",
+        "P23",
+        "P24",
+        "P25"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P21",
+          "gauge_name": "Liquid-in-glass thermometer",
+          "source_phrase": "partial-immersion error"
+        },
+        {
+          "gauge_id": "P23",
+          "gauge_name": "Bimetal dial thermometer",
+          "source_phrase": "stem-conduction error"
+        },
+        {
+          "gauge_id": "P24",
+          "gauge_name": "Filled-system capillary thermometer",
+          "source_phrase": "bulb immersion effects"
+        },
+        {
+          "gauge_id": "P25",
+          "gauge_name": "Thermochromic liquid-crystal strip and leuco-dye indicator",
+          "source_phrase": "slow thermal contact"
+        }
+      ]
+    },
+    {
+      "quirk": "manual adjustment and setup",
+      "gauge_count": 4,
+      "percentage_of_catalogue": 2.94,
+      "source_statement_count": 4,
+      "gauge_ids": [
+        "P02",
+        "X01",
+        "X02",
+        "X03"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P02",
+          "gauge_name": "Mercury barometer: cistern, Fortin and wheel forms",
+          "source_phrase": "cistern-level adjustment"
+        },
+        {
+          "gauge_id": "X01",
+          "gauge_name": "Three-pointer altimeter",
+          "source_phrase": "barometric setting window and knob"
+        },
+        {
+          "gauge_id": "X02",
+          "gauge_name": "Counter-pointer altimeter",
+          "source_phrase": "barometric drum"
+        },
+        {
+          "gauge_id": "X03",
+          "gauge_name": "Drum-pointer and counter-drum altimeter",
+          "source_phrase": "baro setting and low-altitude warning sectors"
+        }
+      ]
+    },
+    {
+      "quirk": "power-up and self-test behaviour",
+      "gauge_count": 4,
+      "percentage_of_catalogue": 2.94,
+      "source_statement_count": 4,
+      "gauge_ids": [
+        "D16",
+        "E17",
+        "X08",
+        "X29"
+      ],
+      "examples": [
+        {
+          "gauge_id": "E17",
+          "gauge_name": "Servo and torque-motor indicator",
+          "source_phrase": "test mode may slew through full scale"
+        },
+        {
+          "gauge_id": "D16",
+          "gauge_name": "LED dot-matrix and smart alphanumeric module",
+          "source_phrase": "power-up test patterns, random garbage or a brief blank are period-authentic"
+        },
+        {
+          "gauge_id": "X08",
+          "gauge_name": "Radar altimeter dial",
+          "source_phrase": "power-up test slews pointer"
+        },
+        {
+          "gauge_id": "X29",
+          "gauge_name": "Automotive tell-tale / “idiot light” cluster",
+          "source_phrase": "bulb-check sweep at key-on"
+        }
+      ]
+    },
+    {
+      "quirk": "recording alignment and channel offset",
+      "gauge_count": 4,
+      "percentage_of_catalogue": 2.94,
+      "source_statement_count": 6,
+      "gauge_ids": [
+        "P42",
+        "X31",
+        "X32",
+        "X35"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P42",
+          "gauge_name": "Strip-chart and circular-chart recorder",
+          "source_phrase": "multi-pen offsets in time"
+        },
+        {
+          "gauge_id": "X31",
+          "gauge_name": "Mechanical seismograph and smoked-paper drum",
+          "source_phrase": "multiple components"
+        },
+        {
+          "gauge_id": "X32",
+          "gauge_name": "Railway speed indicator and recorder",
+          "source_phrase": "pointer and recorder may disagree slightly"
+        },
+        {
+          "gauge_id": "X35",
+          "gauge_name": "Tachograph / recording speedometer",
+          "source_phrase": "multiple styli cut fine traces"
+        },
+        {
+          "gauge_id": "X35",
+          "gauge_name": "Tachograph / recording speedometer",
+          "source_phrase": "speed needle and recorded line may lag differently"
+        }
+      ]
+    },
+    {
+      "quirk": "revolution counting and coarse/fine readout",
+      "gauge_count": 4,
+      "percentage_of_catalogue": 2.94,
+      "source_statement_count": 4,
+      "gauge_ids": [
+        "P38",
+        "P41",
+        "X02",
+        "X03"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P38",
+          "gauge_name": "Dial indicator, test indicator and dial torque wrench",
+          "source_phrase": "revolution-count hand"
+        },
+        {
+          "gauge_id": "P41",
+          "gauge_name": "Mechanical odometer, cyclometer and utility-meter register",
+          "source_phrase": "small pointer dials alternate direction"
+        },
+        {
+          "gauge_id": "X02",
+          "gauge_name": "Counter-pointer altimeter",
+          "source_phrase": "Pointer supplies fine altitude while digits supply coarse place value"
+        },
+        {
+          "gauge_id": "X03",
+          "gauge_name": "Drum-pointer and counter-drum altimeter",
+          "source_phrase": "pointer often makes one revolution per 1,000 feet"
+        }
+      ]
+    },
+    {
+      "quirk": "supply-voltage sensitivity",
+      "gauge_count": 4,
+      "percentage_of_catalogue": 2.94,
+      "source_statement_count": 5,
+      "gauge_ids": [
+        "D01",
+        "E12",
+        "E13",
+        "X29"
+      ],
+      "examples": [
+        {
+          "gauge_id": "E12",
+          "gauge_name": "Cross-coil / ratiometer gauge",
+          "source_phrase": "Angle depends on current ratio, reducing supply-voltage sensitivity"
+        },
+        {
+          "gauge_id": "E13",
+          "gauge_name": "Thermal bimetal automotive gauge",
+          "source_phrase": "pulsed regulator can cause a faint periodic quiver"
+        },
+        {
+          "gauge_id": "E13",
+          "gauge_name": "Thermal bimetal automotive gauge",
+          "source_phrase": "voltage and ambient temperature matter"
+        },
+        {
+          "gauge_id": "D01",
+          "gauge_name": "Incandescent pilot lamp and annunciator",
+          "source_phrase": "brightness and colour temperature vary strongly with voltage"
+        },
+        {
+          "gauge_id": "X29",
+          "gauge_name": "Automotive tell-tale / “idiot light” cluster",
+          "source_phrase": "alternator lamp glows dimly under small voltage difference"
+        }
+      ]
+    },
+    {
+      "quirk": "valid operating region",
+      "gauge_count": 4,
+      "percentage_of_catalogue": 2.94,
+      "source_statement_count": 4,
+      "gauge_ids": [
+        "P13",
+        "P15",
+        "P36",
+        "X08"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P13",
+          "gauge_name": "Thermal-conductivity vacuum gauges: Pirani and thermocouple",
+          "source_phrase": "poor response near atmosphere and high vacuum"
+        },
+        {
+          "gauge_id": "P15",
+          "gauge_name": "Hot-cathode ionisation gauge",
+          "source_phrase": "X-ray lower limit"
+        },
+        {
+          "gauge_id": "P36",
+          "gauge_name": "Quartz-fibre self-reading pocket dosimeter",
+          "source_phrase": "limited range then saturation"
+        },
+        {
+          "gauge_id": "X08",
+          "gauge_name": "Radar altimeter dial",
+          "source_phrase": "Needle is meaningful only at low altitude"
+        }
+      ]
+    },
+    {
+      "quirk": "blockage and restricted passages",
+      "gauge_count": 3,
+      "percentage_of_catalogue": 2.21,
+      "source_statement_count": 3,
+      "gauge_ids": [
+        "P30",
+        "X04",
+        "X12"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P30",
+          "gauge_name": "Rain gauge and tipping-bucket recorder",
+          "source_phrase": "blockage"
+        },
+        {
+          "gauge_id": "X04",
+          "gauge_name": "Airspeed indicator with coloured operating arcs",
+          "source_phrase": "pitot/static blockage freezes or misleads"
+        },
+        {
+          "gauge_id": "X12",
+          "gauge_name": "Steam-boiler water gauge glass",
+          "source_phrase": "glass can appear full when passages are blocked"
+        }
+      ]
+    },
+    {
+      "quirk": "display overlap and adjacent indication",
+      "gauge_count": 3,
+      "percentage_of_catalogue": 2.21,
+      "source_statement_count": 3,
+      "gauge_ids": [
+        "D04",
+        "D14",
+        "P25"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P25",
+          "gauge_name": "Thermochromic liquid-crystal strip and leuco-dye indicator",
+          "source_phrase": "several adjacent numbers may glow"
+        },
+        {
+          "gauge_id": "D04",
+          "gauge_name": "Electron-ray “magic eye” tube",
+          "source_phrase": "grid overdrive can make sectors overlap"
+        },
+        {
+          "gauge_id": "D14",
+          "gauge_name": "LED 14- and 16-segment starburst display",
+          "source_phrase": "failed segment changes one glyph into another rather than merely losing a bar"
+        }
+      ]
+    },
+    {
+      "quirk": "drive power and regulation",
+      "gauge_count": 3,
+      "percentage_of_catalogue": 2.21,
+      "source_statement_count": 3,
+      "gauge_ids": [
+        "D19",
+        "E13",
+        "P15"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P15",
+          "gauge_name": "Hot-cathode ionisation gauge",
+          "source_phrase": "emission current regulation"
+        },
+        {
+          "gauge_id": "E13",
+          "gauge_name": "Thermal bimetal automotive gauge",
+          "source_phrase": "pulsed regulator can cause a faint periodic quiver"
+        },
+        {
+          "gauge_id": "D19",
+          "gauge_name": "Dynamic-scattering-mode LCD",
+          "source_phrase": "relatively high voltage and power"
+        }
+      ]
+    },
+    {
+      "quirk": "electrostatic leakage and charge retention",
+      "gauge_count": 3,
+      "percentage_of_catalogue": 2.21,
+      "source_statement_count": 6,
+      "gauge_ids": [
+        "E07",
+        "P36",
+        "X34"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P36",
+          "gauge_name": "Quartz-fibre self-reading pocket dosimeter",
+          "source_phrase": "electrostatic leakage and zero drift"
+        },
+        {
+          "gauge_id": "P36",
+          "gauge_name": "Quartz-fibre self-reading pocket dosimeter",
+          "source_phrase": "moisture affects insulation"
+        },
+        {
+          "gauge_id": "E07",
+          "gauge_name": "Electrostatic voltmeter",
+          "source_phrase": "charge leakage"
+        },
+        {
+          "gauge_id": "X34",
+          "gauge_name": "Gold-leaf or aluminium-leaf electroscope",
+          "source_phrase": "Leaves diverge with charge and collapse through leakage"
+        },
+        {
+          "gauge_id": "X34",
+          "gauge_name": "Gold-leaf or aluminium-leaf electroscope",
+          "source_phrase": "humidity and dirty insulation accelerate decay"
+        }
+      ]
+    },
+    {
+      "quirk": "evaporation and drying",
+      "gauge_count": 3,
+      "percentage_of_catalogue": 2.21,
+      "source_statement_count": 3,
+      "gauge_ids": [
+        "P30",
+        "P42",
+        "X26"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P30",
+          "gauge_name": "Rain gauge and tipping-bucket recorder",
+          "source_phrase": "evaporation"
+        },
+        {
+          "gauge_id": "P42",
+          "gauge_name": "Strip-chart and circular-chart recorder",
+          "source_phrase": "ink blobs, skipping and dried nibs"
+        },
+        {
+          "gauge_id": "X26",
+          "gauge_name": "Goethe weather glass / water barometer",
+          "source_phrase": "evaporation and bubbles"
+        }
+      ]
+    },
+    {
+      "quirk": "fluid leakage",
+      "gauge_count": 3,
+      "percentage_of_catalogue": 2.21,
+      "source_statement_count": 3,
+      "gauge_ids": [
+        "P09",
+        "P24",
+        "P35"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P09",
+          "gauge_name": "Liquid-filled, snubbed and damped pressure gauge",
+          "source_phrase": "leaks stain the window"
+        },
+        {
+          "gauge_id": "P24",
+          "gauge_name": "Filled-system capillary thermometer",
+          "source_phrase": "bubbles or leaks cause permanent offset"
+        },
+        {
+          "gauge_id": "P35",
+          "gauge_name": "Mercury and aneroid sphygmomanometer",
+          "source_phrase": "cuff/tube leaks"
+        }
+      ]
+    },
+    {
+      "quirk": "focus and optical alignment",
+      "gauge_count": 3,
+      "percentage_of_catalogue": 2.21,
+      "source_statement_count": 4,
+      "gauge_ids": [
+        "D26",
+        "E09",
+        "P36"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P36",
+          "gauge_name": "Quartz-fibre self-reading pocket dosimeter",
+          "source_phrase": "reading depends on illumination and eye alignment"
+        },
+        {
+          "gauge_id": "E09",
+          "gauge_name": "Mirror / light-spot galvanometer",
+          "source_phrase": "room vibration and lamp alignment"
+        },
+        {
+          "gauge_id": "E09",
+          "gauge_name": "Mirror / light-spot galvanometer",
+          "source_phrase": "spot blooms and defocuses"
+        },
+        {
+          "gauge_id": "D26",
+          "gauge_name": "CRT oscilloscope, vector and radar display",
+          "source_phrase": "focus and astigmatism"
+        }
+      ]
+    },
+    {
+      "quirk": "gas-discharge instability and dropout",
+      "gauge_count": 3,
+      "percentage_of_catalogue": 2.21,
+      "source_statement_count": 5,
+      "gauge_ids": [
+        "D09",
+        "D10",
+        "P14"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P14",
+          "gauge_name": "Cold-cathode ionisation gauge",
+          "source_phrase": "noisy discharge"
+        },
+        {
+          "gauge_id": "P14",
+          "gauge_name": "Cold-cathode ionisation gauge",
+          "source_phrase": "arc-like flashes and dropouts are authentic failure modes"
+        },
+        {
+          "gauge_id": "D09",
+          "gauge_name": "Dekatron / glow-transfer counting tube",
+          "source_phrase": "guide electrodes can cause two-stage motion"
+        },
+        {
+          "gauge_id": "D09",
+          "gauge_name": "Dekatron / glow-transfer counting tube",
+          "source_phrase": "missed counts, reverse stepping and stalls"
+        },
+        {
+          "gauge_id": "D10",
+          "gauge_name": "Linear neon glow bar",
+          "source_phrase": "orange column can detach or extinguish at low current"
+        }
+      ]
+    },
+    {
+      "quirk": "gravity-related behaviour",
+      "gauge_count": 3,
+      "percentage_of_catalogue": 2.21,
+      "source_statement_count": 3,
+      "gauge_ids": [
+        "P01",
+        "P32",
+        "X23"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P01",
+          "gauge_name": "Liquid-column manometer: U-tube, well-type and inclined",
+          "source_phrase": "local gravity correction"
+        },
+        {
+          "gauge_id": "P32",
+          "gauge_name": "Bubble level, ball inclinometer and pendulum clinometer",
+          "source_phrase": "aircraft ball responds to combined gravity and lateral acceleration, not bank angle alone"
+        },
+        {
+          "gauge_id": "X23",
+          "gauge_name": "Railway block, semaphore and route repeater",
+          "source_phrase": "Fail-safe gravity or spring return"
+        }
+      ]
+    },
+    {
+      "quirk": "periodic marker and rotating-scan behaviour",
+      "gauge_count": 3,
+      "percentage_of_catalogue": 2.21,
+      "source_statement_count": 3,
+      "gauge_ids": [
+        "E11",
+        "X14",
+        "X15"
+      ],
+      "examples": [
+        {
+          "gauge_id": "E11",
+          "gauge_name": "Ferraris induction meter",
+          "source_phrase": "disc marker passes periodically"
+        },
+        {
+          "gauge_id": "X14",
+          "gauge_name": "Rotating-neon fathometer",
+          "source_phrase": "A neon flash seen through a rotating dial appears stationary at the echo depth"
+        },
+        {
+          "gauge_id": "X15",
+          "gauge_name": "Mechanical-wheel flasher sonar",
+          "source_phrase": "A high-speed wheel carries fixed lights that flash at timed positions"
+        }
+      ]
+    },
+    {
+      "quirk": "range switching and multiple ranges",
+      "gauge_count": 3,
+      "percentage_of_catalogue": 2.21,
+      "source_statement_count": 4,
+      "gauge_ids": [
+        "P16",
+        "P42",
+        "X19"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P16",
+          "gauge_name": "Capacitance diaphragm manometer",
+          "source_phrase": "excellent linearity but limited range per sensor"
+        },
+        {
+          "gauge_id": "P16",
+          "gauge_name": "Capacitance diaphragm manometer",
+          "source_phrase": "digital controllers often add range switching"
+        },
+        {
+          "gauge_id": "P42",
+          "gauge_name": "Strip-chart and circular-chart recorder",
+          "source_phrase": "range-change marks"
+        },
+        {
+          "gauge_id": "X19",
+          "gauge_name": "Geiger-counter analog ratemeter",
+          "source_phrase": "range switch changes scale"
+        }
+      ]
+    },
+    {
+      "quirk": "rate limiting and motion limits",
+      "gauge_count": 3,
+      "percentage_of_catalogue": 2.21,
+      "source_statement_count": 4,
+      "gauge_ids": [
+        "E15",
+        "E17",
+        "X24"
+      ],
+      "examples": [
+        {
+          "gauge_id": "E15",
+          "gauge_name": "Stepper-motor gauge",
+          "source_phrase": "rate limiting"
+        },
+        {
+          "gauge_id": "E15",
+          "gauge_name": "Stepper-motor gauge",
+          "source_phrase": "some motors allow only about 315 degrees, not a full circle"
+        },
+        {
+          "gauge_id": "E17",
+          "gauge_name": "Servo and torque-motor indicator",
+          "source_phrase": "velocity and acceleration limits"
+        },
+        {
+          "gauge_id": "X24",
+          "gauge_name": "Mechanical/electromechanical vertical-tape flight instrument",
+          "source_phrase": "belt wrap, speed limit and direction can confuse"
+        }
+      ]
+    },
+    {
+      "quirk": "sensor plumbing faults",
+      "gauge_count": 3,
+      "percentage_of_catalogue": 2.21,
+      "source_statement_count": 3,
+      "gauge_ids": [
+        "P35",
+        "X04",
+        "X12"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P35",
+          "gauge_name": "Mercury and aneroid sphygmomanometer",
+          "source_phrase": "cuff/tube leaks"
+        },
+        {
+          "gauge_id": "X04",
+          "gauge_name": "Airspeed indicator with coloured operating arcs",
+          "source_phrase": "pitot/static blockage freezes or misleads"
+        },
+        {
+          "gauge_id": "X12",
+          "gauge_name": "Steam-boiler water gauge glass",
+          "source_phrase": "glass can appear full when passages are blocked"
+        }
+      ]
+    },
+    {
+      "quirk": "tamper evidence and official seals",
+      "gauge_count": 3,
+      "percentage_of_catalogue": 2.21,
+      "source_statement_count": 3,
+      "gauge_ids": [
+        "P41",
+        "X32",
+        "X35"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P41",
+          "gauge_name": "Mechanical odometer, cyclometer and utility-meter register",
+          "source_phrase": "tamper seals and reset pawls"
+        },
+        {
+          "gauge_id": "X32",
+          "gauge_name": "Railway speed indicator and recorder",
+          "source_phrase": "official seals"
+        },
+        {
+          "gauge_id": "X35",
+          "gauge_name": "Tachograph / recording speedometer",
+          "source_phrase": "tamper seals"
+        }
+      ]
+    },
+    {
+      "quirk": "aliasing, harmonics and false solutions",
+      "gauge_count": 2,
+      "percentage_of_catalogue": 1.47,
+      "source_statement_count": 3,
+      "gauge_ids": [
+        "E08",
+        "P43"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P43",
+          "gauge_name": "Stroboscopic tachometer",
+          "source_phrase": "Aliasing is the defining quirk: motion appears stationary at the true rate and at harmonics/subharmonics"
+        },
+        {
+          "gauge_id": "P43",
+          "gauge_name": "Stroboscopic tachometer",
+          "source_phrase": "multiple blades create ambiguous solutions"
+        },
+        {
+          "gauge_id": "E08",
+          "gauge_name": "Vibrating-reed frequency meter",
+          "source_phrase": "harmonics can excite false reeds"
+        }
+      ]
+    },
+    {
+      "quirk": "attack and release ballistics",
+      "gauge_count": 2,
+      "percentage_of_catalogue": 1.47,
+      "source_statement_count": 2,
+      "gauge_ids": [
+        "X17",
+        "X18"
+      ],
+      "examples": [
+        {
+          "gauge_id": "X17",
+          "gauge_name": "Peak programme meter",
+          "source_phrase": "Very fast attack and deliberately slow, nearly constant-rate fall"
+        },
+        {
+          "gauge_id": "X18",
+          "gauge_name": "Radio S-meter",
+          "source_phrase": "needle rises fast and falls with AGC decay"
+        }
+      ]
+    },
+    {
+      "quirk": "balance, imbalance and pointer balance",
+      "gauge_count": 2,
+      "percentage_of_catalogue": 1.47,
+      "source_statement_count": 2,
+      "gauge_ids": [
+        "E01",
+        "P31"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P31",
+          "gauge_name": "Cup, propeller and vane anemometers",
+          "source_phrase": "overspeed and cup imbalance"
+        },
+        {
+          "gauge_id": "E01",
+          "gauge_name": "D’Arsonval / Weston moving-coil meter",
+          "source_phrase": "magnetic shock, bearing friction and pointer balance affect zero"
+        }
+      ]
+    },
+    {
+      "quirk": "biological and pattern-forming variability",
+      "gauge_count": 2,
+      "percentage_of_catalogue": 1.47,
+      "source_statement_count": 4,
+      "gauge_ids": [
+        "X22",
+        "X27"
+      ],
+      "examples": [
+        {
+          "gauge_id": "X22",
+          "gauge_name": "Storm glass / FitzRoy weather glass",
+          "source_phrase": "Crystals grow, dissolve and form threads or flakes over hours"
+        },
+        {
+          "gauge_id": "X22",
+          "gauge_name": "Storm glass / FitzRoy weather glass",
+          "source_phrase": "patterns are beautiful but scientifically weak"
+        },
+        {
+          "gauge_id": "X27",
+          "gauge_name": "Tempest Prognosticator / leech barometer",
+          "source_phrase": "Twelve leeches climb tubes and trip whalebone linkages to ring a bell"
+        },
+        {
+          "gauge_id": "X27",
+          "gauge_name": "Tempest Prognosticator / leech barometer",
+          "source_phrase": "maintenance includes living sensors, which is a sentence modern product managers should perhaps not hear"
+        }
+      ]
+    },
+    {
+      "quirk": "case, lens and enclosure deformation",
+      "gauge_count": 2,
+      "percentage_of_catalogue": 1.47,
+      "source_statement_count": 2,
+      "gauge_ids": [
+        "D22",
+        "P09"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P09",
+          "gauge_name": "Liquid-filled, snubbed and damped pressure gauge",
+          "source_phrase": "overfilling can bow the lens"
+        },
+        {
+          "gauge_id": "D22",
+          "gauge_name": "Cholesteric and other bistable LCD",
+          "source_phrase": "pressure marks can temporarily disturb the texture"
+        }
+      ]
+    },
+    {
+      "quirk": "cathode poisoning",
+      "gauge_count": 2,
+      "percentage_of_catalogue": 1.47,
+      "source_statement_count": 2,
+      "gauge_ids": [
+        "D05",
+        "D06"
+      ],
+      "examples": [
+        {
+          "gauge_id": "D05",
+          "gauge_name": "Nixie numeric cold-cathode tube",
+          "source_phrase": "cathode poisoning on rarely used digits"
+        },
+        {
+          "gauge_id": "D06",
+          "gauge_name": "Alphanumeric Nixie tube",
+          "source_phrase": "cathode poisoning"
+        }
+      ]
+    },
+    {
+      "quirk": "centre-zero, bidirectional and asymmetric range",
+      "gauge_count": 2,
+      "percentage_of_catalogue": 1.47,
+      "source_statement_count": 4,
+      "gauge_ids": [
+        "E04",
+        "X36"
+      ],
+      "examples": [
+        {
+          "gauge_id": "E04",
+          "gauge_name": "Electrodynamometer instrument",
+          "source_phrase": "power meters can read signed centre-zero"
+        },
+        {
+          "gauge_id": "X36",
+          "gauge_name": "Mechanical G-meter with min/max witness needles",
+          "source_phrase": "Centre at 1 g rather than zero"
+        },
+        {
+          "gauge_id": "X36",
+          "gauge_name": "Mechanical G-meter with min/max witness needles",
+          "source_phrase": "live pointer moves both ways"
+        },
+        {
+          "gauge_id": "X36",
+          "gauge_name": "Mechanical G-meter with min/max witness needles",
+          "source_phrase": "asymmetric positive/negative range"
+        }
+      ]
+    },
+    {
+      "quirk": "chemical diffusion and reaction front",
+      "gauge_count": 2,
+      "percentage_of_catalogue": 1.47,
+      "source_statement_count": 3,
+      "gauge_ids": [
+        "D24",
+        "D30"
+      ],
+      "examples": [
+        {
+          "gauge_id": "D24",
+          "gauge_name": "Electrochromic segmented display",
+          "source_phrase": "Colour front grows and bleaches over time"
+        },
+        {
+          "gauge_id": "D30",
+          "gauge_name": "Irreversible chemical and time-temperature indicator",
+          "source_phrase": "One-way colour migration or reaction"
+        },
+        {
+          "gauge_id": "D30",
+          "gauge_name": "Irreversible chemical and time-temperature indicator",
+          "source_phrase": "diffusion front rather than a crisp electronic change"
+        }
+      ]
+    },
+    {
+      "quirk": "homing, parking and startup sweep",
+      "gauge_count": 2,
+      "percentage_of_catalogue": 1.47,
+      "source_statement_count": 3,
+      "gauge_ids": [
+        "E15",
+        "X08"
+      ],
+      "examples": [
+        {
+          "gauge_id": "E15",
+          "gauge_name": "Stepper-motor gauge",
+          "source_phrase": "startup homing sweep into a mechanical stop"
+        },
+        {
+          "gauge_id": "E15",
+          "gauge_name": "Stepper-motor gauge",
+          "source_phrase": "key-off parking behaviour"
+        },
+        {
+          "gauge_id": "X08",
+          "gauge_name": "Radar altimeter dial",
+          "source_phrase": "power-up test slews pointer"
+        }
+      ]
+    },
+    {
+      "quirk": "input loading and ratio dependence",
+      "gauge_count": 2,
+      "percentage_of_catalogue": 1.47,
+      "source_statement_count": 2,
+      "gauge_ids": [
+        "E07",
+        "E12"
+      ],
+      "examples": [
+        {
+          "gauge_id": "E07",
+          "gauge_name": "Electrostatic voltmeter",
+          "source_phrase": "very high input impedance"
+        },
+        {
+          "gauge_id": "E12",
+          "gauge_name": "Cross-coil / ratiometer gauge",
+          "source_phrase": "Angle depends on current ratio, reducing supply-voltage sensitivity"
+        }
+      ]
+    },
+    {
+      "quirk": "irreversible or one-way response",
+      "gauge_count": 2,
+      "percentage_of_catalogue": 1.47,
+      "source_statement_count": 4,
+      "gauge_ids": [
+        "D30",
+        "P25"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P25",
+          "gauge_name": "Thermochromic liquid-crystal strip and leuco-dye indicator",
+          "source_phrase": "irreversible labels retain an event and cannot be smoothly animated"
+        },
+        {
+          "gauge_id": "D30",
+          "gauge_name": "Irreversible chemical and time-temperature indicator",
+          "source_phrase": "One-way colour migration or reaction"
+        },
+        {
+          "gauge_id": "D30",
+          "gauge_name": "Irreversible chemical and time-temperature indicator",
+          "source_phrase": "cannot reset"
+        },
+        {
+          "gauge_id": "D30",
+          "gauge_name": "Irreversible chemical and time-temperature indicator",
+          "source_phrase": "ideal for witness-state modelling where history matters more than current input"
+        }
+      ]
+    },
+    {
+      "quirk": "multiple echoes, interference and remapped scale",
+      "gauge_count": 2,
+      "percentage_of_catalogue": 1.47,
+      "source_statement_count": 4,
+      "gauge_ids": [
+        "X14",
+        "X15"
+      ],
+      "examples": [
+        {
+          "gauge_id": "X14",
+          "gauge_name": "Rotating-neon fathometer",
+          "source_phrase": "multiple echoes and bottom hardness create extra flashes"
+        },
+        {
+          "gauge_id": "X15",
+          "gauge_name": "Mechanical-wheel flasher sonar",
+          "source_phrase": "gain blooms targets"
+        },
+        {
+          "gauge_id": "X15",
+          "gauge_name": "Mechanical-wheel flasher sonar",
+          "source_phrase": "interference creates moving false marks"
+        },
+        {
+          "gauge_id": "X15",
+          "gauge_name": "Mechanical-wheel flasher sonar",
+          "source_phrase": "bottom lock and zoom remap the scale"
+        }
+      ]
+    },
+    {
+      "quirk": "operator signalling and acknowledgement",
+      "gauge_count": 2,
+      "percentage_of_catalogue": 1.47,
+      "source_statement_count": 3,
+      "gauge_ids": [
+        "X13",
+        "X27"
+      ],
+      "examples": [
+        {
+          "gauge_id": "X13",
+          "gauge_name": "Engine-order telegraph / Chadburn",
+          "source_phrase": "engine room repeats the handle to acknowledge"
+        },
+        {
+          "gauge_id": "X13",
+          "gauge_name": "Engine-order telegraph / Chadburn",
+          "source_phrase": "two pointers may disagree temporarily"
+        },
+        {
+          "gauge_id": "X27",
+          "gauge_name": "Tempest Prognosticator / leech barometer",
+          "source_phrase": "multiple bells imply confidence"
+        }
+      ]
+    },
+    {
+      "quirk": "phase, synchronism and rotation direction",
+      "gauge_count": 2,
+      "percentage_of_catalogue": 1.47,
+      "source_statement_count": 5,
+      "gauge_ids": [
+        "P43",
+        "X33"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P43",
+          "gauge_name": "Stroboscopic tachometer",
+          "source_phrase": "phase drifts slowly"
+        },
+        {
+          "gauge_id": "X33",
+          "gauge_name": "Synchroscope",
+          "source_phrase": "Pointer rotates continuously when frequencies differ, with direction showing fast or slow"
+        },
+        {
+          "gauge_id": "X33",
+          "gauge_name": "Synchroscope",
+          "source_phrase": "rotation decelerates as frequencies converge"
+        },
+        {
+          "gauge_id": "X33",
+          "gauge_name": "Synchroscope",
+          "source_phrase": "final angular position is phase"
+        },
+        {
+          "gauge_id": "X33",
+          "gauge_name": "Synchroscope",
+          "source_phrase": "jitter and reversals near synchronism are normal"
+        }
+      ]
+    },
+    {
+      "quirk": "resonance, beating and tuned elements",
+      "gauge_count": 2,
+      "percentage_of_catalogue": 1.47,
+      "source_statement_count": 3,
+      "gauge_ids": [
+        "E08",
+        "E10"
+      ],
+      "examples": [
+        {
+          "gauge_id": "E08",
+          "gauge_name": "Vibrating-reed frequency meter",
+          "source_phrase": "A comb of reeds vibrates, with the resonant one appearing widest or brightest"
+        },
+        {
+          "gauge_id": "E08",
+          "gauge_name": "Vibrating-reed frequency meter",
+          "source_phrase": "neighbouring reeds beat together"
+        },
+        {
+          "gauge_id": "E10",
+          "gauge_name": "String galvanometer",
+          "source_phrase": "tension sets sensitivity and bandwidth"
+        }
+      ]
+    },
+    {
+      "quirk": "reversal and direction-change error",
+      "gauge_count": 2,
+      "percentage_of_catalogue": 1.47,
+      "source_statement_count": 2,
+      "gauge_ids": [
+        "E11",
+        "P38"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P38",
+          "gauge_name": "Dial indicator, test indicator and dial torque wrench",
+          "source_phrase": "reversing error"
+        },
+        {
+          "gauge_id": "E11",
+          "gauge_name": "Ferraris induction meter",
+          "source_phrase": "reverse power may run backward unless blocked"
+        }
+      ]
+    },
+    {
+      "quirk": "sputter, haze and deposits",
+      "gauge_count": 2,
+      "percentage_of_catalogue": 1.47,
+      "source_statement_count": 2,
+      "gauge_ids": [
+        "D05",
+        "D08"
+      ],
+      "examples": [
+        {
+          "gauge_id": "D05",
+          "gauge_name": "Nixie numeric cold-cathode tube",
+          "source_phrase": "sputter haze"
+        },
+        {
+          "gauge_id": "D08",
+          "gauge_name": "Panaplex planar gas-discharge display",
+          "source_phrase": "gradual darkening and sputter deposits"
+        }
+      ]
+    },
+    {
+      "quirk": "tapping",
+      "gauge_count": 2,
+      "percentage_of_catalogue": 1.47,
+      "source_statement_count": 2,
+      "gauge_ids": [
+        "P02",
+        "P03"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P02",
+          "gauge_name": "Mercury barometer: cistern, Fortin and wheel forms",
+          "source_phrase": "tapping before reading"
+        },
+        {
+          "gauge_id": "P03",
+          "gauge_name": "Aneroid barometer and pressure capsule mechanism",
+          "source_phrase": "pointer may respond to a tap"
+        }
+      ]
+    },
+    {
+      "quirk": "airflow and ventilation dependence",
+      "gauge_count": 1,
+      "percentage_of_catalogue": 0.74,
+      "source_statement_count": 2,
+      "gauge_ids": [
+        "P27"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P27",
+          "gauge_name": "Wet- and dry-bulb psychrometer",
+          "source_phrase": "Requires a genuinely wet clean wick and airflow"
+        },
+        {
+          "gauge_id": "P27",
+          "gauge_name": "Wet- and dry-bulb psychrometer",
+          "source_phrase": "insufficient ventilation reads too humid"
+        }
+      ]
+    },
+    {
+      "quirk": "detents and mechanical indexing",
+      "gauge_count": 1,
+      "percentage_of_catalogue": 0.74,
+      "source_statement_count": 1,
+      "gauge_ids": [
+        "X13"
+      ],
+      "examples": [
+        {
+          "gauge_id": "X13",
+          "gauge_name": "Engine-order telegraph / Chadburn",
+          "source_phrase": "strong detents"
+        }
+      ]
+    },
+    {
+      "quirk": "gyro erection, precession and tumble",
+      "gauge_count": 1,
+      "percentage_of_catalogue": 0.74,
+      "source_statement_count": 3,
+      "gauge_ids": [
+        "X06"
+      ],
+      "examples": [
+        {
+          "gauge_id": "X06",
+          "gauge_name": "Mechanical attitude indicator / artificial horizon",
+          "source_phrase": "erection to local vertical"
+        },
+        {
+          "gauge_id": "X06",
+          "gauge_name": "Mechanical attitude indicator / artificial horizon",
+          "source_phrase": "precession and slow drift"
+        },
+        {
+          "gauge_id": "X06",
+          "gauge_name": "Mechanical attitude indicator / artificial horizon",
+          "source_phrase": "tumble beyond limits"
+        }
+      ]
+    },
+    {
+      "quirk": "input slip and wheel-slip error",
+      "gauge_count": 1,
+      "percentage_of_catalogue": 0.74,
+      "source_statement_count": 1,
+      "gauge_ids": [
+        "X32"
+      ],
+      "examples": [
+        {
+          "gauge_id": "X32",
+          "gauge_name": "Railway speed indicator and recorder",
+          "source_phrase": "wheel-slip error"
+        }
+      ]
+    },
+    {
+      "quirk": "map, dead-reckoning and position drift",
+      "gauge_count": 1,
+      "percentage_of_catalogue": 0.74,
+      "source_statement_count": 5,
+      "gauge_ids": [
+        "X28"
+      ],
+      "examples": [
+        {
+          "gauge_id": "X28",
+          "gauge_name": "Mechanical moving-map and roller-map display",
+          "source_phrase": "Printed map physically scrolls under a fixed aircraft/vehicle symbol"
+        },
+        {
+          "gauge_id": "X28",
+          "gauge_name": "Mechanical moving-map and roller-map display",
+          "source_phrase": "dead-reckoning drift"
+        },
+        {
+          "gauge_id": "X28",
+          "gauge_name": "Mechanical moving-map and roller-map display",
+          "source_phrase": "map-sheet ends require manual change"
+        },
+        {
+          "gauge_id": "X28",
+          "gauge_name": "Mechanical moving-map and roller-map display",
+          "source_phrase": "position reset knobs"
+        },
+        {
+          "gauge_id": "X28",
+          "gauge_name": "Mechanical moving-map and roller-map display",
+          "source_phrase": "route continues moving even when the estimate is wrong"
+        }
+      ]
+    },
+    {
+      "quirk": "optical matching, emissivity and observer effects",
+      "gauge_count": 1,
+      "percentage_of_catalogue": 0.74,
+      "source_statement_count": 4,
+      "gauge_ids": [
+        "P44"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P44",
+          "gauge_name": "Disappearing-filament optical pyrometer",
+          "source_phrase": "Operator turns current until filament visually disappears"
+        },
+        {
+          "gauge_id": "P44",
+          "gauge_name": "Disappearing-filament optical pyrometer",
+          "source_phrase": "emissivity correction"
+        },
+        {
+          "gauge_id": "P44",
+          "gauge_name": "Disappearing-filament optical pyrometer",
+          "source_phrase": "colour-vision and fatigue errors"
+        },
+        {
+          "gauge_id": "P44",
+          "gauge_name": "Disappearing-filament optical pyrometer",
+          "source_phrase": "tinted optics"
+        }
+      ]
+    },
+    {
+      "quirk": "projected-display eyebox and clipping",
+      "gauge_count": 1,
+      "percentage_of_catalogue": 0.74,
+      "source_statement_count": 2,
+      "gauge_ids": [
+        "D28"
+      ],
+      "examples": [
+        {
+          "gauge_id": "D28",
+          "gauge_name": "Head-up and collimated projected symbology",
+          "source_phrase": "Finite eyebox"
+        },
+        {
+          "gauge_id": "D28",
+          "gauge_name": "Head-up and collimated projected symbology",
+          "source_phrase": "head movement clips or shifts imagery"
+        }
+      ]
+    },
+    {
+      "quirk": "scope or implementation boundary",
+      "gauge_count": 1,
+      "percentage_of_catalogue": 0.74,
+      "source_statement_count": 1,
+      "gauge_ids": [
+        "D29"
+      ],
+      "examples": [
+        {
+          "gauge_id": "D29",
+          "gauge_name": "Electrowetting and interferometric MEMS display",
+          "source_phrase": "suitable as an exotic boundary before generic raster screens"
+        }
+      ]
+    },
+    {
+      "quirk": "wind, splash and collection error",
+      "gauge_count": 1,
+      "percentage_of_catalogue": 0.74,
+      "source_statement_count": 2,
+      "gauge_ids": [
+        "P30"
+      ],
+      "examples": [
+        {
+          "gauge_id": "P30",
+          "gauge_name": "Rain gauge and tipping-bucket recorder",
+          "source_phrase": "undercatch in wind"
+        },
+        {
+          "gauge_id": "P30",
+          "gauge_name": "Rain gauge and tipping-bucket recorder",
+          "source_phrase": "splash-in/out"
+        }
+      ]
+    }
+  ]
+}

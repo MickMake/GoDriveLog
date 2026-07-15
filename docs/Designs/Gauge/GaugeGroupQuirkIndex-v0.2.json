@@ -1,0 +1,5844 @@
+{
+  "title": "Gauge Group and Supporting Quirk Index",
+  "version": "0.2",
+  "generated": "2026-07-15",
+  "source_catalogue": "gauge_display_research_catalog_v0.2.json",
+  "count_basis": "Primary gauge_group only; within a group, each gauge is counted once per canonical quirk.",
+  "gauge_count": 136,
+  "gauge_group_count": 24,
+  "groups": [
+    {
+      "gauge_group": "radial_pointer",
+      "name": "Radial pointer",
+      "description": "One or more hands sweep an arc or circle against a fixed scale.",
+      "gauge_count": 56,
+      "supporting_quirk_count": 109,
+      "supporting_quirks": [
+        {
+          "quirk": "response speed, lag and delay",
+          "gauge_count": 19,
+          "percentage_of_group": 33.93,
+          "source_statement_count": 21,
+          "gauge_ids": [
+            "E04",
+            "E06",
+            "E07",
+            "E13",
+            "E14",
+            "P07",
+            "P09",
+            "P13",
+            "P23",
+            "P24",
+            "P26",
+            "P40",
+            "X01",
+            "X03",
+            "X05",
+            "X07",
+            "X08",
+            "X11",
+            "X25"
+          ]
+        },
+        {
+          "quirk": "scale linearity and nonlinearity",
+          "gauge_count": 15,
+          "percentage_of_group": 26.79,
+          "source_statement_count": 16,
+          "gauge_ids": [
+            "E01",
+            "E04",
+            "E07",
+            "E12",
+            "E14",
+            "P04",
+            "P05",
+            "P16",
+            "P24",
+            "P26",
+            "P37",
+            "P39",
+            "X04",
+            "X05",
+            "X19"
+          ]
+        },
+        {
+          "quirk": "thermal behaviour and temperature effects",
+          "gauge_count": 14,
+          "percentage_of_group": 25.0,
+          "source_statement_count": 19,
+          "gauge_ids": [
+            "E01",
+            "E05",
+            "E06",
+            "E13",
+            "P03",
+            "P04",
+            "P05",
+            "P06",
+            "P09",
+            "P16",
+            "P23",
+            "P24",
+            "P34",
+            "P39"
+          ]
+        },
+        {
+          "quirk": "flutter, jitter, tremor and quiver",
+          "gauge_count": 13,
+          "percentage_of_group": 23.21,
+          "source_statement_count": 13,
+          "gauge_ids": [
+            "E03",
+            "E12",
+            "E13",
+            "P04",
+            "P31",
+            "X02",
+            "X04",
+            "X08",
+            "X16",
+            "X19",
+            "X21",
+            "X25",
+            "X33"
+          ]
+        },
+        {
+          "quirk": "hysteresis",
+          "gauge_count": 13,
+          "percentage_of_group": 23.21,
+          "source_statement_count": 13,
+          "gauge_ids": [
+            "E03",
+            "E13",
+            "P03",
+            "P04",
+            "P05",
+            "P06",
+            "P14",
+            "P23",
+            "P26",
+            "P34",
+            "P35",
+            "P37",
+            "P38"
+          ]
+        },
+        {
+          "quirk": "overload, saturation and damage",
+          "gauge_count": 12,
+          "percentage_of_group": 21.43,
+          "source_statement_count": 12,
+          "gauge_ids": [
+            "E04",
+            "E05",
+            "E06",
+            "P04",
+            "P05",
+            "P07",
+            "P15",
+            "P16",
+            "P31",
+            "P37",
+            "X17",
+            "X19"
+          ]
+        },
+        {
+          "quirk": "friction and drag",
+          "gauge_count": 11,
+          "percentage_of_group": 19.64,
+          "source_statement_count": 11,
+          "gauge_ids": [
+            "E01",
+            "E02",
+            "E06",
+            "P06",
+            "P07",
+            "P10",
+            "P11",
+            "P23",
+            "P26",
+            "P31",
+            "P37"
+          ]
+        },
+        {
+          "quirk": "damping",
+          "gauge_count": 10,
+          "percentage_of_group": 17.86,
+          "source_statement_count": 10,
+          "gauge_ids": [
+            "E01",
+            "E04",
+            "E25",
+            "P07",
+            "P08",
+            "P09",
+            "P39",
+            "X07",
+            "X10",
+            "X21"
+          ]
+        },
+        {
+          "quirk": "drift and long-term stability",
+          "gauge_count": 10,
+          "percentage_of_group": 17.86,
+          "source_statement_count": 10,
+          "gauge_ids": [
+            "E05",
+            "E06",
+            "E17",
+            "P03",
+            "P13",
+            "P14",
+            "P16",
+            "P26",
+            "X05",
+            "X18"
+          ]
+        },
+        {
+          "quirk": "shock and vibration effects",
+          "gauge_count": 10,
+          "percentage_of_group": 17.86,
+          "source_statement_count": 10,
+          "gauge_ids": [
+            "E01",
+            "E02",
+            "P35",
+            "P38",
+            "P40",
+            "X01",
+            "X02",
+            "X11",
+            "X25",
+            "X36"
+          ]
+        },
+        {
+          "quirk": "zero drift and offset",
+          "gauge_count": 10,
+          "percentage_of_group": 17.86,
+          "source_statement_count": 11,
+          "gauge_ids": [
+            "E03",
+            "E05",
+            "E15",
+            "P04",
+            "P08",
+            "P09",
+            "P16",
+            "P24",
+            "P37",
+            "X05"
+          ]
+        },
+        {
+          "quirk": "compressed or expanded scale",
+          "gauge_count": 8,
+          "percentage_of_group": 14.29,
+          "source_statement_count": 8,
+          "gauge_ids": [
+            "E03",
+            "P08",
+            "P13",
+            "P34",
+            "X04",
+            "X05",
+            "X08",
+            "X18"
+          ]
+        },
+        {
+          "quirk": "pressure pulsation and pneumatic-line dynamics",
+          "gauge_count": 8,
+          "percentage_of_group": 14.29,
+          "source_statement_count": 9,
+          "gauge_ids": [
+            "P04",
+            "P07",
+            "P09",
+            "P35",
+            "X01",
+            "X05",
+            "X11",
+            "X21"
+          ]
+        },
+        {
+          "quirk": "scale markings, zones and legends",
+          "gauge_count": 8,
+          "percentage_of_group": 14.29,
+          "source_statement_count": 9,
+          "gauge_ids": [
+            "P04",
+            "X03",
+            "X04",
+            "X07",
+            "X10",
+            "X17",
+            "X19",
+            "X21"
+          ]
+        },
+        {
+          "quirk": "stiction and sticking",
+          "gauge_count": 8,
+          "percentage_of_group": 14.29,
+          "source_statement_count": 8,
+          "gauge_ids": [
+            "E02",
+            "E07",
+            "E19",
+            "P03",
+            "P04",
+            "P11",
+            "P31",
+            "X07"
+          ]
+        },
+        {
+          "quirk": "zero adjustment and checking",
+          "gauge_count": 8,
+          "percentage_of_group": 14.29,
+          "source_statement_count": 8,
+          "gauge_ids": [
+            "E01",
+            "P07",
+            "P16",
+            "P23",
+            "P35",
+            "P37",
+            "X19",
+            "X25"
+          ]
+        },
+        {
+          "quirk": "calibration, correction and compensation",
+          "gauge_count": 7,
+          "percentage_of_group": 12.5,
+          "source_statement_count": 7,
+          "gauge_ids": [
+            "E02",
+            "E06",
+            "P03",
+            "P05",
+            "P26",
+            "X16",
+            "X18"
+          ]
+        },
+        {
+          "quirk": "creep",
+          "gauge_count": 7,
+          "percentage_of_group": 12.5,
+          "source_statement_count": 7,
+          "gauge_ids": [
+            "P03",
+            "P05",
+            "P06",
+            "P11",
+            "P23",
+            "P37",
+            "X11"
+          ]
+        },
+        {
+          "quirk": "end stops, pegging and overflow",
+          "gauge_count": 7,
+          "percentage_of_group": 12.5,
+          "source_statement_count": 7,
+          "gauge_ids": [
+            "E07",
+            "E15",
+            "E17",
+            "P04",
+            "P05",
+            "P39",
+            "X04"
+          ]
+        },
+        {
+          "quirk": "settling and return behaviour",
+          "gauge_count": 7,
+          "percentage_of_group": 12.5,
+          "source_statement_count": 7,
+          "gauge_ids": [
+            "E01",
+            "E02",
+            "E12",
+            "E14",
+            "P39",
+            "X05",
+            "X19"
+          ]
+        },
+        {
+          "quirk": "wraparound and multi-turn indication",
+          "gauge_count": 7,
+          "percentage_of_group": 12.5,
+          "source_statement_count": 8,
+          "gauge_ids": [
+            "E14",
+            "E15",
+            "P03",
+            "P31",
+            "P38",
+            "X01",
+            "X03"
+          ]
+        },
+        {
+          "quirk": "averaging and integration",
+          "gauge_count": 6,
+          "percentage_of_group": 10.71,
+          "source_statement_count": 6,
+          "gauge_ids": [
+            "E13",
+            "P09",
+            "P40",
+            "X16",
+            "X17",
+            "X19"
+          ]
+        },
+        {
+          "quirk": "contamination, dirt and fouling",
+          "gauge_count": 6,
+          "percentage_of_group": 10.71,
+          "source_statement_count": 6,
+          "gauge_ids": [
+            "E07",
+            "E19",
+            "P13",
+            "P14",
+            "P15",
+            "P26"
+          ]
+        },
+        {
+          "quirk": "human-factor ambiguity and misreading",
+          "gauge_count": 6,
+          "percentage_of_group": 10.71,
+          "source_statement_count": 8,
+          "gauge_ids": [
+            "E14",
+            "E16",
+            "P03",
+            "P08",
+            "X01",
+            "X03"
+          ]
+        },
+        {
+          "quirk": "multi-pointer and multi-channel interaction",
+          "gauge_count": 6,
+          "percentage_of_group": 10.71,
+          "source_statement_count": 11,
+          "gauge_ids": [
+            "E25",
+            "P08",
+            "X10",
+            "X11",
+            "X13",
+            "X25"
+          ]
+        },
+        {
+          "quirk": "orientation sensitivity",
+          "gauge_count": 6,
+          "percentage_of_group": 10.71,
+          "source_statement_count": 6,
+          "gauge_ids": [
+            "E02",
+            "P05",
+            "P07",
+            "P09",
+            "P13",
+            "P37"
+          ]
+        },
+        {
+          "quirk": "backlash and lash",
+          "gauge_count": 5,
+          "percentage_of_group": 8.93,
+          "source_statement_count": 5,
+          "gauge_ids": [
+            "E15",
+            "E17",
+            "P03",
+            "P04",
+            "P38"
+          ]
+        },
+        {
+          "quirk": "channel mismatch and unequal dynamics",
+          "gauge_count": 5,
+          "percentage_of_group": 8.93,
+          "source_statement_count": 7,
+          "gauge_ids": [
+            "E25",
+            "P08",
+            "X10",
+            "X13",
+            "X17"
+          ]
+        },
+        {
+          "quirk": "chatter",
+          "gauge_count": 5,
+          "percentage_of_group": 8.93,
+          "source_statement_count": 5,
+          "gauge_ids": [
+            "E15",
+            "E19",
+            "P10",
+            "P31",
+            "P39"
+          ]
+        },
+        {
+          "quirk": "electrical or mechanical remote coupling",
+          "gauge_count": 5,
+          "percentage_of_group": 8.93,
+          "source_statement_count": 5,
+          "gauge_ids": [
+            "E12",
+            "E13",
+            "E16",
+            "P07",
+            "X25"
+          ]
+        },
+        {
+          "quirk": "frequency, waveform and source dependence",
+          "gauge_count": 5,
+          "percentage_of_group": 8.93,
+          "source_statement_count": 9,
+          "gauge_ids": [
+            "E03",
+            "E05",
+            "E06",
+            "X16",
+            "X18"
+          ]
+        },
+        {
+          "quirk": "logarithmic scale",
+          "gauge_count": 5,
+          "percentage_of_group": 8.93,
+          "source_statement_count": 5,
+          "gauge_ids": [
+            "P13",
+            "P15",
+            "X16",
+            "X19",
+            "X25"
+          ]
+        },
+        {
+          "quirk": "power-off and power-loss behaviour",
+          "gauge_count": 5,
+          "percentage_of_group": 8.93,
+          "source_statement_count": 6,
+          "gauge_ids": [
+            "E14",
+            "E16",
+            "E17",
+            "X07",
+            "X25"
+          ]
+        },
+        {
+          "quirk": "thresholds, deadband and switching points",
+          "gauge_count": 5,
+          "percentage_of_group": 8.93,
+          "source_statement_count": 6,
+          "gauge_ids": [
+            "E17",
+            "E19",
+            "P07",
+            "P10",
+            "P31"
+          ]
+        },
+        {
+          "quirk": "witness, peak-hold and retained extrema",
+          "gauge_count": 5,
+          "percentage_of_group": 8.93,
+          "source_statement_count": 8,
+          "gauge_ids": [
+            "P11",
+            "P37",
+            "P38",
+            "X17",
+            "X36"
+          ]
+        },
+        {
+          "quirk": "bounce",
+          "gauge_count": 4,
+          "percentage_of_group": 7.14,
+          "source_statement_count": 4,
+          "gauge_ids": [
+            "P04",
+            "P35",
+            "P39",
+            "X36"
+          ]
+        },
+        {
+          "quirk": "bubble, void and separated-column behaviour",
+          "gauge_count": 4,
+          "percentage_of_group": 7.14,
+          "source_statement_count": 5,
+          "gauge_ids": [
+            "P09",
+            "P24",
+            "P34",
+            "X07"
+          ]
+        },
+        {
+          "quirk": "display geometry and motion mode",
+          "gauge_count": 4,
+          "percentage_of_group": 7.14,
+          "source_statement_count": 4,
+          "gauge_ids": [
+            "P04",
+            "P05",
+            "P06",
+            "P23"
+          ]
+        },
+        {
+          "quirk": "electrical contacts, grounds and wiring",
+          "gauge_count": 4,
+          "percentage_of_group": 7.14,
+          "source_statement_count": 5,
+          "gauge_ids": [
+            "E12",
+            "E16",
+            "E19",
+            "P10"
+          ]
+        },
+        {
+          "quirk": "gas or medium dependence",
+          "gauge_count": 4,
+          "percentage_of_group": 7.14,
+          "source_statement_count": 4,
+          "gauge_ids": [
+            "P13",
+            "P14",
+            "P15",
+            "P16"
+          ]
+        },
+        {
+          "quirk": "hunting and following error",
+          "gauge_count": 4,
+          "percentage_of_group": 7.14,
+          "source_statement_count": 5,
+          "gauge_ids": [
+            "E16",
+            "E17",
+            "P31",
+            "P40"
+          ]
+        },
+        {
+          "quirk": "invalid, out-of-range and warning flags",
+          "gauge_count": 4,
+          "percentage_of_group": 7.14,
+          "source_statement_count": 5,
+          "gauge_ids": [
+            "E17",
+            "X02",
+            "X03",
+            "X08"
+          ]
+        },
+        {
+          "quirk": "magnetic-field, deviation and remanence effects",
+          "gauge_count": 4,
+          "percentage_of_group": 7.14,
+          "source_statement_count": 4,
+          "gauge_ids": [
+            "E03",
+            "E04",
+            "P14",
+            "P39"
+          ]
+        },
+        {
+          "quirk": "mechanical noise and cadence",
+          "gauge_count": 4,
+          "percentage_of_group": 7.14,
+          "source_statement_count": 6,
+          "gauge_ids": [
+            "P39",
+            "P40",
+            "X13",
+            "X19"
+          ]
+        },
+        {
+          "quirk": "mechanical wear, stretch and permanent set",
+          "gauge_count": 4,
+          "percentage_of_group": 7.14,
+          "source_statement_count": 4,
+          "gauge_ids": [
+            "E02",
+            "P37",
+            "P38",
+            "P40"
+          ]
+        },
+        {
+          "quirk": "movement torque and sensitivity",
+          "gauge_count": 4,
+          "percentage_of_group": 7.14,
+          "source_statement_count": 4,
+          "gauge_ids": [
+            "E03",
+            "E04",
+            "E07",
+            "E16"
+          ]
+        },
+        {
+          "quirk": "overshoot",
+          "gauge_count": 4,
+          "percentage_of_group": 7.14,
+          "source_statement_count": 4,
+          "gauge_ids": [
+            "E01",
+            "X16",
+            "X17",
+            "X36"
+          ]
+        },
+        {
+          "quirk": "reference bugs and set markers",
+          "gauge_count": 4,
+          "percentage_of_group": 7.14,
+          "source_statement_count": 4,
+          "gauge_ids": [
+            "E19",
+            "P10",
+            "X04",
+            "X08"
+          ]
+        },
+        {
+          "quirk": "shadows, depth and occlusion",
+          "gauge_count": 4,
+          "percentage_of_group": 7.14,
+          "source_statement_count": 6,
+          "gauge_ids": [
+            "E25",
+            "P08",
+            "X10",
+            "X11"
+          ]
+        },
+        {
+          "quirk": "cool-down, heat soak and continued motion",
+          "gauge_count": 3,
+          "percentage_of_group": 5.36,
+          "source_statement_count": 4,
+          "gauge_ids": [
+            "E05",
+            "E13",
+            "P24"
+          ]
+        },
+        {
+          "quirk": "discrete, quantised or stepwise motion",
+          "gauge_count": 3,
+          "percentage_of_group": 5.36,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "E15",
+            "P06",
+            "P40"
+          ]
+        },
+        {
+          "quirk": "fluid leakage",
+          "gauge_count": 3,
+          "percentage_of_group": 5.36,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "P09",
+            "P24",
+            "P35"
+          ]
+        },
+        {
+          "quirk": "manual adjustment and setup",
+          "gauge_count": 3,
+          "percentage_of_group": 5.36,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "X01",
+            "X02",
+            "X03"
+          ]
+        },
+        {
+          "quirk": "manual reset, tare and caging",
+          "gauge_count": 3,
+          "percentage_of_group": 5.36,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "P10",
+            "P11",
+            "X36"
+          ]
+        },
+        {
+          "quirk": "parallax",
+          "gauge_count": 3,
+          "percentage_of_group": 5.36,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "E01",
+            "E25",
+            "X10"
+          ]
+        },
+        {
+          "quirk": "revolution counting and coarse/fine readout",
+          "gauge_count": 3,
+          "percentage_of_group": 5.36,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "P38",
+            "X02",
+            "X03"
+          ]
+        },
+        {
+          "quirk": "valid operating region",
+          "gauge_count": 3,
+          "percentage_of_group": 5.36,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "P13",
+            "P15",
+            "X08"
+          ]
+        },
+        {
+          "quirk": "warm-up behaviour",
+          "gauge_count": 3,
+          "percentage_of_group": 5.36,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "P13",
+            "P15",
+            "P16"
+          ]
+        },
+        {
+          "quirk": "ageing and material degradation",
+          "gauge_count": 2,
+          "percentage_of_group": 3.57,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "E06",
+            "P26"
+          ]
+        },
+        {
+          "quirk": "ambient-pressure and altitude sensitivity",
+          "gauge_count": 2,
+          "percentage_of_group": 3.57,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "P06",
+            "X21"
+          ]
+        },
+        {
+          "quirk": "attack and release ballistics",
+          "gauge_count": 2,
+          "percentage_of_group": 3.57,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "X17",
+            "X18"
+          ]
+        },
+        {
+          "quirk": "balance, imbalance and pointer balance",
+          "gauge_count": 2,
+          "percentage_of_group": 3.57,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "E01",
+            "P31"
+          ]
+        },
+        {
+          "quirk": "capillary, wetting and surface-tension effects",
+          "gauge_count": 2,
+          "percentage_of_group": 3.57,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "P24",
+            "P34"
+          ]
+        },
+        {
+          "quirk": "carry, rollover and digit transition",
+          "gauge_count": 2,
+          "percentage_of_group": 3.57,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "X02",
+            "X03"
+          ]
+        },
+        {
+          "quirk": "centre-zero, bidirectional and asymmetric range",
+          "gauge_count": 2,
+          "percentage_of_group": 3.57,
+          "source_statement_count": 4,
+          "gauge_ids": [
+            "E04",
+            "X36"
+          ]
+        },
+        {
+          "quirk": "colour variation and colour shift",
+          "gauge_count": 2,
+          "percentage_of_group": 3.57,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "P08",
+            "X10"
+          ]
+        },
+        {
+          "quirk": "construction tolerances and unit variation",
+          "gauge_count": 2,
+          "percentage_of_group": 3.57,
+          "source_statement_count": 4,
+          "gauge_ids": [
+            "E06",
+            "X18"
+          ]
+        },
+        {
+          "quirk": "cross-axis and acceleration sensitivity",
+          "gauge_count": 2,
+          "percentage_of_group": 3.57,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "X05",
+            "X07"
+          ]
+        },
+        {
+          "quirk": "dead time, missed events and duplicate counts",
+          "gauge_count": 2,
+          "percentage_of_group": 3.57,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "E15",
+            "X19"
+          ]
+        },
+        {
+          "quirk": "drive power and regulation",
+          "gauge_count": 2,
+          "percentage_of_group": 3.57,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "E13",
+            "P15"
+          ]
+        },
+        {
+          "quirk": "electrical hum, buzz and whine",
+          "gauge_count": 2,
+          "percentage_of_group": 3.57,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "E16",
+            "E17"
+          ]
+        },
+        {
+          "quirk": "filament behaviour and failure",
+          "gauge_count": 2,
+          "percentage_of_group": 3.57,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "P13",
+            "P15"
+          ]
+        },
+        {
+          "quirk": "fluid surge, slosh and foam",
+          "gauge_count": 2,
+          "percentage_of_group": 3.57,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "E13",
+            "X07"
+          ]
+        },
+        {
+          "quirk": "homing, parking and startup sweep",
+          "gauge_count": 2,
+          "percentage_of_group": 3.57,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "E15",
+            "X08"
+          ]
+        },
+        {
+          "quirk": "immersion, stem-conduction and contact error",
+          "gauge_count": 2,
+          "percentage_of_group": 3.57,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "P23",
+            "P24"
+          ]
+        },
+        {
+          "quirk": "inertia and coasting",
+          "gauge_count": 2,
+          "percentage_of_group": 3.57,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "P31",
+            "P39"
+          ]
+        },
+        {
+          "quirk": "input loading and ratio dependence",
+          "gauge_count": 2,
+          "percentage_of_group": 3.57,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "E07",
+            "E12"
+          ]
+        },
+        {
+          "quirk": "latching and state-retention behaviour",
+          "gauge_count": 2,
+          "percentage_of_group": 3.57,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "E19",
+            "P10"
+          ]
+        },
+        {
+          "quirk": "meniscus behaviour",
+          "gauge_count": 2,
+          "percentage_of_group": 3.57,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "P34",
+            "P35"
+          ]
+        },
+        {
+          "quirk": "operator procedure and ritual",
+          "gauge_count": 2,
+          "percentage_of_group": 3.57,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "P35",
+            "X33"
+          ]
+        },
+        {
+          "quirk": "pen, stylus and trace artefacts",
+          "gauge_count": 2,
+          "percentage_of_group": 3.57,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "P26",
+            "P38"
+          ]
+        },
+        {
+          "quirk": "power-up and self-test behaviour",
+          "gauge_count": 2,
+          "percentage_of_group": 3.57,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "E17",
+            "X08"
+          ]
+        },
+        {
+          "quirk": "range switching and multiple ranges",
+          "gauge_count": 2,
+          "percentage_of_group": 3.57,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "P16",
+            "X19"
+          ]
+        },
+        {
+          "quirk": "rate limiting and motion limits",
+          "gauge_count": 2,
+          "percentage_of_group": 3.57,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "E15",
+            "E17"
+          ]
+        },
+        {
+          "quirk": "readout masking and narrow-window transitions",
+          "gauge_count": 2,
+          "percentage_of_group": 3.57,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "X02",
+            "X03"
+          ]
+        },
+        {
+          "quirk": "ringing and oscillation",
+          "gauge_count": 2,
+          "percentage_of_group": 3.57,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "P07",
+            "P37"
+          ]
+        },
+        {
+          "quirk": "scale direction and interpretation",
+          "gauge_count": 2,
+          "percentage_of_group": 3.57,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "P08",
+            "X21"
+          ]
+        },
+        {
+          "quirk": "sensor plumbing faults",
+          "gauge_count": 2,
+          "percentage_of_group": 3.57,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "P35",
+            "X04"
+          ]
+        },
+        {
+          "quirk": "snap action",
+          "gauge_count": 2,
+          "percentage_of_group": 3.57,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "P05",
+            "P10"
+          ]
+        },
+        {
+          "quirk": "supply-voltage sensitivity",
+          "gauge_count": 2,
+          "percentage_of_group": 3.57,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "E12",
+            "E13"
+          ]
+        },
+        {
+          "quirk": "blockage and restricted passages",
+          "gauge_count": 1,
+          "percentage_of_group": 1.79,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X04"
+          ]
+        },
+        {
+          "quirk": "cable, belt, tape and roller errors",
+          "gauge_count": 1,
+          "percentage_of_group": 1.79,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P39"
+          ]
+        },
+        {
+          "quirk": "case, lens and enclosure deformation",
+          "gauge_count": 1,
+          "percentage_of_group": 1.79,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P09"
+          ]
+        },
+        {
+          "quirk": "chart and paper transport",
+          "gauge_count": 1,
+          "percentage_of_group": 1.79,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P26"
+          ]
+        },
+        {
+          "quirk": "clock drift, timing and seams",
+          "gauge_count": 1,
+          "percentage_of_group": 1.79,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P26"
+          ]
+        },
+        {
+          "quirk": "detents and mechanical indexing",
+          "gauge_count": 1,
+          "percentage_of_group": 1.79,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X13"
+          ]
+        },
+        {
+          "quirk": "electrostatic leakage and charge retention",
+          "gauge_count": 1,
+          "percentage_of_group": 1.79,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E07"
+          ]
+        },
+        {
+          "quirk": "gas-discharge instability and dropout",
+          "gauge_count": 1,
+          "percentage_of_group": 1.79,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "P14"
+          ]
+        },
+        {
+          "quirk": "gas-discharge striking and ignition",
+          "gauge_count": 1,
+          "percentage_of_group": 1.79,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "P14"
+          ]
+        },
+        {
+          "quirk": "humidity and moisture sensitivity",
+          "gauge_count": 1,
+          "percentage_of_group": 1.79,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E07"
+          ]
+        },
+        {
+          "quirk": "illumination and backlighting",
+          "gauge_count": 1,
+          "percentage_of_group": 1.79,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X16"
+          ]
+        },
+        {
+          "quirk": "operator signalling and acknowledgement",
+          "gauge_count": 1,
+          "percentage_of_group": 1.79,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "X13"
+          ]
+        },
+        {
+          "quirk": "phase, synchronism and rotation direction",
+          "gauge_count": 1,
+          "percentage_of_group": 1.79,
+          "source_statement_count": 4,
+          "gauge_ids": [
+            "X33"
+          ]
+        },
+        {
+          "quirk": "qualitative or non-precision indication",
+          "gauge_count": 1,
+          "percentage_of_group": 1.79,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X21"
+          ]
+        },
+        {
+          "quirk": "random, statistical and batch variation",
+          "gauge_count": 1,
+          "percentage_of_group": 1.79,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X19"
+          ]
+        },
+        {
+          "quirk": "reversal and direction-change error",
+          "gauge_count": 1,
+          "percentage_of_group": 1.79,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P38"
+          ]
+        },
+        {
+          "quirk": "safety, guarding and fail-safe behaviour",
+          "gauge_count": 1,
+          "percentage_of_group": 1.79,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P07"
+          ]
+        },
+        {
+          "quirk": "tapping",
+          "gauge_count": 1,
+          "percentage_of_group": 1.79,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P03"
+          ]
+        },
+        {
+          "quirk": "viewing-angle dependence",
+          "gauge_count": 1,
+          "percentage_of_group": 1.79,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X25"
+          ]
+        }
+      ]
+    },
+    {
+      "gauge_group": "segmented_display",
+      "name": "Segmented display",
+      "description": "Fixed luminous, gas-discharge, liquid-crystal or material segments form numbers or glyphs.",
+      "gauge_count": 13,
+      "supporting_quirk_count": 38,
+      "supporting_quirks": [
+        {
+          "quirk": "ghosting, crosstalk and light leakage",
+          "gauge_count": 8,
+          "percentage_of_group": 61.54,
+          "source_statement_count": 8,
+          "gauge_ids": [
+            "D05",
+            "D06",
+            "D08",
+            "D12",
+            "D13",
+            "D19",
+            "D20",
+            "D23"
+          ]
+        },
+        {
+          "quirk": "brightness and contrast variation",
+          "gauge_count": 7,
+          "percentage_of_group": 53.85,
+          "source_statement_count": 7,
+          "gauge_ids": [
+            "D07",
+            "D08",
+            "D11",
+            "D12",
+            "D13",
+            "D19",
+            "D20"
+          ]
+        },
+        {
+          "quirk": "colour variation and colour shift",
+          "gauge_count": 7,
+          "percentage_of_group": 53.85,
+          "source_statement_count": 10,
+          "gauge_ids": [
+            "D05",
+            "D11",
+            "D12",
+            "D13",
+            "D19",
+            "D24",
+            "D25"
+          ]
+        },
+        {
+          "quirk": "ageing and material degradation",
+          "gauge_count": 6,
+          "percentage_of_group": 46.15,
+          "source_statement_count": 8,
+          "gauge_ids": [
+            "D07",
+            "D11",
+            "D12",
+            "D20",
+            "D24",
+            "D25"
+          ]
+        },
+        {
+          "quirk": "display geometry and motion mode",
+          "gauge_count": 6,
+          "percentage_of_group": 46.15,
+          "source_statement_count": 7,
+          "gauge_ids": [
+            "D06",
+            "D07",
+            "D08",
+            "D19",
+            "D20",
+            "D23"
+          ]
+        },
+        {
+          "quirk": "glyph, segment and aperture geometry",
+          "gauge_count": 5,
+          "percentage_of_group": 38.46,
+          "source_statement_count": 10,
+          "gauge_ids": [
+            "D05",
+            "D06",
+            "D07",
+            "D08",
+            "D14"
+          ]
+        },
+        {
+          "quirk": "thermal behaviour and temperature effects",
+          "gauge_count": 5,
+          "percentage_of_group": 38.46,
+          "source_statement_count": 5,
+          "gauge_ids": [
+            "D11",
+            "D13",
+            "D20",
+            "D23",
+            "D24"
+          ]
+        },
+        {
+          "quirk": "brightness nonuniformity and gradients",
+          "gauge_count": 4,
+          "percentage_of_group": 30.77,
+          "source_statement_count": 6,
+          "gauge_ids": [
+            "D06",
+            "D12",
+            "D14",
+            "D23"
+          ]
+        },
+        {
+          "quirk": "flicker, scan and PWM artefacts",
+          "gauge_count": 4,
+          "percentage_of_group": 30.77,
+          "source_statement_count": 4,
+          "gauge_ids": [
+            "D05",
+            "D13",
+            "D14",
+            "D25"
+          ]
+        },
+        {
+          "quirk": "response speed, lag and delay",
+          "gauge_count": 4,
+          "percentage_of_group": 30.77,
+          "source_statement_count": 4,
+          "gauge_ids": [
+            "D11",
+            "D19",
+            "D20",
+            "D24"
+          ]
+        },
+        {
+          "quirk": "shadows, depth and occlusion",
+          "gauge_count": 4,
+          "percentage_of_group": 30.77,
+          "source_statement_count": 6,
+          "gauge_ids": [
+            "D05",
+            "D06",
+            "D07",
+            "D08"
+          ]
+        },
+        {
+          "quirk": "bloom, halo and penumbra",
+          "gauge_count": 3,
+          "percentage_of_group": 23.08,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "D07",
+            "D08",
+            "D12"
+          ]
+        },
+        {
+          "quirk": "gas-discharge striking and ignition",
+          "gauge_count": 3,
+          "percentage_of_group": 23.08,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "D05",
+            "D07",
+            "D08"
+          ]
+        },
+        {
+          "quirk": "segment, pixel, lamp or flag failure",
+          "gauge_count": 3,
+          "percentage_of_group": 23.08,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "D13",
+            "D14",
+            "D20"
+          ]
+        },
+        {
+          "quirk": "shared-current or shared-supply dimming",
+          "gauge_count": 3,
+          "percentage_of_group": 23.08,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "D11",
+            "D13",
+            "D14"
+          ]
+        },
+        {
+          "quirk": "viewing-angle dependence",
+          "gauge_count": 3,
+          "percentage_of_group": 23.08,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "D12",
+            "D20",
+            "D25"
+          ]
+        },
+        {
+          "quirk": "warm-up behaviour",
+          "gauge_count": 3,
+          "percentage_of_group": 23.08,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "D11",
+            "D12",
+            "D25"
+          ]
+        },
+        {
+          "quirk": "ambient-light readability",
+          "gauge_count": 2,
+          "percentage_of_group": 15.38,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "D19",
+            "D23"
+          ]
+        },
+        {
+          "quirk": "burn-in and permanent image wear",
+          "gauge_count": 2,
+          "percentage_of_group": 15.38,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "D24",
+            "D25"
+          ]
+        },
+        {
+          "quirk": "cathode poisoning",
+          "gauge_count": 2,
+          "percentage_of_group": 15.38,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "D05",
+            "D06"
+          ]
+        },
+        {
+          "quirk": "filament behaviour and failure",
+          "gauge_count": 2,
+          "percentage_of_group": 15.38,
+          "source_statement_count": 6,
+          "gauge_ids": [
+            "D11",
+            "D12"
+          ]
+        },
+        {
+          "quirk": "latching and state-retention behaviour",
+          "gauge_count": 2,
+          "percentage_of_group": 15.38,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "D23",
+            "D24"
+          ]
+        },
+        {
+          "quirk": "parallax",
+          "gauge_count": 2,
+          "percentage_of_group": 15.38,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "D05",
+            "D06"
+          ]
+        },
+        {
+          "quirk": "phosphor behaviour and ageing",
+          "gauge_count": 2,
+          "percentage_of_group": 15.38,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "D12",
+            "D25"
+          ]
+        },
+        {
+          "quirk": "power-off and power-loss behaviour",
+          "gauge_count": 2,
+          "percentage_of_group": 15.38,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "D23",
+            "D24"
+          ]
+        },
+        {
+          "quirk": "sputter, haze and deposits",
+          "gauge_count": 2,
+          "percentage_of_group": 15.38,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "D05",
+            "D08"
+          ]
+        },
+        {
+          "quirk": "bistable display memory and update",
+          "gauge_count": 1,
+          "percentage_of_group": 7.69,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D24"
+          ]
+        },
+        {
+          "quirk": "channel mismatch and unequal dynamics",
+          "gauge_count": 1,
+          "percentage_of_group": 7.69,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D14"
+          ]
+        },
+        {
+          "quirk": "chemical diffusion and reaction front",
+          "gauge_count": 1,
+          "percentage_of_group": 7.69,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D24"
+          ]
+        },
+        {
+          "quirk": "cool-down, heat soak and continued motion",
+          "gauge_count": 1,
+          "percentage_of_group": 7.69,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D11"
+          ]
+        },
+        {
+          "quirk": "display overlap and adjacent indication",
+          "gauge_count": 1,
+          "percentage_of_group": 7.69,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D14"
+          ]
+        },
+        {
+          "quirk": "drift and long-term stability",
+          "gauge_count": 1,
+          "percentage_of_group": 7.69,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D13"
+          ]
+        },
+        {
+          "quirk": "drive power and regulation",
+          "gauge_count": 1,
+          "percentage_of_group": 7.69,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D19"
+          ]
+        },
+        {
+          "quirk": "electrical contacts, grounds and wiring",
+          "gauge_count": 1,
+          "percentage_of_group": 7.69,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D20"
+          ]
+        },
+        {
+          "quirk": "flutter, jitter, tremor and quiver",
+          "gauge_count": 1,
+          "percentage_of_group": 7.69,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D14"
+          ]
+        },
+        {
+          "quirk": "frequency, waveform and source dependence",
+          "gauge_count": 1,
+          "percentage_of_group": 7.69,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D20"
+          ]
+        },
+        {
+          "quirk": "illumination and backlighting",
+          "gauge_count": 1,
+          "percentage_of_group": 7.69,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D19"
+          ]
+        },
+        {
+          "quirk": "refresh, erase and update artefacts",
+          "gauge_count": 1,
+          "percentage_of_group": 7.69,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "D23"
+          ]
+        }
+      ]
+    },
+    {
+      "gauge_group": "liquid_column",
+      "name": "Liquid column",
+      "description": "A liquid height, meniscus or liquid/gas boundary moves in a tube, well or gauge glass.",
+      "gauge_count": 9,
+      "supporting_quirk_count": 42,
+      "supporting_quirks": [
+        {
+          "quirk": "capillary, wetting and surface-tension effects",
+          "gauge_count": 6,
+          "percentage_of_group": 66.67,
+          "source_statement_count": 6,
+          "gauge_ids": [
+            "P01",
+            "P02",
+            "P12",
+            "P17",
+            "P21",
+            "P22"
+          ]
+        },
+        {
+          "quirk": "meniscus behaviour",
+          "gauge_count": 6,
+          "percentage_of_group": 66.67,
+          "source_statement_count": 6,
+          "gauge_ids": [
+            "P01",
+            "P02",
+            "P12",
+            "P17",
+            "P21",
+            "X26"
+          ]
+        },
+        {
+          "quirk": "bubble, void and separated-column behaviour",
+          "gauge_count": 5,
+          "percentage_of_group": 55.56,
+          "source_statement_count": 5,
+          "gauge_ids": [
+            "P01",
+            "P02",
+            "P17",
+            "P21",
+            "X26"
+          ]
+        },
+        {
+          "quirk": "response speed, lag and delay",
+          "gauge_count": 5,
+          "percentage_of_group": 55.56,
+          "source_statement_count": 7,
+          "gauge_ids": [
+            "P02",
+            "P21",
+            "P22",
+            "P27",
+            "X26"
+          ]
+        },
+        {
+          "quirk": "thermal behaviour and temperature effects",
+          "gauge_count": 4,
+          "percentage_of_group": 44.44,
+          "source_statement_count": 4,
+          "gauge_ids": [
+            "P01",
+            "P02",
+            "P21",
+            "X26"
+          ]
+        },
+        {
+          "quirk": "calibration, correction and compensation",
+          "gauge_count": 3,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 4,
+          "gauge_ids": [
+            "P01",
+            "P27",
+            "X26"
+          ]
+        },
+        {
+          "quirk": "contamination, dirt and fouling",
+          "gauge_count": 3,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "P02",
+            "P12",
+            "P17"
+          ]
+        },
+        {
+          "quirk": "fluid surge, slosh and foam",
+          "gauge_count": 3,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 6,
+          "gauge_ids": [
+            "P01",
+            "P17",
+            "X12"
+          ]
+        },
+        {
+          "quirk": "parallax",
+          "gauge_count": 3,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "P01",
+            "P17",
+            "P21"
+          ]
+        },
+        {
+          "quirk": "safety, guarding and fail-safe behaviour",
+          "gauge_count": 3,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 5,
+          "gauge_ids": [
+            "P17",
+            "P21",
+            "X12"
+          ]
+        },
+        {
+          "quirk": "construction tolerances and unit variation",
+          "gauge_count": 2,
+          "percentage_of_group": 22.22,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "P01",
+            "P21"
+          ]
+        },
+        {
+          "quirk": "human-factor ambiguity and misreading",
+          "gauge_count": 2,
+          "percentage_of_group": 22.22,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "P22",
+            "P27"
+          ]
+        },
+        {
+          "quirk": "operator procedure and ritual",
+          "gauge_count": 2,
+          "percentage_of_group": 22.22,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "P12",
+            "P27"
+          ]
+        },
+        {
+          "quirk": "optical distortion and refraction",
+          "gauge_count": 2,
+          "percentage_of_group": 22.22,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "P17",
+            "X12"
+          ]
+        },
+        {
+          "quirk": "scale linearity and nonlinearity",
+          "gauge_count": 2,
+          "percentage_of_group": 22.22,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "P01",
+            "P12"
+          ]
+        },
+        {
+          "quirk": "witness, peak-hold and retained extrema",
+          "gauge_count": 2,
+          "percentage_of_group": 22.22,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "P21",
+            "P22"
+          ]
+        },
+        {
+          "quirk": "airflow and ventilation dependence",
+          "gauge_count": 1,
+          "percentage_of_group": 11.11,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "P27"
+          ]
+        },
+        {
+          "quirk": "ambient-pressure and altitude sensitivity",
+          "gauge_count": 1,
+          "percentage_of_group": 11.11,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X26"
+          ]
+        },
+        {
+          "quirk": "backlash and lash",
+          "gauge_count": 1,
+          "percentage_of_group": 11.11,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P02"
+          ]
+        },
+        {
+          "quirk": "blockage and restricted passages",
+          "gauge_count": 1,
+          "percentage_of_group": 11.11,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X12"
+          ]
+        },
+        {
+          "quirk": "channel mismatch and unequal dynamics",
+          "gauge_count": 1,
+          "percentage_of_group": 11.11,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P27"
+          ]
+        },
+        {
+          "quirk": "compressed or expanded scale",
+          "gauge_count": 1,
+          "percentage_of_group": 11.11,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P01"
+          ]
+        },
+        {
+          "quirk": "density and viscosity dependence",
+          "gauge_count": 1,
+          "percentage_of_group": 11.11,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P01"
+          ]
+        },
+        {
+          "quirk": "end stops, pegging and overflow",
+          "gauge_count": 1,
+          "percentage_of_group": 11.11,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X26"
+          ]
+        },
+        {
+          "quirk": "evaporation and drying",
+          "gauge_count": 1,
+          "percentage_of_group": 11.11,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X26"
+          ]
+        },
+        {
+          "quirk": "gas or medium dependence",
+          "gauge_count": 1,
+          "percentage_of_group": 11.11,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P12"
+          ]
+        },
+        {
+          "quirk": "gravity-related behaviour",
+          "gauge_count": 1,
+          "percentage_of_group": 11.11,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P01"
+          ]
+        },
+        {
+          "quirk": "illumination and backlighting",
+          "gauge_count": 1,
+          "percentage_of_group": 11.11,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X12"
+          ]
+        },
+        {
+          "quirk": "immersion, stem-conduction and contact error",
+          "gauge_count": 1,
+          "percentage_of_group": 11.11,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P21"
+          ]
+        },
+        {
+          "quirk": "manual adjustment and setup",
+          "gauge_count": 1,
+          "percentage_of_group": 11.11,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P02"
+          ]
+        },
+        {
+          "quirk": "manual reset, tare and caging",
+          "gauge_count": 1,
+          "percentage_of_group": 11.11,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P22"
+          ]
+        },
+        {
+          "quirk": "orientation sensitivity",
+          "gauge_count": 1,
+          "percentage_of_group": 11.11,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P12"
+          ]
+        },
+        {
+          "quirk": "qualitative or non-precision indication",
+          "gauge_count": 1,
+          "percentage_of_group": 11.11,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X26"
+          ]
+        },
+        {
+          "quirk": "readout masking and narrow-window transitions",
+          "gauge_count": 1,
+          "percentage_of_group": 11.11,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P21"
+          ]
+        },
+        {
+          "quirk": "reference bugs and set markers",
+          "gauge_count": 1,
+          "percentage_of_group": 11.11,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P22"
+          ]
+        },
+        {
+          "quirk": "ringing and oscillation",
+          "gauge_count": 1,
+          "percentage_of_group": 11.11,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P01"
+          ]
+        },
+        {
+          "quirk": "scale direction and interpretation",
+          "gauge_count": 1,
+          "percentage_of_group": 11.11,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "P22"
+          ]
+        },
+        {
+          "quirk": "sensor plumbing faults",
+          "gauge_count": 1,
+          "percentage_of_group": 11.11,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X12"
+          ]
+        },
+        {
+          "quirk": "settling and return behaviour",
+          "gauge_count": 1,
+          "percentage_of_group": 11.11,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P01"
+          ]
+        },
+        {
+          "quirk": "shadows, depth and occlusion",
+          "gauge_count": 1,
+          "percentage_of_group": 11.11,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P17"
+          ]
+        },
+        {
+          "quirk": "stiction and sticking",
+          "gauge_count": 1,
+          "percentage_of_group": 11.11,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P22"
+          ]
+        },
+        {
+          "quirk": "tapping",
+          "gauge_count": 1,
+          "percentage_of_group": 11.11,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P02"
+          ]
+        }
+      ]
+    },
+    {
+      "gauge_group": "chart_or_trace_recorder",
+      "name": "Chart or trace recorder",
+      "description": "A pen, stylus, light beam or scratch records a changing value on a moving medium.",
+      "gauge_count": 6,
+      "supporting_quirk_count": 35,
+      "supporting_quirks": [
+        {
+          "quirk": "chart and paper transport",
+          "gauge_count": 5,
+          "percentage_of_group": 83.33,
+          "source_statement_count": 6,
+          "gauge_ids": [
+            "P42",
+            "X30",
+            "X31",
+            "X32",
+            "X35"
+          ]
+        },
+        {
+          "quirk": "pen, stylus and trace artefacts",
+          "gauge_count": 5,
+          "percentage_of_group": 83.33,
+          "source_statement_count": 11,
+          "gauge_ids": [
+            "P42",
+            "X30",
+            "X31",
+            "X32",
+            "X35"
+          ]
+        },
+        {
+          "quirk": "clock drift, timing and seams",
+          "gauge_count": 4,
+          "percentage_of_group": 66.67,
+          "source_statement_count": 6,
+          "gauge_ids": [
+            "P42",
+            "X30",
+            "X31",
+            "X35"
+          ]
+        },
+        {
+          "quirk": "recording alignment and channel offset",
+          "gauge_count": 4,
+          "percentage_of_group": 66.67,
+          "source_statement_count": 6,
+          "gauge_ids": [
+            "P42",
+            "X31",
+            "X32",
+            "X35"
+          ]
+        },
+        {
+          "quirk": "drift and long-term stability",
+          "gauge_count": 3,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 4,
+          "gauge_ids": [
+            "P42",
+            "X30",
+            "X31"
+          ]
+        },
+        {
+          "quirk": "channel mismatch and unequal dynamics",
+          "gauge_count": 2,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "X32",
+            "X35"
+          ]
+        },
+        {
+          "quirk": "damping",
+          "gauge_count": 2,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "X30",
+            "X31"
+          ]
+        },
+        {
+          "quirk": "discrete, quantised or stepwise motion",
+          "gauge_count": 2,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "P30",
+            "X32"
+          ]
+        },
+        {
+          "quirk": "evaporation and drying",
+          "gauge_count": 2,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "P30",
+            "P42"
+          ]
+        },
+        {
+          "quirk": "friction and drag",
+          "gauge_count": 2,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "P42",
+            "X30"
+          ]
+        },
+        {
+          "quirk": "operator procedure and ritual",
+          "gauge_count": 2,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "X32",
+            "X35"
+          ]
+        },
+        {
+          "quirk": "response speed, lag and delay",
+          "gauge_count": 2,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "X30",
+            "X35"
+          ]
+        },
+        {
+          "quirk": "tamper evidence and official seals",
+          "gauge_count": 2,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "X32",
+            "X35"
+          ]
+        },
+        {
+          "quirk": "backlash and lash",
+          "gauge_count": 1,
+          "percentage_of_group": 16.67,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P42"
+          ]
+        },
+        {
+          "quirk": "blockage and restricted passages",
+          "gauge_count": 1,
+          "percentage_of_group": 16.67,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P30"
+          ]
+        },
+        {
+          "quirk": "bounce",
+          "gauge_count": 1,
+          "percentage_of_group": 16.67,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P30"
+          ]
+        },
+        {
+          "quirk": "cable, belt, tape and roller errors",
+          "gauge_count": 1,
+          "percentage_of_group": 16.67,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X30"
+          ]
+        },
+        {
+          "quirk": "calibration, correction and compensation",
+          "gauge_count": 1,
+          "percentage_of_group": 16.67,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X30"
+          ]
+        },
+        {
+          "quirk": "chatter",
+          "gauge_count": 1,
+          "percentage_of_group": 16.67,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X35"
+          ]
+        },
+        {
+          "quirk": "contamination, dirt and fouling",
+          "gauge_count": 1,
+          "percentage_of_group": 16.67,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X30"
+          ]
+        },
+        {
+          "quirk": "creep",
+          "gauge_count": 1,
+          "percentage_of_group": 16.67,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P42"
+          ]
+        },
+        {
+          "quirk": "dead time, missed events and duplicate counts",
+          "gauge_count": 1,
+          "percentage_of_group": 16.67,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "P30"
+          ]
+        },
+        {
+          "quirk": "electrical or mechanical remote coupling",
+          "gauge_count": 1,
+          "percentage_of_group": 16.67,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X30"
+          ]
+        },
+        {
+          "quirk": "end stops, pegging and overflow",
+          "gauge_count": 1,
+          "percentage_of_group": 16.67,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X30"
+          ]
+        },
+        {
+          "quirk": "float and buoyancy behaviour",
+          "gauge_count": 1,
+          "percentage_of_group": 16.67,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X30"
+          ]
+        },
+        {
+          "quirk": "fluid surge, slosh and foam",
+          "gauge_count": 1,
+          "percentage_of_group": 16.67,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X30"
+          ]
+        },
+        {
+          "quirk": "inertia and coasting",
+          "gauge_count": 1,
+          "percentage_of_group": 16.67,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X31"
+          ]
+        },
+        {
+          "quirk": "input slip and wheel-slip error",
+          "gauge_count": 1,
+          "percentage_of_group": 16.67,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X32"
+          ]
+        },
+        {
+          "quirk": "mechanical noise and cadence",
+          "gauge_count": 1,
+          "percentage_of_group": 16.67,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X32"
+          ]
+        },
+        {
+          "quirk": "range switching and multiple ranges",
+          "gauge_count": 1,
+          "percentage_of_group": 16.67,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P42"
+          ]
+        },
+        {
+          "quirk": "ringing and oscillation",
+          "gauge_count": 1,
+          "percentage_of_group": 16.67,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X31"
+          ]
+        },
+        {
+          "quirk": "scale markings, zones and legends",
+          "gauge_count": 1,
+          "percentage_of_group": 16.67,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P42"
+          ]
+        },
+        {
+          "quirk": "thresholds, deadband and switching points",
+          "gauge_count": 1,
+          "percentage_of_group": 16.67,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P42"
+          ]
+        },
+        {
+          "quirk": "wind, splash and collection error",
+          "gauge_count": 1,
+          "percentage_of_group": 16.67,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "P30"
+          ]
+        },
+        {
+          "quirk": "zero drift and offset",
+          "gauge_count": 1,
+          "percentage_of_group": 16.67,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X30"
+          ]
+        }
+      ]
+    },
+    {
+      "gauge_group": "dot_matrix_or_cell_array",
+      "name": "Dot-matrix or cell array",
+      "description": "An addressable matrix of dots or cells forms characters, symbols or fields.",
+      "gauge_count": 5,
+      "supporting_quirk_count": 27,
+      "supporting_quirks": [
+        {
+          "quirk": "colour variation and colour shift",
+          "gauge_count": 3,
+          "percentage_of_group": 60.0,
+          "source_statement_count": 4,
+          "gauge_ids": [
+            "D21",
+            "D22",
+            "D29"
+          ]
+        },
+        {
+          "quirk": "viewing-angle dependence",
+          "gauge_count": 3,
+          "percentage_of_group": 60.0,
+          "source_statement_count": 5,
+          "gauge_ids": [
+            "D21",
+            "D22",
+            "D29"
+          ]
+        },
+        {
+          "quirk": "bistable display memory and update",
+          "gauge_count": 2,
+          "percentage_of_group": 40.0,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "D17",
+            "D22"
+          ]
+        },
+        {
+          "quirk": "latching and state-retention behaviour",
+          "gauge_count": 2,
+          "percentage_of_group": 40.0,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "D17",
+            "D22"
+          ]
+        },
+        {
+          "quirk": "thermal behaviour and temperature effects",
+          "gauge_count": 2,
+          "percentage_of_group": 40.0,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "D21",
+            "D22"
+          ]
+        },
+        {
+          "quirk": "bloom, halo and penumbra",
+          "gauge_count": 1,
+          "percentage_of_group": 20.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D17"
+          ]
+        },
+        {
+          "quirk": "brightness and contrast variation",
+          "gauge_count": 1,
+          "percentage_of_group": 20.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D16"
+          ]
+        },
+        {
+          "quirk": "brightness nonuniformity and gradients",
+          "gauge_count": 1,
+          "percentage_of_group": 20.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D21"
+          ]
+        },
+        {
+          "quirk": "burn-in and permanent image wear",
+          "gauge_count": 1,
+          "percentage_of_group": 20.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D17"
+          ]
+        },
+        {
+          "quirk": "calibration, correction and compensation",
+          "gauge_count": 1,
+          "percentage_of_group": 20.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D21"
+          ]
+        },
+        {
+          "quirk": "case, lens and enclosure deformation",
+          "gauge_count": 1,
+          "percentage_of_group": 20.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D22"
+          ]
+        },
+        {
+          "quirk": "display geometry and motion mode",
+          "gauge_count": 1,
+          "percentage_of_group": 20.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D17"
+          ]
+        },
+        {
+          "quirk": "electrical hum, buzz and whine",
+          "gauge_count": 1,
+          "percentage_of_group": 20.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D17"
+          ]
+        },
+        {
+          "quirk": "flicker, scan and PWM artefacts",
+          "gauge_count": 1,
+          "percentage_of_group": 20.0,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "D16"
+          ]
+        },
+        {
+          "quirk": "ghosting, crosstalk and light leakage",
+          "gauge_count": 1,
+          "percentage_of_group": 20.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D21"
+          ]
+        },
+        {
+          "quirk": "glyph, segment and aperture geometry",
+          "gauge_count": 1,
+          "percentage_of_group": 20.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D16"
+          ]
+        },
+        {
+          "quirk": "meniscus behaviour",
+          "gauge_count": 1,
+          "percentage_of_group": 20.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D29"
+          ]
+        },
+        {
+          "quirk": "persistence and afterglow",
+          "gauge_count": 1,
+          "percentage_of_group": 20.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D17"
+          ]
+        },
+        {
+          "quirk": "phosphor behaviour and ageing",
+          "gauge_count": 1,
+          "percentage_of_group": 20.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D17"
+          ]
+        },
+        {
+          "quirk": "power-up and self-test behaviour",
+          "gauge_count": 1,
+          "percentage_of_group": 20.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D16"
+          ]
+        },
+        {
+          "quirk": "random, statistical and batch variation",
+          "gauge_count": 1,
+          "percentage_of_group": 20.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D16"
+          ]
+        },
+        {
+          "quirk": "refresh, erase and update artefacts",
+          "gauge_count": 1,
+          "percentage_of_group": 20.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D17"
+          ]
+        },
+        {
+          "quirk": "response speed, lag and delay",
+          "gauge_count": 1,
+          "percentage_of_group": 20.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D21"
+          ]
+        },
+        {
+          "quirk": "scope or implementation boundary",
+          "gauge_count": 1,
+          "percentage_of_group": 20.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D29"
+          ]
+        },
+        {
+          "quirk": "segment, pixel, lamp or flag failure",
+          "gauge_count": 1,
+          "percentage_of_group": 20.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D16"
+          ]
+        },
+        {
+          "quirk": "shared-current or shared-supply dimming",
+          "gauge_count": 1,
+          "percentage_of_group": 20.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D16"
+          ]
+        },
+        {
+          "quirk": "stiction and sticking",
+          "gauge_count": 1,
+          "percentage_of_group": 20.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D29"
+          ]
+        }
+      ]
+    },
+    {
+      "gauge_group": "moving_tape_ribbon_or_map",
+      "name": "Moving tape, ribbon or map",
+      "description": "A strip, band, tape or printed map travels through a window or past a fixed index.",
+      "gauge_count": 5,
+      "supporting_quirk_count": 29,
+      "supporting_quirks": [
+        {
+          "quirk": "cable, belt, tape and roller errors",
+          "gauge_count": 5,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 10,
+          "gauge_ids": [
+            "E23",
+            "P18",
+            "X20",
+            "X24",
+            "X28"
+          ]
+        },
+        {
+          "quirk": "display geometry and motion mode",
+          "gauge_count": 3,
+          "percentage_of_group": 60.0,
+          "source_statement_count": 4,
+          "gauge_ids": [
+            "E23",
+            "X24",
+            "X28"
+          ]
+        },
+        {
+          "quirk": "readout masking and narrow-window transitions",
+          "gauge_count": 3,
+          "percentage_of_group": 60.0,
+          "source_statement_count": 4,
+          "gauge_ids": [
+            "E23",
+            "X20",
+            "X24"
+          ]
+        },
+        {
+          "quirk": "wraparound and multi-turn indication",
+          "gauge_count": 3,
+          "percentage_of_group": 60.0,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "E23",
+            "X20",
+            "X24"
+          ]
+        },
+        {
+          "quirk": "end stops, pegging and overflow",
+          "gauge_count": 2,
+          "percentage_of_group": 40.0,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "E23",
+            "X20"
+          ]
+        },
+        {
+          "quirk": "illumination and backlighting",
+          "gauge_count": 2,
+          "percentage_of_group": 40.0,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "X20",
+            "X28"
+          ]
+        },
+        {
+          "quirk": "mechanical wear, stretch and permanent set",
+          "gauge_count": 2,
+          "percentage_of_group": 40.0,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "E23",
+            "P18"
+          ]
+        },
+        {
+          "quirk": "operator procedure and ritual",
+          "gauge_count": 2,
+          "percentage_of_group": 40.0,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "P18",
+            "X28"
+          ]
+        },
+        {
+          "quirk": "stiction and sticking",
+          "gauge_count": 2,
+          "percentage_of_group": 40.0,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "E23",
+            "P18"
+          ]
+        },
+        {
+          "quirk": "bounce",
+          "gauge_count": 1,
+          "percentage_of_group": 20.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X20"
+          ]
+        },
+        {
+          "quirk": "brightness nonuniformity and gradients",
+          "gauge_count": 1,
+          "percentage_of_group": 20.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X20"
+          ]
+        },
+        {
+          "quirk": "calibration, correction and compensation",
+          "gauge_count": 1,
+          "percentage_of_group": 20.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P18"
+          ]
+        },
+        {
+          "quirk": "carry, rollover and digit transition",
+          "gauge_count": 1,
+          "percentage_of_group": 20.0,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "X20"
+          ]
+        },
+        {
+          "quirk": "colour variation and colour shift",
+          "gauge_count": 1,
+          "percentage_of_group": 20.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X20"
+          ]
+        },
+        {
+          "quirk": "discrete, quantised or stepwise motion",
+          "gauge_count": 1,
+          "percentage_of_group": 20.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P18"
+          ]
+        },
+        {
+          "quirk": "drift and long-term stability",
+          "gauge_count": 1,
+          "percentage_of_group": 20.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X28"
+          ]
+        },
+        {
+          "quirk": "electrical or mechanical remote coupling",
+          "gauge_count": 1,
+          "percentage_of_group": 20.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P18"
+          ]
+        },
+        {
+          "quirk": "float and buoyancy behaviour",
+          "gauge_count": 1,
+          "percentage_of_group": 20.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P18"
+          ]
+        },
+        {
+          "quirk": "fluid surge, slosh and foam",
+          "gauge_count": 1,
+          "percentage_of_group": 20.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P18"
+          ]
+        },
+        {
+          "quirk": "flutter, jitter, tremor and quiver",
+          "gauge_count": 1,
+          "percentage_of_group": 20.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X20"
+          ]
+        },
+        {
+          "quirk": "friction and drag",
+          "gauge_count": 1,
+          "percentage_of_group": 20.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P18"
+          ]
+        },
+        {
+          "quirk": "human-factor ambiguity and misreading",
+          "gauge_count": 1,
+          "percentage_of_group": 20.0,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "X24"
+          ]
+        },
+        {
+          "quirk": "manual reset, tare and caging",
+          "gauge_count": 1,
+          "percentage_of_group": 20.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X28"
+          ]
+        },
+        {
+          "quirk": "map, dead-reckoning and position drift",
+          "gauge_count": 1,
+          "percentage_of_group": 20.0,
+          "source_statement_count": 5,
+          "gauge_ids": [
+            "X28"
+          ]
+        },
+        {
+          "quirk": "optical distortion and refraction",
+          "gauge_count": 1,
+          "percentage_of_group": 20.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X28"
+          ]
+        },
+        {
+          "quirk": "overshoot",
+          "gauge_count": 1,
+          "percentage_of_group": 20.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X24"
+          ]
+        },
+        {
+          "quirk": "parallax",
+          "gauge_count": 1,
+          "percentage_of_group": 20.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X20"
+          ]
+        },
+        {
+          "quirk": "rate limiting and motion limits",
+          "gauge_count": 1,
+          "percentage_of_group": 20.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X24"
+          ]
+        },
+        {
+          "quirk": "shadows, depth and occlusion",
+          "gauge_count": 1,
+          "percentage_of_group": 20.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E23"
+          ]
+        }
+      ]
+    },
+    {
+      "gauge_group": "rotating_scan_or_strobe",
+      "name": "Rotating scan or strobe",
+      "description": "Timing is converted to apparent position by a rotating scan, flash, glow point or strobe.",
+      "gauge_count": 4,
+      "supporting_quirk_count": 19,
+      "supporting_quirks": [
+        {
+          "quirk": "persistence and afterglow",
+          "gauge_count": 4,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 4,
+          "gauge_ids": [
+            "D09",
+            "P43",
+            "X14",
+            "X15"
+          ]
+        },
+        {
+          "quirk": "latching and state-retention behaviour",
+          "gauge_count": 2,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "D09",
+            "X15"
+          ]
+        },
+        {
+          "quirk": "mechanical noise and cadence",
+          "gauge_count": 2,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "X14",
+            "X15"
+          ]
+        },
+        {
+          "quirk": "multiple echoes, interference and remapped scale",
+          "gauge_count": 2,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 4,
+          "gauge_ids": [
+            "X14",
+            "X15"
+          ]
+        },
+        {
+          "quirk": "periodic marker and rotating-scan behaviour",
+          "gauge_count": 2,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "X14",
+            "X15"
+          ]
+        },
+        {
+          "quirk": "aliasing, harmonics and false solutions",
+          "gauge_count": 1,
+          "percentage_of_group": 25.0,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "P43"
+          ]
+        },
+        {
+          "quirk": "ambient-light readability",
+          "gauge_count": 1,
+          "percentage_of_group": 25.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P43"
+          ]
+        },
+        {
+          "quirk": "bloom, halo and penumbra",
+          "gauge_count": 1,
+          "percentage_of_group": 25.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X15"
+          ]
+        },
+        {
+          "quirk": "calibration, correction and compensation",
+          "gauge_count": 1,
+          "percentage_of_group": 25.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X14"
+          ]
+        },
+        {
+          "quirk": "colour variation and colour shift",
+          "gauge_count": 1,
+          "percentage_of_group": 25.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X15"
+          ]
+        },
+        {
+          "quirk": "dead time, missed events and duplicate counts",
+          "gauge_count": 1,
+          "percentage_of_group": 25.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D09"
+          ]
+        },
+        {
+          "quirk": "discrete, quantised or stepwise motion",
+          "gauge_count": 1,
+          "percentage_of_group": 25.0,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "D09"
+          ]
+        },
+        {
+          "quirk": "drift and long-term stability",
+          "gauge_count": 1,
+          "percentage_of_group": 25.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P43"
+          ]
+        },
+        {
+          "quirk": "flicker, scan and PWM artefacts",
+          "gauge_count": 1,
+          "percentage_of_group": 25.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X15"
+          ]
+        },
+        {
+          "quirk": "gas-discharge instability and dropout",
+          "gauge_count": 1,
+          "percentage_of_group": 25.0,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "D09"
+          ]
+        },
+        {
+          "quirk": "human-factor ambiguity and misreading",
+          "gauge_count": 1,
+          "percentage_of_group": 25.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P43"
+          ]
+        },
+        {
+          "quirk": "phase, synchronism and rotation direction",
+          "gauge_count": 1,
+          "percentage_of_group": 25.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P43"
+          ]
+        },
+        {
+          "quirk": "scale direction and interpretation",
+          "gauge_count": 1,
+          "percentage_of_group": 25.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X15"
+          ]
+        },
+        {
+          "quirk": "thresholds, deadband and switching points",
+          "gauge_count": 1,
+          "percentage_of_group": 25.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X14"
+          ]
+        }
+      ]
+    },
+    {
+      "gauge_group": "bar_or_wedge_display",
+      "name": "Bar, column, wedge or moving-dot display",
+      "description": "Magnitude is shown as a continuous or discrete bar, wedge, column or advancing dot.",
+      "gauge_count": 3,
+      "supporting_quirk_count": 22,
+      "supporting_quirks": [
+        {
+          "quirk": "brightness and contrast variation",
+          "gauge_count": 2,
+          "percentage_of_group": 66.67,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "D04",
+            "D10"
+          ]
+        },
+        {
+          "quirk": "display geometry and motion mode",
+          "gauge_count": 2,
+          "percentage_of_group": 66.67,
+          "source_statement_count": 4,
+          "gauge_ids": [
+            "D04",
+            "D15"
+          ]
+        },
+        {
+          "quirk": "scale linearity and nonlinearity",
+          "gauge_count": 2,
+          "percentage_of_group": 66.67,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "D10",
+            "D15"
+          ]
+        },
+        {
+          "quirk": "ambient-light readability",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D04"
+          ]
+        },
+        {
+          "quirk": "burn-in and permanent image wear",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D04"
+          ]
+        },
+        {
+          "quirk": "chatter",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D15"
+          ]
+        },
+        {
+          "quirk": "colour variation and colour shift",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D15"
+          ]
+        },
+        {
+          "quirk": "construction tolerances and unit variation",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D10"
+          ]
+        },
+        {
+          "quirk": "discrete, quantised or stepwise motion",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D15"
+          ]
+        },
+        {
+          "quirk": "display overlap and adjacent indication",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D04"
+          ]
+        },
+        {
+          "quirk": "flutter, jitter, tremor and quiver",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D10"
+          ]
+        },
+        {
+          "quirk": "gas-discharge instability and dropout",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D10"
+          ]
+        },
+        {
+          "quirk": "gas-discharge striking and ignition",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D10"
+          ]
+        },
+        {
+          "quirk": "hysteresis",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D10"
+          ]
+        },
+        {
+          "quirk": "logarithmic scale",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D15"
+          ]
+        },
+        {
+          "quirk": "overload, saturation and damage",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D04"
+          ]
+        },
+        {
+          "quirk": "phosphor behaviour and ageing",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "D04"
+          ]
+        },
+        {
+          "quirk": "segment, pixel, lamp or flag failure",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D15"
+          ]
+        },
+        {
+          "quirk": "shared-current or shared-supply dimming",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D15"
+          ]
+        },
+        {
+          "quirk": "thermal behaviour and temperature effects",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D15"
+          ]
+        },
+        {
+          "quirk": "warm-up behaviour",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D04"
+          ]
+        },
+        {
+          "quirk": "witness, peak-hold and retained extrema",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D15"
+          ]
+        }
+      ]
+    },
+    {
+      "gauge_group": "colour_or_material_state",
+      "name": "Colour or material-state indicator",
+      "description": "Colour, opacity, scattering, phase or chemical state changes to indicate value or history.",
+      "gauge_count": 3,
+      "supporting_quirk_count": 20,
+      "supporting_quirks": [
+        {
+          "quirk": "ambient-light readability",
+          "gauge_count": 3,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "D18",
+            "D30",
+            "P25"
+          ]
+        },
+        {
+          "quirk": "colour variation and colour shift",
+          "gauge_count": 3,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 4,
+          "gauge_ids": [
+            "D18",
+            "D30",
+            "P25"
+          ]
+        },
+        {
+          "quirk": "irreversible or one-way response",
+          "gauge_count": 2,
+          "percentage_of_group": 66.67,
+          "source_statement_count": 4,
+          "gauge_ids": [
+            "D30",
+            "P25"
+          ]
+        },
+        {
+          "quirk": "thermal behaviour and temperature effects",
+          "gauge_count": 2,
+          "percentage_of_group": 66.67,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "D18",
+            "P25"
+          ]
+        },
+        {
+          "quirk": "viewing-angle dependence",
+          "gauge_count": 2,
+          "percentage_of_group": 66.67,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "D18",
+            "P25"
+          ]
+        },
+        {
+          "quirk": "witness, peak-hold and retained extrema",
+          "gauge_count": 2,
+          "percentage_of_group": 66.67,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "D30",
+            "P25"
+          ]
+        },
+        {
+          "quirk": "ageing and material degradation",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P25"
+          ]
+        },
+        {
+          "quirk": "brightness and contrast variation",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "D18"
+          ]
+        },
+        {
+          "quirk": "chemical diffusion and reaction front",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "D30"
+          ]
+        },
+        {
+          "quirk": "discrete, quantised or stepwise motion",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P25"
+          ]
+        },
+        {
+          "quirk": "display geometry and motion mode",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D18"
+          ]
+        },
+        {
+          "quirk": "display overlap and adjacent indication",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P25"
+          ]
+        },
+        {
+          "quirk": "electrical hum, buzz and whine",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D18"
+          ]
+        },
+        {
+          "quirk": "humidity and moisture sensitivity",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D30"
+          ]
+        },
+        {
+          "quirk": "hysteresis",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P25"
+          ]
+        },
+        {
+          "quirk": "immersion, stem-conduction and contact error",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P25"
+          ]
+        },
+        {
+          "quirk": "manual reset, tare and caging",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D30"
+          ]
+        },
+        {
+          "quirk": "random, statistical and batch variation",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D30"
+          ]
+        },
+        {
+          "quirk": "response speed, lag and delay",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P25"
+          ]
+        },
+        {
+          "quirk": "thresholds, deadband and switching points",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D30"
+          ]
+        }
+      ]
+    },
+    {
+      "gauge_group": "floating_indicator",
+      "name": "Floating indicator",
+      "description": "A buoyant float, bob or bulb directly indicates the value by its position.",
+      "gauge_count": 3,
+      "supporting_quirk_count": 22,
+      "supporting_quirks": [
+        {
+          "quirk": "float and buoyancy behaviour",
+          "gauge_count": 3,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 5,
+          "gauge_ids": [
+            "P20",
+            "P28",
+            "P29"
+          ]
+        },
+        {
+          "quirk": "thermal behaviour and temperature effects",
+          "gauge_count": 3,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "P20",
+            "P28",
+            "P29"
+          ]
+        },
+        {
+          "quirk": "bounce",
+          "gauge_count": 2,
+          "percentage_of_group": 66.67,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "P20",
+            "P28"
+          ]
+        },
+        {
+          "quirk": "bubble, void and separated-column behaviour",
+          "gauge_count": 2,
+          "percentage_of_group": 66.67,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "P28",
+            "P29"
+          ]
+        },
+        {
+          "quirk": "calibration, correction and compensation",
+          "gauge_count": 2,
+          "percentage_of_group": 66.67,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "P20",
+            "P28"
+          ]
+        },
+        {
+          "quirk": "density and viscosity dependence",
+          "gauge_count": 2,
+          "percentage_of_group": 66.67,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "P20",
+            "P29"
+          ]
+        },
+        {
+          "quirk": "scale direction and interpretation",
+          "gauge_count": 2,
+          "percentage_of_group": 66.67,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "P20",
+            "P28"
+          ]
+        },
+        {
+          "quirk": "stiction and sticking",
+          "gauge_count": 2,
+          "percentage_of_group": 66.67,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "P20",
+            "P28"
+          ]
+        },
+        {
+          "quirk": "ambient-pressure and altitude sensitivity",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P20"
+          ]
+        },
+        {
+          "quirk": "chatter",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P20"
+          ]
+        },
+        {
+          "quirk": "construction tolerances and unit variation",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P29"
+          ]
+        },
+        {
+          "quirk": "contamination, dirt and fouling",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P20"
+          ]
+        },
+        {
+          "quirk": "damping",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P28"
+          ]
+        },
+        {
+          "quirk": "discrete, quantised or stepwise motion",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "P29"
+          ]
+        },
+        {
+          "quirk": "human-factor ambiguity and misreading",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P29"
+          ]
+        },
+        {
+          "quirk": "meniscus behaviour",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P28"
+          ]
+        },
+        {
+          "quirk": "orientation sensitivity",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P20"
+          ]
+        },
+        {
+          "quirk": "pressure pulsation and pneumatic-line dynamics",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P20"
+          ]
+        },
+        {
+          "quirk": "qualitative or non-precision indication",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P29"
+          ]
+        },
+        {
+          "quirk": "response speed, lag and delay",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P29"
+          ]
+        },
+        {
+          "quirk": "scale linearity and nonlinearity",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P20"
+          ]
+        },
+        {
+          "quirk": "settling and return behaviour",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P28"
+          ]
+        }
+      ]
+    },
+    {
+      "gauge_group": "indicator_lamp",
+      "name": "Indicator lamp or illuminated legend",
+      "description": "A lamp, lens or illuminated legend indicates a state or coarse condition.",
+      "gauge_count": 3,
+      "supporting_quirk_count": 18,
+      "supporting_quirks": [
+        {
+          "quirk": "ageing and material degradation",
+          "gauge_count": 3,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "D01",
+            "D02",
+            "X29"
+          ]
+        },
+        {
+          "quirk": "segment, pixel, lamp or flag failure",
+          "gauge_count": 3,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "D01",
+            "D02",
+            "X29"
+          ]
+        },
+        {
+          "quirk": "brightness and contrast variation",
+          "gauge_count": 2,
+          "percentage_of_group": 66.67,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "D01",
+            "X29"
+          ]
+        },
+        {
+          "quirk": "brightness nonuniformity and gradients",
+          "gauge_count": 2,
+          "percentage_of_group": 66.67,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "D01",
+            "D02"
+          ]
+        },
+        {
+          "quirk": "colour variation and colour shift",
+          "gauge_count": 2,
+          "percentage_of_group": 66.67,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "D01",
+            "X29"
+          ]
+        },
+        {
+          "quirk": "ghosting, crosstalk and light leakage",
+          "gauge_count": 2,
+          "percentage_of_group": 66.67,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "D02",
+            "X29"
+          ]
+        },
+        {
+          "quirk": "supply-voltage sensitivity",
+          "gauge_count": 2,
+          "percentage_of_group": 66.67,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "D01",
+            "X29"
+          ]
+        },
+        {
+          "quirk": "warm-up behaviour",
+          "gauge_count": 2,
+          "percentage_of_group": 66.67,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "D01",
+            "X29"
+          ]
+        },
+        {
+          "quirk": "bloom, halo and penumbra",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D01"
+          ]
+        },
+        {
+          "quirk": "cool-down, heat soak and continued motion",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D01"
+          ]
+        },
+        {
+          "quirk": "electrical contacts, grounds and wiring",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X29"
+          ]
+        },
+        {
+          "quirk": "filament behaviour and failure",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D01"
+          ]
+        },
+        {
+          "quirk": "flicker, scan and PWM artefacts",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X29"
+          ]
+        },
+        {
+          "quirk": "illumination and backlighting",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "D02"
+          ]
+        },
+        {
+          "quirk": "power-up and self-test behaviour",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X29"
+          ]
+        },
+        {
+          "quirk": "random, statistical and batch variation",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D01"
+          ]
+        },
+        {
+          "quirk": "shared-current or shared-supply dimming",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D01"
+          ]
+        },
+        {
+          "quirk": "thermal behaviour and temperature effects",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D01"
+          ]
+        }
+      ]
+    },
+    {
+      "gauge_group": "mechanical_flag_or_shutter",
+      "name": "Mechanical flag, shutter or semaphore",
+      "description": "A flag, shutter, vane, striped drum or semaphore changes between visible states.",
+      "gauge_count": 3,
+      "supporting_quirk_count": 17,
+      "supporting_quirks": [
+        {
+          "quirk": "snap action",
+          "gauge_count": 3,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "E18",
+            "E26",
+            "X23"
+          ]
+        },
+        {
+          "quirk": "bounce",
+          "gauge_count": 2,
+          "percentage_of_group": 66.67,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "E18",
+            "X23"
+          ]
+        },
+        {
+          "quirk": "contamination, dirt and fouling",
+          "gauge_count": 2,
+          "percentage_of_group": 66.67,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "E18",
+            "X23"
+          ]
+        },
+        {
+          "quirk": "display geometry and motion mode",
+          "gauge_count": 2,
+          "percentage_of_group": 66.67,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "E18",
+            "E26"
+          ]
+        },
+        {
+          "quirk": "chatter",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E26"
+          ]
+        },
+        {
+          "quirk": "discrete, quantised or stepwise motion",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E26"
+          ]
+        },
+        {
+          "quirk": "electrical contacts, grounds and wiring",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X23"
+          ]
+        },
+        {
+          "quirk": "gravity-related behaviour",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X23"
+          ]
+        },
+        {
+          "quirk": "invalid, out-of-range and warning flags",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E18"
+          ]
+        },
+        {
+          "quirk": "latching and state-retention behaviour",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E18"
+          ]
+        },
+        {
+          "quirk": "mechanical noise and cadence",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X23"
+          ]
+        },
+        {
+          "quirk": "power-off and power-loss behaviour",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E18"
+          ]
+        },
+        {
+          "quirk": "safety, guarding and fail-safe behaviour",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X23"
+          ]
+        },
+        {
+          "quirk": "scale markings, zones and legends",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "X23"
+          ]
+        },
+        {
+          "quirk": "segment, pixel, lamp or flag failure",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E18"
+          ]
+        },
+        {
+          "quirk": "settling and return behaviour",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X23"
+          ]
+        },
+        {
+          "quirk": "thresholds, deadband and switching points",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "E26"
+          ]
+        }
+      ]
+    },
+    {
+      "gauge_group": "rolling_drum_or_counter",
+      "name": "Rolling drum or counter",
+      "description": "Numeral drums, cyclometer wheels or register wheels rotate to form a count or value.",
+      "gauge_count": 3,
+      "supporting_quirk_count": 20,
+      "supporting_quirks": [
+        {
+          "quirk": "backlash and lash",
+          "gauge_count": 3,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "E11",
+            "E24",
+            "P41"
+          ]
+        },
+        {
+          "quirk": "carry, rollover and digit transition",
+          "gauge_count": 2,
+          "percentage_of_group": 66.67,
+          "source_statement_count": 6,
+          "gauge_ids": [
+            "E24",
+            "P41"
+          ]
+        },
+        {
+          "quirk": "inertia and coasting",
+          "gauge_count": 2,
+          "percentage_of_group": 66.67,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "E11",
+            "E24"
+          ]
+        },
+        {
+          "quirk": "creep",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E11"
+          ]
+        },
+        {
+          "quirk": "damping",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E11"
+          ]
+        },
+        {
+          "quirk": "electrical hum, buzz and whine",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E11"
+          ]
+        },
+        {
+          "quirk": "flutter, jitter, tremor and quiver",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P41"
+          ]
+        },
+        {
+          "quirk": "manual reset, tare and caging",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P41"
+          ]
+        },
+        {
+          "quirk": "mechanical wear, stretch and permanent set",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P41"
+          ]
+        },
+        {
+          "quirk": "movement torque and sensitivity",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E11"
+          ]
+        },
+        {
+          "quirk": "periodic marker and rotating-scan behaviour",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E11"
+          ]
+        },
+        {
+          "quirk": "power-off and power-loss behaviour",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E11"
+          ]
+        },
+        {
+          "quirk": "readout masking and narrow-window transitions",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E24"
+          ]
+        },
+        {
+          "quirk": "reversal and direction-change error",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E11"
+          ]
+        },
+        {
+          "quirk": "revolution counting and coarse/fine readout",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P41"
+          ]
+        },
+        {
+          "quirk": "scale direction and interpretation",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P41"
+          ]
+        },
+        {
+          "quirk": "settling and return behaviour",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E11"
+          ]
+        },
+        {
+          "quirk": "snap action",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E24"
+          ]
+        },
+        {
+          "quirk": "stiction and sticking",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P41"
+          ]
+        },
+        {
+          "quirk": "tamper evidence and official seals",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P41"
+          ]
+        }
+      ]
+    },
+    {
+      "gauge_group": "rotating_scale_or_scene",
+      "name": "Rotating scale or scene",
+      "description": "A compass card, scale, drum, horizon or scene rotates behind a fixed reference.",
+      "gauge_count": 3,
+      "supporting_quirk_count": 22,
+      "supporting_quirks": [
+        {
+          "quirk": "invalid, out-of-range and warning flags",
+          "gauge_count": 2,
+          "percentage_of_group": 66.67,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "X06",
+            "X09"
+          ]
+        },
+        {
+          "quirk": "response speed, lag and delay",
+          "gauge_count": 2,
+          "percentage_of_group": 66.67,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "P33",
+            "X09"
+          ]
+        },
+        {
+          "quirk": "wraparound and multi-turn indication",
+          "gauge_count": 2,
+          "percentage_of_group": 66.67,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "P33",
+            "X09"
+          ]
+        },
+        {
+          "quirk": "bubble, void and separated-column behaviour",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P33"
+          ]
+        },
+        {
+          "quirk": "cross-axis and acceleration sensitivity",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P33"
+          ]
+        },
+        {
+          "quirk": "damping",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P33"
+          ]
+        },
+        {
+          "quirk": "display geometry and motion mode",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X06"
+          ]
+        },
+        {
+          "quirk": "drift and long-term stability",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X06"
+          ]
+        },
+        {
+          "quirk": "gyro erection, precession and tumble",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "X06"
+          ]
+        },
+        {
+          "quirk": "hunting and following error",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X09"
+          ]
+        },
+        {
+          "quirk": "magnetic-field, deviation and remanence effects",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "P33"
+          ]
+        },
+        {
+          "quirk": "manual reset, tare and caging",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "X06"
+          ]
+        },
+        {
+          "quirk": "multi-pointer and multi-channel interaction",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 4,
+          "gauge_ids": [
+            "X09"
+          ]
+        },
+        {
+          "quirk": "optical distortion and refraction",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P33"
+          ]
+        },
+        {
+          "quirk": "orientation sensitivity",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P33"
+          ]
+        },
+        {
+          "quirk": "overload, saturation and damage",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X06"
+          ]
+        },
+        {
+          "quirk": "overshoot",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P33"
+          ]
+        },
+        {
+          "quirk": "parallax",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P33"
+          ]
+        },
+        {
+          "quirk": "power-off and power-loss behaviour",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X09"
+          ]
+        },
+        {
+          "quirk": "settling and return behaviour",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X06"
+          ]
+        },
+        {
+          "quirk": "shadows, depth and occlusion",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X09"
+          ]
+        },
+        {
+          "quirk": "warm-up behaviour",
+          "gauge_count": 1,
+          "percentage_of_group": 33.33,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X06"
+          ]
+        }
+      ]
+    },
+    {
+      "gauge_group": "flip_element_array",
+      "name": "Flip-element array",
+      "description": "Bistable discs, dots, tiles or flags physically flip to form symbols or levels.",
+      "gauge_count": 2,
+      "supporting_quirk_count": 15,
+      "supporting_quirks": [
+        {
+          "quirk": "discrete, quantised or stepwise motion",
+          "gauge_count": 2,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "E20",
+            "P19"
+          ]
+        },
+        {
+          "quirk": "stiction and sticking",
+          "gauge_count": 2,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "E20",
+            "P19"
+          ]
+        },
+        {
+          "quirk": "viewing-angle dependence",
+          "gauge_count": 2,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "E20",
+            "P19"
+          ]
+        },
+        {
+          "quirk": "ambient-light readability",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E20"
+          ]
+        },
+        {
+          "quirk": "bistable display memory and update",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E20"
+          ]
+        },
+        {
+          "quirk": "brightness and contrast variation",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P19"
+          ]
+        },
+        {
+          "quirk": "flicker, scan and PWM artefacts",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E20"
+          ]
+        },
+        {
+          "quirk": "float and buoyancy behaviour",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "P19"
+          ]
+        },
+        {
+          "quirk": "latching and state-retention behaviour",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E20"
+          ]
+        },
+        {
+          "quirk": "magnetic-field, deviation and remanence effects",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E20"
+          ]
+        },
+        {
+          "quirk": "mechanical noise and cadence",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E20"
+          ]
+        },
+        {
+          "quirk": "power-off and power-loss behaviour",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P19"
+          ]
+        },
+        {
+          "quirk": "refresh, erase and update artefacts",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E20"
+          ]
+        },
+        {
+          "quirk": "segment, pixel, lamp or flag failure",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P19"
+          ]
+        },
+        {
+          "quirk": "shadows, depth and occlusion",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E20"
+          ]
+        }
+      ]
+    },
+    {
+      "gauge_group": "free_mass_or_bubble",
+      "name": "Free mass, leaf, ball or bubble",
+      "description": "A freely deflecting mass, leaf, ball, pendulum or bubble is itself the indicator.",
+      "gauge_count": 2,
+      "supporting_quirk_count": 14,
+      "supporting_quirks": [
+        {
+          "quirk": "scale linearity and nonlinearity",
+          "gauge_count": 2,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "P32",
+            "X34"
+          ]
+        },
+        {
+          "quirk": "bubble, void and separated-column behaviour",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "P32"
+          ]
+        },
+        {
+          "quirk": "contamination, dirt and fouling",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X34"
+          ]
+        },
+        {
+          "quirk": "cross-axis and acceleration sensitivity",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P32"
+          ]
+        },
+        {
+          "quirk": "damping",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P32"
+          ]
+        },
+        {
+          "quirk": "density and viscosity dependence",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P32"
+          ]
+        },
+        {
+          "quirk": "electrostatic leakage and charge retention",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "X34"
+          ]
+        },
+        {
+          "quirk": "friction and drag",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P32"
+          ]
+        },
+        {
+          "quirk": "gravity-related behaviour",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P32"
+          ]
+        },
+        {
+          "quirk": "humidity and moisture sensitivity",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X34"
+          ]
+        },
+        {
+          "quirk": "latching and state-retention behaviour",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X34"
+          ]
+        },
+        {
+          "quirk": "qualitative or non-precision indication",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X34"
+          ]
+        },
+        {
+          "quirk": "shock and vibration effects",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X34"
+          ]
+        },
+        {
+          "quirk": "thermal behaviour and temperature effects",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P32"
+          ]
+        }
+      ]
+    },
+    {
+      "gauge_group": "linear_pointer",
+      "name": "Linear pointer",
+      "description": "A pointer, blade, hairline or marker moves along a straight or edgewise scale.",
+      "gauge_count": 2,
+      "supporting_quirk_count": 15,
+      "supporting_quirks": [
+        {
+          "quirk": "damping",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E22"
+          ]
+        },
+        {
+          "quirk": "display geometry and motion mode",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "E22"
+          ]
+        },
+        {
+          "quirk": "drift and long-term stability",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P36"
+          ]
+        },
+        {
+          "quirk": "electrostatic leakage and charge retention",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "P36"
+          ]
+        },
+        {
+          "quirk": "focus and optical alignment",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P36"
+          ]
+        },
+        {
+          "quirk": "humidity and moisture sensitivity",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P36"
+          ]
+        },
+        {
+          "quirk": "manual reset, tare and caging",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P36"
+          ]
+        },
+        {
+          "quirk": "operator procedure and ritual",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P36"
+          ]
+        },
+        {
+          "quirk": "overload, saturation and damage",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P36"
+          ]
+        },
+        {
+          "quirk": "parallax",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E22"
+          ]
+        },
+        {
+          "quirk": "readout masking and narrow-window transitions",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P36"
+          ]
+        },
+        {
+          "quirk": "shock and vibration effects",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P36"
+          ]
+        },
+        {
+          "quirk": "valid operating region",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P36"
+          ]
+        },
+        {
+          "quirk": "viewing-angle dependence",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E22"
+          ]
+        },
+        {
+          "quirk": "zero drift and offset",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "P36"
+          ]
+        }
+      ]
+    },
+    {
+      "gauge_group": "pattern_or_biological_indicator",
+      "name": "Pattern-forming or biological indicator",
+      "description": "Crystals, living organisms or other emergent patterns provide the indication.",
+      "gauge_count": 2,
+      "supporting_quirk_count": 10,
+      "supporting_quirks": [
+        {
+          "quirk": "biological and pattern-forming variability",
+          "gauge_count": 2,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 4,
+          "gauge_ids": [
+            "X22",
+            "X27"
+          ]
+        },
+        {
+          "quirk": "response speed, lag and delay",
+          "gauge_count": 2,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "X22",
+            "X27"
+          ]
+        },
+        {
+          "quirk": "discrete, quantised or stepwise motion",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X27"
+          ]
+        },
+        {
+          "quirk": "hysteresis",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X22"
+          ]
+        },
+        {
+          "quirk": "mechanical noise and cadence",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X27"
+          ]
+        },
+        {
+          "quirk": "operator procedure and ritual",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X27"
+          ]
+        },
+        {
+          "quirk": "operator signalling and acknowledgement",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X27"
+          ]
+        },
+        {
+          "quirk": "qualitative or non-precision indication",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "X22"
+          ]
+        },
+        {
+          "quirk": "random, statistical and batch variation",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "X27"
+          ]
+        },
+        {
+          "quirk": "thermal behaviour and temperature effects",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "X22"
+          ]
+        }
+      ]
+    },
+    {
+      "gauge_group": "projected_spot_or_shadow",
+      "name": "Projected spot or shadow",
+      "description": "A projected light spot, vane shadow or optical image moves across a scale.",
+      "gauge_count": 2,
+      "supporting_quirk_count": 15,
+      "supporting_quirks": [
+        {
+          "quirk": "bloom, halo and penumbra",
+          "gauge_count": 2,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "D03",
+            "E09"
+          ]
+        },
+        {
+          "quirk": "response speed, lag and delay",
+          "gauge_count": 2,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "D03",
+            "E09"
+          ]
+        },
+        {
+          "quirk": "ageing and material degradation",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D03"
+          ]
+        },
+        {
+          "quirk": "ambient-light readability",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D03"
+          ]
+        },
+        {
+          "quirk": "brightness and contrast variation",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D03"
+          ]
+        },
+        {
+          "quirk": "damping",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E09"
+          ]
+        },
+        {
+          "quirk": "display geometry and motion mode",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E09"
+          ]
+        },
+        {
+          "quirk": "drift and long-term stability",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E09"
+          ]
+        },
+        {
+          "quirk": "focus and optical alignment",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "E09"
+          ]
+        },
+        {
+          "quirk": "ringing and oscillation",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E09"
+          ]
+        },
+        {
+          "quirk": "scale linearity and nonlinearity",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D03"
+          ]
+        },
+        {
+          "quirk": "shadows, depth and occlusion",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "D03"
+          ]
+        },
+        {
+          "quirk": "shock and vibration effects",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E09"
+          ]
+        },
+        {
+          "quirk": "warm-up behaviour",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D03"
+          ]
+        },
+        {
+          "quirk": "zero drift and offset",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E09"
+          ]
+        }
+      ]
+    },
+    {
+      "gauge_group": "resonant_or_oscillating_element",
+      "name": "Resonant or oscillating element",
+      "description": "A vibrating reed, string or other oscillating element is observed directly.",
+      "gauge_count": 2,
+      "supporting_quirk_count": 15,
+      "supporting_quirks": [
+        {
+          "quirk": "resonance, beating and tuned elements",
+          "gauge_count": 2,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "E08",
+            "E10"
+          ]
+        },
+        {
+          "quirk": "aliasing, harmonics and false solutions",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E08"
+          ]
+        },
+        {
+          "quirk": "damping",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E10"
+          ]
+        },
+        {
+          "quirk": "discrete, quantised or stepwise motion",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E08"
+          ]
+        },
+        {
+          "quirk": "drift and long-term stability",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E10"
+          ]
+        },
+        {
+          "quirk": "human-factor ambiguity and misreading",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E08"
+          ]
+        },
+        {
+          "quirk": "magnetic-field, deviation and remanence effects",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E10"
+          ]
+        },
+        {
+          "quirk": "movement torque and sensitivity",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E10"
+          ]
+        },
+        {
+          "quirk": "operator procedure and ritual",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E10"
+          ]
+        },
+        {
+          "quirk": "overload, saturation and damage",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E10"
+          ]
+        },
+        {
+          "quirk": "pen, stylus and trace artefacts",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E10"
+          ]
+        },
+        {
+          "quirk": "ringing and oscillation",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E10"
+          ]
+        },
+        {
+          "quirk": "shock and vibration effects",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E08"
+          ]
+        },
+        {
+          "quirk": "stiction and sticking",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E10"
+          ]
+        },
+        {
+          "quirk": "viewing-angle dependence",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E08"
+          ]
+        }
+      ]
+    },
+    {
+      "gauge_group": "vector_or_storage_trace",
+      "name": "Vector or storage trace",
+      "description": "A beam or equivalent trace draws waveforms, radar returns or stored vector imagery.",
+      "gauge_count": 2,
+      "supporting_quirk_count": 14,
+      "supporting_quirks": [
+        {
+          "quirk": "bloom, halo and penumbra",
+          "gauge_count": 2,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "D26",
+            "D27"
+          ]
+        },
+        {
+          "quirk": "burn-in and permanent image wear",
+          "gauge_count": 2,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "D26",
+            "D27"
+          ]
+        },
+        {
+          "quirk": "persistence and afterglow",
+          "gauge_count": 2,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "D26",
+            "D27"
+          ]
+        },
+        {
+          "quirk": "brightness and contrast variation",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D27"
+          ]
+        },
+        {
+          "quirk": "brightness nonuniformity and gradients",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D26"
+          ]
+        },
+        {
+          "quirk": "display geometry and motion mode",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D27"
+          ]
+        },
+        {
+          "quirk": "flicker, scan and PWM artefacts",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "D26"
+          ]
+        },
+        {
+          "quirk": "focus and optical alignment",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D26"
+          ]
+        },
+        {
+          "quirk": "latching and state-retention behaviour",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D27"
+          ]
+        },
+        {
+          "quirk": "optical distortion and refraction",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 3,
+          "gauge_ids": [
+            "D26"
+          ]
+        },
+        {
+          "quirk": "parallax",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D26"
+          ]
+        },
+        {
+          "quirk": "pen, stylus and trace artefacts",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "D27"
+          ]
+        },
+        {
+          "quirk": "phosphor behaviour and ageing",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D26"
+          ]
+        },
+        {
+          "quirk": "refresh, erase and update artefacts",
+          "gauge_count": 1,
+          "percentage_of_group": 50.0,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "D27"
+          ]
+        }
+      ]
+    },
+    {
+      "gauge_group": "optical_null_or_match",
+      "name": "Optical null or match",
+      "description": "The reading is found by visually matching brightness, colour or disappearance at a null.",
+      "gauge_count": 1,
+      "supporting_quirk_count": 7,
+      "supporting_quirks": [
+        {
+          "quirk": "ambient-light readability",
+          "gauge_count": 1,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P44"
+          ]
+        },
+        {
+          "quirk": "calibration, correction and compensation",
+          "gauge_count": 1,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P44"
+          ]
+        },
+        {
+          "quirk": "colour variation and colour shift",
+          "gauge_count": 1,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "P44"
+          ]
+        },
+        {
+          "quirk": "filament behaviour and failure",
+          "gauge_count": 1,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "P44"
+          ]
+        },
+        {
+          "quirk": "operator procedure and ritual",
+          "gauge_count": 1,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P44"
+          ]
+        },
+        {
+          "quirk": "optical matching, emissivity and observer effects",
+          "gauge_count": 1,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 4,
+          "gauge_ids": [
+            "P44"
+          ]
+        },
+        {
+          "quirk": "response speed, lag and delay",
+          "gauge_count": 1,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "P44"
+          ]
+        }
+      ]
+    },
+    {
+      "gauge_group": "projected_symbology",
+      "name": "Projected symbology",
+      "description": "Collimated or head-up symbols are projected into the operator’s field of view.",
+      "gauge_count": 1,
+      "supporting_quirk_count": 8,
+      "supporting_quirks": [
+        {
+          "quirk": "ambient-light readability",
+          "gauge_count": 1,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D28"
+          ]
+        },
+        {
+          "quirk": "bloom, halo and penumbra",
+          "gauge_count": 1,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D28"
+          ]
+        },
+        {
+          "quirk": "contamination, dirt and fouling",
+          "gauge_count": 1,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D28"
+          ]
+        },
+        {
+          "quirk": "ghosting, crosstalk and light leakage",
+          "gauge_count": 1,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D28"
+          ]
+        },
+        {
+          "quirk": "optical distortion and refraction",
+          "gauge_count": 1,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D28"
+          ]
+        },
+        {
+          "quirk": "parallax",
+          "gauge_count": 1,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D28"
+          ]
+        },
+        {
+          "quirk": "phosphor behaviour and ageing",
+          "gauge_count": 1,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "D28"
+          ]
+        },
+        {
+          "quirk": "projected-display eyebox and clipping",
+          "gauge_count": 1,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "D28"
+          ]
+        }
+      ]
+    },
+    {
+      "gauge_group": "split_flap",
+      "name": "Split-flap display",
+      "description": "Physical character flaps cycle through intermediate positions to reach the target.",
+      "gauge_count": 1,
+      "supporting_quirk_count": 9,
+      "supporting_quirks": [
+        {
+          "quirk": "ageing and material degradation",
+          "gauge_count": 1,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E21"
+          ]
+        },
+        {
+          "quirk": "bounce",
+          "gauge_count": 1,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E21"
+          ]
+        },
+        {
+          "quirk": "channel mismatch and unequal dynamics",
+          "gauge_count": 1,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E21"
+          ]
+        },
+        {
+          "quirk": "latching and state-retention behaviour",
+          "gauge_count": 1,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E21"
+          ]
+        },
+        {
+          "quirk": "mechanical noise and cadence",
+          "gauge_count": 1,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E21"
+          ]
+        },
+        {
+          "quirk": "overshoot",
+          "gauge_count": 1,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E21"
+          ]
+        },
+        {
+          "quirk": "power-off and power-loss behaviour",
+          "gauge_count": 1,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 1,
+          "gauge_ids": [
+            "E21"
+          ]
+        },
+        {
+          "quirk": "refresh, erase and update artefacts",
+          "gauge_count": 1,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "E21"
+          ]
+        },
+        {
+          "quirk": "response speed, lag and delay",
+          "gauge_count": 1,
+          "percentage_of_group": 100.0,
+          "source_statement_count": 2,
+          "gauge_ids": [
+            "E21"
+          ]
+        }
+      ]
+    }
+  ]
+}

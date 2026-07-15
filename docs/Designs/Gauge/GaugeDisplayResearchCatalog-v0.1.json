@@ -1,0 +1,4318 @@
+{
+  "title": "Gauge and Instrument Display Research Catalog",
+  "version": "0.1",
+  "generated": "2026-07-15",
+  "scope_note": "Mechanism-first research catalogue; generic framebuffer/HDMI displays excluded.",
+  "date_confidence_legend": {
+    "H": "Dated primary, official or museum support",
+    "M": "Approximate adoption/common-use range from reliable overviews",
+    "L": "Uncertain or strongly regional"
+  },
+  "entries": [
+    {
+      "id": "P01",
+      "section": "P",
+      "name": "Liquid-column manometer: U-tube, well-type and inclined",
+      "representative_names_models": "Open/closed U-tubes; cistern/well manometers; inclined draft gauges",
+      "measured_or_indicated": "Gauge, differential or absolute pressure",
+      "era": "1640s-present; inclined industrial forms common from late 1800s",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Moving meniscus, capillary depression and wetting",
+        "parallax",
+        "density and temperature dependence",
+        "local gravity correction",
+        "slosh and oscillatory settling",
+        "bubbles or separated columns",
+        "inclined scales magnify low pressure and become strongly nonlinear if geometry is wrong"
+      ],
+      "sources": [
+        {
+          "title": "NIST: Pressure and Vacuum Measurements",
+          "url": "https://www.nist.gov/document/pmc-2pdf"
+        },
+        {
+          "title": "Pressure measurement",
+          "url": "https://en.wikipedia.org/wiki/Pressure_measurement"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: U-tube inclined manometer",
+          "url": "https://commons.wikimedia.org/w/index.php?search=U-tube+inclined+manometer&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "P02",
+      "section": "P",
+      "name": "Mercury barometer: cistern, Fortin and wheel forms",
+      "representative_names_models": "Torricellian barometer; Fortin adjustable cistern; wheel barometer with float and pulley",
+      "measured_or_indicated": "Atmospheric pressure",
+      "era": "1643-present; mercury versions now restricted but still historical/reference instruments",
+      "date_confidence": "H",
+      "quirks_to_simulate": [
+        "Convex mercury meniscus",
+        "tapping before reading",
+        "cistern-level adjustment",
+        "temperature, gravity and capillary corrections",
+        "slow weather motion",
+        "trapped air and dirty glass",
+        "wheel mechanisms add backlash and pointer lag"
+      ],
+      "sources": [
+        {
+          "title": "Barometer",
+          "url": "https://en.wikipedia.org/wiki/Barometer"
+        },
+        {
+          "title": "Science Museum barometer collection",
+          "url": "https://collection.sciencemuseumgroup.org.uk/search/categories/barometers"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: Fortin wheel mercury barometer",
+          "url": "https://commons.wikimedia.org/w/index.php?search=Fortin+wheel+mercury+barometer&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "P03",
+      "section": "P",
+      "name": "Aneroid barometer and pressure capsule mechanism",
+      "representative_names_models": "Lucien Vidi-style evacuated capsule; wall barometers; aircraft altimeter capsules",
+      "measured_or_indicated": "Atmospheric pressure or altitude via pressure",
+      "era": "1844-present",
+      "date_confidence": "H",
+      "quirks_to_simulate": [
+        "Elastic hysteresis and creep",
+        "temperature compensation errors",
+        "gearing lash and stiction",
+        "slow drift",
+        "pointer may respond to a tap",
+        "altitude versions wrap repeatedly and can be misread by a full revolution"
+      ],
+      "sources": [
+        {
+          "title": "Aneroid barometer",
+          "url": "https://en.wikipedia.org/wiki/Aneroid_barometer"
+        },
+        {
+          "title": "FAA: Pilot’s Handbook of Aeronautical Knowledge, Flight Instruments",
+          "url": "https://www.faa.gov/regulations_policies/handbooks_manuals/aviation/phak"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: aneroid barometer mechanism",
+          "url": "https://commons.wikimedia.org/w/index.php?search=aneroid+barometer+mechanism&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "P04",
+      "section": "P",
+      "name": "Bourdon-tube pressure gauge, including C, spiral and helical tubes",
+      "representative_names_models": "Eugène Bourdon; WIKA 213.53; Ashcroft Duragauge; Budenberg locomotive gauges",
+      "measured_or_indicated": "Gauge, absolute, vacuum or compound pressure",
+      "era": "1849-present",
+      "date_confidence": "H",
+      "quirks_to_simulate": [
+        "Linkage nonlinearity",
+        "gear backlash",
+        "elastic hysteresis",
+        "stiction",
+        "pulsation flutter",
+        "temperature zero shift",
+        "hard-stop impact and peg bounce",
+        "overpressure can permanently shift zero",
+        "dual scales and redlines",
+        "spiral/helical tubes allow greater motion"
+      ],
+      "sources": [
+        {
+          "title": "WIKA: Bourdon-tube operating principle",
+          "url": "https://blog.wika.com/en/knowhow/bourdon-tube-pressure-gauge-operating-principle/"
+        },
+        {
+          "title": "Science Museum: Musgrave Bourdon gauge object record",
+          "url": "https://collection.sciencemuseumgroup.org.uk/objects/co8420280/musgraves-pressure-gauge-bourdon-type"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: Bourdon tube pressure gauge",
+          "url": "https://commons.wikimedia.org/w/index.php?search=Bourdon+tube+pressure+gauge&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "P05",
+      "section": "P",
+      "name": "Diaphragm pressure gauge",
+      "representative_names_models": "Corrugated diaphragm gauges; chemical seals; sanitary diaphragm gauges",
+      "measured_or_indicated": "Low pressure, differential pressure, viscous or corrosive process pressure",
+      "era": "late 1800s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Deflection is nonlinear without linkage compensation",
+        "diaphragm can snap or oil-can under abuse",
+        "hysteresis and creep",
+        "orientation and temperature sensitivity",
+        "overpressure stops",
+        "broad, shallow cases and large pointer travel"
+      ],
+      "sources": [
+        {
+          "title": "WIKA: Diaphragm pressure-gauge operation",
+          "url": "https://blog.wika.com/us/knowhow/what-is-a-diaphragm-pressure-gauge-and-how-does-it-work/"
+        },
+        {
+          "title": "Diaphragm seal",
+          "url": "https://en.wikipedia.org/wiki/Diaphragm_seal"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: diaphragm pressure gauge",
+          "url": "https://commons.wikimedia.org/w/index.php?search=diaphragm+pressure+gauge&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "P06",
+      "section": "P",
+      "name": "Capsule and bellows pressure gauges",
+      "representative_names_models": "Stacked evacuated capsules; aneroid capsules; metallic bellows transmitters",
+      "measured_or_indicated": "Very low gas pressure, differential pressure, altitude or displacement",
+      "era": "late 1800s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Large travel at low pressure",
+        "elastic hysteresis",
+        "convolution friction",
+        "temperature and ambient-pressure cross-sensitivity",
+        "bellows can breathe, creep or buckle",
+        "capsule stacks may have slight stepwise motion"
+      ],
+      "sources": [
+        {
+          "title": "WIKA: Capsule pressure gauge",
+          "url": "https://www.wika.com/en-in/611_10_631_10.WIKA"
+        },
+        {
+          "title": "Bellows",
+          "url": "https://en.wikipedia.org/wiki/Bellows"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: capsule bellows pressure gauge",
+          "url": "https://commons.wikimedia.org/w/index.php?search=capsule+bellows+pressure+gauge&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "P07",
+      "section": "P",
+      "name": "Magnetic-coupled differential gauge",
+      "representative_names_models": "Dwyer Magnehelic, introduced 1953",
+      "measured_or_indicated": "Low differential pressure, filter loading, clean-room pressure and air velocity",
+      "era": "1953-present",
+      "date_confidence": "H",
+      "quirks_to_simulate": [
+        "Diaphragm motion couples through magnet and helix with little gear friction",
+        "very lively response unless restricted",
+        "pointer can oscillate with fan pulses",
+        "zero adjust",
+        "case orientation matters",
+        "overpressure relief and a characteristic broad 270-degree scale"
+      ],
+      "sources": [
+        {
+          "title": "DwyerOmega: Making of the Magnehelic gauge",
+          "url": "https://www.dwyeromega.com/en-us/resources/the-making-of-a-market-leader-the-magnehelic-differential-pressure-gage"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: Dwyer Magnehelic gauge",
+          "url": "https://commons.wikimedia.org/w/index.php?search=Dwyer+Magnehelic+gauge&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "P08",
+      "section": "P",
+      "name": "Compound, duplex and twin-pointer pressure gauges",
+      "representative_names_models": "Vacuum-plus-pressure compound scale; locomotive brake duplex gauges; dual-process pointers",
+      "measured_or_indicated": "Two pressures, pressure plus vacuum, or one value over a signed range",
+      "era": "late 1800s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Two pointers may cross or obscure each other",
+        "colour-coded hands",
+        "unequal damping",
+        "separate zero errors",
+        "compound scales often compress one side",
+        "operator can mistake which needle belongs to which circuit"
+      ],
+      "sources": [
+        {
+          "title": "Pressure measurement",
+          "url": "https://en.wikipedia.org/wiki/Pressure_measurement"
+        },
+        {
+          "title": "Science Museum duplex test gauge",
+          "url": "https://collection.sciencemuseumgroup.org.uk/objects/co8449039/duplex-test-pressure-gauge"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: duplex compound pressure gauge",
+          "url": "https://commons.wikimedia.org/w/index.php?search=duplex+compound+pressure+gauge&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "P09",
+      "section": "P",
+      "name": "Liquid-filled, snubbed and damped pressure gauge",
+      "representative_names_models": "Glycerine-, silicone- or halocarbon-filled cases; needle valves and pulsation snubbers",
+      "measured_or_indicated": "Pressure in vibrating or pulsating machinery",
+      "era": "c.1930s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Viscous damping changes with temperature",
+        "fill bubble moves with orientation",
+        "case pressure can shift zero",
+        "pointer becomes deliberately sluggish",
+        "pulsations are averaged",
+        "leaks stain the window",
+        "overfilling can bow the lens"
+      ],
+      "sources": [
+        {
+          "title": "WIKA: Case filling and damping",
+          "url": "https://blog.wika.com/en/knowhow/vibration-protection-case-filling-vs-dampened-movement/"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: glycerin filled pressure gauge bubble",
+          "url": "https://commons.wikimedia.org/w/index.php?search=glycerin+filled+pressure+gauge+bubble&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "P10",
+      "section": "P",
+      "name": "Contact, alarm and meter-relay gauge",
+      "representative_names_models": "Adjustable red/green set pointers; snap contacts; inductive contacts; pressure and temperature switch gauges",
+      "measured_or_indicated": "Measured value plus alarm or control threshold",
+      "era": "early 1900s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Movable set bugs sit above or below the pointer",
+        "contact drag causes a tiny hitch",
+        "snap action and chatter near threshold",
+        "latching alarms",
+        "deadband between make and break",
+        "test/reset knobs",
+        "electrical arcs can mark contacts"
+      ],
+      "sources": [
+        {
+          "title": "WIKA switch contacts in measuring instruments",
+          "url": "https://www.wika.com/en-en/switch_contacts.WIKA"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: contact pressure gauge adjustable alarm pointers",
+          "url": "https://commons.wikimedia.org/w/index.php?search=contact+pressure+gauge+adjustable+alarm+pointers&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "P11",
+      "section": "P",
+      "name": "Drag, tell-tale and witness-pointer gauge",
+      "representative_names_models": "Peak-hold red hand; min/max memory pointers; resettable maximum pressure and tachometer indicators",
+      "measured_or_indicated": "Maximum, minimum or both extrema of pressure, speed, temperature or load",
+      "era": "late 1800s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Main hand physically pushes a loose memory hand",
+        "added friction changes dynamics",
+        "witness remains after input falls",
+        "manual reset can disturb the main pointer",
+        "witness may creep, stick or be left at an old event"
+      ],
+      "sources": [
+        {
+          "title": "Telltale (automotive)",
+          "url": "https://en.wikipedia.org/wiki/Telltale_(automotive)"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: maximum drag pointer pressure gauge",
+          "url": "https://commons.wikimedia.org/w/index.php?search=maximum+drag+pointer+pressure+gauge&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "P12",
+      "section": "P",
+      "name": "McLeod compression vacuum gauge",
+      "representative_names_models": "Herbert McLeod gauge; laboratory mercury compression gauges",
+      "measured_or_indicated": "Low absolute pressure by compressing a known gas volume",
+      "era": "1874-c.1970s common; still used as a reference in some laboratories",
+      "date_confidence": "H",
+      "quirks_to_simulate": [
+        "Reading requires trapping and compressing gas",
+        "slow, procedural and discontinuous",
+        "scale is highly nonlinear",
+        "mercury menisci and capillary effects",
+        "cannot measure condensable vapours accurately",
+        "orientation and cleanliness dominate"
+      ],
+      "sources": [
+        {
+          "title": "NIST: Pressure and Vacuum Measurements",
+          "url": "https://www.nist.gov/document/pmc-2pdf"
+        },
+        {
+          "title": "McLeod gauge",
+          "url": "https://en.wikipedia.org/wiki/McLeod_gauge"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: McLeod vacuum gauge",
+          "url": "https://commons.wikimedia.org/w/index.php?search=McLeod+vacuum+gauge&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "P13",
+      "section": "P",
+      "name": "Thermal-conductivity vacuum gauges: Pirani and thermocouple",
+      "representative_names_models": "Marcello Pirani gauge; convection-enhanced Pirani; thermocouple vacuum gauge",
+      "measured_or_indicated": "Rough and medium vacuum inferred from heat loss",
+      "era": "1906-present",
+      "date_confidence": "H",
+      "quirks_to_simulate": [
+        "Gas-species dependent",
+        "hot filament warm-up",
+        "logarithmic or compressed scale",
+        "poor response near atmosphere and high vacuum",
+        "zero and span drift with contamination",
+        "convection introduces orientation dependence",
+        "rapid pressure changes lag thermally"
+      ],
+      "sources": [
+        {
+          "title": "Leybold: Marcello Pirani and the Pirani gauge",
+          "url": "https://www.leybold.com/en/knowledge/blog/marcello-pirani-vacuum-gauge"
+        },
+        {
+          "title": "Thermocouple gauge",
+          "url": "https://en.wikipedia.org/wiki/Thermocouple_gauge"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: Pirani thermocouple vacuum gauge",
+          "url": "https://commons.wikimedia.org/w/index.php?search=Pirani+thermocouple+vacuum+gauge&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "P14",
+      "section": "P",
+      "name": "Cold-cathode ionisation gauge",
+      "representative_names_models": "Penning gauge; inverted magnetron gauge",
+      "measured_or_indicated": "High vacuum",
+      "era": "1937-present",
+      "date_confidence": "H",
+      "quirks_to_simulate": [
+        "Needs ignition and may suddenly jump on",
+        "magnetic-field dependent",
+        "gas-species dependent",
+        "noisy discharge",
+        "hysteresis between striking and sustaining pressure",
+        "contamination causes drift",
+        "arc-like flashes and dropouts are authentic failure modes"
+      ],
+      "sources": [
+        {
+          "title": "Leybold: Cold-cathode/Penning vacuum gauges",
+          "url": "https://www.leybold.com/en/knowledge/vacuum-fundamentals/vacuum-measurement/cold-cathode-ionization-vacuum-gauges"
+        },
+        {
+          "title": "CERN: Gauges for fine and high vacuum",
+          "url": "https://cds.cern.ch/record/2649987/files/153-172-Chulliat.pdf"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: Penning cold cathode vacuum gauge",
+          "url": "https://commons.wikimedia.org/w/index.php?search=Penning+cold+cathode+vacuum+gauge&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "P15",
+      "section": "P",
+      "name": "Hot-cathode ionisation gauge",
+      "representative_names_models": "Bayard-Alpert gauge; triode ion gauge",
+      "measured_or_indicated": "High and ultra-high vacuum",
+      "era": "1950-present",
+      "date_confidence": "H",
+      "quirks_to_simulate": [
+        "Filament warm-up and degassing",
+        "gas-species sensitivity",
+        "X-ray lower limit",
+        "emission current regulation",
+        "contamination and outgassing",
+        "abrupt overpressure trip to protect filament",
+        "readings may span many decades on logarithmic scales"
+      ],
+      "sources": [
+        {
+          "title": "CERN: Gauges for fine and high vacuum",
+          "url": "https://cds.cern.ch/record/2649987/files/153-172-Chulliat.pdf"
+        },
+        {
+          "title": "Ionization gauge",
+          "url": "https://en.wikipedia.org/wiki/Ionization_gauge"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: Bayard Alpert ionization gauge",
+          "url": "https://commons.wikimedia.org/w/index.php?search=Bayard+Alpert+ionization+gauge&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "P16",
+      "section": "P",
+      "name": "Capacitance diaphragm manometer",
+      "representative_names_models": "MKS Baratron and similar heated capacitance manometers",
+      "measured_or_indicated": "Absolute or differential pressure, especially process vacuum",
+      "era": "c.1960s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "True force measurement is largely gas independent",
+        "warm-up and controlled-head temperature",
+        "zero drift and tare routines",
+        "finite overpressure recovery",
+        "excellent linearity but limited range per sensor",
+        "digital controllers often add range switching"
+      ],
+      "sources": [
+        {
+          "title": "MKS: Baratron capacitance manometers",
+          "url": "https://www.mks.com/n/baratron-capacitance-manometers"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: MKS Baratron capacitance manometer display",
+          "url": "https://commons.wikimedia.org/w/index.php?search=MKS+Baratron+capacitance+manometer+display&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "P17",
+      "section": "P",
+      "name": "Tubular, reflex and transparent sight-level gauges",
+      "representative_names_models": "Boiler gauge glass; reflex prism glass; transparent double-plate level gauge",
+      "measured_or_indicated": "Liquid level, phase boundary or boiler water level",
+      "era": "1700s-present; industrial reflex forms from late 1800s",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Meniscus and wetting",
+        "boiling, froth and bubbles",
+        "staining and scale obscure the line",
+        "refraction makes liquid dark/light in reflex glass",
+        "parallax",
+        "glass breakage guards",
+        "drain and blow-down events make the level leap"
+      ],
+      "sources": [
+        {
+          "title": "Sight glass",
+          "url": "https://en.wikipedia.org/wiki/Sight_glass"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: boiler reflex sight glass level gauge",
+          "url": "https://commons.wikimedia.org/w/index.php?search=boiler+reflex+sight+glass+level+gauge&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "P18",
+      "section": "P",
+      "name": "Float-and-tape tank gauge",
+      "representative_names_models": "Mechanical tank gauging tape; Whessoe and Varec-style systems",
+      "measured_or_indicated": "Large storage-tank liquid level",
+      "era": "late 1800s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Counterweight motion, cable sag and pulley friction",
+        "staircase-like movement after stiction releases",
+        "tape stretch",
+        "float follows waves and foam",
+        "scale can run vertically or drive a dial",
+        "manual checks and datum offsets"
+      ],
+      "sources": [
+        {
+          "title": "Float (liquid level)",
+          "url": "https://en.wikipedia.org/wiki/Float_(liquid_level)"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: float tape tank level gauge",
+          "url": "https://commons.wikimedia.org/w/index.php?search=float+tape+tank+level+gauge&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "P19",
+      "section": "P",
+      "name": "Magnetic level indicator with flip flags",
+      "representative_names_models": "External chamber, magnetic float and red/white or black/yellow rotating flags",
+      "measured_or_indicated": "Liquid level or interface level",
+      "era": "mid-1900s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Flags flip discretely in a travelling wave",
+        "one flag can stick or reverse",
+        "strong viewing-angle contrast",
+        "no power needed",
+        "float may sink or hang",
+        "level is quantised by flag pitch",
+        "interface floats can produce two boundaries"
+      ],
+      "sources": [
+        {
+          "title": "VEGA: Magnetic level indicators",
+          "url": "https://www.vega.com/en/products/product-catalog/level/magnetic-level-indicators"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: magnetic level indicator flip flags",
+          "url": "https://commons.wikimedia.org/w/index.php?search=magnetic+level+indicator+flip+flags&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "P20",
+      "section": "P",
+      "name": "Variable-area flowmeter / rotameter",
+      "representative_names_models": "KROHNE Rotameter; Brooks Sho-Rate; glass or armoured metal tubes",
+      "measured_or_indicated": "Volumetric or mass flow after calibration",
+      "era": "1908-present",
+      "date_confidence": "H",
+      "quirks_to_simulate": [
+        "Float bobs, spins and may chatter under pulsation",
+        "read at a specified edge of the float",
+        "tapered tube gives nonlinear scale",
+        "must be upright",
+        "density, viscosity, pressure and temperature affect calibration",
+        "dirty floats stick"
+      ],
+      "sources": [
+        {
+          "title": "Brooks Instrument: Rotameter history and operating principle",
+          "url": "https://www.brooksinstrument.com/en/blog/what-is-a-rotameter"
+        },
+        {
+          "title": "Rotameter",
+          "url": "https://en.wikipedia.org/wiki/Rotameter"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: glass tube rotameter float",
+          "url": "https://commons.wikimedia.org/w/index.php?search=glass+tube+rotameter+float&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "P21",
+      "section": "P",
+      "name": "Liquid-in-glass thermometer",
+      "representative_names_models": "Mercury, alcohol, kerosene and spirit thermometers; clinical and industrial stem types",
+      "measured_or_indicated": "Temperature",
+      "era": "1600s-present; mercury increasingly restricted",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Thermal lag",
+        "meniscus/parallax",
+        "partial-immersion error",
+        "separated liquid column",
+        "nonuniform bore",
+        "expansion chamber at top",
+        "maximum clinical constriction",
+        "alcohol can wet the glass and produce a fuzzy edge"
+      ],
+      "sources": [
+        {
+          "title": "Liquid-in-glass thermometer",
+          "url": "https://en.wikipedia.org/wiki/Liquid-in-glass_thermometer"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: liquid in glass thermometer mercury alcohol",
+          "url": "https://commons.wikimedia.org/w/index.php?search=liquid+in+glass+thermometer+mercury+alcohol&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "P22",
+      "section": "P",
+      "name": "Six’s maximum-minimum thermometer",
+      "representative_names_models": "James Six design; U-tube with two markers and magnetic reset",
+      "measured_or_indicated": "Maximum and minimum temperature since reset",
+      "era": "1780s-present",
+      "date_confidence": "H",
+      "quirks_to_simulate": [
+        "Two opposite-reading scales",
+        "alcohol/mercury interfaces move separate index markers",
+        "markers stay put through surface tension",
+        "magnetic reset",
+        "markers can stick, tilt or lag",
+        "users often read the wrong end"
+      ],
+      "sources": [
+        {
+          "title": "Museo Galileo: Six maximum-minimum thermometer",
+          "url": "https://catalogue.museogalileo.it/object/SixsMaximumMinimumThermometer.html"
+        },
+        {
+          "title": "Six's thermometer",
+          "url": "https://en.wikipedia.org/wiki/Six%27s_thermometer"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: Six maximum minimum thermometer",
+          "url": "https://commons.wikimedia.org/w/index.php?search=Six+maximum+minimum+thermometer&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "P23",
+      "section": "P",
+      "name": "Bimetal dial thermometer",
+      "representative_names_models": "Spiral, helical and cantilever bimetal instruments; WIKA and Ashcroft industrial dials",
+      "measured_or_indicated": "Temperature",
+      "era": "1800s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Deliberate thermal lag",
+        "hysteresis and spring friction",
+        "stem-conduction error",
+        "ambient case heating",
+        "pointer may creep after temperature stabilises",
+        "long helical coils give broad sweep",
+        "zero adjust at rear"
+      ],
+      "sources": [
+        {
+          "title": "WIKA: Bimetal thermometer",
+          "url": "https://www.wika.com/en-en/lp_bimetal_thermometer.WIKA"
+        },
+        {
+          "title": "Bimetallic strip",
+          "url": "https://en.wikipedia.org/wiki/Bimetallic_strip"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: bimetal dial thermometer",
+          "url": "https://commons.wikimedia.org/w/index.php?search=bimetal+dial+thermometer&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "P24",
+      "section": "P",
+      "name": "Filled-system capillary thermometer",
+      "representative_names_models": "Gas-, liquid- or vapour-actuated bulb, capillary and Bourdon receiver",
+      "measured_or_indicated": "Remote temperature",
+      "era": "late 1800s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Long transport lag",
+        "capillary ambient-temperature error",
+        "bulb immersion effects",
+        "nonlinear vapour-pressure scale",
+        "bubbles or leaks cause permanent offset",
+        "pointer can move after the process has already stopped changing"
+      ],
+      "sources": [
+        {
+          "title": "WIKA: Gas-actuated capillary thermometer",
+          "url": "https://www.wika.com/en-en/lp_gas_actuated_thermometer.WIKA"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: capillary gas actuated thermometer dial",
+          "url": "https://commons.wikimedia.org/w/index.php?search=capillary+gas+actuated+thermometer+dial&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "P25",
+      "section": "P",
+      "name": "Thermochromic liquid-crystal strip and leuco-dye indicator",
+      "representative_names_models": "Forehead strips; aquarium strips; battery/test labels; reversible and irreversible temperature labels",
+      "measured_or_indicated": "Surface temperature or threshold exposure",
+      "era": "1960s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Discrete colour bands",
+        "narrow viewing angle",
+        "hysteresis",
+        "slow thermal contact",
+        "sunlight and ageing alter colour",
+        "several adjacent numbers may glow",
+        "irreversible labels retain an event and cannot be smoothly animated"
+      ],
+      "sources": [
+        {
+          "title": "Thermochromism",
+          "url": "https://en.wikipedia.org/wiki/Thermochromism"
+        },
+        {
+          "title": "Thermochromic liquid crystal handbook",
+          "url": "https://www.hallcrest.com/DesktopModules/Bring2mind/DMX/API/Entries/Download?EntryId=428&Command=Core_Download&language=en-US&PortalId=0&TabId=163"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: thermochromic liquid crystal temperature strip",
+          "url": "https://commons.wikimedia.org/w/index.php?search=thermochromic+liquid+crystal+temperature+strip&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "P26",
+      "section": "P",
+      "name": "Hair hygrometer and hygrograph",
+      "representative_names_models": "Human- or horse-hair bundles; Saussure-type hygrometer; clockwork hygrograph",
+      "measured_or_indicated": "Relative humidity",
+      "era": "1783-present; largely meteorological/historical today",
+      "date_confidence": "H",
+      "quirks_to_simulate": [
+        "Hair length response is nonlinear and has hysteresis",
+        "linkage is shaped to linearise the scale",
+        "slow response",
+        "contamination and ageing",
+        "seasonal recalibration",
+        "chart versions add pen friction, clock drift and a daily/weekly trace"
+      ],
+      "sources": [
+        {
+          "title": "Met Office Library: Hair hygrometer response",
+          "url": "https://library.metoffice.gov.uk/Portal/recordview/index/631867"
+        },
+        {
+          "title": "Hair hygrometer",
+          "url": "https://en.wikipedia.org/wiki/Hair_hygrometer"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: hair hygrometer hygrograph",
+          "url": "https://commons.wikimedia.org/w/index.php?search=hair+hygrometer+hygrograph&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "P27",
+      "section": "P",
+      "name": "Wet- and dry-bulb psychrometer",
+      "representative_names_models": "Sling psychrometer; Assmann aspirated psychrometer; Stevenson-screen pair",
+      "measured_or_indicated": "Humidity, dew point or wet-bulb temperature",
+      "era": "1800s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Requires a genuinely wet clean wick and airflow",
+        "wet bulb falls gradually",
+        "insufficient ventilation reads too humid",
+        "water salinity and radiation errors",
+        "two separate columns can have different lag and calibration"
+      ],
+      "sources": [
+        {
+          "title": "Met Office: Wet- and dry-bulb thermometer observations",
+          "url": "https://www.metoffice.gov.uk/weather/learn-about/how-forecasts-are-made/observations/weather-stations"
+        },
+        {
+          "title": "Psychrometer",
+          "url": "https://en.wikipedia.org/wiki/Psychrometer"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: sling Assmann psychrometer wet dry bulb",
+          "url": "https://commons.wikimedia.org/w/index.php?search=sling+Assmann+psychrometer+wet+dry+bulb&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "P28",
+      "section": "P",
+      "name": "Hydrometer and floating density gauges",
+      "representative_names_models": "Lactometer, alcoholmeter, API hydrometer, battery hydrometer",
+      "measured_or_indicated": "Liquid density or concentration",
+      "era": "antiquity-present; precision glass forms from 1700s",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Bobbing and damped settling",
+        "wall and surface-tension effects",
+        "read top or bottom of meniscus depending standard",
+        "temperature correction",
+        "scale often increases downward",
+        "bubbles stuck to the stem make it read light"
+      ],
+      "sources": [
+        {
+          "title": "NIST hydrometer calibration",
+          "url": "https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.250-78r1.pdf"
+        },
+        {
+          "title": "Hydrometer",
+          "url": "https://en.wikipedia.org/wiki/Hydrometer"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: glass hydrometer floating scale",
+          "url": "https://commons.wikimedia.org/w/index.php?search=glass+hydrometer+floating+scale&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "P29",
+      "section": "P",
+      "name": "Galileo thermometer",
+      "representative_names_models": "Sealed column with weighted glass bulbs and temperature tags",
+      "measured_or_indicated": "Approximate ambient temperature",
+      "era": "1600s concept; decorative use from 1900s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Quantised readings",
+        "bulbs hover, cluster and swap order slowly",
+        "long thermal lag",
+        "two adjacent bulbs can straddle the answer",
+        "density tolerances and bubbles matter",
+        "visually rich but not precision instrumentation"
+      ],
+      "sources": [
+        {
+          "title": "Galileo thermometer",
+          "url": "https://en.wikipedia.org/wiki/Galileo_thermometer"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: Galileo thermometer floating bulbs",
+          "url": "https://commons.wikimedia.org/w/index.php?search=Galileo+thermometer+floating+bulbs&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "P30",
+      "section": "P",
+      "name": "Rain gauge and tipping-bucket recorder",
+      "representative_names_models": "Standard cylindrical gauge; siphon gauge; tipping bucket with reed switch",
+      "measured_or_indicated": "Rainfall depth and rate",
+      "era": "1400s-present; tipping buckets common from late 1800s/1900s",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Discrete bucket tips",
+        "dead time while tipping",
+        "undercatch in wind",
+        "splash-in/out",
+        "blockage",
+        "evaporation",
+        "high-rate under-read",
+        "mechanical bounce may generate duplicate electrical pulses",
+        "chart traces form staircase ramps"
+      ],
+      "sources": [
+        {
+          "title": "Met Office: Rainfall observations",
+          "url": "https://www.metoffice.gov.uk/weather/guides/observations/how-we-measure-rainfall"
+        },
+        {
+          "title": "Rain gauge",
+          "url": "https://en.wikipedia.org/wiki/Rain_gauge"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: tipping bucket rain gauge mechanism",
+          "url": "https://commons.wikimedia.org/w/index.php?search=tipping+bucket+rain+gauge+mechanism&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "P31",
+      "section": "P",
+      "name": "Cup, propeller and vane anemometers",
+      "representative_names_models": "Robinson cup anemometer; cup-and-vane station instruments; mechanical dial windmeters",
+      "measured_or_indicated": "Wind speed and direction",
+      "era": "1846-present",
+      "date_confidence": "H",
+      "quirks_to_simulate": [
+        "Starting-threshold friction",
+        "inertia smooths gusts",
+        "overspeed and cup imbalance",
+        "bearing chatter",
+        "direction vane hunts around north",
+        "mechanical dials can flutter while totalisers ratchet",
+        "icing produces implausible stuck values"
+      ],
+      "sources": [
+        {
+          "title": "Anemometer",
+          "url": "https://en.wikipedia.org/wiki/Anemometer"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: mechanical cup anemometer dial",
+          "url": "https://commons.wikimedia.org/w/index.php?search=mechanical+cup+anemometer+dial&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "P32",
+      "section": "P",
+      "name": "Bubble level, ball inclinometer and pendulum clinometer",
+      "representative_names_models": "Spirit level; aircraft slip-skid ball; marine clinometer; pendulum angle gauge",
+      "measured_or_indicated": "Tilt, bank, slope or lateral acceleration",
+      "era": "1600s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Bubble/ball has viscous damping and wall friction",
+        "curved tube creates nonlinear angle mapping",
+        "temperature changes fluid viscosity and bubble size",
+        "aircraft ball responds to combined gravity and lateral acceleration, not bank angle alone"
+      ],
+      "sources": [
+        {
+          "title": "Inclinometer",
+          "url": "https://en.wikipedia.org/wiki/Inclinometer"
+        },
+        {
+          "title": "Spirit level",
+          "url": "https://en.wikipedia.org/wiki/Spirit_level"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: ball inclinometer slip skid bubble",
+          "url": "https://commons.wikimedia.org/w/index.php?search=ball+inclinometer+slip+skid+bubble&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "P33",
+      "section": "P",
+      "name": "Liquid magnetic compass card",
+      "representative_names_models": "Marine bowl compass; aircraft whiskey compass; floating card with lubber line",
+      "measured_or_indicated": "Magnetic heading",
+      "era": "1200s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Fluid damping",
+        "compass dip and card tilt",
+        "bubbles",
+        "turning and acceleration errors",
+        "magnetic deviation",
+        "card can lag then swing past",
+        "north crossing is a wrap",
+        "glass and fluid add lens distortion and parallax"
+      ],
+      "sources": [
+        {
+          "title": "Compass",
+          "url": "https://en.wikipedia.org/wiki/Compass"
+        },
+        {
+          "title": "FAA: Pilot’s Handbook of Aeronautical Knowledge, Flight Instruments",
+          "url": "https://www.faa.gov/regulations_policies/handbooks_manuals/aviation/phak"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: liquid magnetic compass card aircraft marine",
+          "url": "https://commons.wikimedia.org/w/index.php?search=liquid+magnetic+compass+card+aircraft+marine&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "P34",
+      "section": "P",
+      "name": "Diving depth gauge: capillary and Bourdon",
+      "representative_names_models": "Open-ended capillary gauge; Bourdon depth gauge; combined analog depth/pressure consoles",
+      "measured_or_indicated": "Water depth",
+      "era": "c.1940s-present; capillary types now niche/back-up",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Capillary scale is severely compressed with depth by Boyle’s law",
+        "water-air boundary trembles",
+        "temperature and trapped droplets matter",
+        "Bourdon versions show hysteresis and drag-pointer maxima",
+        "both can retain bubbles behind the lens"
+      ],
+      "sources": [
+        {
+          "title": "Depth gauge",
+          "url": "https://en.wikipedia.org/wiki/Depth_gauge"
+        },
+        {
+          "title": "Vintage capillary depth gauge overview",
+          "url": "https://www.vintagescubagear.com.au/product/vintage-capillary-depth-gauge/"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: vintage capillary diving depth gauge",
+          "url": "https://commons.wikimedia.org/w/index.php?search=vintage+capillary+diving+depth+gauge&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "P35",
+      "section": "P",
+      "name": "Mercury and aneroid sphygmomanometer",
+      "representative_names_models": "Riva-Rocci mercury column; mechanical aneroid dial; hospital wall models",
+      "measured_or_indicated": "Cuff pressure and blood pressure during auscultation",
+      "era": "1896-present; mercury use declining",
+      "date_confidence": "H",
+      "quirks_to_simulate": [
+        "Pulsating column or needle",
+        "controlled bleed-down",
+        "zero checking",
+        "mercury meniscus and bounce",
+        "aneroid gear hysteresis and shock damage",
+        "cuff/tube leaks",
+        "operator timing and Korotkoff sounds are part of the reading ritual"
+      ],
+      "sources": [
+        {
+          "title": "Sphygmomanometer",
+          "url": "https://en.wikipedia.org/wiki/Sphygmomanometer"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: mercury aneroid sphygmomanometer gauge",
+          "url": "https://commons.wikimedia.org/w/index.php?search=mercury+aneroid+sphygmomanometer+gauge&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "P36",
+      "section": "P",
+      "name": "Quartz-fibre self-reading pocket dosimeter",
+      "representative_names_models": "Lauritsen electroscope; Victoreen Model 541; Landsverk pocket dosimeters",
+      "measured_or_indicated": "Accumulated ionising-radiation dose",
+      "era": "1937-c.1990s common; collectors and limited specialist use today",
+      "date_confidence": "H",
+      "quirks_to_simulate": [
+        "Tiny hairline viewed through an eyepiece",
+        "electrostatic leakage and zero drift",
+        "shock sensitivity",
+        "limited range then saturation",
+        "recharge/reset step can shift zero",
+        "moisture affects insulation",
+        "reading depends on illumination and eye alignment"
+      ],
+      "sources": [
+        {
+          "title": "ORAU Museum: Direct-reading pocket dosimeters",
+          "url": "https://orau.org/health-physics-museum/collection/dosimeters/pocket/index.html"
+        },
+        {
+          "title": "ORAU: Measuring radiation exposure then and now",
+          "url": "https://orau.org/blog/history/measuring-radiation-exposure-then-and-now.html"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: quartz fiber pocket dosimeter Victoreen",
+          "url": "https://commons.wikimedia.org/w/index.php?search=quartz+fiber+pocket+dosimeter+Victoreen&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "P37",
+      "section": "P",
+      "name": "Spring balance, dial force gauge and dynamometer",
+      "representative_names_models": "Salter spring balance; Chatillon dial force gauge; crane dynamometer",
+      "measured_or_indicated": "Force, weight or tension",
+      "era": "1700s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Spring hysteresis and creep",
+        "zero shifts with orientation",
+        "oscillation after load changes",
+        "friction damps small movement",
+        "overload leaves permanent set",
+        "tare knob and peak-hold pointer",
+        "nonlinear scale in some lever mechanisms"
+      ],
+      "sources": [
+        {
+          "title": "Spring scale",
+          "url": "https://en.wikipedia.org/wiki/Spring_scale"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: vintage dial force gauge spring balance",
+          "url": "https://commons.wikimedia.org/w/index.php?search=vintage+dial+force+gauge+spring+balance&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "P38",
+      "section": "P",
+      "name": "Dial indicator, test indicator and dial torque wrench",
+      "representative_names_models": "Starrett/Mitutoyo plunger indicator; lever test indicator; beam/dial torque wrench",
+      "measured_or_indicated": "Small displacement, runout or applied torque",
+      "era": "late 1800s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Gear train magnifies backlash",
+        "reversing error",
+        "stylus cosine error",
+        "revolution-count hand",
+        "pointer can whirl through multiple turns",
+        "shock can skip teeth",
+        "torque versions use a drag maximum hand and elastic-beam hysteresis"
+      ],
+      "sources": [
+        {
+          "title": "Dial indicator",
+          "url": "https://en.wikipedia.org/wiki/Dial_indicator"
+        },
+        {
+          "title": "Torque wrench",
+          "url": "https://en.wikipedia.org/wiki/Torque_wrench"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: dial indicator torque wrench drag pointer",
+          "url": "https://commons.wikimedia.org/w/index.php?search=dial+indicator+torque+wrench+drag+pointer&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "P39",
+      "section": "P",
+      "name": "Mechanical tachometer and eddy-current speedometer",
+      "representative_names_models": "Centrifugal tachometers; magnetic drag-cup speedometers; Smiths and Jaeger instruments",
+      "measured_or_indicated": "Rotational speed or road speed",
+      "era": "1817-present; mechanical automotive versions dominant c.1900s-1980s",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Cable whip and needle bounce",
+        "centrifugal linkage nonlinearity",
+        "eddy-current drag depends on magnet strength and temperature",
+        "viscous cup damping",
+        "slow return",
+        "odometer gearing noise",
+        "hard-stop chatter at zero"
+      ],
+      "sources": [
+        {
+          "title": "Smiths Instruments: History of the tachometer",
+          "url": "https://www.smiths-instruments.co.uk/the-history-of-the-tachometer/"
+        },
+        {
+          "title": "Speedometer",
+          "url": "https://en.wikipedia.org/wiki/Speedometer"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: vintage Smiths eddy current speedometer tachometer",
+          "url": "https://commons.wikimedia.org/w/index.php?search=vintage+Smiths+eddy+current+speedometer+tachometer&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "P40",
+      "section": "P",
+      "name": "Chronometric tachometer",
+      "representative_names_models": "Smiths chronometric racing and aircraft tachometers; escapement-and-clutch mechanism",
+      "measured_or_indicated": "Rotational speed averaged over timed samples",
+      "era": "c.1920s-1960s common; still restored and reproduced",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Needle advances in tiny timed steps rather than continuously",
+        "escapement tick",
+        "clutch take-up lag",
+        "lively but oddly steady under vibration",
+        "brief input changes are averaged",
+        "mechanical wear creates periodic hunting"
+      ],
+      "sources": [
+        {
+          "title": "Smiths Instruments: History of the tachometer",
+          "url": "https://www.smiths-instruments.co.uk/the-history-of-the-tachometer/"
+        },
+        {
+          "title": "Tachometer",
+          "url": "https://en.wikipedia.org/wiki/Tachometer"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: Smiths chronometric tachometer",
+          "url": "https://commons.wikimedia.org/w/index.php?search=Smiths+chronometric+tachometer&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "P41",
+      "section": "P",
+      "name": "Mechanical odometer, cyclometer and utility-meter register",
+      "representative_names_models": "Number drums, Geneva carries, pointer sub-dials; gas, water and electricity registers",
+      "measured_or_indicated": "Distance, volume, energy, cycles or accumulated count",
+      "era": "1600s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Carry events reveal half-turned digits",
+        "backlash",
+        "non-simultaneous drum rollovers",
+        "small pointer dials alternate direction",
+        "least-significant wheel jitters",
+        "tamper seals and reset pawls",
+        "worn gears may stick then jump"
+      ],
+      "sources": [
+        {
+          "title": "Odometer",
+          "url": "https://en.wikipedia.org/wiki/Odometer"
+        },
+        {
+          "title": "Utility meter",
+          "url": "https://en.wikipedia.org/wiki/Utility_meter"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: mechanical odometer cyclometer utility meter register",
+          "url": "https://commons.wikimedia.org/w/index.php?search=mechanical+odometer+cyclometer+utility+meter+register&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "P42",
+      "section": "P",
+      "name": "Strip-chart and circular-chart recorder",
+      "representative_names_models": "Bristol, Honeywell and Foxboro recorders; clockwork thermographs and barographs",
+      "measured_or_indicated": "One or more variables over time",
+      "era": "late 1800s-present; now specialist/legacy",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Pen friction and deadband",
+        "ink blobs, skipping and dried nibs",
+        "chart paper creep",
+        "clock drift",
+        "backlash in servo linkage",
+        "multi-pen offsets in time",
+        "range-change marks",
+        "circular charts create a seam at each revolution"
+      ],
+      "sources": [
+        {
+          "title": "Chart recorder",
+          "url": "https://en.wikipedia.org/wiki/Chart_recorder"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: vintage strip chart circular chart recorder",
+          "url": "https://commons.wikimedia.org/w/index.php?search=vintage+strip+chart+circular+chart+recorder&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "P43",
+      "section": "P",
+      "name": "Stroboscopic tachometer",
+      "representative_names_models": "Mechanical vibrating-reed strobe; electronic xenon/LED stroboscope",
+      "measured_or_indicated": "Rotational speed or repeated-motion frequency",
+      "era": "c.1910s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Aliasing is the defining quirk: motion appears stationary at the true rate and at harmonics/subharmonics",
+        "phase drifts slowly",
+        "multiple blades create ambiguous solutions",
+        "flash persistence and ambient light alter readability"
+      ],
+      "sources": [
+        {
+          "title": "Stroboscope",
+          "url": "https://en.wikipedia.org/wiki/Stroboscope"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: vintage stroboscopic tachometer",
+          "url": "https://commons.wikimedia.org/w/index.php?search=vintage+stroboscopic+tachometer&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "P44",
+      "section": "P",
+      "name": "Disappearing-filament optical pyrometer",
+      "representative_names_models": "Holborn-Kurlbaum style; Leeds & Northrup optical pyrometers",
+      "measured_or_indicated": "High temperature by matching filament brightness",
+      "era": "c.1901-1980s common; still niche",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Operator turns current until filament visually disappears",
+        "emissivity correction",
+        "colour-vision and fatigue errors",
+        "tinted optics",
+        "filament glows from dark red to bright",
+        "no contact lag but line-of-sight obstruction and smoke matter"
+      ],
+      "sources": [
+        {
+          "title": "Disappearing-filament pyrometer",
+          "url": "https://en.wikipedia.org/wiki/Disappearing-filament_pyrometer"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: disappearing filament optical pyrometer",
+          "url": "https://commons.wikimedia.org/w/index.php?search=disappearing+filament+optical+pyrometer&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "E01",
+      "section": "E",
+      "name": "D’Arsonval / Weston moving-coil meter",
+      "representative_names_models": "Weston Model 60; Simpson 260 movement; panel ammeters and voltmeters",
+      "measured_or_indicated": "DC current or any transduced quantity",
+      "era": "1880s-present",
+      "date_confidence": "H",
+      "quirks_to_simulate": [
+        "Nearly linear scale",
+        "spring return and eddy-current damping",
+        "one or two overshoots",
+        "mirror scale to cancel parallax",
+        "mechanical zero screw",
+        "coil heating changes sensitivity",
+        "magnetic shock, bearing friction and pointer balance affect zero"
+      ],
+      "sources": [
+        {
+          "title": "Smithsonian: Weston potential indicator",
+          "url": "https://americanhistory.si.edu/collections/object/nmah_1276009"
+        },
+        {
+          "title": "Moving-coil meter",
+          "url": "https://en.wikipedia.org/wiki/Moving-coil_meter"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: Weston moving coil analog meter mirror scale",
+          "url": "https://commons.wikimedia.org/w/index.php?search=Weston+moving+coil+analog+meter+mirror+scale&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "E02",
+      "section": "E",
+      "name": "Taut-band meter movement",
+      "representative_names_models": "Suspended moving coil without pivots; high-grade laboratory and aerospace panel meters",
+      "measured_or_indicated": "Current, voltage or transduced variables",
+      "era": "mid-1900s-present; now specialist",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Very low friction and no jewel-bearing stiction",
+        "delicate bands can twist or break under shock",
+        "excellent repeatability",
+        "slower, silkier return than cheap pivots",
+        "zero can shift if the case is rotated"
+      ],
+      "sources": [
+        {
+          "title": "Galvanometer",
+          "url": "https://en.wikipedia.org/wiki/Galvanometer"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: taut band analog panel meter",
+          "url": "https://commons.wikimedia.org/w/index.php?search=taut+band+analog+panel+meter&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "E03",
+      "section": "E",
+      "name": "Moving-iron meter",
+      "representative_names_models": "Attraction and repulsion types; AC switchboard ammeters and voltmeters",
+      "measured_or_indicated": "AC or DC current/voltage",
+      "era": "1880s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Strongly compressed lower scale",
+        "magnetic hysteresis",
+        "buzzing at line frequency",
+        "frequency and waveform errors",
+        "relatively high torque",
+        "pointer may tremble on distorted AC",
+        "residual magnetism leaves a small zero offset"
+      ],
+      "sources": [
+        {
+          "title": "Moving-iron instrument",
+          "url": "https://en.wikipedia.org/wiki/Moving-iron_instrument"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: moving iron AC panel meter",
+          "url": "https://commons.wikimedia.org/w/index.php?search=moving+iron+AC+panel+meter&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "E04",
+      "section": "E",
+      "name": "Electrodynamometer instrument",
+      "representative_names_models": "Siemens electrodynamometer; dynamometer wattmeter",
+      "measured_or_indicated": "AC/DC current, voltage or true power",
+      "era": "1880-c.1930s common; precision descendants remain",
+      "date_confidence": "H",
+      "quirks_to_simulate": [
+        "Low torque and slow response",
+        "square-law scale for current/voltage",
+        "air damping",
+        "delicate current coils",
+        "power meters can read signed centre-zero",
+        "susceptible to external magnetic fields and lead phase error"
+      ],
+      "sources": [
+        {
+          "title": "Smithsonian: Siemens electrodynamometer",
+          "url": "https://americanhistory.si.edu/collections/object/nmah_705918"
+        },
+        {
+          "title": "Electrodynamometer",
+          "url": "https://en.wikipedia.org/wiki/Electrodynamometer"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: Siemens electrodynamometer wattmeter",
+          "url": "https://commons.wikimedia.org/w/index.php?search=Siemens+electrodynamometer+wattmeter&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "E05",
+      "section": "E",
+      "name": "Hot-wire ammeter",
+      "representative_names_models": "Thermal-expansion wire meters in early radio and switchboards",
+      "measured_or_indicated": "RMS-like AC/RF current",
+      "era": "1880s-c.1940s common; niche later",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Slow heating and cooling",
+        "true thermal response to waveform",
+        "ambient-temperature error",
+        "sagging wire and zero drift",
+        "accidental overload stretches or burns the wire",
+        "needle may continue climbing after the signal is removed"
+      ],
+      "sources": [
+        {
+          "title": "Hot-wire instrument",
+          "url": "https://en.wikipedia.org/wiki/Hot-wire_instrument"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: vintage hot wire ammeter",
+          "url": "https://commons.wikimedia.org/w/index.php?search=vintage+hot+wire+ammeter&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "E06",
+      "section": "E",
+      "name": "Thermocouple RF meter",
+      "representative_names_models": "Heater/thermocouple ammeters; vacuum thermocouple RF meters",
+      "measured_or_indicated": "RF current or power via heating",
+      "era": "1910s-present in specialist RF metrology",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Thermal lag and long decay",
+        "approximately RMS response",
+        "heater burnout on overload",
+        "frequency response depends on construction",
+        "ambient drift",
+        "calibration changes after ageing",
+        "tiny signals may not overcome pointer friction"
+      ],
+      "sources": [
+        {
+          "title": "Thermocouple",
+          "url": "https://en.wikipedia.org/wiki/Thermocouple"
+        },
+        {
+          "title": "RF power meter",
+          "url": "https://en.wikipedia.org/wiki/RF_power_meter"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: thermocouple RF ammeter analog meter",
+          "url": "https://commons.wikimedia.org/w/index.php?search=thermocouple+RF+ammeter+analog+meter&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "E07",
+      "section": "E",
+      "name": "Electrostatic voltmeter",
+      "representative_names_models": "Kelvin attracted-disc; quadrant electrometer; high-voltage panel meters",
+      "measured_or_indicated": "High voltage or electrostatic potential",
+      "era": "1870s-present; mainly laboratory/high-voltage niche",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Extremely small torque",
+        "nonlinear square-law scale",
+        "very high input impedance",
+        "charge leakage",
+        "dust and humidity effects",
+        "slow movement",
+        "pointer can cling near zero then jump",
+        "electrostatic attraction may pull into a stop"
+      ],
+      "sources": [
+        {
+          "title": "Electrostatic voltmeter",
+          "url": "https://en.wikipedia.org/wiki/Electrostatic_voltmeter"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: antique electrostatic voltmeter quadrant electrometer",
+          "url": "https://commons.wikimedia.org/w/index.php?search=antique+electrostatic+voltmeter+quadrant+electrometer&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "E08",
+      "section": "E",
+      "name": "Vibrating-reed frequency meter",
+      "representative_names_models": "Frahm reed meter; switchboard 45–65 Hz indicators",
+      "measured_or_indicated": "AC frequency",
+      "era": "c.1900-present; legacy power panels and generators",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "A comb of reeds vibrates, with the resonant one appearing widest or brightest",
+        "neighbouring reeds beat together",
+        "discrete resolution",
+        "harmonics can excite false reeds",
+        "vibration and viewing angle make the answer ambiguous"
+      ],
+      "sources": [
+        {
+          "title": "Vibrating reed",
+          "url": "https://en.wikipedia.org/wiki/Vibrating_reed"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: vibrating reed frequency meter panel",
+          "url": "https://commons.wikimedia.org/w/index.php?search=vibrating+reed+frequency+meter+panel&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "E09",
+      "section": "E",
+      "name": "Mirror / light-spot galvanometer",
+      "representative_names_models": "Thomson mirror galvanometer; ballistic galvanometer with projected light spot",
+      "measured_or_indicated": "Very small current, charge or magnetic-flux change",
+      "era": "1850s-c.1950s common; laboratory demonstrations remain",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "No physical pointer: a light spot sweeps a distant scale",
+        "long natural period",
+        "multiple oscillations",
+        "air damping",
+        "zero drift from suspension twist",
+        "room vibration and lamp alignment",
+        "spot blooms and defocuses"
+      ],
+      "sources": [
+        {
+          "title": "Smithsonian: Galvanometer collection object",
+          "url": "https://americanhistory.si.edu/collections/object/nmah_708469"
+        },
+        {
+          "title": "Mirror galvanometer",
+          "url": "https://en.wikipedia.org/wiki/Mirror_galvanometer"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: mirror galvanometer light spot scale",
+          "url": "https://commons.wikimedia.org/w/index.php?search=mirror+galvanometer+light+spot+scale&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "E10",
+      "section": "E",
+      "name": "String galvanometer",
+      "representative_names_models": "Einthoven electrocardiograph; photographic string oscillograph",
+      "measured_or_indicated": "Rapid electrical waveform, especially ECG",
+      "era": "1901-c.1930s common; historically important",
+      "date_confidence": "H",
+      "quirks_to_simulate": [
+        "A fine conductive string moves in a magnetic field",
+        "tension sets sensitivity and bandwidth",
+        "photographic trace",
+        "damped ringing",
+        "baseline drift",
+        "setup is visibly procedural",
+        "overload can snap or stick the string"
+      ],
+      "sources": [
+        {
+          "title": "String galvanometer",
+          "url": "https://en.wikipedia.org/wiki/String_galvanometer"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: Einthoven string galvanometer ECG",
+          "url": "https://commons.wikimedia.org/w/index.php?search=Einthoven+string+galvanometer+ECG&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "E11",
+      "section": "E",
+      "name": "Ferraris induction meter",
+      "representative_names_models": "Rotating-disc electricity meter; Sangamo and Landis & Gyr watt-hour meters",
+      "measured_or_indicated": "Integrated AC electrical energy",
+      "era": "1880s-present; electronic replacement accelerating since 1990s",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Disc accelerates and coasts under eddy-current torque",
+        "braking magnet",
+        "light-load creep",
+        "shaded-pole hum",
+        "register gear backlash",
+        "disc marker passes periodically",
+        "power-off coast-down",
+        "reverse power may run backward unless blocked"
+      ],
+      "sources": [
+        {
+          "title": "Electricity meter",
+          "url": "https://en.wikipedia.org/wiki/Electricity_meter"
+        },
+        {
+          "title": "Ferraris motor",
+          "url": "https://en.wikipedia.org/wiki/Ferraris_motor"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: Ferraris induction watt hour meter rotating disc",
+          "url": "https://commons.wikimedia.org/w/index.php?search=Ferraris+induction+watt+hour+meter+rotating+disc&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "E12",
+      "section": "E",
+      "name": "Cross-coil / ratiometer gauge",
+      "representative_names_models": "Two-coil fuel and temperature gauges; Wheatstone-bridge ratiometer indicators",
+      "measured_or_indicated": "Resistance ratio, fuel level, temperature or pressure sender output",
+      "era": "1910s-present; dominant automotive form c.1930s-1970s",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Angle depends on current ratio, reducing supply-voltage sensitivity",
+        "weak or absent return spring",
+        "sender noise makes small tremors",
+        "nonlinear sender/coil geometry",
+        "open-circuit faults can drive to an extreme"
+      ],
+      "sources": [
+        {
+          "title": "Ratiometer",
+          "url": "https://en.wikipedia.org/wiki/Ratiometer"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: cross coil ratiometer fuel gauge movement",
+          "url": "https://commons.wikimedia.org/w/index.php?search=cross+coil+ratiometer+fuel+gauge+movement&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "E13",
+      "section": "E",
+      "name": "Thermal bimetal automotive gauge",
+      "representative_names_models": "King-Seeley and Smiths fuel/temperature gauges; pulsed instrument-voltage regulator systems",
+      "measured_or_indicated": "Fuel level, coolant temperature, oil pressure by sender resistance",
+      "era": "1920s-c.1980s common; restoration market remains",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Intentionally sluggish",
+        "heat soak after shutdown",
+        "bimetal hysteresis",
+        "pulsed regulator can cause a faint periodic quiver",
+        "voltage and ambient temperature matter",
+        "sender slosh is averaged",
+        "cold start produces a slow crawl from rest"
+      ],
+      "sources": [
+        {
+          "title": "Fuel gauge",
+          "url": "https://en.wikipedia.org/wiki/Fuel_gauge"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: vintage bimetal automotive fuel temperature gauge",
+          "url": "https://commons.wikimedia.org/w/index.php?search=vintage+bimetal+automotive+fuel+temperature+gauge&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "E14",
+      "section": "E",
+      "name": "Air-core gauge",
+      "representative_names_models": "Two perpendicular coils and permanent-magnet rotor; General Motors clusters and industrial indicators",
+      "measured_or_indicated": "Vehicle speed, fuel, temperature or arbitrary angular command",
+      "era": "1960s-present; common c.1970s-1990s",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "No return spring, so power-off position may be arbitrary",
+        "fast response and 360-degree capability",
+        "rotor can flip to an equivalent angle",
+        "coil imbalance produces nonlinear zones",
+        "supply loss may leave the pointer stranded"
+      ],
+      "sources": [
+        {
+          "title": "Air core gauge",
+          "url": "https://en.wikipedia.org/wiki/Air_core_gauge"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: air core gauge movement instrument cluster",
+          "url": "https://commons.wikimedia.org/w/index.php?search=air+core+gauge+movement+instrument+cluster&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "E15",
+      "section": "E",
+      "name": "Stepper-motor gauge",
+      "representative_names_models": "Switec/Juken X25 and X27.168; VID29; modern instrument-cluster motors",
+      "measured_or_indicated": "Digitally commanded speed, RPM, fuel, temperature and other values",
+      "era": "c.1980s-present",
+      "date_confidence": "H",
+      "quirks_to_simulate": [
+        "Discrete angular steps",
+        "startup homing sweep into a mechanical stop",
+        "stop chatter",
+        "missed steps and lost zero",
+        "rate limiting",
+        "gear lash",
+        "key-off parking behaviour",
+        "some motors allow only about 315 degrees, not a full circle"
+      ],
+      "sources": [
+        {
+          "title": "Adafruit: Switec/Juken X27.168 gauge stepper specifications",
+          "url": "https://www.adafruit.com/product/2424"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: Switec X27.168 gauge stepper motor",
+          "url": "https://commons.wikimedia.org/w/index.php?search=Switec+X27.168+gauge+stepper+motor&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "E16",
+      "section": "E",
+      "name": "Synchro / selsyn remote indicator",
+      "representative_names_models": "Bendix and General Electric synchros; ship, aircraft and radar repeaters",
+      "measured_or_indicated": "Remote angular position such as heading, valve position or antenna bearing",
+      "era": "1910s-present; peak use c.1930s-1970s",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Pointer follows a transmitter electrically",
+        "null hunting",
+        "phase and wiring errors",
+        "smooth but slightly springy torque",
+        "loss of one phase creates wrong or weak positions",
+        "400 Hz aircraft systems may hum",
+        "power-off pointer is free or parked"
+      ],
+      "sources": [
+        {
+          "title": "Synchro",
+          "url": "https://en.wikipedia.org/wiki/Synchro"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: synchro selsyn remote position indicator",
+          "url": "https://commons.wikimedia.org/w/index.php?search=synchro+selsyn+remote+position+indicator&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "E17",
+      "section": "E",
+      "name": "Servo and torque-motor indicator",
+      "representative_names_models": "Autopilot repeaters; radar bearing indicators; industrial servo meters",
+      "measured_or_indicated": "Remote position or electrically computed variable",
+      "era": "1930s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Closed-loop hunting",
+        "velocity and acceleration limits",
+        "gear backlash",
+        "following error",
+        "motor buzz",
+        "end-stop limit switches",
+        "power loss may drop a warning flag or let the pointer drift",
+        "test mode may slew through full scale"
+      ],
+      "sources": [
+        {
+          "title": "Servomechanism",
+          "url": "https://en.wikipedia.org/wiki/Servomechanism"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: servo motor analog indicator gauge",
+          "url": "https://commons.wikimedia.org/w/index.php?search=servo+motor+analog+indicator+gauge&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "E18",
+      "section": "E",
+      "name": "Magnetic latching flag, ball and shutter annunciator",
+      "representative_names_models": "Aircraft OFF flags; red/white magnetic balls; relay semaphore indicators",
+      "measured_or_indicated": "Binary or small-state warning/status indication",
+      "era": "1920s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Snap action",
+        "mechanical bounce",
+        "bistable retention in some designs",
+        "weak coil can leave a half flag",
+        "shutter may slide rather than rotate",
+        "power-loss state is intentionally conspicuous",
+        "paint chips and dirty pivots add authenticity"
+      ],
+      "sources": [
+        {
+          "title": "Annunciator panel",
+          "url": "https://en.wikipedia.org/wiki/Annunciator_panel"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: aircraft magnetic flag annunciator indicator",
+          "url": "https://commons.wikimedia.org/w/index.php?search=aircraft+magnetic+flag+annunciator+indicator&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "E19",
+      "section": "E",
+      "name": "Contact meter relay / limit meter",
+      "representative_names_models": "Pointer meter with adjustable contacts, optical vane or inductive pickups",
+      "measured_or_indicated": "Analog value plus one or more control thresholds",
+      "era": "1930s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Set pointers are manually dragged around the scale",
+        "contact pressure can momentarily pin the indicating hand",
+        "relay chatter and separate reset point",
+        "latching",
+        "optical variants avoid drag but can mis-trigger on dust"
+      ],
+      "sources": [
+        {
+          "title": "WIKA switch contacts in measuring instruments",
+          "url": "https://www.wika.com/en-en/switch_contacts.WIKA"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: analog contact meter relay adjustable setpoint",
+          "url": "https://commons.wikimedia.org/w/index.php?search=analog+contact+meter+relay+adjustable+setpoint&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "E20",
+      "section": "E",
+      "name": "Flip-dot / flip-disc display",
+      "representative_names_models": "Ferranti-Packard and Luminator transit signs; AlfaZeta modules",
+      "measured_or_indicated": "Text, numerals, symbols, bar graphs or mimic diagrams",
+      "era": "1960s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Electromagnetic discs physically flip between two colours",
+        "loud clicks",
+        "row/column update wave",
+        "bistable image with no holding power",
+        "remanence",
+        "stuck, lazy or reversed dots",
+        "excellent sunlight visibility",
+        "oblique views reveal disc thickness"
+      ],
+      "sources": [
+        {
+          "title": "AlfaZeta: Electromagnetic flip-dot displays",
+          "url": "https://flipdots.com/en/home/"
+        },
+        {
+          "title": "Flip-disc display",
+          "url": "https://en.wikipedia.org/wiki/Flip-disc_display"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: flip dot display close up",
+          "url": "https://commons.wikimedia.org/w/index.php?search=flip+dot+display+close+up&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "E21",
+      "section": "E",
+      "name": "Split-flap display",
+      "representative_names_models": "Solari Cifra 5; Solari Udine airport boards; Gino Valle designs",
+      "measured_or_indicated": "Text, time, destinations, prices or status",
+      "era": "1956-present; peak public use c.1960s-1990s",
+      "date_confidence": "H",
+      "quirks_to_simulate": [
+        "Characters appear only after cycling through intervening flaps",
+        "position-dependent update delay",
+        "loud clatter",
+        "flap overshoot, bounce and mis-seating",
+        "faded print",
+        "one module can lag the rest",
+        "power loss freezes the last state"
+      ],
+      "sources": [
+        {
+          "title": "Solari di Udine: Split-flap milestones",
+          "url": "https://www.solari.it/en/awards-and-recognitions/"
+        },
+        {
+          "title": "Split-flap display",
+          "url": "https://en.wikipedia.org/wiki/Split-flap_display"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: Solari split flap display airport board",
+          "url": "https://commons.wikimedia.org/w/index.php?search=Solari+split+flap+display+airport+board&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "E22",
+      "section": "E",
+      "name": "Edgewise meter",
+      "representative_names_models": "Weston and GE edgewise switchboard meters; rack-mounted process indicators",
+      "measured_or_indicated": "Electrical or process variables in dense panels",
+      "era": "1930s-present; peak c.1940s-1980s",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Long shallow scale",
+        "pointer moves like a vertical blade",
+        "reduced panel height but increased parallax",
+        "scale often viewed from below",
+        "neighbouring meters form a trend display",
+        "damping and hard stops remain conventional moving-coil mechanics"
+      ],
+      "sources": [
+        {
+          "title": "Analog meter",
+          "url": "https://en.wikipedia.org/wiki/Analog_meter"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: vintage edgewise panel meter",
+          "url": "https://commons.wikimedia.org/w/index.php?search=vintage+edgewise+panel+meter&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "E23",
+      "section": "E",
+      "name": "Ribbon and tape meter",
+      "representative_names_models": "Moving-colour ribbon indicators; aircraft vertical tape instruments; process tape meters",
+      "measured_or_indicated": "Speed, altitude, temperature, level or arbitrary trend variable",
+      "era": "1930s-present; niche",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "A coloured band or printed tape moves behind a narrow window",
+        "wrap seams and end limits",
+        "belt stretch",
+        "jerky take-up after stiction",
+        "large apparent travel in little panel width",
+        "digits can be half hidden at the window edge"
+      ],
+      "sources": [
+        {
+          "title": "NASA: Vertical-scale instrument evaluation",
+          "url": "https://ntrs.nasa.gov/citations/19650017802"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: vintage ribbon tape meter instrument",
+          "url": "https://commons.wikimedia.org/w/index.php?search=vintage+ribbon+tape+meter+instrument&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "E24",
+      "section": "E",
+      "name": "Roller, drum and cyclometer indicator",
+      "representative_names_models": "Rolling-number frequency meters; drum speedometers; counter drums paired with a pointer",
+      "measured_or_indicated": "Discrete or quasi-continuous numeric value",
+      "era": "1800s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Digits roll through carry transitions",
+        "two numerals may be partly visible",
+        "mechanical inertia and uneven timing",
+        "drum backlash",
+        "a decimal drum can move continuously while higher drums snap",
+        "rollover from 9 to 0 is visually distinctive"
+      ],
+      "sources": [
+        {
+          "title": "Cyclometer",
+          "url": "https://en.wikipedia.org/wiki/Cyclometer"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: rolling drum numeric indicator gauge",
+          "url": "https://commons.wikimedia.org/w/index.php?search=rolling+drum+numeric+indicator+gauge&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "E25",
+      "section": "E",
+      "name": "Concentric multi-pointer instrument",
+      "representative_names_models": "Dual/triple aircraft engine gauges; clock-like multiple shafts; duplex process meters",
+      "measured_or_indicated": "Several related variables in one aperture",
+      "era": "1910s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Pointers cross, overlap and cast separate shadows",
+        "different lengths, colours and damping",
+        "one movement may obscure another’s hub",
+        "parallax differs by pointer height",
+        "failures can leave one hand frozen while others continue"
+      ],
+      "sources": [
+        {
+          "title": "Flight instruments",
+          "url": "https://en.wikipedia.org/wiki/Flight_instruments"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: aircraft concentric multi pointer engine gauge",
+          "url": "https://commons.wikimedia.org/w/index.php?search=aircraft+concentric+multi+pointer+engine+gauge&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "E26",
+      "section": "E",
+      "name": "Barber-pole warning indicator",
+      "representative_names_models": "Striped rotating drum or sliding flag for overspeed, unsafe gear, cabin altitude and control limits",
+      "measured_or_indicated": "Binary warning or moving limit boundary",
+      "era": "1930s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Diagonal stripes create a conspicuous moving texture",
+        "drum may rotate into view or a striped sector may track a limit",
+        "snap action, chatter near threshold and partial exposure",
+        "animation should not resemble a smooth digital fill bar"
+      ],
+      "sources": [
+        {
+          "title": "Warning system",
+          "url": "https://en.wikipedia.org/wiki/Warning_system"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: aircraft barber pole warning indicator",
+          "url": "https://commons.wikimedia.org/w/index.php?search=aircraft+barber+pole+warning+indicator&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "D01",
+      "section": "D",
+      "name": "Incandescent pilot lamp and annunciator",
+      "representative_names_models": "Miniature bayonet bulbs; aircraft post lights; jewel lamps; warning panels",
+      "measured_or_indicated": "Binary status, alarm, backlight or legend illumination",
+      "era": "1880s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Thermal fade-in and fade-out",
+        "brightness and colour temperature vary strongly with voltage",
+        "shared supply droops when many lamps light",
+        "uneven diffuser hotspots",
+        "filament sag, blackened bulbs and random failures",
+        "warm lenses bloom into nearby legends"
+      ],
+      "sources": [
+        {
+          "title": "Incandescent light bulb",
+          "url": "https://en.wikipedia.org/wiki/Incandescent_light_bulb"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: vintage incandescent panel indicator jewel lamp",
+          "url": "https://commons.wikimedia.org/w/index.php?search=vintage+incandescent+panel+indicator+jewel+lamp&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "D02",
+      "section": "D",
+      "name": "Edge-lit engraved acrylic and light-pipe display",
+      "representative_names_models": "Aircraft edge-lit panels; engraved Perspex legends; automotive light pipes",
+      "measured_or_indicated": "Fixed legends, scales, pointers and annunciators",
+      "era": "1930s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Only engraved scratches/lettering glow",
+        "lamp position creates bright and dim regions",
+        "scratches become accidental luminous lines",
+        "adjacent legends leak light",
+        "ageing yellows acrylic",
+        "failed bulbs create asymmetric pools rather than uniform darkness"
+      ],
+      "sources": [
+        {
+          "title": "Lightguide display",
+          "url": "https://en.wikipedia.org/wiki/Lightguide_display"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: edge lit acrylic aircraft instrument panel",
+          "url": "https://commons.wikimedia.org/w/index.php?search=edge+lit+acrylic+aircraft+instrument+panel&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "D03",
+      "section": "D",
+      "name": "Shadow meter / moving-vane tuning indicator",
+      "representative_names_models": "Philips shadow meter; pre-war radio tuning indicators",
+      "measured_or_indicated": "Radio tuning strength, balance or null",
+      "era": "c.1932-c.1950s common",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "A lamp projects the shadow of a moving vane",
+        "shadow width or position is the reading",
+        "lamp ageing changes contrast",
+        "fuzzy penumbra",
+        "warm-up",
+        "mechanical lag",
+        "room light can wash it out",
+        "response is often nonlinear near the null"
+      ],
+      "sources": [
+        {
+          "title": "Tuning indicator",
+          "url": "https://en.wikipedia.org/wiki/Tuning_indicator"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: vintage radio shadow meter tuning indicator",
+          "url": "https://commons.wikimedia.org/w/index.php?search=vintage+radio+shadow+meter+tuning+indicator&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "D04",
+      "section": "D",
+      "name": "Electron-ray “magic eye” tube",
+      "representative_names_models": "6E5, EM34, EM84 and similar tuning indicators",
+      "measured_or_indicated": "Radio tuning, signal level, recording level or balance",
+      "era": "1935-c.1970s common; collector use today",
+      "date_confidence": "H",
+      "quirks_to_simulate": [
+        "Green phosphor wedge or bar opens/closes rather than moving like a pointer",
+        "valve warm-up",
+        "bright central target",
+        "phosphor burn and weak emission",
+        "asymmetric closure",
+        "grid overdrive can make sectors overlap",
+        "room light strongly affects apparent contrast"
+      ],
+      "sources": [
+        {
+          "title": "Radio Museum: 6E5 electron-ray tuning indicator",
+          "url": "https://www.radiomuseum.org/tubes/tube_6e5.html"
+        },
+        {
+          "title": "Magic eye tube",
+          "url": "https://en.wikipedia.org/wiki/Magic_eye_tube"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: 6E5 EM34 magic eye tube glowing",
+          "url": "https://commons.wikimedia.org/w/index.php?search=6E5+EM34+magic+eye+tube+glowing&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "D05",
+      "section": "D",
+      "name": "Nixie numeric cold-cathode tube",
+      "representative_names_models": "Burroughs NIXIE; IN-12, IN-14, ZM1040 and NL-5441",
+      "measured_or_indicated": "Numerals, decimal points and occasional symbols",
+      "era": "c.1955-c.1980 mainstream; boutique revival today",
+      "date_confidence": "H",
+      "quirks_to_simulate": [
+        "Each digit is a separate wire cathode at a different depth and shape",
+        "parallax and digit-specific shadows",
+        "orange glow with blue/purple impurities",
+        "cathode poisoning on rarely used digits",
+        "sputter haze",
+        "high-voltage striking flicker",
+        "multiplex ghosting"
+      ],
+      "sources": [
+        {
+          "title": "Computer History Museum: Nixie tube",
+          "url": "https://www.computerhistory.org/collections/catalog/X1589.99C"
+        },
+        {
+          "title": "Nixie tube",
+          "url": "https://en.wikipedia.org/wiki/Nixie_tube"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: Nixie tube digits close up",
+          "url": "https://commons.wikimedia.org/w/index.php?search=Nixie+tube+digits+close+up&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "D06",
+      "section": "D",
+      "name": "Alphanumeric Nixie tube",
+      "representative_names_models": "Burroughs B-7971 and B-8971; segmented or shaped-cathode alphabet tubes",
+      "measured_or_indicated": "Letters, numerals and symbols",
+      "era": "1960s-c.1980s; collector use today",
+      "date_confidence": "H",
+      "quirks_to_simulate": [
+        "Characters are assembled from unusual long cathode segments or individual shapes",
+        "joints glow brighter",
+        "limited alphabet forces peculiar glyphs",
+        "deep wire stack and parallax",
+        "cathode poisoning",
+        "slow or ghosted character changes under multiplex drive"
+      ],
+      "sources": [
+        {
+          "title": "Computer History Museum: Burroughs B-7971 alphanumeric tube",
+          "url": "https://www.computerhistory.org/collections/catalog/102716702"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: Burroughs B-7971 alphanumeric Nixie",
+          "url": "https://commons.wikimedia.org/w/index.php?search=Burroughs+B-7971+alphanumeric+Nixie&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "D07",
+      "section": "D",
+      "name": "Pixie / top-view cold-cathode display",
+      "representative_names_models": "Philips ZM1050 and ZM1051; Burroughs Pixie variants",
+      "measured_or_indicated": "Numerals and symbols",
+      "era": "c.1960s-c.1970s",
+      "date_confidence": "H",
+      "quirks_to_simulate": [
+        "Digits glow through shaped apertures in a top electrode rather than as free wire numerals",
+        "shallower package",
+        "lower contrast and more halo",
+        "aperture position and obscuration differ by digit",
+        "high-voltage ignition and ageing remain gas-discharge behaviours"
+      ],
+      "sources": [
+        {
+          "title": "Computer History Museum: Pixie/ZM1050 display tube",
+          "url": "https://www.computerhistory.org/collections/catalog/102716699"
+        },
+        {
+          "title": "Nixie tube",
+          "url": "https://en.wikipedia.org/wiki/Nixie_tube"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: Philips ZM1050 Pixie display tube",
+          "url": "https://commons.wikimedia.org/w/index.php?search=Philips+ZM1050+Pixie+display+tube&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "D08",
+      "section": "D",
+      "name": "Panaplex planar gas-discharge display",
+      "representative_names_models": "Burroughs Panaplex II; Sperry planar numeric panels",
+      "measured_or_indicated": "Multi-digit numeric and segmented readouts",
+      "era": "1969-c.1980s common",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Flat orange neon segments share a glass panel",
+        "broad glow and edge bloom",
+        "neighbouring-segment crosstalk",
+        "high-voltage striking",
+        "dim unused segments from leakage",
+        "gradual darkening and sputter deposits",
+        "less depth than Nixie but still visibly gaseous"
+      ],
+      "sources": [
+        {
+          "title": "Panaplex",
+          "url": "https://en.wikipedia.org/wiki/Panaplex"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: Burroughs Panaplex display",
+          "url": "https://commons.wikimedia.org/w/index.php?search=Burroughs+Panaplex+display&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "D09",
+      "section": "D",
+      "name": "Dekatron / glow-transfer counting tube",
+      "representative_names_models": "Ericsson and Mullard GC10-series; ten-position and divide-by-ten tubes",
+      "measured_or_indicated": "Counting state, divider position or rotating indicator",
+      "era": "1949-c.1970s common; collector demonstrations today",
+      "date_confidence": "H",
+      "quirks_to_simulate": [
+        "A single glow dot walks around a ring of cathodes",
+        "each pulse visibly steps",
+        "guide electrodes can cause two-stage motion",
+        "missed counts, reverse stepping and stalls",
+        "warm orange afterglow",
+        "state persists only while powered"
+      ],
+      "sources": [
+        {
+          "title": "Computer History Museum: Dekatron counting tube",
+          "url": "https://www.computerhistory.org/collections/catalog/102716696"
+        },
+        {
+          "title": "Dekatron",
+          "url": "https://en.wikipedia.org/wiki/Dekatron"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: Dekatron counting tube glowing dot",
+          "url": "https://commons.wikimedia.org/w/index.php?search=Dekatron+counting+tube+glowing+dot&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "D10",
+      "section": "D",
+      "name": "Linear neon glow bar",
+      "representative_names_models": "Soviet IN-9 and IN-13; Burroughs linear indicators",
+      "measured_or_indicated": "Analog level, tuning, audio level or process value",
+      "era": "c.1960s-c.1980s; hobby use today",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Glow length follows current but is not perfectly linear",
+        "bright leading edge",
+        "shimmer and small jumps",
+        "starter electrode flash",
+        "hysteresis",
+        "orange column can detach or extinguish at low current",
+        "tube-to-tube variation is large"
+      ],
+      "sources": [
+        {
+          "title": "Nixie tube",
+          "url": "https://en.wikipedia.org/wiki/Nixie_tube"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: IN-13 IN-9 neon bargraph tube",
+          "url": "https://commons.wikimedia.org/w/index.php?search=IN-13+IN-9+neon+bargraph+tube&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "D11",
+      "section": "D",
+      "name": "Numitron / Minitron incandescent segment display",
+      "representative_names_models": "RCA Numitron; IEE and Apollo-era Minitron; DR2000/DR2110",
+      "measured_or_indicated": "Numeric or limited alphanumeric display",
+      "era": "c.1968-c.1980s common; collector use today",
+      "date_confidence": "H",
+      "quirks_to_simulate": [
+        "Tiny tungsten filaments glow warm yellow-white",
+        "visible thermal fade",
+        "inrush current",
+        "segment sag and breakage",
+        "brightness depends on supply and filament age",
+        "more lit segments can visibly load a weak/shared supply",
+        "decimal points often differ in colour and lag"
+      ],
+      "sources": [
+        {
+          "title": "Computer History Museum: Numitron DR2110",
+          "url": "https://www.computerhistory.org/collections/catalog/102716694"
+        },
+        {
+          "title": "Seven-segment display",
+          "url": "https://en.wikipedia.org/wiki/Seven-segment_display"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: Numitron Minitron incandescent display",
+          "url": "https://commons.wikimedia.org/w/index.php?search=Numitron+Minitron+incandescent+display&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "D12",
+      "section": "D",
+      "name": "Vacuum fluorescent display",
+      "representative_names_models": "Noritake Itron; Futaba and NEC calculator, audio and automotive modules",
+      "measured_or_indicated": "Numeric, alphanumeric, bargraph and custom icons",
+      "era": "1967-present",
+      "date_confidence": "H",
+      "quirks_to_simulate": [
+        "Blue-green phosphor with visible filament wires",
+        "filament voltage causes luminance gradient/slant",
+        "multiplex ghosting unless blanked",
+        "phosphor and cathode ageing",
+        "dim sections",
+        "slight warm-up",
+        "high viewing angle and characteristic diffuse bloom through tinted glass"
+      ],
+      "sources": [
+        {
+          "title": "Noritake Itron: VFD history",
+          "url": "https://www.noritake-elec.com/about/history"
+        },
+        {
+          "title": "Noritake Itron: VFD operation and design effects",
+          "url": "https://www.noritake-elec.com/technology/general-technical-information/vfd-operation"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: vacuum fluorescent display VFD close up filament",
+          "url": "https://commons.wikimedia.org/w/index.php?search=vacuum+fluorescent+display+VFD+close+up+filament&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "D13",
+      "section": "D",
+      "name": "LED seven-segment display",
+      "representative_names_models": "Monsanto/HP early modules; HP 5082 series; Kingbright and Lite-On modules",
+      "measured_or_indicated": "Numeric readout",
+      "era": "late 1960s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Multiplex flicker and scan order",
+        "ghost segments during switching",
+        "lens and tinted-filter effects",
+        "dead or weak segments",
+        "thermal brightness drift",
+        "count-dependent dimming occurs with a weak supply, shared resistor or shared current budget—not with a correctly regulated constant-current design"
+      ],
+      "sources": [
+        {
+          "title": "Texas Instruments: LED-display brightness uniformity and ghosting",
+          "url": "https://www.ti.com/lit/pdf/sbva057"
+        },
+        {
+          "title": "Analog Devices: MAX7219 multiplexed LED driver",
+          "url": "https://www.analog.com/en/products/max7219.html"
+        },
+        {
+          "title": "Seven-segment display",
+          "url": "https://en.wikipedia.org/wiki/Seven-segment_display"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: vintage red LED seven segment display",
+          "url": "https://commons.wikimedia.org/w/index.php?search=vintage+red+LED+seven+segment+display&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "D14",
+      "section": "D",
+      "name": "LED 14- and 16-segment starburst display",
+      "representative_names_models": "DL-1414 smart display; HDSP alphanumeric modules; avionics and test gear",
+      "measured_or_indicated": "Letters, numerals and symbols",
+      "era": "1970s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Diagonal joints create bright knots",
+        "many glyphs are compromises",
+        "segment-current mismatch",
+        "multiplex shimmer",
+        "internal-font variants have idiosyncratic lowercase",
+        "shared current limits can dim dense letters",
+        "failed segment changes one glyph into another rather than merely losing a bar"
+      ],
+      "sources": [
+        {
+          "title": "Fourteen-segment display",
+          "url": "https://en.wikipedia.org/wiki/Fourteen-segment_display"
+        },
+        {
+          "title": "Sixteen-segment display",
+          "url": "https://en.wikipedia.org/wiki/Sixteen-segment_display"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: vintage LED 16 segment alphanumeric display",
+          "url": "https://commons.wikimedia.org/w/index.php?search=vintage+LED+16+segment+alphanumeric+display&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "D15",
+      "section": "D",
+      "name": "LED bargraph and moving-dot display",
+      "representative_names_models": "LM3914/LM3915 meters; automotive bar gauges; audio peak bars",
+      "measured_or_indicated": "Level, percentage, frequency bands or threshold state",
+      "era": "1970s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Dot versus bar mode",
+        "discrete thresholds chatter with noisy input",
+        "logarithmic and linear driver variants",
+        "a peak dot may decay separately",
+        "current budget makes full bars dimmer in poor designs",
+        "thermal colour shift",
+        "one dark segment is conspicuous"
+      ],
+      "sources": [
+        {
+          "title": "Texas Instruments LM3914 datasheet",
+          "url": "https://www.ti.com/lit/ds/symlink/lm3914.pdf"
+        },
+        {
+          "title": "LM3914",
+          "url": "https://en.wikipedia.org/wiki/LM3914"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: LED bargraph LM3914 display",
+          "url": "https://commons.wikimedia.org/w/index.php?search=LED+bargraph+LM3914+display&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "D16",
+      "section": "D",
+      "name": "LED dot-matrix and smart alphanumeric module",
+      "representative_names_models": "5x7 matrices; HP intelligent displays; scrolling message modules",
+      "measured_or_indicated": "Text, symbols, plots and coarse gauges",
+      "era": "1970s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Row/column scan lines",
+        "rolling-shutter banding on cameras",
+        "fixed internal fonts",
+        "dead pixels and column drivers",
+        "brightness varies with number of active dots unless current is compensated",
+        "power-up test patterns, random garbage or a brief blank are period-authentic"
+      ],
+      "sources": [
+        {
+          "title": "Texas Instruments: LED-display brightness uniformity and ghosting",
+          "url": "https://www.ti.com/lit/pdf/sbva057"
+        },
+        {
+          "title": "Dot-matrix display",
+          "url": "https://en.wikipedia.org/wiki/Dot-matrix_display"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: vintage LED dot matrix smart display",
+          "url": "https://commons.wikimedia.org/w/index.php?search=vintage+LED+dot+matrix+smart+display&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "D17",
+      "section": "D",
+      "name": "Monochrome storage plasma panel",
+      "representative_names_models": "University of Illinois PLATO panels; Owens-Illinois and IBM orange plasma displays",
+      "measured_or_indicated": "Text, graphics, terminals and instrument pages",
+      "era": "1964-c.1990s; specialist descendants later",
+      "date_confidence": "H",
+      "quirks_to_simulate": [
+        "Each orange cell behaves like a tiny neon lamp and can be electrically bistable",
+        "write/erase flashes",
+        "broad glow and grid structure",
+        "burn-in",
+        "panel hum and high-voltage drive",
+        "persistence is electrical memory, not merely phosphor decay"
+      ],
+      "sources": [
+        {
+          "title": "University of Illinois: Plasma display invention",
+          "url": "https://ece.illinois.edu/about/history/hall-of-fame/plasmas"
+        },
+        {
+          "title": "Plasma display",
+          "url": "https://en.wikipedia.org/wiki/Plasma_display"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: orange monochrome plasma display PLATO",
+          "url": "https://commons.wikimedia.org/w/index.php?search=orange+monochrome+plasma+display+PLATO&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "D18",
+      "section": "D",
+      "name": "Powder and thin-film electroluminescent display",
+      "representative_names_models": "EL panels; Lumineq/Beneq rugged displays; automotive backlights",
+      "measured_or_indicated": "Fixed legends, segmented readouts or monochrome matrix graphics",
+      "era": "1950s-present; matrix peak c.1980s-2000s",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Uniform cyan/green/orange sheet glow",
+        "AC inverter whine",
+        "low daylight contrast",
+        "brightness falls with age and drive",
+        "fixed-legend panels light whole shapes",
+        "multiplexing reduces brightness",
+        "very wide temperature operation and viewing angle"
+      ],
+      "sources": [
+        {
+          "title": "Beneq: Electroluminescent-display technology",
+          "url": "https://www.beneq.com/en/displays/technology/"
+        },
+        {
+          "title": "Electroluminescent display",
+          "url": "https://en.wikipedia.org/wiki/Electroluminescent_display"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: electroluminescent instrument display panel",
+          "url": "https://commons.wikimedia.org/w/index.php?search=electroluminescent+instrument+display+panel&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "D19",
+      "section": "D",
+      "name": "Dynamic-scattering-mode LCD",
+      "representative_names_models": "RCA experimental and early watch/calculator displays",
+      "measured_or_indicated": "Numeric and simple segmented readout",
+      "era": "1968-c.1975 commercially",
+      "date_confidence": "H",
+      "quirks_to_simulate": [
+        "Energised segments become milky/scattering rather than dark",
+        "relatively high voltage and power",
+        "slow response",
+        "modest contrast",
+        "ghost clouds",
+        "illumination geometry matters",
+        "early examples often look silvery-white rather than the later black-on-grey LCD stereotype"
+      ],
+      "sources": [
+        {
+          "title": "IEEE Spectrum: RCA and the first liquid-crystal displays",
+          "url": "https://spectrum.ieee.org/the-father-of-the-lcd"
+        },
+        {
+          "title": "Liquid-crystal display",
+          "url": "https://en.wikipedia.org/wiki/Liquid-crystal_display"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: dynamic scattering LCD early RCA display",
+          "url": "https://commons.wikimedia.org/w/index.php?search=dynamic+scattering+LCD+early+RCA+display&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "D20",
+      "section": "D",
+      "name": "Twisted-nematic segmented LCD",
+      "representative_names_models": "Watches, calculators, meters and custom industrial glass",
+      "measured_or_indicated": "Numeric, icons, bars and fixed legends",
+      "era": "1971-present",
+      "date_confidence": "H",
+      "quirks_to_simulate": [
+        "Strong viewing-angle dependence and contrast inversion",
+        "temperature-dependent response, especially sluggish in cold",
+        "ghost segments from waveform imbalance",
+        "reflective, transmissive and transflective modes look different",
+        "polariser ageing",
+        "weak elastomer contacts cause missing rows"
+      ],
+      "sources": [
+        {
+          "title": "IEEE Spectrum: RCA and the first liquid-crystal displays",
+          "url": "https://spectrum.ieee.org/the-father-of-the-lcd"
+        },
+        {
+          "title": "Twisted nematic field effect",
+          "url": "https://en.wikipedia.org/wiki/Twisted_nematic_field_effect"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: segmented twisted nematic LCD meter",
+          "url": "https://commons.wikimedia.org/w/index.php?search=segmented+twisted+nematic+LCD+meter&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "D21",
+      "section": "D",
+      "name": "STN/FSTN passive-matrix LCD",
+      "representative_names_models": "Industrial HMIs, telephones, test instruments and vehicle displays",
+      "measured_or_indicated": "Text, graphics and segmented or dot-matrix gauges",
+      "era": "1980s-present; peak c.1990s-2000s",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Blue/yellow or green colour cast",
+        "slower response and motion smearing",
+        "crosstalk/ghosting",
+        "temperature compensation",
+        "viewing-angle shifts",
+        "FSTN film improves neutrality but adds its own polarisation tint",
+        "backlights create hot spots"
+      ],
+      "sources": [
+        {
+          "title": "Super-twisted nematic display",
+          "url": "https://en.wikipedia.org/wiki/Super-twisted_nematic_display"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: STN FSTN monochrome LCD instrument",
+          "url": "https://commons.wikimedia.org/w/index.php?search=STN+FSTN+monochrome+LCD+instrument&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "D22",
+      "section": "D",
+      "name": "Cholesteric and other bistable LCD",
+      "representative_names_models": "Kent Displays writing panels; reflective shelf labels and status indicators",
+      "measured_or_indicated": "Persistent text, symbols or status with near-zero holding power",
+      "era": "1990s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Image persists without power",
+        "update can sweep or flash",
+        "slow and temperature-sensitive transitions",
+        "reflective colour changes with angle",
+        "partial updates leave remnants",
+        "pressure marks can temporarily disturb the texture"
+      ],
+      "sources": [
+        {
+          "title": "Cholesteric liquid crystal",
+          "url": "https://en.wikipedia.org/wiki/Cholesteric_liquid_crystal"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: cholesteric bistable LCD display",
+          "url": "https://commons.wikimedia.org/w/index.php?search=cholesteric+bistable+LCD+display&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "D23",
+      "section": "D",
+      "name": "Segmented electrophoretic / e-paper display",
+      "representative_names_models": "E Ink segmented labels, meters, thermostats and low-power indicators",
+      "measured_or_indicated": "Persistent numbers, icons, bars and labels",
+      "era": "late 1990s-present",
+      "date_confidence": "H",
+      "quirks_to_simulate": [
+        "No power needed to hold an image",
+        "full refresh often flashes black/white",
+        "partial-update ghosting",
+        "slow in cold",
+        "pigment edge fringing",
+        "excellent diffuse-light readability but no inherent glow",
+        "physical segments can have rounded, slightly mottled fill"
+      ],
+      "sources": [
+        {
+          "title": "E Ink: Electronic-paper history and technology",
+          "url": "https://www.eink.com/brand/detail/About_E_Ink"
+        },
+        {
+          "title": "Electronic paper",
+          "url": "https://en.wikipedia.org/wiki/Electronic_paper"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: segmented e ink e paper display gauge",
+          "url": "https://commons.wikimedia.org/w/index.php?search=segmented+e+ink+e+paper+display+gauge&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "D24",
+      "section": "D",
+      "name": "Electrochromic segmented display",
+      "representative_names_models": "Viologen, tungsten-oxide and automotive mirror-derived indicators",
+      "measured_or_indicated": "Persistent or semi-persistent symbols, numbers and tint levels",
+      "era": "1970s-present; niche",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Colour front grows and bleaches over time",
+        "switching is much slower than LED",
+        "write/erase asymmetry",
+        "memory after power removal",
+        "limited cycle life and permanent staining",
+        "temperature strongly affects speed and depth of colour"
+      ],
+      "sources": [
+        {
+          "title": "Electrochromism",
+          "url": "https://en.wikipedia.org/wiki/Electrochromism"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: electrochromic segmented display",
+          "url": "https://commons.wikimedia.org/w/index.php?search=electrochromic+segmented+display&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "D25",
+      "section": "D",
+      "name": "Segmented OLED and passive-matrix OLED",
+      "representative_names_models": "Small instrument modules; automotive tell-tales; PMOLED text displays",
+      "measured_or_indicated": "Numbers, icons, text and bar graphs",
+      "era": "late 1990s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "True black and wide viewing angle",
+        "extremely fast pixels but driver may use PWM",
+        "differential ageing and burn-in",
+        "blue emitters usually age fastest",
+        "low-level mura and banding",
+        "bright static segments dim over years",
+        "no lamp-like warm-up"
+      ],
+      "sources": [
+        {
+          "title": "American Chemical Society: OLED milestone",
+          "url": "https://www.acs.org/education/whatischemistry/landmarks/organic-light-emitting-diodes.html"
+        },
+        {
+          "title": "OLED",
+          "url": "https://en.wikipedia.org/wiki/OLED"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: segmented OLED instrument display",
+          "url": "https://commons.wikimedia.org/w/index.php?search=segmented+OLED+instrument+display&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "D26",
+      "section": "D",
+      "name": "CRT oscilloscope, vector and radar display",
+      "representative_names_models": "Round radar PPI; rectangular oscilloscope; vector monitors and engine analysers",
+      "measured_or_indicated": "Waveforms, range/bearing, vectors or computed traces",
+      "era": "1930s-c.2000s mainstream; specialist/collector use remains",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Phosphor persistence and afterglow",
+        "spot bloom with intensity",
+        "focus and astigmatism",
+        "curved glass and parallax",
+        "scan flicker",
+        "retrace",
+        "geometry distortion",
+        "burn-in",
+        "bright centre and dim edges",
+        "reflections in thick safety glass"
+      ],
+      "sources": [
+        {
+          "title": "Cathode-ray tube",
+          "url": "https://en.wikipedia.org/wiki/Cathode-ray_tube"
+        },
+        {
+          "title": "Radar display",
+          "url": "https://en.wikipedia.org/wiki/Radar_display"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: vintage radar PPI CRT oscilloscope display",
+          "url": "https://commons.wikimedia.org/w/index.php?search=vintage+radar+PPI+CRT+oscilloscope+display&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "D27",
+      "section": "D",
+      "name": "Storage CRT",
+      "representative_names_models": "Tektronix direct-view bistable storage tubes; radar and analytical instruments",
+      "measured_or_indicated": "Waveforms or traces that must remain without refresh",
+      "era": "1950s-c.1980s common",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Trace remains until erased",
+        "erase cycle flashes or floods the screen",
+        "limited ability to overwrite",
+        "stored trace blooms and spreads with repeated writing",
+        "dim background glow",
+        "whole-screen fade",
+        "no conventional frame refresh"
+      ],
+      "sources": [
+        {
+          "title": "Storage tube",
+          "url": "https://en.wikipedia.org/wiki/Storage_tube"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: Tektronix storage CRT oscilloscope",
+          "url": "https://commons.wikimedia.org/w/index.php?search=Tektronix+storage+CRT+oscilloscope&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "D28",
+      "section": "D",
+      "name": "Head-up and collimated projected symbology",
+      "representative_names_models": "Reflector gunsights; aircraft HUDs; automotive combiner HUDs",
+      "measured_or_indicated": "Speed, attitude, aiming, navigation and warnings at optical infinity",
+      "era": "1940s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Finite eyebox",
+        "double images from combiner surfaces",
+        "sunlight washout",
+        "green phosphor/LED bloom",
+        "collimation means symbols appear distant while dust stays on the glass",
+        "head movement clips or shifts imagery",
+        "focus and parallax errors are installation-specific"
+      ],
+      "sources": [
+        {
+          "title": "Head-up display",
+          "url": "https://en.wikipedia.org/wiki/Head-up_display"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: vintage aircraft head up display HUD symbology",
+          "url": "https://commons.wikimedia.org/w/index.php?search=vintage+aircraft+head+up+display+HUD+symbology&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "D29",
+      "section": "D",
+      "name": "Electrowetting and interferometric MEMS display",
+      "representative_names_models": "Liquavista electrowetting; Qualcomm Mirasol interferometric modulator",
+      "measured_or_indicated": "Reflective low-power text, colour graphics or segmented indicators",
+      "era": "2000s-present; limited commercial adoption",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Very fast reflective switching but angle-dependent colour",
+        "oil-film breakup, pinning and stuck pixels",
+        "unusual meniscus motion during transitions",
+        "interferometric colours shift with angle",
+        "suitable as an exotic boundary before generic raster screens"
+      ],
+      "sources": [
+        {
+          "title": "Electrowetting display",
+          "url": "https://en.wikipedia.org/wiki/Electrowetting_display"
+        },
+        {
+          "title": "Interferometric modulator display",
+          "url": "https://en.wikipedia.org/wiki/Interferometric_modulator_display"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: electrowetting MEMS display pixel",
+          "url": "https://commons.wikimedia.org/w/index.php?search=electrowetting+MEMS+display+pixel&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "D30",
+      "section": "D",
+      "name": "Irreversible chemical and time-temperature indicator",
+      "representative_names_models": "Time-temperature integrators; freeze indicators; sterilisation tape; gas exposure badges",
+      "measured_or_indicated": "Cumulative thermal, chemical or environmental exposure",
+      "era": "mid-1900s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "One-way colour migration or reaction",
+        "threshold delay",
+        "diffusion front rather than a crisp electronic change",
+        "batch variation",
+        "ambient light and humidity effects",
+        "cannot reset",
+        "ideal for witness-state modelling where history matters more than current input"
+      ],
+      "sources": [
+        {
+          "title": "Time temperature indicator",
+          "url": "https://en.wikipedia.org/wiki/Time_temperature_indicator"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: time temperature indicator chemical exposure label",
+          "url": "https://commons.wikimedia.org/w/index.php?search=time+temperature+indicator+chemical+exposure+label&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "X01",
+      "section": "X",
+      "name": "Three-pointer altimeter",
+      "representative_names_models": "Classic sensitive altimeter with 100-, 1,000- and 10,000-foot hands",
+      "measured_or_indicated": "Pressure altitude",
+      "era": "c.1920s-c.1970s common; some remain in service",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Clock-like place-value ambiguity",
+        "a small 10,000-foot pointer is easy to miss",
+        "all hands wrap",
+        "barometric setting window and knob",
+        "static-pressure lag",
+        "mechanical vibration",
+        "NASA documented serious misreading risk, especially near pointer overlaps"
+      ],
+      "sources": [
+        {
+          "title": "NASA: Altimeter display types and reading performance",
+          "url": "https://ntrs.nasa.gov/citations/19660017807"
+        },
+        {
+          "title": "FAA: Pilot’s Handbook of Aeronautical Knowledge, Flight Instruments",
+          "url": "https://www.faa.gov/regulations_policies/handbooks_manuals/aviation/phak"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: three pointer aircraft altimeter",
+          "url": "https://commons.wikimedia.org/w/index.php?search=three+pointer+aircraft+altimeter&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "X02",
+      "section": "X",
+      "name": "Counter-pointer altimeter",
+      "representative_names_models": "Drum counter for thousands plus one fine pointer for hundreds",
+      "measured_or_indicated": "Pressure altitude",
+      "era": "c.1940s-present; common in transport and military aircraft mid-century",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Pointer supplies fine altitude while digits supply coarse place value",
+        "counter carry can occur while pointer crosses zero",
+        "half-visible digits",
+        "mechanical flag for negative/out-of-range",
+        "barometric drum",
+        "vibration can make the counter shimmer"
+      ],
+      "sources": [
+        {
+          "title": "NASA: Altimeter display types and reading performance",
+          "url": "https://ntrs.nasa.gov/citations/19660017807"
+        },
+        {
+          "title": "FAA: Pilot’s Handbook of Aeronautical Knowledge, Flight Instruments",
+          "url": "https://www.faa.gov/regulations_policies/handbooks_manuals/aviation/phak"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: counter pointer aircraft altimeter",
+          "url": "https://commons.wikimedia.org/w/index.php?search=counter+pointer+aircraft+altimeter&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "X03",
+      "section": "X",
+      "name": "Drum-pointer and counter-drum altimeter",
+      "representative_names_models": "Kollsman-style drum-pointer; counter-drum-pointer displays studied by NASA",
+      "measured_or_indicated": "Pressure altitude",
+      "era": "c.1950s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Rolling drums reduce hand-counting but introduce transition ambiguity",
+        "drum can be masked until valid",
+        "pointer often makes one revolution per 1,000 feet",
+        "carry is intentionally delayed or accelerated",
+        "baro setting and low-altitude warning sectors"
+      ],
+      "sources": [
+        {
+          "title": "NASA: Counter-drum-pointer altimeter study",
+          "url": "https://ntrs.nasa.gov/citations/19730011592"
+        },
+        {
+          "title": "NASA: Altimeter display types and reading performance",
+          "url": "https://ntrs.nasa.gov/citations/19660017807"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: counter drum pointer altimeter",
+          "url": "https://commons.wikimedia.org/w/index.php?search=counter+drum+pointer+altimeter&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "X04",
+      "section": "X",
+      "name": "Airspeed indicator with coloured operating arcs",
+      "representative_names_models": "Pitot-static ASI; white, green, yellow arcs and red radial line",
+      "measured_or_indicated": "Indicated airspeed derived from dynamic pressure",
+      "era": "c.1910-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Nonlinear square-root relationship between pressure and speed",
+        "compressed low end",
+        "needle flutter in turbulence",
+        "pitot/static blockage freezes or misleads",
+        "coloured arcs and redline",
+        "adjustable reference bug",
+        "overspeed can drive into a peg"
+      ],
+      "sources": [
+        {
+          "title": "FAA: Pilot’s Handbook of Aeronautical Knowledge, Flight Instruments",
+          "url": "https://www.faa.gov/regulations_policies/handbooks_manuals/aviation/phak"
+        },
+        {
+          "title": "Airspeed indicator",
+          "url": "https://en.wikipedia.org/wiki/Airspeed_indicator"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: aircraft airspeed indicator colored arcs",
+          "url": "https://commons.wikimedia.org/w/index.php?search=aircraft+airspeed+indicator+colored+arcs&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "X05",
+      "section": "X",
+      "name": "Vertical-speed indicator",
+      "representative_names_models": "Calibrated-leak diaphragm VSI; instantaneous VSI variants",
+      "measured_or_indicated": "Rate of climb or descent",
+      "era": "c.1920-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Conventional units deliberately lag by several seconds",
+        "brief acceleration causes a transient",
+        "zero drift",
+        "needle slowly returns to centre",
+        "pressure-line volume alters response",
+        "scale may be linear near zero and compressed at extremes"
+      ],
+      "sources": [
+        {
+          "title": "FAA: Pilot’s Handbook of Aeronautical Knowledge, Flight Instruments",
+          "url": "https://www.faa.gov/regulations_policies/handbooks_manuals/aviation/phak"
+        },
+        {
+          "title": "Variometer",
+          "url": "https://en.wikipedia.org/wiki/Variometer"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: aircraft vertical speed indicator VSI",
+          "url": "https://commons.wikimedia.org/w/index.php?search=aircraft+vertical+speed+indicator+VSI&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "X06",
+      "section": "X",
+      "name": "Mechanical attitude indicator / artificial horizon",
+      "representative_names_models": "Vacuum- or electrically driven gyro horizon; caged aerobatic variants",
+      "measured_or_indicated": "Aircraft pitch and bank attitude",
+      "era": "1920s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Gyro spin-up",
+        "erection to local vertical",
+        "precession and slow drift",
+        "bank scale and sky/ground drum move in opposite visual ways across designs",
+        "tumble beyond limits",
+        "caging knob",
+        "warning flag and lazy settling after uncage"
+      ],
+      "sources": [
+        {
+          "title": "FAA: Pilot’s Handbook of Aeronautical Knowledge, Flight Instruments",
+          "url": "https://www.faa.gov/regulations_policies/handbooks_manuals/aviation/phak"
+        },
+        {
+          "title": "Attitude indicator",
+          "url": "https://en.wikipedia.org/wiki/Attitude_indicator"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: vintage aircraft attitude indicator artificial horizon",
+          "url": "https://commons.wikimedia.org/w/index.php?search=vintage+aircraft+attitude+indicator+artificial+horizon&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "X07",
+      "section": "X",
+      "name": "Turn-and-bank, turn coordinator and slip-skid ball",
+      "representative_names_models": "Needle-and-ball instrument; miniature-aircraft turn coordinator",
+      "measured_or_indicated": "Turn rate and coordination/lateral acceleration",
+      "era": "1910s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Gyro needle has its own lag and damping",
+        "ball sloshes in a curved liquid tube and may stick",
+        "standard-rate marks",
+        "turn coordinator senses roll as well as yaw",
+        "power-off flag",
+        "fluid bubble size and tube curvature matter"
+      ],
+      "sources": [
+        {
+          "title": "FAA: Pilot’s Handbook of Aeronautical Knowledge, Flight Instruments",
+          "url": "https://www.faa.gov/regulations_policies/handbooks_manuals/aviation/phak"
+        },
+        {
+          "title": "Turn and slip indicator",
+          "url": "https://en.wikipedia.org/wiki/Turn_and_slip_indicator"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: turn and bank indicator slip skid ball",
+          "url": "https://commons.wikimedia.org/w/index.php?search=turn+and+bank+indicator+slip+skid+ball&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "X08",
+      "section": "X",
+      "name": "Radar altimeter dial",
+      "representative_names_models": "Low-range radio/radar altimeter with decision-height bug and warning flag",
+      "measured_or_indicated": "Height above terrain",
+      "era": "1940s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Needle is meaningful only at low altitude",
+        "terrain and bank cause lively movement",
+        "OFF/invalid flag",
+        "adjustable decision-height bug triggers lamp/tone",
+        "scale often expands near the ground and compresses high values",
+        "power-up test slews pointer"
+      ],
+      "sources": [
+        {
+          "title": "Radar altimeter",
+          "url": "https://en.wikipedia.org/wiki/Radar_altimeter"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: vintage radar altimeter dial decision height bug",
+          "url": "https://commons.wikimedia.org/w/index.php?search=vintage+radar+altimeter+dial+decision+height+bug&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "X09",
+      "section": "X",
+      "name": "RMI and HSI multi-pointer navigation indicator",
+      "representative_names_models": "Bendix radio magnetic indicator; horizontal situation indicator",
+      "measured_or_indicated": "Magnetic heading, selected course, bearing and deviation",
+      "era": "1950s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Rotating compass card plus one or two bearing needles",
+        "pointers cross and can hide flags",
+        "heading wrap",
+        "compass slaving lag",
+        "NAV/HDG warning flags",
+        "course bar lateral movement",
+        "glideslope pointer",
+        "synchro hunting and power-off misalignment"
+      ],
+      "sources": [
+        {
+          "title": "Radio magnetic indicator",
+          "url": "https://en.wikipedia.org/wiki/Radio_magnetic_indicator"
+        },
+        {
+          "title": "Horizontal situation indicator",
+          "url": "https://en.wikipedia.org/wiki/Horizontal_situation_indicator"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: vintage RMI HSI aircraft instrument",
+          "url": "https://commons.wikimedia.org/w/index.php?search=vintage+RMI+HSI+aircraft+instrument&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "X10",
+      "section": "X",
+      "name": "Aircraft dual- and triple-pointer engine gauge",
+      "representative_names_models": "Manifold pressure/RPM; EGT/fuel flow; torque/temperature; triple tachometer",
+      "measured_or_indicated": "Two or three engine or propeller variables",
+      "era": "1930s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Concentric hands of different colour/length",
+        "separate scales and units",
+        "pointer crossings",
+        "unequal damping",
+        "colour arcs and redlines",
+        "one failed movement may freeze while the others work",
+        "strong hub parallax and shadow stacking"
+      ],
+      "sources": [
+        {
+          "title": "FAA: Pilot’s Handbook of Aeronautical Knowledge, Flight Instruments",
+          "url": "https://www.faa.gov/regulations_policies/handbooks_manuals/aviation/phak"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: aircraft dual triple pointer engine gauge",
+          "url": "https://commons.wikimedia.org/w/index.php?search=aircraft+dual+triple+pointer+engine+gauge&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "X11",
+      "section": "X",
+      "name": "Railway duplex brake and vacuum gauge",
+      "representative_names_models": "Budenberg and Westinghouse duplex gauges; red and black needles",
+      "measured_or_indicated": "Brake-pipe, reservoir, cylinder or vacuum pressures",
+      "era": "1870s-present on heritage and some service stock",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Two pressure systems share one face",
+        "red/black hands and labels vary by railway",
+        "brake applications produce pulses and delayed equalisation",
+        "train-pipe leakage causes a slow creep",
+        "locomotive vibration",
+        "one needle can mask the other"
+      ],
+      "sources": [
+        {
+          "title": "Science Museum railway pressure gauges",
+          "url": "https://collection.sciencemuseumgroup.org.uk/search/objects/object_type/pressure-gauge"
+        },
+        {
+          "title": "Railway air brake",
+          "url": "https://en.wikipedia.org/wiki/Railway_air_brake"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: railway duplex brake vacuum pressure gauge",
+          "url": "https://commons.wikimedia.org/w/index.php?search=railway+duplex+brake+vacuum+pressure+gauge&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "X12",
+      "section": "X",
+      "name": "Steam-boiler water gauge glass",
+      "representative_names_models": "Tubular gauge glass; reflex water gauge; tri-cock checks",
+      "measured_or_indicated": "Boiler water level",
+      "era": "1800s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Boiling water surges and foams",
+        "swell and shrink with steam demand",
+        "glass can appear full when passages are blocked",
+        "blow-down makes violent motion",
+        "red/green reflex optical effects",
+        "protective shields and illumination",
+        "dangerous failure mode"
+      ],
+      "sources": [
+        {
+          "title": "Sight glass",
+          "url": "https://en.wikipedia.org/wiki/Sight_glass"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: steam boiler water gauge glass reflex",
+          "url": "https://commons.wikimedia.org/w/index.php?search=steam+boiler+water+gauge+glass+reflex&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "X13",
+      "section": "X",
+      "name": "Engine-order telegraph / Chadburn",
+      "representative_names_models": "Bridge and engine-room paired dials; Chadburns and pedestal telegraphs",
+      "measured_or_indicated": "Commanded engine direction/speed and acknowledgement",
+      "era": "1870s-c.1950s dominant; electronic descendants remain",
+      "date_confidence": "H",
+      "quirks_to_simulate": [
+        "Bridge handle moves command pointer and rings a bell",
+        "engine room repeats the handle to acknowledge",
+        "two pointers may disagree temporarily",
+        "strong detents",
+        "multiple rapid rings convey urgency",
+        "polished brass, engraved sectors and mechanical clatter are intrinsic"
+      ],
+      "sources": [
+        {
+          "title": "Herreshoff Marine Museum: Engine-room signal gear",
+          "url": "https://herreshoff.org/2020/09/from-the-vault-a-steam-signal/"
+        },
+        {
+          "title": "Engine order telegraph",
+          "url": "https://en.wikipedia.org/wiki/Engine_order_telegraph"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: antique Chadburn engine order telegraph",
+          "url": "https://commons.wikimedia.org/w/index.php?search=antique+Chadburn+engine+order+telegraph&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "X14",
+      "section": "X",
+      "name": "Rotating-neon fathometer",
+      "representative_names_models": "Dorsey Fathometer; Submarine Signal Company Model 808",
+      "measured_or_indicated": "Water depth from acoustic echo time",
+      "era": "1920s-c.1960s common",
+      "date_confidence": "H",
+      "quirks_to_simulate": [
+        "A neon flash seen through a rotating dial appears stationary at the echo depth",
+        "persistence of vision is essential",
+        "multiple echoes and bottom hardness create extra flashes",
+        "motor-speed calibration",
+        "blind zone near zero",
+        "thump/click acoustic cadence"
+      ],
+      "sources": [
+        {
+          "title": "Engineering and Technology History Wiki: Fathometer",
+          "url": "https://ethw.org/Fathometer"
+        },
+        {
+          "title": "The Mariners’ Museum: Fathometer indicator",
+          "url": "https://catalogs.marinersmuseum.org/object/CL1995.8.17"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: Dorsey rotating neon fathometer indicator",
+          "url": "https://commons.wikimedia.org/w/index.php?search=Dorsey+rotating+neon+fathometer+indicator&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "X15",
+      "section": "X",
+      "name": "Mechanical-wheel flasher sonar",
+      "representative_names_models": "Vexilar FL/FLX series and earlier ice-fishing flashers",
+      "measured_or_indicated": "Current sonar return versus depth",
+      "era": "1960s-present",
+      "date_confidence": "H",
+      "quirks_to_simulate": [
+        "A high-speed wheel carries fixed lights that flash at timed positions",
+        "no scrolling history",
+        "colours encode return strength",
+        "visible spoke/scan persistence",
+        "motor whir",
+        "gain blooms targets",
+        "interference creates moving false marks",
+        "bottom lock and zoom remap the scale"
+      ],
+      "sources": [
+        {
+          "title": "Vexilar FLX-28 manual: how flashers work",
+          "url": "https://vexilar.com/pages/vexilar-flx-28-flasher-instruction-manual"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: Vexilar mechanical flasher sonar display",
+          "url": "https://commons.wikimedia.org/w/index.php?search=Vexilar+mechanical+flasher+sonar+display&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "X16",
+      "section": "X",
+      "name": "VU meter / standard volume indicator",
+      "representative_names_models": "Bell Labs/CBS/NBC VU standard; Sifam and Weston audio meters",
+      "measured_or_indicated": "Perceived programme level, not instantaneous peak",
+      "era": "1939-present",
+      "date_confidence": "H",
+      "quirks_to_simulate": [
+        "Specified mechanical ballistics deliberately average audio and miss short peaks",
+        "characteristic overshoot and return",
+        "logarithmic dB scale with 0 VU near the right",
+        "backlit cream face",
+        "pointer trembles with bass and speech rhythm",
+        "calibration depends on source impedance"
+      ],
+      "sources": [
+        {
+          "title": "IEC 60268-17: Standard volume indicators",
+          "url": "https://webstore.iec.ch/en/publication/1216"
+        },
+        {
+          "title": "VU meter",
+          "url": "https://en.wikipedia.org/wiki/VU_meter"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: vintage VU meter Sifam Weston",
+          "url": "https://commons.wikimedia.org/w/index.php?search=vintage+VU+meter+Sifam+Weston&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "X17",
+      "section": "X",
+      "name": "Peak programme meter",
+      "representative_names_models": "BBC Type I; European PPMs with numbered or dB scales",
+      "measured_or_indicated": "Quasi-peak audio programme level",
+      "era": "1930s-present",
+      "date_confidence": "H",
+      "quirks_to_simulate": [
+        "Very fast attack and deliberately slow, nearly constant-rate fall",
+        "little pointer overshoot",
+        "sparse scale markings",
+        "short peaks are integrated rather than shown literally",
+        "stereo pairs can diverge",
+        "overload lamps and peak hold may coexist"
+      ],
+      "sources": [
+        {
+          "title": "BBC R&D Report 1938-13: Development of a peak programme meter",
+          "url": "https://downloads.bbc.co.uk/rd/pubs/reports/1938-13.pdf"
+        },
+        {
+          "title": "Peak programme meter",
+          "url": "https://en.wikipedia.org/wiki/Peak_programme_meter"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: BBC peak programme meter PPM",
+          "url": "https://commons.wikimedia.org/w/index.php?search=BBC+peak+programme+meter+PPM&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "X18",
+      "section": "X",
+      "name": "Radio S-meter",
+      "representative_names_models": "Receiver signal-strength meter, usually S1-S9 then dB above S9",
+      "measured_or_indicated": "Relative received radio signal strength",
+      "era": "1930s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Driven by AGC rather than a precision detector",
+        "low end is often compressed and receiver-specific",
+        "S9 conventionally corresponds to 50 microvolts on HF but real sets vary",
+        "needle rises fast and falls with AGC decay",
+        "zero wanders with gain"
+      ],
+      "sources": [
+        {
+          "title": "ARRL: Practical S-meter calibration and nonlinearity",
+          "url": "https://www.arrl.org/test-procedures-to-measure-bpl-interference"
+        },
+        {
+          "title": "S meter",
+          "url": "https://en.wikipedia.org/wiki/S_meter"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: vintage radio S meter analog",
+          "url": "https://commons.wikimedia.org/w/index.php?search=vintage+radio+S+meter+analog&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "X19",
+      "section": "X",
+      "name": "Geiger-counter analog ratemeter",
+      "representative_names_models": "Victoreen, Ludlum and civil-defence survey meters with GM tube",
+      "measured_or_indicated": "Radiation count rate or inferred dose rate",
+      "era": "1928-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Individual random pulses create authentic Poisson twitch and clicks",
+        "RC averaging makes fast rise/slow settling",
+        "range switch changes scale",
+        "detector dead time causes high-rate nonlinearity or saturation",
+        "zero adjust and battery-check zones",
+        "logarithmic faces common"
+      ],
+      "sources": [
+        {
+          "title": "US NRC: Geiger-Mueller counter test procedure",
+          "url": "https://www.nrc.gov/docs/ML0037/ML003739460.pdf"
+        },
+        {
+          "title": "Geiger counter",
+          "url": "https://en.wikipedia.org/wiki/Geiger_counter"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: vintage Geiger counter analog meter",
+          "url": "https://commons.wikimedia.org/w/index.php?search=vintage+Geiger+counter+analog+meter&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "X20",
+      "section": "X",
+      "name": "Ribbon, rolling-drum and “thermometer” automotive speedometer",
+      "representative_names_models": "1950s-1970s American ribbon speedometers; Citroën rotating drum; linear colour band displays",
+      "measured_or_indicated": "Road speed and sometimes odometer",
+      "era": "1930s-c.1980s common",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Colour ribbon length or drum position replaces a conventional hand",
+        "cable bounce becomes band jitter",
+        "wrap and end stops",
+        "digits can roll behind a mask",
+        "parallax through curved plastic",
+        "illumination gradients",
+        "odometer carry occurs independently"
+      ],
+      "sources": [
+        {
+          "title": "Speedometer",
+          "url": "https://en.wikipedia.org/wiki/Speedometer"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: vintage ribbon speedometer rolling drum dashboard",
+          "url": "https://commons.wikimedia.org/w/index.php?search=vintage+ribbon+speedometer+rolling+drum+dashboard&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "X21",
+      "section": "X",
+      "name": "Automotive econometer / manifold-vacuum gauge",
+      "representative_names_models": "Vacuum economy gauges in 1950s-1980s cars; aftermarket “mileage” meters",
+      "measured_or_indicated": "Engine manifold vacuum as a rough load/economy proxy",
+      "era": "c.1930s-c.1980s common; aftermarket niche remains",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "High vacuum usually reads economical and low vacuum reads power, so scale meaning is inverse to throttle",
+        "intake pulses cause flutter",
+        "restrictors add damping",
+        "altitude shifts baseline",
+        "coloured ECON/POWER sectors overstate precision—it is not a true fuel-flow measurement"
+      ],
+      "sources": [
+        {
+          "title": "Manifold vacuum",
+          "url": "https://en.wikipedia.org/wiki/Manifold_vacuum"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: vintage automotive econometer vacuum gauge",
+          "url": "https://commons.wikimedia.org/w/index.php?search=vintage+automotive+econometer+vacuum+gauge&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "X22",
+      "section": "X",
+      "name": "Storm glass / FitzRoy weather glass",
+      "representative_names_models": "Camphor, salts, alcohol and water in a sealed glass",
+      "measured_or_indicated": "Claimed weather forecast; actually mainly temperature-driven crystallisation",
+      "era": "c.1850s-present as curiosity/decor",
+      "date_confidence": "H",
+      "quirks_to_simulate": [
+        "Crystals grow, dissolve and form threads or flakes over hours",
+        "strong hysteresis and thermal lag",
+        "no needle or numeric scale",
+        "patterns are beautiful but scientifically weak",
+        "enclosure temperature and prior history dominate. A splendid liar in a glass bottle"
+      ],
+      "sources": [
+        {
+          "title": "History of Science Museum Oxford: Storm glass",
+          "url": "https://www.mhs.ox.ac.uk/from-stormglass-to-weatherglass/index.html"
+        },
+        {
+          "title": "Storm glass",
+          "url": "https://en.wikipedia.org/wiki/Storm_glass"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: FitzRoy storm glass crystals",
+          "url": "https://commons.wikimedia.org/w/index.php?search=FitzRoy+storm+glass+crystals&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "X23",
+      "section": "X",
+      "name": "Railway block, semaphore and route repeater",
+      "representative_names_models": "Miniature signal-arm repeaters; block telegraph needles; route-indicator shutters",
+      "measured_or_indicated": "Track occupancy, signal state, route or permission",
+      "era": "1850s-present in heritage and legacy signalling",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Fail-safe gravity or spring return",
+        "snap between named states rather than interpolate",
+        "bell codes",
+        "miniature semaphore arm may bounce",
+        "needles can rest at LINE CLEAR, TRAIN ON LINE or NORMAL",
+        "dirty contacts cause hesitation"
+      ],
+      "sources": [
+        {
+          "title": "Railway signalling",
+          "url": "https://en.wikipedia.org/wiki/Railway_signalling"
+        },
+        {
+          "title": "Block system",
+          "url": "https://en.wikipedia.org/wiki/Block_system"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: railway block telegraph semaphore repeater instrument",
+          "url": "https://commons.wikimedia.org/w/index.php?search=railway+block+telegraph+semaphore+repeater+instrument&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "X24",
+      "section": "X",
+      "name": "Mechanical/electromechanical vertical-tape flight instrument",
+      "representative_names_models": "Vertical-scale airspeed, altitude and engine instruments; moving printed belts",
+      "measured_or_indicated": "Flight or engine variable with a moving linear scale",
+      "era": "1940s-present; mechanical versions mainly mid-century",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "The scale moves while a fixed index stays put",
+        "belt wrap, speed limit and direction can confuse",
+        "printed numbers enter and leave a narrow window",
+        "acceleration can make tape overshoot",
+        "NASA found space savings did not automatically improve readability"
+      ],
+      "sources": [
+        {
+          "title": "NASA: Vertical-scale instrument evaluation",
+          "url": "https://ntrs.nasa.gov/citations/19650017802"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: vintage vertical tape aircraft instrument",
+          "url": "https://commons.wikimedia.org/w/index.php?search=vintage+vertical+tape+aircraft+instrument&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "X25",
+      "section": "X",
+      "name": "Follow-the-pointer photographic exposure meter",
+      "representative_names_models": "Weston Master; Gossen and Sekonic selenium/CdS meters with match-needle rings",
+      "measured_or_indicated": "Scene luminance, exposure value, aperture/shutter combinations",
+      "era": "1930s-c.1990s common; analog models remain",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Meter needle is matched by rotating a second pointer or circle",
+        "logarithmic EV and coupled calculator scales",
+        "selenium cells age and respond slowly in dim light",
+        "needle vibration",
+        "light-angle sensitivity",
+        "zeroing with a cover",
+        "no batteries in many selenium models"
+      ],
+      "sources": [
+        {
+          "title": "Light meter",
+          "url": "https://en.wikipedia.org/wiki/Light_meter"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: Weston Master selenium exposure meter analog",
+          "url": "https://commons.wikimedia.org/w/index.php?search=Weston+Master+selenium+exposure+meter+analog&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "X26",
+      "section": "X",
+      "name": "Goethe weather glass / water barometer",
+      "representative_names_models": "Sealed bulb with open spout and coloured water",
+      "measured_or_indicated": "Atmospheric pressure, confounded by temperature",
+      "era": "1600s-present as household curiosity",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Liquid rises in the spout as external pressure falls",
+        "trapped-air temperature creates large false movement",
+        "evaporation and bubbles",
+        "slow meniscus",
+        "overflow at extremes",
+        "scale is often qualitative “storm/change/fair” rather than calibrated"
+      ],
+      "sources": [
+        {
+          "title": "Weather glass",
+          "url": "https://en.wikipedia.org/wiki/Weather_glass"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: Goethe water barometer weather glass",
+          "url": "https://commons.wikimedia.org/w/index.php?search=Goethe+water+barometer+weather+glass&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "X27",
+      "section": "X",
+      "name": "Tempest Prognosticator / leech barometer",
+      "representative_names_models": "George Merryweather’s 1851 twelve-bottle leech instrument",
+      "measured_or_indicated": "Claimed storm warning from animal behaviour",
+      "era": "1851; exhibition novelty and modern replicas",
+      "date_confidence": "H",
+      "quirks_to_simulate": [
+        "Twelve leeches climb tubes and trip whalebone linkages to ring a bell",
+        "events are discrete, delayed and biologically inconsistent",
+        "multiple bells imply confidence",
+        "maintenance includes living sensors, which is a sentence modern product managers should perhaps not hear"
+      ],
+      "sources": [
+        {
+          "title": "Tempest prognosticator",
+          "url": "https://en.wikipedia.org/wiki/Tempest_prognosticator"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: Tempest Prognosticator leech barometer",
+          "url": "https://commons.wikimedia.org/w/index.php?search=Tempest+Prognosticator+leech+barometer&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "X28",
+      "section": "X",
+      "name": "Mechanical moving-map and roller-map display",
+      "representative_names_models": "Aircraft dead-reckoning moving maps; scrolling road-map navigators; roller chart displays",
+      "measured_or_indicated": "Estimated position, route progress or terrain beneath vehicle",
+      "era": "1930s-c.1980s common in specialist navigation",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Printed map physically scrolls under a fixed aircraft/vehicle symbol",
+        "dead-reckoning drift",
+        "skew and roller slip",
+        "map-sheet ends require manual change",
+        "position reset knobs",
+        "illumination and lens distortion",
+        "route continues moving even when the estimate is wrong"
+      ],
+      "sources": [
+        {
+          "title": "Moving map display",
+          "url": "https://en.wikipedia.org/wiki/Moving_map_display"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: vintage mechanical aircraft moving map roller display",
+          "url": "https://commons.wikimedia.org/w/index.php?search=vintage+mechanical+aircraft+moving+map+roller+display&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "X29",
+      "section": "X",
+      "name": "Automotive tell-tale / “idiot light” cluster",
+      "representative_names_models": "Oil-pressure, charge, coolant and brake warning lamps; bulb-check circuits",
+      "measured_or_indicated": "Binary fault or threshold state",
+      "era": "1930s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Lamp warm-up and fade",
+        "bulb-check sweep at key-on",
+        "pressure switches flicker near idle",
+        "alternator lamp glows dimly under small voltage difference",
+        "shared grounds make unrelated lamps ghost",
+        "coloured filters fade",
+        "failed bulb silently removes the warning"
+      ],
+      "sources": [
+        {
+          "title": "Telltale (automotive)",
+          "url": "https://en.wikipedia.org/wiki/Telltale_(automotive)"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: vintage automotive warning light telltale cluster",
+          "url": "https://commons.wikimedia.org/w/index.php?search=vintage+automotive+warning+light+telltale+cluster&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "X30",
+      "section": "X",
+      "name": "Mechanical float tide gauge and stilling-well recorder",
+      "representative_names_models": "Standard tide gauge with float, pulley, clock and pen drum; tide staff",
+      "measured_or_indicated": "Sea level versus time",
+      "era": "c.1830s-c.1980s dominant; historical and some backup use",
+      "date_confidence": "H",
+      "quirks_to_simulate": [
+        "Stilling well filters waves and adds phase lag",
+        "float/cable friction",
+        "fouling",
+        "clock drift",
+        "pen traces on rotating paper",
+        "datum shifts",
+        "storm surge can run off scale",
+        "remote pointer stations sometimes showed harbour level in real time"
+      ],
+      "sources": [
+        {
+          "title": "NOAA: changing technology for tide measurements",
+          "url": "https://www.noaa.gov/heritage/resource-collections/changing-technology-for-tide-measurements-way-it-was"
+        },
+        {
+          "title": "Tide gauge",
+          "url": "https://en.wikipedia.org/wiki/Tide_gauge"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: mechanical float tide gauge chart recorder",
+          "url": "https://commons.wikimedia.org/w/index.php?search=mechanical+float+tide+gauge+chart+recorder&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "X31",
+      "section": "X",
+      "name": "Mechanical seismograph and smoked-paper drum",
+      "representative_names_models": "Wiechert, Milne and Wood-Anderson instruments; helicorders",
+      "measured_or_indicated": "Ground displacement, velocity or acceleration over time",
+      "era": "1880s-present; mechanical photographic forms mainly historical",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Suspended mass remains inertial while frame moves",
+        "damped ringing",
+        "pen scratches smoked paper or light exposes photographic paper",
+        "trace saturates or runs off drum in large events",
+        "clock marks",
+        "multiple components",
+        "long-period baseline drift"
+      ],
+      "sources": [
+        {
+          "title": "Seismometer",
+          "url": "https://en.wikipedia.org/wiki/Seismometer"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: antique mechanical seismograph smoked paper drum",
+          "url": "https://commons.wikimedia.org/w/index.php?search=antique+mechanical+seismograph+smoked+paper+drum&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "X32",
+      "section": "X",
+      "name": "Railway speed indicator and recorder",
+      "representative_names_models": "Hasler/Teloc and Hasler-Hausshalter instruments; Flaman recorders",
+      "measured_or_indicated": "Locomotive speed plus a tamper-resistant time history",
+      "era": "1891-present; electromechanical RT/A forms from 1930s",
+      "date_confidence": "H",
+      "quirks_to_simulate": [
+        "Large speed needle plus sealed chart or paper tape",
+        "stylus records speed against time/distance",
+        "clockwork noise",
+        "impulse-driven staircase trace",
+        "wheel-slip error",
+        "official seals",
+        "chart replacement and ink marks",
+        "pointer and recorder may disagree slightly"
+      ],
+      "sources": [
+        {
+          "title": "Science Museum: Hasler speed indicator and recorder",
+          "url": "https://collection.sciencemuseumgroup.org.uk/objects/co206464/hasler-speed-indicator-and-recorder"
+        },
+        {
+          "title": "Hasler RT/A history",
+          "url": "https://www.railway-technology.com/contractors/computer/hasler/"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: Hasler Teloc locomotive speed recorder",
+          "url": "https://commons.wikimedia.org/w/index.php?search=Hasler+Teloc+locomotive+speed+recorder&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "X33",
+      "section": "X",
+      "name": "Synchroscope",
+      "representative_names_models": "Weston and switchboard synchronising instruments with FAST/SLOW arrows",
+      "measured_or_indicated": "Frequency difference and phase angle between AC sources",
+      "era": "c.1900-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Pointer rotates continuously when frequencies differ, with direction showing fast or slow",
+        "rotation decelerates as frequencies converge",
+        "final angular position is phase",
+        "operator closes breaker near the twelve-o’clock mark",
+        "jitter and reversals near synchronism are normal"
+      ],
+      "sources": [
+        {
+          "title": "Synchroscope",
+          "url": "https://en.wikipedia.org/wiki/Synchroscope"
+        },
+        {
+          "title": "Synchroscope operating overview",
+          "url": "https://www.weschler.com/blog/what-is-a-synchroscope/"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: vintage analog synchroscope fast slow pointer",
+          "url": "https://commons.wikimedia.org/w/index.php?search=vintage+analog+synchroscope+fast+slow+pointer&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "X34",
+      "section": "X",
+      "name": "Gold-leaf or aluminium-leaf electroscope",
+      "representative_names_models": "Bennet gold-leaf electroscope; Braun electroscope",
+      "measured_or_indicated": "Presence, sign or rough magnitude of electric charge",
+      "era": "1787-present; education and early physics",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Leaves diverge with charge and collapse through leakage",
+        "humidity and dirty insulation accelerate decay",
+        "response is nonlinear and easily saturated",
+        "air currents and vibration",
+        "charge can remain after the source is removed",
+        "no honest precision scale in most versions"
+      ],
+      "sources": [
+        {
+          "title": "Electroscope",
+          "url": "https://en.wikipedia.org/wiki/Electroscope"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: gold leaf electroscope instrument",
+          "url": "https://commons.wikimedia.org/w/index.php?search=gold+leaf+electroscope+instrument&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "X35",
+      "section": "X",
+      "name": "Tachograph / recording speedometer",
+      "representative_names_models": "Kienzle and Veeder-Root paper-disc tachographs",
+      "measured_or_indicated": "Vehicle speed, distance, time and driver activity history",
+      "era": "1920s-present; paper-disc peak c.1950s-2000s",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Clock-driven circular chart",
+        "multiple styli cut fine traces",
+        "cover opening leaves marks",
+        "speed needle and recorded line may lag differently",
+        "chart insertion alignment",
+        "daily seam",
+        "stylus chatter",
+        "tamper seals",
+        "driver changes create separate tracks"
+      ],
+      "sources": [
+        {
+          "title": "Tachograph",
+          "url": "https://en.wikipedia.org/wiki/Tachograph"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: vintage paper disc tachograph speedometer",
+          "url": "https://commons.wikimedia.org/w/index.php?search=vintage+paper+disc+tachograph+speedometer&title=Special:MediaSearch&type=image"
+        }
+      ]
+    },
+    {
+      "id": "X36",
+      "section": "X",
+      "name": "Mechanical G-meter with min/max witness needles",
+      "representative_names_models": "Aircraft accelerometer with central live pointer and resettable positive/negative peak hands",
+      "measured_or_indicated": "Normal acceleration / load factor",
+      "era": "1930s-present",
+      "date_confidence": "M",
+      "quirks_to_simulate": [
+        "Centre at 1 g rather than zero",
+        "live pointer moves both ways",
+        "two drag needles remain at extrema",
+        "abrupt manoeuvres cause overshoot and peg bounce",
+        "reset knob sweeps witnesses back",
+        "vibration leaves a small false peak",
+        "asymmetric positive/negative range"
+      ],
+      "sources": [
+        {
+          "title": "Accelerometer",
+          "url": "https://en.wikipedia.org/wiki/Accelerometer"
+        }
+      ],
+      "image_links": [
+        {
+          "title": "Wikimedia Commons images: vintage aircraft G meter accelerometer witness pointers",
+          "url": "https://commons.wikimedia.org/w/index.php?search=vintage+aircraft+G+meter+accelerometer+witness+pointers&title=Special:MediaSearch&type=image"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,776 @@
+{
+  "title": "Gauge Group Frequency Index",
+  "version": "0.2",
+  "generated": "2026-07-15",
+  "source_catalogue": "gauge_display_research_catalog_v0.2.json",
+  "count_basis": "Primary gauge_group only; every gauge contributes to exactly one primary count. Alternate memberships are listed separately.",
+  "gauge_count": 136,
+  "gauge_group_count": 24,
+  "gauge_groups": [
+    {
+      "gauge_group": "radial_pointer",
+      "name": "Radial pointer",
+      "description": "One or more hands sweep an arc or circle against a fixed scale.",
+      "gauge_count": 56,
+      "percentage_of_catalogue": 41.18,
+      "gauge_ids": [
+        "E01",
+        "E02",
+        "E03",
+        "E04",
+        "E05",
+        "E06",
+        "E07",
+        "E12",
+        "E13",
+        "E14",
+        "E15",
+        "E16",
+        "E17",
+        "E19",
+        "E25",
+        "P03",
+        "P04",
+        "P05",
+        "P06",
+        "P07",
+        "P08",
+        "P09",
+        "P10",
+        "P11",
+        "P13",
+        "P14",
+        "P15",
+        "P16",
+        "P23",
+        "P24",
+        "P26",
+        "P31",
+        "P34",
+        "P35",
+        "P37",
+        "P38",
+        "P39",
+        "P40",
+        "X01",
+        "X02",
+        "X03",
+        "X04",
+        "X05",
+        "X07",
+        "X08",
+        "X10",
+        "X11",
+        "X13",
+        "X16",
+        "X17",
+        "X18",
+        "X19",
+        "X21",
+        "X25",
+        "X33",
+        "X36"
+      ],
+      "example_gauges": [
+        {
+          "gauge_id": "E01",
+          "name": "D’Arsonval / Weston moving-coil meter"
+        },
+        {
+          "gauge_id": "E02",
+          "name": "Taut-band meter movement"
+        },
+        {
+          "gauge_id": "E03",
+          "name": "Moving-iron meter"
+        },
+        {
+          "gauge_id": "E04",
+          "name": "Electrodynamometer instrument"
+        },
+        {
+          "gauge_id": "E05",
+          "name": "Hot-wire ammeter"
+        }
+      ],
+      "alternate_membership_count": 5,
+      "alternate_gauge_ids": [
+        "P02",
+        "P18",
+        "P41",
+        "X09",
+        "X32"
+      ]
+    },
+    {
+      "gauge_group": "segmented_display",
+      "name": "Segmented display",
+      "description": "Fixed luminous, gas-discharge, liquid-crystal or material segments form numbers or glyphs.",
+      "gauge_count": 13,
+      "percentage_of_catalogue": 9.56,
+      "gauge_ids": [
+        "D05",
+        "D06",
+        "D07",
+        "D08",
+        "D11",
+        "D12",
+        "D13",
+        "D14",
+        "D19",
+        "D20",
+        "D23",
+        "D24",
+        "D25"
+      ],
+      "example_gauges": [
+        {
+          "gauge_id": "D05",
+          "name": "Nixie numeric cold-cathode tube"
+        },
+        {
+          "gauge_id": "D06",
+          "name": "Alphanumeric Nixie tube"
+        },
+        {
+          "gauge_id": "D07",
+          "name": "Pixie / top-view cold-cathode display"
+        },
+        {
+          "gauge_id": "D08",
+          "name": "Panaplex planar gas-discharge display"
+        },
+        {
+          "gauge_id": "D11",
+          "name": "Numitron / Minitron incandescent segment display"
+        }
+      ],
+      "alternate_membership_count": 1,
+      "alternate_gauge_ids": [
+        "P16"
+      ]
+    },
+    {
+      "gauge_group": "liquid_column",
+      "name": "Liquid column",
+      "description": "A liquid height, meniscus or liquid/gas boundary moves in a tube, well or gauge glass.",
+      "gauge_count": 9,
+      "percentage_of_catalogue": 6.62,
+      "gauge_ids": [
+        "P01",
+        "P02",
+        "P12",
+        "P17",
+        "P21",
+        "P22",
+        "P27",
+        "X12",
+        "X26"
+      ],
+      "example_gauges": [
+        {
+          "gauge_id": "P01",
+          "name": "Liquid-column manometer: U-tube, well-type and inclined"
+        },
+        {
+          "gauge_id": "P02",
+          "name": "Mercury barometer: cistern, Fortin and wheel forms"
+        },
+        {
+          "gauge_id": "P12",
+          "name": "McLeod compression vacuum gauge"
+        },
+        {
+          "gauge_id": "P17",
+          "name": "Tubular, reflex and transparent sight-level gauges"
+        },
+        {
+          "gauge_id": "P21",
+          "name": "Liquid-in-glass thermometer"
+        }
+      ],
+      "alternate_membership_count": 2,
+      "alternate_gauge_ids": [
+        "P34",
+        "P35"
+      ]
+    },
+    {
+      "gauge_group": "chart_or_trace_recorder",
+      "name": "Chart or trace recorder",
+      "description": "A pen, stylus, light beam or scratch records a changing value on a moving medium.",
+      "gauge_count": 6,
+      "percentage_of_catalogue": 4.41,
+      "gauge_ids": [
+        "P30",
+        "P42",
+        "X30",
+        "X31",
+        "X32",
+        "X35"
+      ],
+      "example_gauges": [
+        {
+          "gauge_id": "P30",
+          "name": "Rain gauge and tipping-bucket recorder"
+        },
+        {
+          "gauge_id": "P42",
+          "name": "Strip-chart and circular-chart recorder"
+        },
+        {
+          "gauge_id": "X30",
+          "name": "Mechanical float tide gauge and stilling-well recorder"
+        },
+        {
+          "gauge_id": "X31",
+          "name": "Mechanical seismograph and smoked-paper drum"
+        },
+        {
+          "gauge_id": "X32",
+          "name": "Railway speed indicator and recorder"
+        }
+      ],
+      "alternate_membership_count": 2,
+      "alternate_gauge_ids": [
+        "E10",
+        "P26"
+      ]
+    },
+    {
+      "gauge_group": "dot_matrix_or_cell_array",
+      "name": "Dot-matrix or cell array",
+      "description": "An addressable matrix of dots or cells forms characters, symbols or fields.",
+      "gauge_count": 5,
+      "percentage_of_catalogue": 3.68,
+      "gauge_ids": [
+        "D16",
+        "D17",
+        "D21",
+        "D22",
+        "D29"
+      ],
+      "example_gauges": [
+        {
+          "gauge_id": "D16",
+          "name": "LED dot-matrix and smart alphanumeric module"
+        },
+        {
+          "gauge_id": "D17",
+          "name": "Monochrome storage plasma panel"
+        },
+        {
+          "gauge_id": "D21",
+          "name": "STN/FSTN passive-matrix LCD"
+        },
+        {
+          "gauge_id": "D22",
+          "name": "Cholesteric and other bistable LCD"
+        },
+        {
+          "gauge_id": "D29",
+          "name": "Electrowetting and interferometric MEMS display"
+        }
+      ],
+      "alternate_membership_count": 1,
+      "alternate_gauge_ids": [
+        "D18"
+      ]
+    },
+    {
+      "gauge_group": "moving_tape_ribbon_or_map",
+      "name": "Moving tape, ribbon or map",
+      "description": "A strip, band, tape or printed map travels through a window or past a fixed index.",
+      "gauge_count": 5,
+      "percentage_of_catalogue": 3.68,
+      "gauge_ids": [
+        "E23",
+        "P18",
+        "X20",
+        "X24",
+        "X28"
+      ],
+      "example_gauges": [
+        {
+          "gauge_id": "E23",
+          "name": "Ribbon and tape meter"
+        },
+        {
+          "gauge_id": "P18",
+          "name": "Float-and-tape tank gauge"
+        },
+        {
+          "gauge_id": "X20",
+          "name": "Ribbon, rolling-drum and “thermometer” automotive speedometer"
+        },
+        {
+          "gauge_id": "X24",
+          "name": "Mechanical/electromechanical vertical-tape flight instrument"
+        },
+        {
+          "gauge_id": "X28",
+          "name": "Mechanical moving-map and roller-map display"
+        }
+      ],
+      "alternate_membership_count": 0,
+      "alternate_gauge_ids": []
+    },
+    {
+      "gauge_group": "rotating_scan_or_strobe",
+      "name": "Rotating scan or strobe",
+      "description": "Timing is converted to apparent position by a rotating scan, flash, glow point or strobe.",
+      "gauge_count": 4,
+      "percentage_of_catalogue": 2.94,
+      "gauge_ids": [
+        "D09",
+        "P43",
+        "X14",
+        "X15"
+      ],
+      "example_gauges": [
+        {
+          "gauge_id": "D09",
+          "name": "Dekatron / glow-transfer counting tube"
+        },
+        {
+          "gauge_id": "P43",
+          "name": "Stroboscopic tachometer"
+        },
+        {
+          "gauge_id": "X14",
+          "name": "Rotating-neon fathometer"
+        },
+        {
+          "gauge_id": "X15",
+          "name": "Mechanical-wheel flasher sonar"
+        }
+      ],
+      "alternate_membership_count": 0,
+      "alternate_gauge_ids": []
+    },
+    {
+      "gauge_group": "bar_or_wedge_display",
+      "name": "Bar, column, wedge or moving-dot display",
+      "description": "Magnitude is shown as a continuous or discrete bar, wedge, column or advancing dot.",
+      "gauge_count": 3,
+      "percentage_of_catalogue": 2.21,
+      "gauge_ids": [
+        "D04",
+        "D10",
+        "D15"
+      ],
+      "example_gauges": [
+        {
+          "gauge_id": "D04",
+          "name": "Electron-ray “magic eye” tube"
+        },
+        {
+          "gauge_id": "D10",
+          "name": "Linear neon glow bar"
+        },
+        {
+          "gauge_id": "D15",
+          "name": "LED bargraph and moving-dot display"
+        }
+      ],
+      "alternate_membership_count": 0,
+      "alternate_gauge_ids": []
+    },
+    {
+      "gauge_group": "colour_or_material_state",
+      "name": "Colour or material-state indicator",
+      "description": "Colour, opacity, scattering, phase or chemical state changes to indicate value or history.",
+      "gauge_count": 3,
+      "percentage_of_catalogue": 2.21,
+      "gauge_ids": [
+        "D18",
+        "D30",
+        "P25"
+      ],
+      "example_gauges": [
+        {
+          "gauge_id": "D18",
+          "name": "Powder and thin-film electroluminescent display"
+        },
+        {
+          "gauge_id": "D30",
+          "name": "Irreversible chemical and time-temperature indicator"
+        },
+        {
+          "gauge_id": "P25",
+          "name": "Thermochromic liquid-crystal strip and leuco-dye indicator"
+        }
+      ],
+      "alternate_membership_count": 0,
+      "alternate_gauge_ids": []
+    },
+    {
+      "gauge_group": "floating_indicator",
+      "name": "Floating indicator",
+      "description": "A buoyant float, bob or bulb directly indicates the value by its position.",
+      "gauge_count": 3,
+      "percentage_of_catalogue": 2.21,
+      "gauge_ids": [
+        "P20",
+        "P28",
+        "P29"
+      ],
+      "example_gauges": [
+        {
+          "gauge_id": "P20",
+          "name": "Variable-area flowmeter / rotameter"
+        },
+        {
+          "gauge_id": "P28",
+          "name": "Hydrometer and floating density gauges"
+        },
+        {
+          "gauge_id": "P29",
+          "name": "Galileo thermometer"
+        }
+      ],
+      "alternate_membership_count": 1,
+      "alternate_gauge_ids": [
+        "X30"
+      ]
+    },
+    {
+      "gauge_group": "indicator_lamp",
+      "name": "Indicator lamp or illuminated legend",
+      "description": "A lamp, lens or illuminated legend indicates a state or coarse condition.",
+      "gauge_count": 3,
+      "percentage_of_catalogue": 2.21,
+      "gauge_ids": [
+        "D01",
+        "D02",
+        "X29"
+      ],
+      "example_gauges": [
+        {
+          "gauge_id": "D01",
+          "name": "Incandescent pilot lamp and annunciator"
+        },
+        {
+          "gauge_id": "D02",
+          "name": "Edge-lit engraved acrylic and light-pipe display"
+        },
+        {
+          "gauge_id": "X29",
+          "name": "Automotive tell-tale / “idiot light” cluster"
+        }
+      ],
+      "alternate_membership_count": 0,
+      "alternate_gauge_ids": []
+    },
+    {
+      "gauge_group": "mechanical_flag_or_shutter",
+      "name": "Mechanical flag, shutter or semaphore",
+      "description": "A flag, shutter, vane, striped drum or semaphore changes between visible states.",
+      "gauge_count": 3,
+      "percentage_of_catalogue": 2.21,
+      "gauge_ids": [
+        "E18",
+        "E26",
+        "X23"
+      ],
+      "example_gauges": [
+        {
+          "gauge_id": "E18",
+          "name": "Magnetic latching flag, ball and shutter annunciator"
+        },
+        {
+          "gauge_id": "E26",
+          "name": "Barber-pole warning indicator"
+        },
+        {
+          "gauge_id": "X23",
+          "name": "Railway block, semaphore and route repeater"
+        }
+      ],
+      "alternate_membership_count": 0,
+      "alternate_gauge_ids": []
+    },
+    {
+      "gauge_group": "rolling_drum_or_counter",
+      "name": "Rolling drum or counter",
+      "description": "Numeral drums, cyclometer wheels or register wheels rotate to form a count or value.",
+      "gauge_count": 3,
+      "percentage_of_catalogue": 2.21,
+      "gauge_ids": [
+        "E11",
+        "E24",
+        "P41"
+      ],
+      "example_gauges": [
+        {
+          "gauge_id": "E11",
+          "name": "Ferraris induction meter"
+        },
+        {
+          "gauge_id": "E24",
+          "name": "Roller, drum and cyclometer indicator"
+        },
+        {
+          "gauge_id": "P41",
+          "name": "Mechanical odometer, cyclometer and utility-meter register"
+        }
+      ],
+      "alternate_membership_count": 4,
+      "alternate_gauge_ids": [
+        "P39",
+        "X02",
+        "X03",
+        "X20"
+      ]
+    },
+    {
+      "gauge_group": "rotating_scale_or_scene",
+      "name": "Rotating scale or scene",
+      "description": "A compass card, scale, drum, horizon or scene rotates behind a fixed reference.",
+      "gauge_count": 3,
+      "percentage_of_catalogue": 2.21,
+      "gauge_ids": [
+        "P33",
+        "X06",
+        "X09"
+      ],
+      "example_gauges": [
+        {
+          "gauge_id": "P33",
+          "name": "Liquid magnetic compass card"
+        },
+        {
+          "gauge_id": "X06",
+          "name": "Mechanical attitude indicator / artificial horizon"
+        },
+        {
+          "gauge_id": "X09",
+          "name": "RMI and HSI multi-pointer navigation indicator"
+        }
+      ],
+      "alternate_membership_count": 1,
+      "alternate_gauge_ids": [
+        "E11"
+      ]
+    },
+    {
+      "gauge_group": "flip_element_array",
+      "name": "Flip-element array",
+      "description": "Bistable discs, dots, tiles or flags physically flip to form symbols or levels.",
+      "gauge_count": 2,
+      "percentage_of_catalogue": 1.47,
+      "gauge_ids": [
+        "E20",
+        "P19"
+      ],
+      "example_gauges": [
+        {
+          "gauge_id": "E20",
+          "name": "Flip-dot / flip-disc display"
+        },
+        {
+          "gauge_id": "P19",
+          "name": "Magnetic level indicator with flip flags"
+        }
+      ],
+      "alternate_membership_count": 0,
+      "alternate_gauge_ids": []
+    },
+    {
+      "gauge_group": "free_mass_or_bubble",
+      "name": "Free mass, leaf, ball or bubble",
+      "description": "A freely deflecting mass, leaf, ball, pendulum or bubble is itself the indicator.",
+      "gauge_count": 2,
+      "percentage_of_catalogue": 1.47,
+      "gauge_ids": [
+        "P32",
+        "X34"
+      ],
+      "example_gauges": [
+        {
+          "gauge_id": "P32",
+          "name": "Bubble level, ball inclinometer and pendulum clinometer"
+        },
+        {
+          "gauge_id": "X34",
+          "name": "Gold-leaf or aluminium-leaf electroscope"
+        }
+      ],
+      "alternate_membership_count": 1,
+      "alternate_gauge_ids": [
+        "X07"
+      ]
+    },
+    {
+      "gauge_group": "linear_pointer",
+      "name": "Linear pointer",
+      "description": "A pointer, blade, hairline or marker moves along a straight or edgewise scale.",
+      "gauge_count": 2,
+      "percentage_of_catalogue": 1.47,
+      "gauge_ids": [
+        "E22",
+        "P36"
+      ],
+      "example_gauges": [
+        {
+          "gauge_id": "E22",
+          "name": "Edgewise meter"
+        },
+        {
+          "gauge_id": "P36",
+          "name": "Quartz-fibre self-reading pocket dosimeter"
+        }
+      ],
+      "alternate_membership_count": 1,
+      "alternate_gauge_ids": [
+        "P37"
+      ]
+    },
+    {
+      "gauge_group": "pattern_or_biological_indicator",
+      "name": "Pattern-forming or biological indicator",
+      "description": "Crystals, living organisms or other emergent patterns provide the indication.",
+      "gauge_count": 2,
+      "percentage_of_catalogue": 1.47,
+      "gauge_ids": [
+        "X22",
+        "X27"
+      ],
+      "example_gauges": [
+        {
+          "gauge_id": "X22",
+          "name": "Storm glass / FitzRoy weather glass"
+        },
+        {
+          "gauge_id": "X27",
+          "name": "Tempest Prognosticator / leech barometer"
+        }
+      ],
+      "alternate_membership_count": 0,
+      "alternate_gauge_ids": []
+    },
+    {
+      "gauge_group": "projected_spot_or_shadow",
+      "name": "Projected spot or shadow",
+      "description": "A projected light spot, vane shadow or optical image moves across a scale.",
+      "gauge_count": 2,
+      "percentage_of_catalogue": 1.47,
+      "gauge_ids": [
+        "D03",
+        "E09"
+      ],
+      "example_gauges": [
+        {
+          "gauge_id": "D03",
+          "name": "Shadow meter / moving-vane tuning indicator"
+        },
+        {
+          "gauge_id": "E09",
+          "name": "Mirror / light-spot galvanometer"
+        }
+      ],
+      "alternate_membership_count": 0,
+      "alternate_gauge_ids": []
+    },
+    {
+      "gauge_group": "resonant_or_oscillating_element",
+      "name": "Resonant or oscillating element",
+      "description": "A vibrating reed, string or other oscillating element is observed directly.",
+      "gauge_count": 2,
+      "percentage_of_catalogue": 1.47,
+      "gauge_ids": [
+        "E08",
+        "E10"
+      ],
+      "example_gauges": [
+        {
+          "gauge_id": "E08",
+          "name": "Vibrating-reed frequency meter"
+        },
+        {
+          "gauge_id": "E10",
+          "name": "String galvanometer"
+        }
+      ],
+      "alternate_membership_count": 0,
+      "alternate_gauge_ids": []
+    },
+    {
+      "gauge_group": "vector_or_storage_trace",
+      "name": "Vector or storage trace",
+      "description": "A beam or equivalent trace draws waveforms, radar returns or stored vector imagery.",
+      "gauge_count": 2,
+      "percentage_of_catalogue": 1.47,
+      "gauge_ids": [
+        "D26",
+        "D27"
+      ],
+      "example_gauges": [
+        {
+          "gauge_id": "D26",
+          "name": "CRT oscilloscope, vector and radar display"
+        },
+        {
+          "gauge_id": "D27",
+          "name": "Storage CRT"
+        }
+      ],
+      "alternate_membership_count": 0,
+      "alternate_gauge_ids": []
+    },
+    {
+      "gauge_group": "optical_null_or_match",
+      "name": "Optical null or match",
+      "description": "The reading is found by visually matching brightness, colour or disappearance at a null.",
+      "gauge_count": 1,
+      "percentage_of_catalogue": 0.74,
+      "gauge_ids": [
+        "P44"
+      ],
+      "example_gauges": [
+        {
+          "gauge_id": "P44",
+          "name": "Disappearing-filament optical pyrometer"
+        }
+      ],
+      "alternate_membership_count": 0,
+      "alternate_gauge_ids": []
+    },
+    {
+      "gauge_group": "projected_symbology",
+      "name": "Projected symbology",
+      "description": "Collimated or head-up symbols are projected into the operator’s field of view.",
+      "gauge_count": 1,
+      "percentage_of_catalogue": 0.74,
+      "gauge_ids": [
+        "D28"
+      ],
+      "example_gauges": [
+        {
+          "gauge_id": "D28",
+          "name": "Head-up and collimated projected symbology"
+        }
+      ],
+      "alternate_membership_count": 0,
+      "alternate_gauge_ids": []
+    },
+    {
+      "gauge_group": "split_flap",
+      "name": "Split-flap display",
+      "description": "Physical character flaps cycle through intermediate positions to reach the target.",
+      "gauge_count": 1,
+      "percentage_of_catalogue": 0.74,
+      "gauge_ids": [
+        "E21"
+      ],
+      "example_gauges": [
+        {
+          "gauge_id": "E21",
+          "name": "Split-flap display"
+        }
+      ],
+      "alternate_membership_count": 0,
+      "alternate_gauge_ids": []
+    }
+  ]
+}

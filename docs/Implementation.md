@@ -31,6 +31,10 @@ Refer to the index file [`Implementation/Index.md`](Implementation/Index.md)
 
 Implementation records describe **how** a design became code.
 
+They should not record:
+- Any implementation state.
+- Reference the design docs - filenames are 1 to 1 mapping.
+
 They should record:
 
 - packages touched;
