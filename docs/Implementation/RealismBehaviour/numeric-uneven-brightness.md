@@ -1,7 +1,7 @@
-# `segment_bleed` / `digit_bleed` — Implementation
+# `uneven_brightness` — Implementation
 
 ## Purpose
-Audits whether segment or digit bleed exists in current code.
+Audits whether uneven brightness exists in current code.
 
 ## Implementation Status
 Not implemented.
@@ -19,16 +19,16 @@ None found in current code.
 - `SegmentedScene`
 
 ## Runtime Flow
-No inactive-mask or bleed state was found.
+No brightness-variation state was found.
 
 ## Configuration
-No `realism.segment_bleed` or `realism.digit_bleed` key was found in current code.
+No `realism.uneven_brightness` key was found in current code.
 
 ## Behaviour
-Current numeric and segmented scenes render active state only.
+No stable per-slot brightness variation matching this design was found.
 
 ## Rendering
-No inactive-segment or inactive-digit overlay path was found.
+No uneven-brightness render path was found.
 
 ## Tests
 No feature-specific tests found.
@@ -37,7 +37,7 @@ No feature-specific tests found.
 This record only covers current repository code.
 
 ## Deviations from Design
-The design describes segment and digit bleed. Current code does not implement them.
+The design describes uneven brightness. Current code does not implement it.
 
 ## Remaining Work
 Add the feature only if this design is scheduled.
@@ -52,5 +52,5 @@ Symbols verified:
 - `SegmentedScene`
 
 Searches performed:
-- `segment_bleed`
-- `digit_bleed`
+- `uneven_brightness`
+- `realism.uneven_brightness`
