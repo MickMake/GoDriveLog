@@ -77,3 +77,4 @@ Unable to verify: 0
 - Keep this file aligned with the per-feature records under `docs/Implementation/`.
 - Do not duplicate implementation status inside design documents.
 - Do not treat parser support alone as implementation evidence for runtime or rendering behaviour.
+- Implementation MD files may exist and be empty. This implies that it hasn't been implemented, but is a placeholder.
