@@ -1,80 +1,123 @@
 # GoDriveLog Documentation Status
 
-Pillar 2 - The "current code truth".
+Pillar 2 - The current project truth.
 
-This file is the single source of truth for current implementation status across the audited design records.
+This file records the current state of documented GoDriveLog features against current code.
+It exists as a map of where the project is now, so the current state can be recovered quickly without replaying old release notes, prompts, branches, or review history.
 
-## Implementation statuses
+This file is not a release gate and not a wishlist. Planned work may appear while a release is active. As work progresses, each row should be updated to reflect the current truth.
 
-- **Implemented** - verified current code provides the audited feature behaviour in scope.
-- **Partially implemented** - verified current code provides part of the feature, but the audited scope also has missing or different behaviour.
-- **Not implemented** - verified current code does not provide the audited feature in scope.
-- **Unable to verify** - current code did not provide enough evidence to verify the audited feature end to end.
+The `Version` column records the release or slice version the item belongs to. It does not always mean the item was successfully implemented in that version.
 
-## Summary
+## Status values
 
-Implemented: 14
-Partially implemented: 9
-Not implemented: 25
-Unable to verify: 0
+| Status | Meaning |
+|—|—|
+| Planned | Accepted into a release or slice plan, but implementation has not landed yet. |
+| In progress | Work has started but is not complete or not yet audited. |
+| Implemented | Current code supports the documented behaviour in scope. |
+| Partially implemented | Some current code support exists, but the implemented behaviour is incomplete, compatibility-only, or differs from the documented scope. |
+| Not implemented | Design or slice exists, but current code does not support it. |
+| Deferred | Deliberately moved out of the current release or active scope. |
+| Superseded | Replaced by another design, config key, implementation path, or naming model. |
+| Unable to verify | Current evidence is insufficient to verify the feature end-to-end. |
 
-## Status register
+## Gauge status summary
 
-| Area | Feature | Design | Implementation | Implementation status | Notes |
-|---|---|---|---|---|---|
-| Dashboard | Numeric Display | [`docs/Designs/Dashboard/numeric-display.md`](Designs/Dashboard/numeric-display.md) | [`docs/Implementation/Dashboard/numeric-display.md`](Implementation/Dashboard/numeric-display.md) | Implemented | Numeric formatting, slot allocation, reusable digit assets, and decimal-point overlay are implemented. |
-| Logging | JSONL Dashboard Replay | [`docs/Designs/Logging/dashboard-jsonl-replay.md`](Designs/Logging/dashboard-jsonl-replay.md) | [`docs/Implementation/Logging/dashboard-jsonl-replay.md`](Implementation/Logging/dashboard-jsonl-replay.md) | Not implemented | No `dashboard replay` subcommand, `--log` flag, replay config struct, or replay source selection was found. The only replay-related code in the CLI is preview-local `replayPending` state for repeating the last manual preview transition. |
-| Logging | Canonical GoDriveLog Event Log | [`docs/Designs/Logging/logger-canonical-event-log.md`](Designs/Logging/logger-canonical-event-log.md) | [`docs/Implementation/Logging/logger-canonical-event-log.md`](Implementation/Logging/logger-canonical-event-log.md) | Partially implemented | Selected logs use `LogConfig.Path` and `LogConfig.Sensors`. `DailyJSONLPath` rotates the output path by day. The writer uses the configured path and appends a date before the existing extension. No `.gdl.jsonl` requirement or schema/version field was found. |
-| Logging | JSONL Log Validation | [`docs/Designs/Logging/logger-jsonl-log-validation.md`](Designs/Logging/logger-jsonl-log-validation.md) | [`docs/Implementation/Logging/logger-jsonl-log-validation.md`](Implementation/Logging/logger-jsonl-log-validation.md) | Not implemented | No `logs` command tree, no `logs validate` subcommand, and no log-schema validation entrypoint were found. |
-| Logging | Session Metadata Sidecar | [`docs/Designs/Logging/logger-session-metadata-sidecar.md`](Designs/Logging/logger-session-metadata-sidecar.md) | [`docs/Implementation/Logging/logger-session-metadata-sidecar.md`](Implementation/Logging/logger-session-metadata-sidecar.md) | Not implemented | `LogConfig` exposes `path` and `sensors` only. No sidecar path or metadata fields were found. |
-| Logging | External Converter Boundary | [`docs/Designs/Logging/tools-converters-external-converter-boundary.md`](Designs/Logging/tools-converters-external-converter-boundary.md) | [`docs/Implementation/Logging/tools-converters-external-converter-boundary.md`](Implementation/Logging/tools-converters-external-converter-boundary.md) | Not implemented | No converter command, package, or repository `tools/` directory was found. |
-| Realism Behaviour | `backlash` | [`docs/Designs/RealismBehaviour/backlash.md`](Designs/RealismBehaviour/backlash.md) | [`docs/Implementation/RealismBehaviour/backlash.md`](Implementation/RealismBehaviour/backlash.md) | Not implemented | `Realism` does not declare a `Backlash` field, and `(*Realism).UnmarshalYAML` does not accept a `backlash` key. |
-| Realism Behaviour | Bar Gauge Overshoot Follow-Up | [`docs/Designs/RealismBehaviour/bar-overshoot-follow-up.md`](Designs/RealismBehaviour/bar-overshoot-follow-up.md) | [`docs/Implementation/RealismBehaviour/bar-overshoot-follow-up.md`](Implementation/RealismBehaviour/bar-overshoot-follow-up.md) | Implemented | No verified deviation found in the audited scope. |
-| Realism Behaviour | Bar Realism Scope | [`docs/Designs/RealismBehaviour/bar-realism-scope.md`](Designs/RealismBehaviour/bar-realism-scope.md) | [`docs/Implementation/RealismBehaviour/bar-realism-scope.md`](Implementation/RealismBehaviour/bar-realism-scope.md) | Partially implemented | `Realism` includes `Damping`, `Hysteresis`, `Stiction`, `Overshoot`, `PegBounce`, `PointerMarkers`, and `MovementPolicy`. It does not include `stepped_fill` or `quantized_fill`. |
-| Realism Behaviour | `calibration_offset` | [`docs/Designs/RealismBehaviour/calibration-offset.md`](Designs/RealismBehaviour/calibration-offset.md) | [`docs/Implementation/RealismBehaviour/calibration-offset.md`](Implementation/RealismBehaviour/calibration-offset.md) | Implemented | No verified deviation found in the audited scope. |
-| Realism Behaviour | `damping` | [`docs/Designs/RealismBehaviour/damping.md`](Designs/RealismBehaviour/damping.md) | [`docs/Implementation/RealismBehaviour/damping.md`](Implementation/RealismBehaviour/damping.md) | Implemented | No verified deviation found in the audited scope. |
-| Realism Behaviour | Gauge Imperfections | [`docs/Designs/RealismBehaviour/gauge-imperfections.md`](Designs/RealismBehaviour/gauge-imperfections.md) | [`docs/Implementation/RealismBehaviour/gauge-imperfections.md`](Implementation/RealismBehaviour/gauge-imperfections.md) | Not implemented | `Realism` does not declare an `Imperfections` field, and `(*Realism).UnmarshalYAML` does not accept `imperfections`. |
-| Realism Behaviour | Gauge Power Lifecycle | [`docs/Designs/RealismBehaviour/gauge-power-lifecycle.md`](Designs/RealismBehaviour/gauge-power-lifecycle.md) | [`docs/Implementation/RealismBehaviour/gauge-power-lifecycle.md`](Implementation/RealismBehaviour/gauge-power-lifecycle.md) | Not implemented | No gauge package config for power lifecycle was found in `Realism` or elsewhere in `Package`. |
-| Realism Behaviour | Gauge Presets | [`docs/Designs/RealismBehaviour/gauge-presets.md`](Designs/RealismBehaviour/gauge-presets.md) | [`docs/Implementation/RealismBehaviour/gauge-presets.md`](Implementation/RealismBehaviour/gauge-presets.md) | Not implemented | No `gauge_presets` root, preset reference field, or preset merge step was found in current code. |
-| Realism Behaviour | `hysteresis` | [`docs/Designs/RealismBehaviour/hysteresis.md`](Designs/RealismBehaviour/hysteresis.md) | [`docs/Implementation/RealismBehaviour/hysteresis.md`](Implementation/RealismBehaviour/hysteresis.md) | Implemented | No verified deviation found in the audited scope. |
-| Realism Behaviour | `realism.imperfections` | [`docs/Designs/RealismBehaviour/imperfections.md`](Designs/RealismBehaviour/imperfections.md) | [`docs/Implementation/RealismBehaviour/imperfections.md`](Implementation/RealismBehaviour/imperfections.md) | Not implemented | `Realism` does not declare an `Imperfections` field, and `(*Realism).UnmarshalYAML` does not accept `imperfections`. |
-| Realism Behaviour | Indicator Realism Scope | [`docs/Designs/RealismBehaviour/indicator-realism-scope.md`](Designs/RealismBehaviour/indicator-realism-scope.md) | [`docs/Implementation/RealismBehaviour/indicator-realism-scope.md`](Implementation/RealismBehaviour/indicator-realism-scope.md) | Partially implemented | `Realism` declares `ThermalFade *ThermalFadeConfig`. No other indicator-specific realism field from this scope note was found. |
-| Realism Behaviour | Gauge Lighting Mode | [`docs/Designs/RealismBehaviour/lighting-mode.md`](Designs/RealismBehaviour/lighting-mode.md) | [`docs/Implementation/RealismBehaviour/lighting-mode.md`](Implementation/RealismBehaviour/lighting-mode.md) | Not implemented | No gauge package lighting-mode config was found in `Package` or `Realism`. |
-| Realism Behaviour | `movement` | [`docs/Designs/RealismBehaviour/movement.md`](Designs/RealismBehaviour/movement.md) | [`docs/Implementation/RealismBehaviour/movement.md`](Implementation/RealismBehaviour/movement.md) | Partially implemented | Odometer movement uses `Odometer.Movement` and accepts `instant`, `linear`, `ease_out`, `bell`, `smooth`, and `click`. `normalizePackage` defaults odometers to `instant` and converts `smooth` and `click` to `instant` with a log message. Radial and bar movement use `Realism.MovementPolicy`, which `validateRealism` restricts to `immediate`, `linear`, and `ease_out`. `normalizePackage` defaults the policy to `immediate`. |
-| Realism Behaviour | `needle_shadow` | [`docs/Designs/RealismBehaviour/needle-shadow.md`](Designs/RealismBehaviour/needle-shadow.md) | [`docs/Implementation/RealismBehaviour/needle-shadow.md`](Implementation/RealismBehaviour/needle-shadow.md) | Implemented | No verified deviation found in the audited scope. |
-| Realism Behaviour | Needle Trail | [`docs/Designs/RealismBehaviour/needle-trail.md`](Designs/RealismBehaviour/needle-trail.md) | [`docs/Implementation/RealismBehaviour/needle-trail.md`](Implementation/RealismBehaviour/needle-trail.md) | Not implemented | `Realism` does not declare a `NeedleTrail` field, and `(*Realism).UnmarshalYAML` does not accept `needle_trail`. |
-| Realism Behaviour | `ghosting` | [`docs/Designs/RealismBehaviour/numeric-ghosting.md`](Designs/RealismBehaviour/numeric-ghosting.md) | [`docs/Implementation/RealismBehaviour/numeric-ghosting.md`](Implementation/RealismBehaviour/numeric-ghosting.md) | Not implemented | No `realism.ghosting` key was found in current code. |
-| Realism Behaviour | `leading_zero_behaviour` | [`docs/Designs/RealismBehaviour/numeric-leading-zero-behaviour.md`](Designs/RealismBehaviour/numeric-leading-zero-behaviour.md) | [`docs/Implementation/RealismBehaviour/numeric-leading-zero-behaviour.md`](Implementation/RealismBehaviour/numeric-leading-zero-behaviour.md) | Not implemented | No `realism.leading_zero_behaviour` key was found in current code. |
-| Realism Behaviour | `load_sag` | [`docs/Designs/RealismBehaviour/numeric-load-sag.md`](Designs/RealismBehaviour/numeric-load-sag.md) | [`docs/Implementation/RealismBehaviour/numeric-load-sag.md`](Implementation/RealismBehaviour/numeric-load-sag.md) | Not implemented | No `realism.load_sag` key was found in current code. |
-| Realism Behaviour | Numeric and Segmented Display Realism Candidates | [`docs/Designs/RealismBehaviour/numeric-segmented-display-realism-candidates.md`](Designs/RealismBehaviour/numeric-segmented-display-realism-candidates.md) | [`docs/Implementation/RealismBehaviour/numeric-segmented-display-realism-candidates.md`](Implementation/RealismBehaviour/numeric-segmented-display-realism-candidates.md) | Not implemented | No keys were found for `per_digit_response_lag`, `leading_zero_behaviour`, `segment_bleed`, `digit_bleed`, `ghosting`, `uneven_brightness`, or `load_sag`. |
-| Realism Behaviour | Candidate: Odometer Backlash | [`docs/Designs/RealismBehaviour/odometer-backlash.md`](Designs/RealismBehaviour/odometer-backlash.md) | [`docs/Implementation/RealismBehaviour/odometer-backlash.md`](Implementation/RealismBehaviour/odometer-backlash.md) | Not implemented | `Realism` does not declare a `Backlash` field, and `(*Realism).UnmarshalYAML` does not accept `backlash`. |
-| Realism Behaviour | `carry_drag` | [`docs/Designs/RealismBehaviour/odometer-carry-drag.md`](Designs/RealismBehaviour/odometer-carry-drag.md) | [`docs/Implementation/RealismBehaviour/odometer-carry-drag.md`](Implementation/RealismBehaviour/odometer-carry-drag.md) | Implemented | No verified deviation found in the audited scope. |
-| Realism Behaviour | `drum_slop` | [`docs/Designs/RealismBehaviour/odometer-drum-slop.md`](Designs/RealismBehaviour/odometer-drum-slop.md) | [`docs/Implementation/RealismBehaviour/odometer-drum-slop.md`](Implementation/RealismBehaviour/odometer-drum-slop.md) | Implemented | No verified deviation found in the audited scope. |
-| Realism Behaviour | Odometer Movement Cleanup Candidates | [`docs/Designs/RealismBehaviour/odometer-movement-cleanup-candidates.md`](Designs/RealismBehaviour/odometer-movement-cleanup-candidates.md) | [`docs/Implementation/RealismBehaviour/odometer-movement-cleanup-candidates.md`](Implementation/RealismBehaviour/odometer-movement-cleanup-candidates.md) | Partially implemented | `validateOdometer` accepts `smooth` and `click`, but `normalizePackage` logs that both are recognised but not implemented and falls them back to `instant`. |
-| Realism Behaviour | `overshoot` | [`docs/Designs/RealismBehaviour/overshoot.md`](Designs/RealismBehaviour/overshoot.md) | [`docs/Implementation/RealismBehaviour/overshoot.md`](Implementation/RealismBehaviour/overshoot.md) | Implemented | No verified deviation found in the audited scope. |
-| Realism Behaviour | `peg_bounce` | [`docs/Designs/RealismBehaviour/peg-bounce.md`](Designs/RealismBehaviour/peg-bounce.md) | [`docs/Implementation/RealismBehaviour/peg-bounce.md`](Implementation/RealismBehaviour/peg-bounce.md) | Implemented | No verified deviation found in the audited scope. |
-| Realism Behaviour | `per_digit_response_lag` | [`docs/Designs/RealismBehaviour/per-digit-response-lag.md`](Designs/RealismBehaviour/per-digit-response-lag.md) | [`docs/Implementation/RealismBehaviour/per-digit-response-lag.md`](Implementation/RealismBehaviour/per-digit-response-lag.md) | Not implemented | No `realism.per_digit_response_lag` key was found in current code. |
-| Realism Behaviour | `quantized_fill` | [`docs/Designs/RealismBehaviour/quantized-fill.md`](Designs/RealismBehaviour/quantized-fill.md) | [`docs/Implementation/RealismBehaviour/quantized-fill.md`](Implementation/RealismBehaviour/quantized-fill.md) | Not implemented | `Realism` does not declare a `QuantizedFill` field, and `(*Realism).UnmarshalYAML` does not accept `quantized_fill`. |
-| Realism Behaviour | Radial Animation Performance | [`docs/Designs/RealismBehaviour/radial-animation-performance.md`](Designs/RealismBehaviour/radial-animation-performance.md) | [`docs/Implementation/RealismBehaviour/radial-animation-performance.md`](Implementation/RealismBehaviour/radial-animation-performance.md) | Partially implemented | No radial-animation-specific config key or tuning surface was found. |
-| Realism Behaviour | Radial Movement Options | [`docs/Designs/RealismBehaviour/radial-movement-options.md`](Designs/RealismBehaviour/radial-movement-options.md) | [`docs/Implementation/RealismBehaviour/radial-movement-options.md`](Implementation/RealismBehaviour/radial-movement-options.md) | Partially implemented | Current code uses `Realism.MovementPolicy`, not a scalar `movement` key. `validateRealism` accepts `immediate`, `linear`, and `ease_out` only. `normalizePackage` defaults the field to `immediate`. |
-| Realism Behaviour | Realism Behaviour Guide | [`docs/Designs/RealismBehaviour/realism-behaviour-guide.md`](Designs/RealismBehaviour/realism-behaviour-guide.md) | [`docs/Implementation/RealismBehaviour/realism-behaviour-guide.md`](Implementation/RealismBehaviour/realism-behaviour-guide.md) | Partially implemented | Implemented current-code keys include `wraparound`, `carry_drag`, `snap_settle`, `drum_slop`, `hysteresis`, `damping`, `stiction`, `overshoot`, `peg_bounce`, `pointer_markers`, `thermal_fade`, `needle_shadow`, `calibration_offset`, and `movement_policy`. |
-| Realism Behaviour | `segment_bleed` / `digit_bleed` | [`docs/Designs/RealismBehaviour/segment-bleed-digit-bleed.md`](Designs/RealismBehaviour/segment-bleed-digit-bleed.md) | [`docs/Implementation/RealismBehaviour/segment-bleed-digit-bleed.md`](Implementation/RealismBehaviour/segment-bleed-digit-bleed.md) | Not implemented | No `realism.segment_bleed` or `realism.digit_bleed` key was found in current code. |
-| Realism Behaviour | `snap_settle` | [`docs/Designs/RealismBehaviour/snap-settle.md`](Designs/RealismBehaviour/snap-settle.md) | [`docs/Implementation/RealismBehaviour/snap-settle.md`](Implementation/RealismBehaviour/snap-settle.md) | Implemented | No verified deviation found in the audited scope. |
-| Realism Behaviour | Gauge Stat Markers | [`docs/Designs/RealismBehaviour/stat-markers.md`](Designs/RealismBehaviour/stat-markers.md) | [`docs/Implementation/RealismBehaviour/stat-markers.md`](Implementation/RealismBehaviour/stat-markers.md) | Not implemented | Current code accepts `realism.pointer_markers`. No stat-marker config key was found. |
-| Realism Behaviour | `stepped_fill` | [`docs/Designs/RealismBehaviour/stepped-fill.md`](Designs/RealismBehaviour/stepped-fill.md) | [`docs/Implementation/RealismBehaviour/stepped-fill.md`](Implementation/RealismBehaviour/stepped-fill.md) | Not implemented | `Realism` does not declare a `SteppedFill` field, and `(*Realism).UnmarshalYAML` does not accept `stepped_fill`. |
-| Realism Behaviour | `stiction` | [`docs/Designs/RealismBehaviour/stiction.md`](Designs/RealismBehaviour/stiction.md) | [`docs/Implementation/RealismBehaviour/stiction.md`](Implementation/RealismBehaviour/stiction.md) | Implemented | No verified deviation found in the audited scope. |
-| Realism Behaviour | `thermal_fade` | [`docs/Designs/RealismBehaviour/thermal-fade.md`](Designs/RealismBehaviour/thermal-fade.md) | [`docs/Implementation/RealismBehaviour/thermal-fade.md`](Implementation/RealismBehaviour/thermal-fade.md) | Implemented | No verified deviation found in the audited scope. |
-| Realism Behaviour | `uneven_brightness` | [`docs/Designs/RealismBehaviour/uneven-brightness.md`](Designs/RealismBehaviour/uneven-brightness.md) | [`docs/Implementation/RealismBehaviour/uneven-brightness.md`](Implementation/RealismBehaviour/uneven-brightness.md) | Not implemented | No `realism.uneven_brightness` key was found in current code. |
-| Realism Behaviour | Value Zones / Warning-Danger Assets | [`docs/Designs/RealismBehaviour/value-zones-warning-danger-assets.md`](Designs/RealismBehaviour/value-zones-warning-danger-assets.md) | [`docs/Implementation/RealismBehaviour/value-zones-warning-danger-assets.md`](Implementation/RealismBehaviour/value-zones-warning-danger-assets.md) | Not implemented | `WidgetConfig` declares `Zones []ZoneConfig` for dashboard `bar_display` widgets. No gauge package `zones` field or gauge-package warning/danger asset switch was found. |
-| Realism Behaviour | `pointer_markers` | [`docs/Designs/RealismBehaviour/witness-markers.md`](Designs/RealismBehaviour/witness-markers.md) | [`docs/Implementation/RealismBehaviour/witness-markers.md`](Implementation/RealismBehaviour/witness-markers.md) | Implemented | No verified deviation found in the audited scope. |
-| Realism Behaviour | `wraparound` | [`docs/Designs/RealismBehaviour/wraparound.md`](Designs/RealismBehaviour/wraparound.md) | [`docs/Implementation/RealismBehaviour/wraparound.md`](Implementation/RealismBehaviour/wraparound.md) | Partially implemented | `Realism` declares `Wraparound *bool`, and `validateRealism` accepts the field for odometer gauges only. Current scene rendering does not branch on that field. `odometerWheelCircular` returns `true` unconditionally and is documented in code as compatibility-only for `realism.wraparound`. |
-| Runtime | MQTT Architecture Notes | [`docs/Designs/Runtime/mqtt-architecture.md`](Designs/Runtime/mqtt-architecture.md) | [`docs/Implementation/Runtime/mqtt-architecture.md`](Implementation/Runtime/mqtt-architecture.md) | Not implemented | No MQTT broker, topic, or transport config was found in current runtime configuration types. |
-| Runtime | GoDriveLog Pi4 Fyne Kiosk Setup | [`docs/Designs/Runtime/setup-kiosk-mode-on-pi4.md`](Designs/Runtime/setup-kiosk-mode-on-pi4.md) | [`docs/Implementation/Runtime/setup-kiosk-mode-on-pi4.md`](Implementation/Runtime/setup-kiosk-mode-on-pi4.md) | Not implemented | No Pi4 kiosk setup command, deployment automation, or Raspberry Pi-specific runtime config was found. |
+| Status | Count |
+|—|—:|
+| Implemented | 24 |
+| Partially implemented | 4 |
+| Planned | 7 |
+| In progress | 0 |
+| Not implemented | 0 |
+| Deferred | 0 |
+| Superseded | 0 |
+| Unable to verify | 0 |
 
-## Rules
+## Gauge implementation status
 
-- Update this register when an audited feature changes implementation status.
-- Keep this file aligned with the per-feature records under `docs/Implementation/`.
-- Do not duplicate implementation status inside design documents.
-- Do not treat parser support alone as implementation evidence for runtime or rendering behaviour.
-- Implementation MD files may exist and be empty. This implies that it hasn't been implemented, but is a placeholder.
+### `radial_pointer`
+
+| Name | Status | Version | Current config key | Quirk/Gauge doc | Notes |
+|—|—|—|—|—|—|
+| `custom_radial` | Implemented | v3.4 | `type: radial` | [Design](Designs/Gauge/radial_pointer/gauges/custom_radial.md) / [Implementation](Implementation/Gauge/radial_pointer/gauges/custom_radial.md) | Current GoDriveLog radial renderer, mapped to the mechanism-first `radial_pointer` group. |
+| `damping` | Implemented | v3.5.8 | `realism.damping` | [Design](Designs/Gauge/radial_pointer/quirks/custom_damping.md) / [Implementation](Implementation/Gauge/radial_pointer/quirks/custom_damping.md) | Radial value-change smoothing. |
+| `stiction` | Implemented | v3.5.9 | `realism.stiction` | [Design](Designs/Gauge/radial_pointer/quirks/custom_stiction.md) / [Implementation](Implementation/Gauge/radial_pointer/quirks/custom_stiction.md) | Holds small display changes until the configured threshold is exceeded. |
+| `overshoot` | Implemented | v3.5.10 | `realism.overshoot` | [Design](Designs/Gauge/radial_pointer/quirks/custom_overshoot.md) / [Implementation](Implementation/Gauge/radial_pointer/quirks/custom_overshoot.md) | Finite overshoot and settle behaviour for radial pointer motion. |
+| `peg_bounce` | Implemented | v3.5.11 | `realism.peg_bounce` | [Design](Designs/Gauge/radial_pointer/quirks/custom_peg_bounce.md) / [Implementation](Implementation/Gauge/radial_pointer/quirks/custom_peg_bounce.md) | End-stop bounce when the displayed pointer hits a configured range limit. |
+| `hysteresis` | Implemented | v3.5.16 | `realism.hysteresis` | [Design](Designs/Gauge/radial_pointer/quirks/custom_hysteresis.md) / [Implementation](Implementation/Gauge/radial_pointer/quirks/custom_hysteresis.md) | Display-side hysteresis/deadband behaviour. |
+| `needle_shadow` | Implemented | v3.5.17 | `realism.needle_shadow` | [Design](Designs/Gauge/radial_pointer/quirks/custom_needle_shadow.md) / [Implementation](Implementation/Gauge/radial_pointer/quirks/custom_needle_shadow.md) | Static renderer depth effect; not dynamic parallax or lighting. |
+| `calibration_offset` | Implemented | v3.5.18 | `realism.calibration_offset` | [Design](Designs/Gauge/radial_pointer/quirks/custom_calibration_offset.md) / [Implementation](Implementation/Gauge/radial_pointer/quirks/custom_calibration_offset.md) | Display-only offset; does not change the source sensor value. |
+| `pointer_markers` / witness markers | Implemented | v3.5 | `realism.pointer_markers` | [Design](Designs/Gauge/radial_pointer/quirks/custom_pointer_markers.md) / [Implementation](Implementation/Gauge/radial_pointer/quirks/custom_pointer_markers.md) | Current config key is `pointer_markers`; older notes may call these witness markers. |
+| `movement_policy` | Partially implemented | v3.5.5 | `realism.movement_policy` | [Design](Designs/Gauge/radial_pointer/quirks/custom_movement_policy.md) / [Implementation](Implementation/Gauge/radial_pointer/quirks/custom_movement_policy.md) | Accepted and used as a runtime transition policy. It is not a standalone physical quirk; visible effect depends on another timed movement behaviour such as damping, overshoot, or peg bounce. |
+
+### `bar_or_wedge_display`
+
+| Name | Status | Version | Current config key | Quirk/Gauge doc | Notes |
+|—|—|—|—|—|—|
+| `custom_bar` | Implemented | v3.4 | `type: bar` | [Design](Designs/Gauge/bar_or_wedge_display/gauges/custom_bar.md) / [Implementation](Implementation/Gauge/bar_or_wedge_display/gauges/custom_bar.md) | Current GoDriveLog continuous bar renderer, mapped to the mechanism-first `bar_or_wedge_display` group. |
+| `custom_segmented` | Implemented | v3.4 | `type: segmented` | [Design](Designs/Gauge/bar_or_wedge_display/gauges/custom_segmented.md) / [Implementation](Implementation/Gauge/bar_or_wedge_display/gauges/custom_segmented.md) | Current GoDriveLog sparse percent-threshold image-selection gauge; intentionally mapped here rather than `segmented_display`. |
+| `damping` | Implemented | v3.5.13 | `realism.damping` | [Design](Designs/Gauge/bar_or_wedge_display/quirks/custom_damping.md) / [Implementation](Implementation/Gauge/bar_or_wedge_display/quirks/custom_damping.md) | Bar fill/reveal smoothing. |
+| `overshoot` | Implemented | v3.5.19 | `realism.overshoot` | [Design](Designs/Gauge/bar_or_wedge_display/quirks/custom_overshoot.md) / [Implementation](Implementation/Gauge/bar_or_wedge_display/quirks/custom_overshoot.md) | Finite overshoot and settle behaviour for displayed fill/reveal extent. |
+| `hysteresis` | Implemented | v3.5.20 | `realism.hysteresis` | [Design](Designs/Gauge/bar_or_wedge_display/quirks/custom_hysteresis.md) / [Implementation](Implementation/Gauge/bar_or_wedge_display/quirks/custom_hysteresis.md) | Display-side hysteresis/deadband behaviour for bar fill/reveal extent. |
+| `stiction` | Implemented | v3.5.21 | `realism.stiction` | [Design](Designs/Gauge/bar_or_wedge_display/quirks/custom_stiction.md) / [Implementation](Implementation/Gauge/bar_or_wedge_display/quirks/custom_stiction.md) | Holds small display changes until the configured threshold is exceeded. |
+| `peg_bounce` | Implemented | v3.5.22 | `realism.peg_bounce` | [Design](Designs/Gauge/bar_or_wedge_display/quirks/custom_peg_bounce.md) / [Implementation](Implementation/Gauge/bar_or_wedge_display/quirks/custom_peg_bounce.md) | End-stop bounce on displayed fill/reveal extent. |
+| `pointer_markers` / witness markers | Implemented | v3.5 | `realism.pointer_markers` | [Design](Designs/Gauge/bar_or_wedge_display/quirks/custom_pointer_markers.md) / [Implementation](Implementation/Gauge/bar_or_wedge_display/quirks/custom_pointer_markers.md) | Current config key is `pointer_markers`; older notes may call these witness markers. |
+| `movement_policy` | Partially implemented | v3.5.5 | `realism.movement_policy` | [Design](Designs/Gauge/bar_or_wedge_display/quirks/custom_movement_policy.md) / [Implementation](Implementation/Gauge/bar_or_wedge_display/quirks/custom_movement_policy.md) | Accepted and used as a runtime transition policy. It is not a standalone physical quirk; visible effect depends on another timed movement behaviour such as damping, overshoot, or peg bounce. |
+
+### `rolling_drum_or_counter`
+
+| Name | Status | Version | Current config key | Quirk/Gauge doc | Notes |
+|—|—|—|—|—|—|
+| `custom_odometer` | Implemented | v3.4 | `type: odometer` | [Design](Designs/Gauge/rolling_drum_or_counter/gauges/custom_odometer.md) / [Implementation](Implementation/Gauge/rolling_drum_or_counter/gauges/custom_odometer.md) | Current GoDriveLog odometer renderer, mapped to the mechanism-first `rolling_drum_or_counter` group. |
+| `movement` | Partially implemented | v3.5.6b | `odometer.movement` | [Design](Designs/Gauge/rolling_drum_or_counter/quirks/custom_movement.md) / [Implementation](Implementation/Gauge/rolling_drum_or_counter/quirks/custom_movement.md) | `instant`, `linear`, `ease_out`, and `bell` have concrete behaviour. `smooth` and `click` are recognised but fall back to `instant`. |
+| `wraparound` | Partially implemented | v3.5.2 | `realism.wraparound` | [Design](Designs/Gauge/rolling_drum_or_counter/quirks/custom_wraparound.md) / [Implementation](Implementation/Gauge/rolling_drum_or_counter/quirks/custom_wraparound.md) | Config is accepted for odometer gauges, but current scene rendering does not branch on it; current wheel circularity is effectively compatibility behaviour. |
+| `drum_slop` | Implemented | v3.5.3 | `realism.drum_slop` | [Design](Designs/Gauge/rolling_drum_or_counter/quirks/custom_drum_slop.md) / [Implementation](Implementation/Gauge/rolling_drum_or_counter/quirks/custom_drum_slop.md) | Per-wheel visual offset/slop for odometer drums. |
+| `carry_drag` | Implemented | v3.5.7 | `realism.carry_drag` | [Design](Designs/Gauge/rolling_drum_or_counter/quirks/custom_carry_drag.md) / [Implementation](Implementation/Gauge/rolling_drum_or_counter/quirks/custom_carry_drag.md) | Visual carry-drag behaviour during digit carry. |
+| `snap_settle` | Implemented | v3.5.14 | `realism.snap_settle` | [Design](Designs/Gauge/rolling_drum_or_counter/quirks/custom_snap_settle.md) / [Implementation](Implementation/Gauge/rolling_drum_or_counter/quirks/custom_snap_settle.md) | Finite settle/snap behaviour after odometer wheel movement. |
+| `backlash` | Planned | v3.7.1 | `realism.backlash` not accepted | [Design](Designs/RealismBehaviour/odometer-backlash.md) / [Implementation](Implementation/RealismBehaviour/odometer-backlash.md) | v3.5.15 was corrected as not implemented on `main`; v3.7.1 plans odometer backlash as future work. |
+
+### `indicator_lamp`
+
+| Name | Status | Version | Current config key | Quirk/Gauge doc | Notes |
+|—|—|—|—|—|—|
+| `custom_indicator` | Implemented | v3.4 | `type: indicator` | [Design](Designs/Gauge/indicator_lamp/gauges/custom_indicator.md) / [Implementation](Implementation/Gauge/indicator_lamp/gauges/custom_indicator.md) | Current GoDriveLog two-state indicator renderer, mapped to the mechanism-first `indicator_lamp` group. |
+| `thermal_fade` | Implemented | v3.5.12 | `realism.thermal_fade` | [Design](Designs/Gauge/indicator_lamp/quirks/custom_thermal_fade.md) / [Implementation](Implementation/Gauge/indicator_lamp/quirks/custom_thermal_fade.md) | Indicator on/off alpha transition to simulate finite lamp response. |
+
+### `segmented_display`
+
+| Name | Status | Version | Current config key | Quirk/Gauge doc | Notes |
+|—|—|—|—|—|—|
+| `custom_numeric` | Implemented | v3.4 | `type: numeric` | [Design](Designs/Gauge/segmented_display/gauges/custom_numeric.md) / [Implementation](Implementation/Gauge/segmented_display/gauges/custom_numeric.md) | Current GoDriveLog formatted-value image-slot renderer; old `seven_segment` naming was replaced by `numeric`. |
+| `per_digit_response_lag` | Planned | v3.7.2 | `realism.per_digit_response_lag` not accepted | [Design](Designs/RealismBehaviour/per-digit-response-lag.md) / [Implementation](Implementation/RealismBehaviour/per-digit-response-lag.md) | Planned v3.7 numeric/segmented realism slice; no current code support yet. |
+| `leading_zero_behaviour` | Planned | v3.7.3 | `realism.leading_zero_behaviour` not accepted | [Design](Designs/RealismBehaviour/numeric-leading-zero-behaviour.md) / [Implementation](Implementation/RealismBehaviour/numeric-leading-zero-behaviour.md) | Planned v3.7 numeric display behaviour; no current code support yet. |
+| `segment_bleed` / `digit_bleed` | Planned | v3.7.4 | `realism.segment_bleed` / `realism.digit_bleed` not accepted | [Design](Designs/RealismBehaviour/segment-bleed-digit-bleed.md) / [Implementation](Implementation/RealismBehaviour/segment-bleed-digit-bleed.md) | Planned v3.7 numeric/segmented display realism slice; no current code support yet. |
+| `ghosting` | Planned | v3.7.5 | `realism.ghosting` not accepted | [Design](Designs/RealismBehaviour/numeric-ghosting.md) / [Implementation](Implementation/RealismBehaviour/numeric-ghosting.md) | Planned v3.7 numeric/segmented display realism slice; no current code support yet. |
+| `uneven_brightness` | Planned | v3.7.6 | `realism.uneven_brightness` not accepted | [Design](Designs/RealismBehaviour/uneven-brightness.md) / [Implementation](Implementation/RealismBehaviour/uneven-brightness.md) | Planned v3.7 numeric/segmented display realism slice; no current code support yet. |
+| `load_sag` | Planned | v3.7.7 | `realism.load_sag` not accepted | [Design](Designs/RealismBehaviour/numeric-load-sag.md) / [Implementation](Implementation/RealismBehaviour/numeric-load-sag.md) | Planned v3.7 numeric/segmented display realism slice; no current code support yet. |
+
+## Release planning checkpoints
+
+### v3.7
+
+| Name | Status | Version | Current config key | Quirk/Gauge doc | Notes |
+|—|—|—|—|—|—|
+| v3.7 release planning docs | Planned | v3.7.0 | — | [Implementation state](v3.7/ImplementationState.md) | Current v3.7 state is not started. |
+| Odometer backlash | Planned | v3.7.1 | `realism.backlash` not accepted | [Design](Designs/RealismBehaviour/odometer-backlash.md) / [Implementation](Implementation/RealismBehaviour/odometer-backlash.md) | Also listed under `rolling_drum_or_counter`. |
+| Per-digit response lag | Planned | v3.7.2 | `realism.per_digit_response_lag` not accepted | [Design](Designs/RealismBehaviour/per-digit-response-lag.md) / [Implementation](Implementation/RealismBehaviour/per-digit-response-lag.md) | Also listed under `segmented_display`. |
+| Leading-zero behaviour | Planned | v3.7.3 | `realism.leading_zero_behaviour` not accepted | [Design](Designs/RealismBehaviour/numeric-leading-zero-behaviour.md) / [Implementation](Implementation/RealismBehaviour/numeric-leading-zero-behaviour.md) | Also listed under `segmented_display`. |
+| Segment and digit bleed | Planned | v3.7.4 | `realism.segment_bleed` / `realism.digit_bleed` not accepted | [Design](Designs/RealismBehaviour/segment-bleed-digit-bleed.md) / [Implementation](Implementation/RealismBehaviour/segment-bleed-digit-bleed.md) | Also listed under `segmented_display`. |
+| Ghosting | Planned | v3.7.5 | `realism.ghosting` not accepted | [Design](Designs/RealismBehaviour/numeric-ghosting.md) / [Implementation](Implementation/RealismBehaviour/numeric-ghosting.md) | Also listed under `segmented_display`. |
+| Uneven brightness | Planned | v3.7.6 | `realism.uneven_brightness` not accepted | [Design](Designs/RealismBehaviour/uneven-brightness.md) / [Implementation](Implementation/RealismBehaviour/uneven-brightness.md) | Also listed under `segmented_display`. |
+| Load sag | Planned | v3.7.7 | `realism.load_sag` not accepted | [Design](Designs/RealismBehaviour/numeric-load-sag.md) / [Implementation](Implementation/RealismBehaviour/numeric-load-sag.md) | Also listed under `segmented_display`. |
+| Tests, previews and docs checkpoint | Planned | v3.7.8 | — | [Implementation state](v3.7/ImplementationState.md) | Planned release checkpoint slice. |
+
+## Notes for future updates
+
+- This file should be updated whenever code truth changes.
+- Do not mark a row `Implemented` unless current code supports the documented behaviour in scope.
+- Parser support alone is not enough for `Implemented` when the design requires runtime/rendering behaviour.
+- `Planned` rows are allowed while a release is active.
+- At release close, planned rows should be updated to the current truth: `Implemented`, `Partially implemented`, `Not implemented`, `Deferred`, `Superseded`, or left `Planned` only if the release remains open.
+- Do not add every historical idea here. Track accepted release/slice scope and current code truth.
