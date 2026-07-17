@@ -11,107 +11,450 @@ The `Version` column records the release or slice version the item belongs to. I
 
 ## Status values
 
-| Status | Meaning |
-|—|—|
-| Planned | Accepted into a release or slice plan, but implementation has not landed yet. |
-| In progress | Work has started but is not complete or not yet audited. |
-| Implemented | Current code supports the documented behaviour in scope. |
-| Partially implemented | Some current code support exists, but the implemented behaviour is incomplete, compatibility-only, or differs from the documented scope. |
-| Not implemented | Design or slice exists, but current code does not support it. |
-| Deferred | Deliberately moved out of the current release or active scope. |
-| Superseded | Replaced by another design, config key, implementation path, or naming model. |
-| Unable to verify | Current evidence is insufficient to verify the feature end-to-end. |
-
-## Gauge status summary
-
-| Status | Count |
-|—|—:|
-| Implemented | 24 |
-| Partially implemented | 4 |
-| Planned | 7 |
-| In progress | 0 |
-| Not implemented | 0 |
-| Deferred | 0 |
-| Superseded | 0 |
-| Unable to verify | 0 |
+<table>
+  <thead>
+    <tr>
+      <th>Status</th>
+      <th>Meaning</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Planned</td>
+      <td>Accepted into a release or slice plan, but implementation has not landed yet.</td>
+    </tr>
+    <tr>
+      <td>In progress</td>
+      <td>Work has started but is not complete or not yet audited.</td>
+    </tr>
+    <tr>
+      <td>Implemented</td>
+      <td>Current code supports the documented behaviour in scope.</td>
+    </tr>
+    <tr>
+      <td>Partially implemented</td>
+      <td>Some current code support exists, but the implemented behaviour is incomplete, compatibility-only, or differs from the documented scope.</td>
+    </tr>
+    <tr>
+      <td>Not implemented</td>
+      <td>Design or slice exists, but current code does not support it.</td>
+    </tr>
+    <tr>
+      <td>Deferred</td>
+      <td>Deliberately moved out of the current release or active scope.</td>
+    </tr>
+    <tr>
+      <td>Superseded</td>
+      <td>Replaced by another design, config key, implementation path, or naming model.</td>
+    </tr>
+    <tr>
+      <td>Unable to verify</td>
+      <td>Current evidence is insufficient to verify the feature end-to-end.</td>
+    </tr>
+  </tbody>
+</table>
 
 ## Gauge implementation status
 
 ### `radial_pointer`
 
-| Name | Status | Version | Current config key | Quirk/Gauge doc | Notes |
-|—|—|—|—|—|—|
-| `custom_radial` | Implemented | v3.4 | `type: radial` | [Design](Designs/Gauge/radial_pointer/gauges/custom_radial.md) / [Implementation](Implementation/Gauge/radial_pointer/gauges/custom_radial.md) | Current GoDriveLog radial renderer, mapped to the mechanism-first `radial_pointer` group. |
-| `damping` | Implemented | v3.5.8 | `realism.damping` | [Design](Designs/Gauge/radial_pointer/quirks/custom_damping.md) / [Implementation](Implementation/Gauge/radial_pointer/quirks/custom_damping.md) | Radial value-change smoothing. |
-| `stiction` | Implemented | v3.5.9 | `realism.stiction` | [Design](Designs/Gauge/radial_pointer/quirks/custom_stiction.md) / [Implementation](Implementation/Gauge/radial_pointer/quirks/custom_stiction.md) | Holds small display changes until the configured threshold is exceeded. |
-| `overshoot` | Implemented | v3.5.10 | `realism.overshoot` | [Design](Designs/Gauge/radial_pointer/quirks/custom_overshoot.md) / [Implementation](Implementation/Gauge/radial_pointer/quirks/custom_overshoot.md) | Finite overshoot and settle behaviour for radial pointer motion. |
-| `peg_bounce` | Implemented | v3.5.11 | `realism.peg_bounce` | [Design](Designs/Gauge/radial_pointer/quirks/custom_peg_bounce.md) / [Implementation](Implementation/Gauge/radial_pointer/quirks/custom_peg_bounce.md) | End-stop bounce when the displayed pointer hits a configured range limit. |
-| `hysteresis` | Implemented | v3.5.16 | `realism.hysteresis` | [Design](Designs/Gauge/radial_pointer/quirks/custom_hysteresis.md) / [Implementation](Implementation/Gauge/radial_pointer/quirks/custom_hysteresis.md) | Display-side hysteresis/deadband behaviour. |
-| `needle_shadow` | Implemented | v3.5.17 | `realism.needle_shadow` | [Design](Designs/Gauge/radial_pointer/quirks/custom_needle_shadow.md) / [Implementation](Implementation/Gauge/radial_pointer/quirks/custom_needle_shadow.md) | Static renderer depth effect; not dynamic parallax or lighting. |
-| `calibration_offset` | Implemented | v3.5.18 | `realism.calibration_offset` | [Design](Designs/Gauge/radial_pointer/quirks/custom_calibration_offset.md) / [Implementation](Implementation/Gauge/radial_pointer/quirks/custom_calibration_offset.md) | Display-only offset; does not change the source sensor value. |
-| `pointer_markers` / witness markers | Implemented | v3.5 | `realism.pointer_markers` | [Design](Designs/Gauge/radial_pointer/quirks/custom_pointer_markers.md) / [Implementation](Implementation/Gauge/radial_pointer/quirks/custom_pointer_markers.md) | Current config key is `pointer_markers`; older notes may call these witness markers. |
-| `movement_policy` | Partially implemented | v3.5.5 | `realism.movement_policy` | [Design](Designs/Gauge/radial_pointer/quirks/custom_movement_policy.md) / [Implementation](Implementation/Gauge/radial_pointer/quirks/custom_movement_policy.md) | Accepted and used as a runtime transition policy. It is not a standalone physical quirk; visible effect depends on another timed movement behaviour such as damping, overshoot, or peg bounce. |
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Status</th>
+      <th>Version</th>
+      <th>Current config key</th>
+      <th>Quirk/Gauge doc</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>custom_radial</code></td>
+      <td>Implemented</td>
+      <td>v3.4</td>
+      <td><code>type: radial</code></td>
+      <td><a href=“Designs/Gauge/radial_pointer/gauges/custom_radial.md”>Design</a><br><a href=“Implementation/Gauge/radial_pointer/gauges/custom_radial.md”>Implementation</a></td>
+      <td>Current GoDriveLog radial renderer, mapped to the mechanism-first <code>radial_pointer</code> group.</td>
+    </tr>
+    <tr>
+      <td><code>damping</code></td>
+      <td>Implemented</td>
+      <td>v3.5.8</td>
+      <td><code>realism.damping</code></td>
+      <td><a href=“Designs/Gauge/radial_pointer/quirks/custom_damping.md”>Design</a><br><a href=“Implementation/Gauge/radial_pointer/quirks/custom_damping.md”>Implementation</a></td>
+      <td>Radial value-change smoothing.</td>
+    </tr>
+    <tr>
+      <td><code>stiction</code></td>
+      <td>Implemented</td>
+      <td>v3.5.9</td>
+      <td><code>realism.stiction</code></td>
+      <td><a href=“Designs/Gauge/radial_pointer/quirks/custom_stiction.md”>Design</a><br><a href=“Implementation/Gauge/radial_pointer/quirks/custom_stiction.md”>Implementation</a></td>
+      <td>Holds small display changes until the configured threshold is exceeded.</td>
+    </tr>
+    <tr>
+      <td><code>overshoot</code></td>
+      <td>Implemented</td>
+      <td>v3.5.10</td>
+      <td><code>realism.overshoot</code></td>
+      <td><a href=“Designs/Gauge/radial_pointer/quirks/custom_overshoot.md”>Design</a><br><a href=“Implementation/Gauge/radial_pointer/quirks/custom_overshoot.md”>Implementation</a></td>
+      <td>Finite overshoot and settle behaviour for radial pointer motion.</td>
+    </tr>
+    <tr>
+      <td><code>peg_bounce</code></td>
+      <td>Implemented</td>
+      <td>v3.5.11</td>
+      <td><code>realism.peg_bounce</code></td>
+      <td><a href=“Designs/Gauge/radial_pointer/quirks/custom_peg_bounce.md”>Design</a><br><a href=“Implementation/Gauge/radial_pointer/quirks/custom_peg_bounce.md”>Implementation</a></td>
+      <td>End-stop bounce when the displayed pointer hits a configured range limit.</td>
+    </tr>
+    <tr>
+      <td><code>hysteresis</code></td>
+      <td>Implemented</td>
+      <td>v3.5.16</td>
+      <td><code>realism.hysteresis</code></td>
+      <td><a href=“Designs/Gauge/radial_pointer/quirks/custom_hysteresis.md”>Design</a><br><a href=“Implementation/Gauge/radial_pointer/quirks/custom_hysteresis.md”>Implementation</a></td>
+      <td>Display-side hysteresis/deadband behaviour.</td>
+    </tr>
+    <tr>
+      <td><code>needle_shadow</code></td>
+      <td>Implemented</td>
+      <td>v3.5.17</td>
+      <td><code>realism.needle_shadow</code></td>
+      <td><a href=“Designs/Gauge/radial_pointer/quirks/custom_needle_shadow.md”>Design</a><br><a href=“Implementation/Gauge/radial_pointer/quirks/custom_needle_shadow.md”>Implementation</a></td>
+      <td>Static renderer depth effect; not dynamic parallax or lighting.</td>
+    </tr>
+    <tr>
+      <td><code>calibration_offset</code></td>
+      <td>Implemented</td>
+      <td>v3.5.18</td>
+      <td><code>realism.calibration_offset</code></td>
+      <td><a href=“Designs/Gauge/radial_pointer/quirks/custom_calibration_offset.md”>Design</a><br><a href=“Implementation/Gauge/radial_pointer/quirks/custom_calibration_offset.md”>Implementation</a></td>
+      <td>Display-only offset; does not change the source sensor value.</td>
+    </tr>
+    <tr>
+      <td><code>pointer_markers</code> (witness markers)</td>
+      <td>Implemented</td>
+      <td>v3.5</td>
+      <td><code>realism.pointer_markers</code></td>
+      <td><a href=“Designs/Gauge/radial_pointer/quirks/custom_pointer_markers.md”>Design</a><br><a href=“Implementation/Gauge/radial_pointer/quirks/custom_pointer_markers.md”>Implementation</a></td>
+      <td>Current config key is <code>pointer_markers</code>; older notes may call these witness markers.</td>
+    </tr>
+    <tr>
+      <td><code>movement_policy</code></td>
+      <td>Partially implemented</td>
+      <td>v3.5.5</td>
+      <td><code>realism.movement_policy</code></td>
+      <td><a href=“Designs/Gauge/radial_pointer/quirks/custom_movement_policy.md”>Design</a><br><a href=“Implementation/Gauge/radial_pointer/quirks/custom_movement_policy.md”>Implementation</a></td>
+      <td>Accepted and used as a runtime transition policy. It is not a standalone physical quirk; visible effect depends on another timed movement behaviour.</td>
+    </tr>
+  </tbody>
+</table>
 
 ### `bar_or_wedge_display`
 
-| Name | Status | Version | Current config key | Quirk/Gauge doc | Notes |
-|—|—|—|—|—|—|
-| `custom_bar` | Implemented | v3.4 | `type: bar` | [Design](Designs/Gauge/bar_or_wedge_display/gauges/custom_bar.md) / [Implementation](Implementation/Gauge/bar_or_wedge_display/gauges/custom_bar.md) | Current GoDriveLog continuous bar renderer, mapped to the mechanism-first `bar_or_wedge_display` group. |
-| `custom_segmented` | Implemented | v3.4 | `type: segmented` | [Design](Designs/Gauge/bar_or_wedge_display/gauges/custom_segmented.md) / [Implementation](Implementation/Gauge/bar_or_wedge_display/gauges/custom_segmented.md) | Current GoDriveLog sparse percent-threshold image-selection gauge; intentionally mapped here rather than `segmented_display`. |
-| `damping` | Implemented | v3.5.13 | `realism.damping` | [Design](Designs/Gauge/bar_or_wedge_display/quirks/custom_damping.md) / [Implementation](Implementation/Gauge/bar_or_wedge_display/quirks/custom_damping.md) | Bar fill/reveal smoothing. |
-| `overshoot` | Implemented | v3.5.19 | `realism.overshoot` | [Design](Designs/Gauge/bar_or_wedge_display/quirks/custom_overshoot.md) / [Implementation](Implementation/Gauge/bar_or_wedge_display/quirks/custom_overshoot.md) | Finite overshoot and settle behaviour for displayed fill/reveal extent. |
-| `hysteresis` | Implemented | v3.5.20 | `realism.hysteresis` | [Design](Designs/Gauge/bar_or_wedge_display/quirks/custom_hysteresis.md) / [Implementation](Implementation/Gauge/bar_or_wedge_display/quirks/custom_hysteresis.md) | Display-side hysteresis/deadband behaviour for bar fill/reveal extent. |
-| `stiction` | Implemented | v3.5.21 | `realism.stiction` | [Design](Designs/Gauge/bar_or_wedge_display/quirks/custom_stiction.md) / [Implementation](Implementation/Gauge/bar_or_wedge_display/quirks/custom_stiction.md) | Holds small display changes until the configured threshold is exceeded. |
-| `peg_bounce` | Implemented | v3.5.22 | `realism.peg_bounce` | [Design](Designs/Gauge/bar_or_wedge_display/quirks/custom_peg_bounce.md) / [Implementation](Implementation/Gauge/bar_or_wedge_display/quirks/custom_peg_bounce.md) | End-stop bounce on displayed fill/reveal extent. |
-| `pointer_markers` / witness markers | Implemented | v3.5 | `realism.pointer_markers` | [Design](Designs/Gauge/bar_or_wedge_display/quirks/custom_pointer_markers.md) / [Implementation](Implementation/Gauge/bar_or_wedge_display/quirks/custom_pointer_markers.md) | Current config key is `pointer_markers`; older notes may call these witness markers. |
-| `movement_policy` | Partially implemented | v3.5.5 | `realism.movement_policy` | [Design](Designs/Gauge/bar_or_wedge_display/quirks/custom_movement_policy.md) / [Implementation](Implementation/Gauge/bar_or_wedge_display/quirks/custom_movement_policy.md) | Accepted and used as a runtime transition policy. It is not a standalone physical quirk; visible effect depends on another timed movement behaviour such as damping, overshoot, or peg bounce. |
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Status</th>
+      <th>Version</th>
+      <th>Current config key</th>
+      <th>Quirk/Gauge doc</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>custom_bar</code></td>
+      <td>Implemented</td>
+      <td>v3.4</td>
+      <td><code>type: bar</code></td>
+      <td><a href=“Designs/Gauge/bar_or_wedge_display/gauges/custom_bar.md”>Design</a><br><a href=“Implementation/Gauge/bar_or_wedge_display/gauges/custom_bar.md”>Implementation</a></td>
+      <td>Current GoDriveLog continuous bar renderer, mapped to the mechanism-first <code>bar_or_wedge_display</code> group.</td>
+    </tr>
+    <tr>
+      <td><code>custom_segmented</code></td>
+      <td>Implemented</td>
+      <td>v3.4</td>
+      <td><code>type: segmented</code></td>
+      <td><a href=“Designs/Gauge/bar_or_wedge_display/gauges/custom_segmented.md”>Design</a><br><a href=“Implementation/Gauge/bar_or_wedge_display/gauges/custom_segmented.md”>Implementation</a></td>
+      <td>Current GoDriveLog sparse percent-threshold image-selection gauge; intentionally mapped here rather than <code>segmented_display</code>.</td>
+    </tr>
+    <tr>
+      <td><code>damping</code></td>
+      <td>Implemented</td>
+      <td>v3.5.13</td>
+      <td><code>realism.damping</code></td>
+      <td><a href=“Designs/Gauge/bar_or_wedge_display/quirks/custom_damping.md”>Design</a><br><a href=“Implementation/Gauge/bar_or_wedge_display/quirks/custom_damping.md”>Implementation</a></td>
+      <td>Bar fill/reveal smoothing.</td>
+    </tr>
+    <tr>
+      <td><code>overshoot</code></td>
+      <td>Implemented</td>
+      <td>v3.5.19</td>
+      <td><code>realism.overshoot</code></td>
+      <td><a href=“Designs/Gauge/bar_or_wedge_display/quirks/custom_overshoot.md”>Design</a><br><a href=“Implementation/Gauge/bar_or_wedge_display/quirks/custom_overshoot.md”>Implementation</a></td>
+      <td>Finite overshoot and settle behaviour for displayed fill/reveal extent.</td>
+    </tr>
+    <tr>
+      <td><code>hysteresis</code></td>
+      <td>Implemented</td>
+      <td>v3.5.20</td>
+      <td><code>realism.hysteresis</code></td>
+      <td><a href=“Designs/Gauge/bar_or_wedge_display/quirks/custom_hysteresis.md”>Design</a><br><a href=“Implementation/Gauge/bar_or_wedge_display/quirks/custom_hysteresis.md”>Implementation</a></td>
+      <td>Display-side hysteresis/deadband behaviour for bar fill/reveal extent.</td>
+    </tr>
+    <tr>
+      <td><code>stiction</code></td>
+      <td>Implemented</td>
+      <td>v3.5.21</td>
+      <td><code>realism.stiction</code></td>
+      <td><a href=“Designs/Gauge/bar_or_wedge_display/quirks/custom_stiction.md”>Design</a><br><a href=“Implementation/Gauge/bar_or_wedge_display/quirks/custom_stiction.md”>Implementation</a></td>
+      <td>Holds small display changes until the configured threshold is exceeded.</td>
+    </tr>
+    <tr>
+      <td><code>peg_bounce</code></td>
+      <td>Implemented</td>
+      <td>v3.5.22</td>
+      <td><code>realism.peg_bounce</code></td>
+      <td><a href=“Designs/Gauge/bar_or_wedge_display/quirks/custom_peg_bounce.md”>Design</a><br><a href=“Implementation/Gauge/bar_or_wedge_display/quirks/custom_peg_bounce.md”>Implementation</a></td>
+      <td>End-stop bounce on displayed fill/reveal extent.</td>
+    </tr>
+    <tr>
+      <td><code>pointer_markers</code> (witness markers)</td>
+      <td>Implemented</td>
+      <td>v3.5</td>
+      <td><code>realism.pointer_markers</code></td>
+      <td><a href=“Designs/Gauge/bar_or_wedge_display/quirks/custom_pointer_markers.md”>Design</a><br><a href=“Implementation/Gauge/bar_or_wedge_display/quirks/custom_pointer_markers.md”>Implementation</a></td>
+      <td>Current config key is <code>pointer_markers</code>; older notes may call these witness markers.</td>
+    </tr>
+    <tr>
+      <td><code>movement_policy</code></td>
+      <td>Partially implemented</td>
+      <td>v3.5.5</td>
+      <td><code>realism.movement_policy</code></td>
+      <td><a href=“Designs/Gauge/bar_or_wedge_display/quirks/custom_movement_policy.md”>Design</a><br><a href=“Implementation/Gauge/bar_or_wedge_display/quirks/custom_movement_policy.md”>Implementation</a></td>
+      <td>Accepted and used as a runtime transition policy. It is not a standalone physical quirk; visible effect depends on another timed movement behaviour.</td>
+    </tr>
+  </tbody>
+</table>
 
 ### `rolling_drum_or_counter`
 
-| Name | Status | Version | Current config key | Quirk/Gauge doc | Notes |
-|—|—|—|—|—|—|
-| `custom_odometer` | Implemented | v3.4 | `type: odometer` | [Design](Designs/Gauge/rolling_drum_or_counter/gauges/custom_odometer.md) / [Implementation](Implementation/Gauge/rolling_drum_or_counter/gauges/custom_odometer.md) | Current GoDriveLog odometer renderer, mapped to the mechanism-first `rolling_drum_or_counter` group. |
-| `movement` | Partially implemented | v3.5.6b | `odometer.movement` | [Design](Designs/Gauge/rolling_drum_or_counter/quirks/custom_movement.md) / [Implementation](Implementation/Gauge/rolling_drum_or_counter/quirks/custom_movement.md) | `instant`, `linear`, `ease_out`, and `bell` have concrete behaviour. `smooth` and `click` are recognised but fall back to `instant`. |
-| `wraparound` | Partially implemented | v3.5.2 | `realism.wraparound` | [Design](Designs/Gauge/rolling_drum_or_counter/quirks/custom_wraparound.md) / [Implementation](Implementation/Gauge/rolling_drum_or_counter/quirks/custom_wraparound.md) | Config is accepted for odometer gauges, but current scene rendering does not branch on it; current wheel circularity is effectively compatibility behaviour. |
-| `drum_slop` | Implemented | v3.5.3 | `realism.drum_slop` | [Design](Designs/Gauge/rolling_drum_or_counter/quirks/custom_drum_slop.md) / [Implementation](Implementation/Gauge/rolling_drum_or_counter/quirks/custom_drum_slop.md) | Per-wheel visual offset/slop for odometer drums. |
-| `carry_drag` | Implemented | v3.5.7 | `realism.carry_drag` | [Design](Designs/Gauge/rolling_drum_or_counter/quirks/custom_carry_drag.md) / [Implementation](Implementation/Gauge/rolling_drum_or_counter/quirks/custom_carry_drag.md) | Visual carry-drag behaviour during digit carry. |
-| `snap_settle` | Implemented | v3.5.14 | `realism.snap_settle` | [Design](Designs/Gauge/rolling_drum_or_counter/quirks/custom_snap_settle.md) / [Implementation](Implementation/Gauge/rolling_drum_or_counter/quirks/custom_snap_settle.md) | Finite settle/snap behaviour after odometer wheel movement. |
-| `backlash` | Planned | v3.7.1 | `realism.backlash` not accepted | [Design](Designs/RealismBehaviour/odometer-backlash.md) / [Implementation](Implementation/RealismBehaviour/odometer-backlash.md) | v3.5.15 was corrected as not implemented on `main`; v3.7.1 plans odometer backlash as future work. |
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Status</th>
+      <th>Version</th>
+      <th>Current config key</th>
+      <th>Quirk/Gauge doc</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>custom_odometer</code></td>
+      <td>Implemented</td>
+      <td>v3.4</td>
+      <td><code>type: odometer</code></td>
+      <td><a href=“Designs/Gauge/rolling_drum_or_counter/gauges/custom_odometer.md”>Design</a><br><a href=“Implementation/Gauge/rolling_drum_or_counter/gauges/custom_odometer.md”>Implementation</a></td>
+      <td>Current GoDriveLog odometer renderer, mapped to the mechanism-first <code>rolling_drum_or_counter</code> group.</td>
+    </tr>
+    <tr>
+      <td><code>movement</code></td>
+      <td>Partially implemented</td>
+      <td>v3.5.6b</td>
+      <td><code>odometer.movement</code></td>
+      <td><a href=“Designs/Gauge/rolling_drum_or_counter/quirks/custom_movement.md”>Design</a><br><a href=“Implementation/Gauge/rolling_drum_or_counter/quirks/custom_movement.md”>Implementation</a></td>
+      <td><code>instant</code>, <code>linear</code>, <code>ease_out</code>, and <code>bell</code> have concrete behaviour. <code>smooth</code> and <code>click</code> are recognised but fall back to <code>instant</code>.</td>
+    </tr>
+    <tr>
+      <td><code>wraparound</code></td>
+      <td>Partially implemented</td>
+      <td>v3.5.2</td>
+      <td><code>realism.wraparound</code></td>
+      <td><a href=“Designs/Gauge/rolling_drum_or_counter/quirks/custom_wraparound.md”>Design</a><br><a href=“Implementation/Gauge/rolling_drum_or_counter/quirks/custom_wraparound.md”>Implementation</a></td>
+      <td>Config is accepted for odometer gauges, but current scene rendering does not branch on it; current wheel circularity is effectively compatibility behaviour.</td>
+    </tr>
+    <tr>
+      <td><code>drum_slop</code></td>
+      <td>Implemented</td>
+      <td>v3.5.3</td>
+      <td><code>realism.drum_slop</code></td>
+      <td><a href=“Designs/Gauge/rolling_drum_or_counter/quirks/custom_drum_slop.md”>Design</a><br><a href=“Implementation/Gauge/rolling_drum_or_counter/quirks/custom_drum_slop.md”>Implementation</a></td>
+      <td>Per-wheel visual offset/slop for odometer drums.</td>
+    </tr>
+    <tr>
+      <td><code>carry_drag</code></td>
+      <td>Implemented</td>
+      <td>v3.5.7</td>
+      <td><code>realism.carry_drag</code></td>
+      <td><a href=“Designs/Gauge/rolling_drum_or_counter/quirks/custom_carry_drag.md”>Design</a><br><a href=“Implementation/Gauge/rolling_drum_or_counter/quirks/custom_carry_drag.md”>Implementation</a></td>
+      <td>Visual carry-drag behaviour during digit carry.</td>
+    </tr>
+    <tr>
+      <td><code>snap_settle</code></td>
+      <td>Implemented</td>
+      <td>v3.5.14</td>
+      <td><code>realism.snap_settle</code></td>
+      <td><a href=“Designs/Gauge/rolling_drum_or_counter/quirks/custom_snap_settle.md”>Design</a><br><a href=“Implementation/Gauge/rolling_drum_or_counter/quirks/custom_snap_settle.md”>Implementation</a></td>
+      <td>Finite settle/snap behaviour after odometer wheel movement.</td>
+    </tr>
+    <tr>
+      <td><code>backlash</code></td>
+      <td>Planned</td>
+      <td>v3.7.1</td>
+      <td><code>realism.backlash</code> not accepted</td>
+      <td><a href=“Designs/RealismBehaviour/odometer-backlash.md”>Design</a><br><a href=“Implementation/RealismBehaviour/odometer-backlash.md”>Implementation</a></td>
+      <td>v3.5.15 was corrected as not implemented on <code>main</code>; v3.7.1 plans odometer backlash as future work.</td>
+    </tr>
+  </tbody>
+</table>
 
 ### `indicator_lamp`
 
-| Name | Status | Version | Current config key | Quirk/Gauge doc | Notes |
-|—|—|—|—|—|—|
-| `custom_indicator` | Implemented | v3.4 | `type: indicator` | [Design](Designs/Gauge/indicator_lamp/gauges/custom_indicator.md) / [Implementation](Implementation/Gauge/indicator_lamp/gauges/custom_indicator.md) | Current GoDriveLog two-state indicator renderer, mapped to the mechanism-first `indicator_lamp` group. |
-| `thermal_fade` | Implemented | v3.5.12 | `realism.thermal_fade` | [Design](Designs/Gauge/indicator_lamp/quirks/custom_thermal_fade.md) / [Implementation](Implementation/Gauge/indicator_lamp/quirks/custom_thermal_fade.md) | Indicator on/off alpha transition to simulate finite lamp response. |
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Status</th>
+      <th>Version</th>
+      <th>Current config key</th>
+      <th>Quirk/Gauge doc</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>custom_indicator</code></td>
+      <td>Implemented</td>
+      <td>v3.4</td>
+      <td><code>type: indicator</code></td>
+      <td><a href=“Designs/Gauge/indicator_lamp/gauges/custom_indicator.md”>Design</a><br><a href=“Implementation/Gauge/indicator_lamp/gauges/custom_indicator.md”>Implementation</a></td>
+      <td>Current GoDriveLog two-state indicator renderer, mapped to the mechanism-first <code>indicator_lamp</code> group.</td>
+    </tr>
+    <tr>
+      <td><code>thermal_fade</code></td>
+      <td>Implemented</td>
+      <td>v3.5.12</td>
+      <td><code>realism.thermal_fade</code></td>
+      <td><a href=“Designs/Gauge/indicator_lamp/quirks/custom_thermal_fade.md”>Design</a><br><a href=“Implementation/Gauge/indicator_lamp/quirks/custom_thermal_fade.md”>Implementation</a></td>
+      <td>Indicator on/off alpha transition to simulate finite lamp response.</td>
+    </tr>
+  </tbody>
+</table>
 
 ### `segmented_display`
 
-| Name | Status | Version | Current config key | Quirk/Gauge doc | Notes |
-|—|—|—|—|—|—|
-| `custom_numeric` | Implemented | v3.4 | `type: numeric` | [Design](Designs/Gauge/segmented_display/gauges/custom_numeric.md) / [Implementation](Implementation/Gauge/segmented_display/gauges/custom_numeric.md) | Current GoDriveLog formatted-value image-slot renderer; old `seven_segment` naming was replaced by `numeric`. |
-| `per_digit_response_lag` | Planned | v3.7.2 | `realism.per_digit_response_lag` not accepted | [Design](Designs/RealismBehaviour/per-digit-response-lag.md) / [Implementation](Implementation/RealismBehaviour/per-digit-response-lag.md) | Planned v3.7 numeric/segmented realism slice; no current code support yet. |
-| `leading_zero_behaviour` | Planned | v3.7.3 | `realism.leading_zero_behaviour` not accepted | [Design](Designs/RealismBehaviour/numeric-leading-zero-behaviour.md) / [Implementation](Implementation/RealismBehaviour/numeric-leading-zero-behaviour.md) | Planned v3.7 numeric display behaviour; no current code support yet. |
-| `segment_bleed` / `digit_bleed` | Planned | v3.7.4 | `realism.segment_bleed` / `realism.digit_bleed` not accepted | [Design](Designs/RealismBehaviour/segment-bleed-digit-bleed.md) / [Implementation](Implementation/RealismBehaviour/segment-bleed-digit-bleed.md) | Planned v3.7 numeric/segmented display realism slice; no current code support yet. |
-| `ghosting` | Planned | v3.7.5 | `realism.ghosting` not accepted | [Design](Designs/RealismBehaviour/numeric-ghosting.md) / [Implementation](Implementation/RealismBehaviour/numeric-ghosting.md) | Planned v3.7 numeric/segmented display realism slice; no current code support yet. |
-| `uneven_brightness` | Planned | v3.7.6 | `realism.uneven_brightness` not accepted | [Design](Designs/RealismBehaviour/uneven-brightness.md) / [Implementation](Implementation/RealismBehaviour/uneven-brightness.md) | Planned v3.7 numeric/segmented display realism slice; no current code support yet. |
-| `load_sag` | Planned | v3.7.7 | `realism.load_sag` not accepted | [Design](Designs/RealismBehaviour/numeric-load-sag.md) / [Implementation](Implementation/RealismBehaviour/numeric-load-sag.md) | Planned v3.7 numeric/segmented display realism slice; no current code support yet. |
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Status</th>
+      <th>Version</th>
+      <th>Current config key</th>
+      <th>Quirk/Gauge doc</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>custom_numeric</code></td>
+      <td>Implemented</td>
+      <td>v3.4</td>
+      <td><code>type: numeric</code></td>
+      <td><a href=“Designs/Gauge/segmented_display/gauges/custom_numeric.md”>Design</a><br><a href=“Implementation/Gauge/segmented_display/gauges/custom_numeric.md”>Implementation</a></td>
+      <td>Current GoDriveLog formatted-value image-slot renderer; old <code>seven_segment</code> naming was replaced by <code>numeric</code>.</td>
+    </tr>
+    <tr>
+      <td><code>per_digit_response_lag</code></td>
+      <td>Planned</td>
+      <td>v3.7.2</td>
+      <td><code>realism.per_digit_response_lag</code> not accepted</td>
+      <td><a href=“Designs/RealismBehaviour/per-digit-response-lag.md”>Design</a><br><a href=“Implementation/RealismBehaviour/per-digit-response-lag.md”>Implementation</a></td>
+      <td>Planned v3.7 numeric/segmented realism slice; no current code support yet.</td>
+    </tr>
+    <tr>
+      <td><code>leading_zero_behaviour</code></td>
+      <td>Planned</td>
+      <td>v3.7.3</td>
+      <td><code>realism.leading_zero_behaviour</code> not accepted</td>
+      <td><a href=“Designs/RealismBehaviour/numeric-leading-zero-behaviour.md”>Design</a><br><a href=“Implementation/RealismBehaviour/numeric-leading-zero-behaviour.md”>Implementation</a></td>
+      <td>Planned v3.7 numeric display behaviour; no current code support yet.</td>
+    </tr>
+    <tr>
+      <td><code>segment_bleed</code> and <code>digit_bleed</code></td>
+      <td>Planned</td>
+      <td>v3.7.4</td>
+      <td><code>realism.segment_bleed</code><br><code>realism.digit_bleed</code> not accepted</td>
+      <td><a href=“Designs/RealismBehaviour/segment-bleed-digit-bleed.md”>Design</a><br><a href=“Implementation/RealismBehaviour/segment-bleed-digit-bleed.md”>Implementation</a></td>
+      <td>Planned v3.7 numeric/segmented display realism slice; no current code support yet.</td>
+    </tr>
+    <tr>
+      <td><code>ghosting</code></td>
+      <td>Planned</td>
+      <td>v3.7.5</td>
+      <td><code>realism.ghosting</code> not accepted</td>
+      <td><a href=“Designs/RealismBehaviour/numeric-ghosting.md”>Design</a><br><a href=“Implementation/RealismBehaviour/numeric-ghosting.md”>Implementation</a></td>
+      <td>Planned v3.7 numeric/segmented display realism slice; no current code support yet.</td>
+    </tr>
+    <tr>
+      <td><code>uneven_brightness</code></td>
+      <td>Planned</td>
+      <td>v3.7.6</td>
+      <td><code>realism.uneven_brightness</code> not accepted</td>
+      <td><a href=“Designs/RealismBehaviour/uneven-brightness.md”>Design</a><br><a href=“Implementation/RealismBehaviour/uneven-brightness.md”>Implementation</a></td>
+      <td>Planned v3.7 numeric/segmented display realism slice; no current code support yet.</td>
+    </tr>
+    <tr>
+      <td><code>load_sag</code></td>
+      <td>Planned</td>
+      <td>v3.7.7</td>
+      <td><code>realism.load_sag</code> not accepted</td>
+      <td><a href=“Designs/RealismBehaviour/numeric-load-sag.md”>Design</a><br><a href=“Implementation/RealismBehaviour/numeric-load-sag.md”>Implementation</a></td>
+      <td>Planned v3.7 numeric/segmented display realism slice; no current code support yet.</td>
+    </tr>
+  </tbody>
+</table>
 
 ## Release planning checkpoints
 
 ### v3.7
 
-| Name | Status | Version | Current config key | Quirk/Gauge doc | Notes |
-|—|—|—|—|—|—|
-| v3.7 release planning docs | Planned | v3.7.0 | — | [Implementation state](v3.7/ImplementationState.md) | Current v3.7 state is not started. |
-| Odometer backlash | Planned | v3.7.1 | `realism.backlash` not accepted | [Design](Designs/RealismBehaviour/odometer-backlash.md) / [Implementation](Implementation/RealismBehaviour/odometer-backlash.md) | Also listed under `rolling_drum_or_counter`. |
-| Per-digit response lag | Planned | v3.7.2 | `realism.per_digit_response_lag` not accepted | [Design](Designs/RealismBehaviour/per-digit-response-lag.md) / [Implementation](Implementation/RealismBehaviour/per-digit-response-lag.md) | Also listed under `segmented_display`. |
-| Leading-zero behaviour | Planned | v3.7.3 | `realism.leading_zero_behaviour` not accepted | [Design](Designs/RealismBehaviour/numeric-leading-zero-behaviour.md) / [Implementation](Implementation/RealismBehaviour/numeric-leading-zero-behaviour.md) | Also listed under `segmented_display`. |
-| Segment and digit bleed | Planned | v3.7.4 | `realism.segment_bleed` / `realism.digit_bleed` not accepted | [Design](Designs/RealismBehaviour/segment-bleed-digit-bleed.md) / [Implementation](Implementation/RealismBehaviour/segment-bleed-digit-bleed.md) | Also listed under `segmented_display`. |
-| Ghosting | Planned | v3.7.5 | `realism.ghosting` not accepted | [Design](Designs/RealismBehaviour/numeric-ghosting.md) / [Implementation](Implementation/RealismBehaviour/numeric-ghosting.md) | Also listed under `segmented_display`. |
-| Uneven brightness | Planned | v3.7.6 | `realism.uneven_brightness` not accepted | [Design](Designs/RealismBehaviour/uneven-brightness.md) / [Implementation](Implementation/RealismBehaviour/uneven-brightness.md) | Also listed under `segmented_display`. |
-| Load sag | Planned | v3.7.7 | `realism.load_sag` not accepted | [Design](Designs/RealismBehaviour/numeric-load-sag.md) / [Implementation](Implementation/RealismBehaviour/numeric-load-sag.md) | Also listed under `segmented_display`. |
-| Tests, previews and docs checkpoint | Planned | v3.7.8 | — | [Implementation state](v3.7/ImplementationState.md) | Planned release checkpoint slice. |
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Status</th>
+      <th>Version</th>
+      <th>Current config key</th>
+      <th>Quirk/Gauge doc</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>v3.7 release planning docs</td>
+      <td>Planned</td>
+      <td>v3.7.0</td>
+      <td>—</td>
+      <td><a href=“v3.7/ReleasePlan.md”>Design</a><br><a href=“v3.7/ImplementationState.md”>Implementation</a></td>
+      <td>Current v3.7 state is not started.</td>
+    </tr>
+    <tr>
+      <td>Tests, previews and docs checkpoint</td>
+      <td>Planned</td>
+      <td>v3.7.8</td>
+      <td>—</td>
+      <td><a href=“v3.7/ImplementationState.md”>Implementation</a></td>
+      <td>Planned release checkpoint slice.</td>
+    </tr>
+  </tbody>
+</table>
 
 ## Notes for future updates
 
