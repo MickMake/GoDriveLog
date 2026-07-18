@@ -19,13 +19,21 @@ For the current GoDriveLog `bar` gauge, the behaviour applies to the displayed l
 
 ## Physical mechanism being imitated
 
-This quirk imitates inertia or underdamped motion where a moving pointer, linkage, or reveal mechanism carries beyond its target before stabilising.
+Overshoot simulates momentum in a moving indicator. A needle, linkage, or damped mechanism can carry a little past the final reading before returning to rest. In a bar display, it simulates the displayed fill edge carrying slightly past the target extent before settling. This should look like a small mechanical or damped response, not a cartoon spring.
 
 ## Expected visual behaviour
 
-the fill or reveal extent may pass the target level and return to the settled level.
+The fill or reveal extent may pass the target level and return to the settled level.
 
 The effect should remain finite, bounded, deterministic, and readable. It should settle rather than create perpetual background motion.
+
+## Good result
+
+The movement gives a small sense of momentum without stealing attention.
+
+## Bad result
+
+The display swings too far, oscillates repeatedly, overshoots during tiny changes where it looks silly, or renders outside sensible visual bounds.
 
 ## Applicable current custom gauge
 
@@ -44,7 +52,6 @@ Other gauge types may have related conceptual behaviour, but this file only docu
 
 This file is a GoDriveLog-specific `custom_` quirk record. Generic catalogue quirk files in the same Gauge group describe physical display families more broadly and should not be treated as current implementation documentation.
 
-
 ## Documentation boundary
 
 This file documents current GoDriveLog custom quirk design only.
@@ -59,11 +66,10 @@ It does not:
 
 Implementation status belongs only in `docs/Status.md`.
 
-
 ## Historical source basis
 
 - `docs/v3.5/ImplementationState.md`
 - `docs/Designs/RealismBehaviour/realism-behaviour-guide.md`
+- `docs/Designs/RealismBehaviour/radial-overshoot.md and bar-era equivalents`
 - `docs/Status.md`
 - Existing `docs/Designs/RealismBehaviour/*` and `docs/Implementation/RealismBehaviour/*` records where present
-
