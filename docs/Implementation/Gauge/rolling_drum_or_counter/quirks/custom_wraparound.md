@@ -5,7 +5,7 @@
 | Field | Value |
 |---|---|
 | Old GoDriveLog type | `odometer` |
-| Old realism key | `realism.wraparound` |
+| realism key | `realism.wraparound` |
 | New Gauge group | `rolling_drum_or_counter` |
 | Paired custom quirk design | `docs/Designs/Gauge/rolling_drum_or_counter/quirks/custom_wraparound.md` |
 | Paired custom gauge implementation | `docs/Implementation/Gauge/rolling_drum_or_counter/gauges/custom_odometer.md` |
@@ -48,8 +48,6 @@ Implementation status belongs only in `docs/Status.md`.
 
 ## Historical source basis
 
-- `docs/v3.5/ImplementationState.md`
-- `docs/v3.5/RealismBehaviourGuide.md`
-- `docs/Designs/RealismBehaviour/realism-behaviour-guide.md`
+- `docs/v3.5/ImplementationState.md
 - `docs/Status.md`
 
