@@ -17,9 +17,23 @@ This quirk represents small mechanical misalignment between odometer drums so di
 
 For the current GoDriveLog `odometer` gauge, the behaviour applies to displayed wheel or strip state only. It must not alter input sensor values, configured ranges, exported values, or logs.
 
+## Physical mechanism being imitated
+
+Real mechanical odometer drums are not always perfectly indexed. Wear, manufacturing tolerance, gear lash, and imperfect assembly can leave each wheel sitting a fraction high or low in the viewing window.
+
+This option simulates static per-wheel alignment imperfection. It is not movement, bounce, drift, or direction-change slack.
+
 ## Expected visible behaviour
 
 The expected visible effect is subtle per-wheel offset or imperfect settling that makes the odometer look like a physical drum assembly rather than a perfectly aligned digital overlay.
+
+## Good result
+
+Digits look slightly mechanical and imperfect while still being readable.
+
+## Bad result
+
+Digits become hard to read, offsets change between runs, or wheels drift while idle.
 
 ## Gauge-family boundary
 
@@ -33,8 +47,7 @@ Drum slop is odometer-specific. It should be subtle, bounded, deterministic, and
 
 ## Non-goals
 
-This is not carry drag, backlash, random shake, or a general wheel-physics simulation.
-
+This is not carry drag, backlash, random shake, drift, movement, bounce, or a general wheel-physics simulation.
 
 ## Documentation boundary
 
@@ -53,6 +66,6 @@ Implementation status belongs only in `docs/Status.md`.
 
 - `docs/v3.5/ImplementationState.md`
 - `docs/v3.5/RealismBehaviourGuide.md`
+- `docs/Designs/RealismBehaviour/odometer-drum-slop.md`
 - `docs/Designs/RealismBehaviour/realism-behaviour-guide.md`
 - `docs/Status.md`
-

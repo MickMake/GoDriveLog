@@ -17,9 +17,23 @@ This quirk represents continuous rolling number drums crossing digit-strip bound
 
 For the current GoDriveLog `odometer` gauge, the behaviour applies to displayed wheel or strip state only. It must not alter input sensor values, configured ranges, exported values, or logs.
 
+## Physical mechanism being imitated
+
+A mechanical odometer drum is a continuous wheel, not ten disconnected images. When it passes from `9` to `0`, or from `0` back to `9`, the strip continues around the drum rather than jumping across a flat image list.
+
+This option simulates that continuous cylindrical path.
+
 ## Expected visible behaviour
 
 The expected visible effect is a wheel that can roll through the end of a strip and continue from the other side without a visual discontinuity.
+
+## Good result
+
+A rollover looks like one continuous drum motion through the nearest boundary.
+
+## Bad result
+
+The wheel jumps, reverses unexpectedly, rolls the long way around, or briefly shows an impossible digit position.
 
 ## Gauge-family boundary
 
@@ -33,8 +47,7 @@ Wraparound is odometer-specific. It should affect only the displayed wheel-strip
 
 ## Non-goals
 
-This is not odometer backlash, gear play, carry drag, or route planning. It only concerns crossing digit-strip boundaries cleanly.
-
+This is not odometer backlash, gear play, carry drag, route planning, value remapping, or choosing a long-way animation path.
 
 ## Documentation boundary
 
@@ -53,6 +66,6 @@ Implementation status belongs only in `docs/Status.md`.
 
 - `docs/v3.5/ImplementationState.md`
 - `docs/v3.5/RealismBehaviourGuide.md`
+- `docs/Designs/RealismBehaviour/odometer-wraparound.md`
 - `docs/Designs/RealismBehaviour/realism-behaviour-guide.md`
 - `docs/Status.md`
-

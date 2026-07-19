@@ -19,13 +19,21 @@ For the current GoDriveLog `bar` gauge, the behaviour applies to the displayed l
 
 ## Physical mechanism being imitated
 
-This quirk imitates a physical pointer, linkage, or fill/reveal mechanism hitting a stop peg or hard limit and rebounding before settling.
+Many analogue gauges have physical stop pegs or hard limits. When a needle reaches the stop with momentum, it may make a tiny rebound before settling. A bar gauge does not literally hit a peg, but the same idea can apply visually to the fill edge or reveal extent reaching its display limit.
 
 ## Expected visual behaviour
 
-the fill or reveal extent can rebound after contacting its minimum or maximum end of travel.
+The fill or reveal extent can rebound after contacting its minimum or maximum end of travel. The config key remains `realism.peg_bounce` even though bars do not have literal pegs.
 
 The effect should remain finite, bounded, deterministic, and readable. It should settle rather than create perpetual background motion.
+
+## Good result
+
+The bounce is small, quick, deterministic, and only visible at the configured visual stop.
+
+## Bad result
+
+The display bounces during ordinary in-range movement, passes through the stop, keeps bouncing, or changes source values.
 
 ## Applicable current custom gauge
 
@@ -44,7 +52,6 @@ Other gauge types may have related conceptual behaviour, but this file only docu
 
 This file is a GoDriveLog-specific `custom_` quirk record. Generic catalogue quirk files in the same Gauge group describe physical display families more broadly and should not be treated as current implementation documentation.
 
-
 ## Documentation boundary
 
 This file documents current GoDriveLog custom quirk design only.
@@ -59,11 +66,10 @@ It does not:
 
 Implementation status belongs only in `docs/Status.md`.
 
-
 ## Historical source basis
 
 - `docs/v3.5/ImplementationState.md`
 - `docs/Designs/RealismBehaviour/realism-behaviour-guide.md`
+- `docs/Designs/RealismBehaviour/radial-peg-bounce.md`
 - `docs/Status.md`
 - Existing `docs/Designs/RealismBehaviour/*` and `docs/Implementation/RealismBehaviour/*` records where present
-

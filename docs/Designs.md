@@ -47,3 +47,15 @@ Current implementation status belongs only in `docs/Status.md`.
 
 The gauge capability matrix belongs with design documentation because it describes conceptual applicability. Current implementation support belongs in [`Status.md`](Status.md).
 
+## Current design documentation
+
+Current design documentation is organised by system area under `docs/Designs/`.
+
+Use the design index to locate the relevant current design documents:
+
+- [`Designs/Index.md`](Designs/Index.md)
+
+Gauge mechanism designs live under `docs/Designs/Gauge/`.
+Dashboard-level design concerns live under `docs/Designs/Dashboard/`.
+
+Current implementation state belongs in [`Status.md`](Status.md).

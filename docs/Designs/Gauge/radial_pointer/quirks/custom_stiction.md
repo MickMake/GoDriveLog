@@ -19,13 +19,21 @@ For the current GoDriveLog `radial` gauge, the behaviour applies to the displaye
 
 ## Physical mechanism being imitated
 
-This quirk imitates static friction in pivots, slides, seals, linkages, or other mechanisms that stick before moving.
+Stiction is static friction: the extra resistance that must be overcome before a resting mechanism starts moving. A sticky needle, linkage, bearing, seal, or sliding display can ignore tiny input changes until enough force builds up to break it free. This option simulates that thresholded release.
 
 ## Expected visual behaviour
 
-the needle may hold briefly through small changes, then release to a new displayed angle.
+The needle may hold briefly through small changes, then release to a new displayed angle.
 
 The effect should remain finite, bounded, deterministic, and readable. It should settle rather than create perpetual background motion.
+
+## Good result
+
+Tiny value changes may not move the display immediately. When it does move, it makes a small catch-up movement and settles.
+
+## Bad result
+
+The display sticks during large changes, jumps violently, behaves unpredictably, or changes source values.
 
 ## Applicable current custom gauge
 
@@ -44,7 +52,6 @@ Other gauge types may have related conceptual behaviour, but this file only docu
 
 This file is a GoDriveLog-specific `custom_` quirk record. Generic catalogue quirk files in the same Gauge group describe physical display families more broadly and should not be treated as current implementation documentation.
 
-
 ## Documentation boundary
 
 This file documents current GoDriveLog custom quirk design only.
@@ -59,11 +66,10 @@ It does not:
 
 Implementation status belongs only in `docs/Status.md`.
 
-
 ## Historical source basis
 
 - `docs/v3.5/ImplementationState.md`
 - `docs/Designs/RealismBehaviour/realism-behaviour-guide.md`
+- `docs/Designs/RealismBehaviour/radial-stiction.md`
 - `docs/Status.md`
 - Existing `docs/Designs/RealismBehaviour/*` and `docs/Implementation/RealismBehaviour/*` records where present
-

@@ -1,15 +1,10 @@
 # GoDriveLog Codex Guidance
 
-Before planning or changing documentation, read:
+Before planning or changing code or documentation, read:
 
 1. `docs/Designs.md`
 2. `docs/Implementation.md`
 3. `docs/Status.md`
-
-For gauge realism work, also read:
-
-4. `docs/Designs/RealismBehaviour/realism-behaviour-guide.md`
-
 
 Documentation rules:
 

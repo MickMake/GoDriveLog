@@ -17,9 +17,23 @@ This quirk represents a moving odometer wheel landing into a stable detent or fi
 
 For the current GoDriveLog `odometer` gauge, the behaviour applies to displayed wheel or strip state only. It must not alter input sensor values, configured ranges, exported values, or logs.
 
+## Physical mechanism being imitated
+
+Mechanical number drums often have detents, gears, or spring-loaded indexing that make the drum land into a defined position rather than gliding forever. The final movement can feel like a small click into place.
+
+This option simulates that final landing behaviour after the main wheel travel.
+
 ## Expected visible behaviour
 
 The expected visible effect is a finite settle into the target position rather than an endless oscillation or a perfectly weightless stop.
+
+## Good result
+
+The wheel feels like it has clicked into place.
+
+## Bad result
+
+The wheel bounces repeatedly, overshoots so far it becomes distracting, or keeps moving after it has settled.
 
 ## Gauge-family boundary
 
@@ -34,7 +48,6 @@ Snap settle is current odometer realism. It should be finite, bounded, determini
 ## Non-goals
 
 This is not full spring physics, random bounce, odometer backlash, or an exposed multi-phase public movement model.
-
 
 ## Documentation boundary
 
@@ -53,6 +66,6 @@ Implementation status belongs only in `docs/Status.md`.
 
 - `docs/v3.5/ImplementationState.md`
 - `docs/v3.5/RealismBehaviourGuide.md`
+- `docs/Designs/RealismBehaviour/odometer-snap-settle.md`
 - `docs/Designs/RealismBehaviour/realism-behaviour-guide.md`
 - `docs/Status.md`
-

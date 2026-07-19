@@ -4,13 +4,13 @@ Index: 15
 
 Status: desired
 
-Area: `gauge/config`, `gauge/assets`, `gauge/realism`, config loading, validation, reusable gauge profiles
+Area: dashboard config, per-gauge config expansion, gauge assets, gauge realism, config loading, validation, reusable gauge profiles
 
 Effort: 5-9 Codex hours
 
 Add named reusable gauge presets for visual and realism configuration.
 
-A gauge preset is a reusable config block applied before gauge-local config. It should make a gauge easier to describe without copying the same realism, asset, lighting, power, movement, or imperfection settings into every gauge.
+A gauge preset is a reusable config block applied before gauge-local config. It should make a gauge easier to describe without copying the same realism, asset, lighting, power, or imperfection settings into every gauge.
 
 This is a preset/profile system, not text substitution.
 
@@ -120,14 +120,14 @@ macro: worn_cable_speedo
 
 ## Scope
 
-Presets should be allowed to affect visual and realism behaviour.
+Presets should be allowed to affect visual and display-only realism behaviour.
 
 Safe preset areas:
 
 ```text
 assets
 realism
-realism.movement
+display-only realism quirks
 realism.power
 realism.lighting
 realism.imperfections
@@ -151,6 +151,14 @@ business logic
 ```
 
 A preset should make a gauge look and behave like a worn cable speedo. It should not secretly change what speed means.
+
+## Movement-related config
+
+Movement-related display behaviour may eventually be presettable, but only through the current supported config keys for the target gauge family.
+
+Do not use presets to introduce a new generic movement model.
+
+For now, examples in this document intentionally use safer display-only quirk examples rather than movement-shaped config.
 
 ## Precedence
 
@@ -200,8 +208,10 @@ Support inline project presets first:
 gauge_presets:
   old_analogue:
     realism:
-      movement:
-        style: damped
+      damping: 0.6
+      stiction: 0.2
+      pointer_markers:
+        average: true
 ```
 
 Later, support external preset files:
@@ -235,7 +245,7 @@ Built-in presets should be conservative. They should be useful starting points, 
 
 ## Project presets
 
-Project presets allow a dashboard to define its own named styles.
+Project presets allow a dashboard to define its own named gauge styles.
 
 Examples:
 
@@ -324,6 +334,7 @@ The point is to make preset behaviour visible. Hidden config inheritance will ot
 - Do not make multi-preset ordering complicated in the first slice.
 - Do not allow cyclic preset inheritance.
 - Do not hide the final expanded config from users.
+- Do not use presets to introduce a generic movement model.
 
 ## Possible future slices
 

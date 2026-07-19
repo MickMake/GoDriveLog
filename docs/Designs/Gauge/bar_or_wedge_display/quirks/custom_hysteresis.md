@@ -19,13 +19,21 @@ For the current GoDriveLog `bar` gauge, the behaviour applies to the displayed l
 
 ## Physical mechanism being imitated
 
-This quirk imitates mechanical friction, elastic memory, magnetic lag, or linkage behaviour where the indicated position depends partly on recent direction of travel.
+Hysteresis appears when the output of a mechanism depends partly on its recent history, not only the current input. In real gauges this can come from friction, linkage play, magnetic effects, spring behaviour, or general mechanical reluctance. A rising value and a falling value can therefore indicate slightly different positions even when the underlying source value is the same.
 
 ## Expected visual behaviour
 
-the fill or reveal extent can hold or settle differently depending on whether the value is rising or falling.
+The fill or reveal extent can hold or settle slightly differently depending on whether the value is rising or falling.
 
 The effect should remain finite, bounded, deterministic, and readable. It should settle rather than create perpetual background motion.
+
+## Good result
+
+A rising value and falling value can settle with a tiny direction-dependent display difference, while still clearly representing the same source value.
+
+## Bad result
+
+The displayed offset is large enough to look wrong, changes the source value, or accumulates error over time.
 
 ## Applicable current custom gauge
 
@@ -44,7 +52,6 @@ Other gauge types may have related conceptual behaviour, but this file only docu
 
 This file is a GoDriveLog-specific `custom_` quirk record. Generic catalogue quirk files in the same Gauge group describe physical display families more broadly and should not be treated as current implementation documentation.
 
-
 ## Documentation boundary
 
 This file documents current GoDriveLog custom quirk design only.
@@ -59,11 +66,10 @@ It does not:
 
 Implementation status belongs only in `docs/Status.md`.
 
-
 ## Historical source basis
 
 - `docs/v3.5/ImplementationState.md`
 - `docs/Designs/RealismBehaviour/realism-behaviour-guide.md`
+- `docs/Designs/RealismBehaviour/radial-hysteresis.md and bar-era equivalents`
 - `docs/Status.md`
 - Existing `docs/Designs/RealismBehaviour/*` and `docs/Implementation/RealismBehaviour/*` records where present
-
