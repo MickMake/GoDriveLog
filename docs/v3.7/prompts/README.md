@@ -8,7 +8,7 @@ Each prompt is an execution checklist. Feature behaviour belongs only in `docs/D
 - `v3.7.1-odometer-backlash.md`
 - `v3.7.2-per-digit-response-lag.md`
 - `v3.7.3-leading-zero-behaviour.md`
-- `v3.7.4-segment-digit-bleed.md`
+- `v3.7.4-digit-bleed.md`
 - `v3.7.5-ghosting.md`
 - `v3.7.6-uneven-brightness.md`
 - `v3.7.7-load-sag.md`
