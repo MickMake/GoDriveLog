@@ -12,7 +12,7 @@ Current pull request: none
 - [ ] v3.7.1 Odometer backlash
 - [ ] v3.7.2 Per-digit response lag
 - [ ] v3.7.3 Leading-zero behaviour
-- [ ] v3.7.4 Segment and digit bleed
+- [ ] v3.7.4 Digit bleed
 - [ ] v3.7.5 Ghosting
 - [ ] v3.7.6 Uneven brightness
 - [ ] v3.7.7 Load sag
@@ -26,7 +26,7 @@ Current pull request: none
 4. Inspect the current implementation.
 5. Implement only the active slice.
 6. Add focused tests and previews.
-7. Update implementation documentation and this checklist.
+7. Update implementation documentation, `docs/Status.md`, and this checklist.
 8. Open a pull request against `main`.
 
 ## Notes
