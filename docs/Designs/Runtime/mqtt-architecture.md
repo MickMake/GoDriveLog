@@ -6,8 +6,6 @@
 
 This document captures the current design direction for introducing MQTT into GoDriveLog. It is architectural guidance, not an implementation contract.
 
-It currently lives in `docs/RealismBehaviourGuide/` because there is no broader architecture-notes directory yet. MQTT is not a gauge realism option.
-
 ## Executive summary
 
 MQTT is a good fit for decoupling telemetry producers from dashboards and other live consumers.

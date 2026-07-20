@@ -8,20 +8,6 @@ Area: `gauge/radial`, `gauge/bar`, indicator, numeric, display artefacts, mechan
 
 Effort: 7-12 Codex hours
 
-## Canonical behaviour definition
-
-The umbrella behaviour definition lives in [`../RealismBehaviourGuide/imperfections.md`](../RealismBehaviourGuide/imperfections.md).
-
-Related specific behaviour definitions include:
-
-- [`ghosting`](../RealismBehaviourGuide/ghosting.md)
-- [`uneven_brightness`](../RealismBehaviourGuide/uneven-brightness.md)
-- [`load_sag`](../RealismBehaviourGuide/load-sag.md)
-- [`segment_bleed` / `digit_bleed`](../RealismBehaviourGuide/segment-bleed-digit-bleed.md)
-- [`thermal_fade`](../RealismBehaviourGuide/thermal-fade.md)
-
-Do not redefine those behaviours here. Use this file as the implementation ticket/backlog note for a future `realism.imperfections` layer.
-
 ## Implementation goal
 
 Add optional gauge-level `realism.imperfections` support for controlled, deterministic, display-only gauge ageing, wear, vibration, electrical noise, and display artefacts.
