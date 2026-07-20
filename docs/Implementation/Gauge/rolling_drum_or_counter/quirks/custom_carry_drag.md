@@ -50,6 +50,5 @@ Implementation status belongs only in `docs/Status.md`.
 
 - `docs/v3.5/ImplementationState.md`
 - `docs/v3.5/RealismBehaviourGuide.md`
-- `docs/Designs/RealismBehaviour/realism-behaviour-guide.md`
 - `docs/Status.md`
 
