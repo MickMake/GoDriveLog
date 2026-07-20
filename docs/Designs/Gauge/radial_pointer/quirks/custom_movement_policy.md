@@ -101,7 +101,4 @@ It does not:
 ## Historical source basis
 
 - `docs/v3.5/ImplementationState.md`
-- `docs/v3.5/RealismBehaviourGuide.md`
-- `docs/Designs/RealismBehaviour/realism-behaviour-guide.md`
-- `docs/Designs/RealismBehaviour/radial-movement-options.md`
 - `docs/Status.md`

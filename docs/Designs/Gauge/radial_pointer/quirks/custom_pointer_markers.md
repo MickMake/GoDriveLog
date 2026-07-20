@@ -172,7 +172,4 @@ Implementation status belongs only in `docs/Status.md`.
 ## Historical source basis
 
 - `docs/v3.5/ImplementationState.md`
-- `docs/v3.5/RealismBehaviourGuide.md`
-- `docs/Designs/RealismBehaviour/radial-witness-markers.md`
-- `docs/Designs/RealismBehaviour/realism-behaviour-guide.md`
 - `docs/Status.md`
