@@ -11,9 +11,9 @@ Design documents describe intent, behaviour, constraints, interactions and rejec
 - Store designs under `docs/Designs/`.
 - Group documents by area.
 - Use lowercase kebab-case filenames.
-- Pair significant designs with an implementation record at the same relative path under `docs/Implementation/`.
+- After implementation, pair Implementation doc under `docs/Implementation/` at the same relative path to the Design doc.
 - Record current progress only in [`Status.md`](Status.md).
-- Do not put implementation status into design documents.
+- Do not put implementation status into design or implementation documents.
 
 ## Design and implementation pairing
 
@@ -42,8 +42,6 @@ Implementation details belong under `docs/Implementation/`.
 Current implementation status belongs only in `docs/Status.md`.
 
 ## Canonical behaviour documentation
-
-[`Designs/RealismBehaviour/realism-behaviour-guide.md`](Designs/RealismBehaviour/realism-behaviour-guide.md) is the canonical definition of gauge realism behaviour.
 
 The gauge capability matrix belongs with design documentation because it describes conceptual applicability. Current implementation support belongs in [`Status.md`](Status.md).
 
