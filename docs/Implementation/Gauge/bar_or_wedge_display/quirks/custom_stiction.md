@@ -52,7 +52,6 @@ It does not:
 
 - record implementation status;
 - rename runtime gauge types;
-- replace existing `RealismBehaviour` records;
 - describe unimplemented or future realism behaviour as current behaviour.
 
 Implementation status belongs only in `docs/Status.md`.
@@ -61,7 +60,4 @@ Implementation status belongs only in `docs/Status.md`.
 ## Historical source basis
 
 - `docs/v3.5/ImplementationState.md`
-- `docs/Designs/RealismBehaviour/realism-behaviour-guide.md`
 - `docs/Status.md`
-- Existing `docs/Designs/RealismBehaviour/*` and `docs/Implementation/RealismBehaviour/*` records where present
-
