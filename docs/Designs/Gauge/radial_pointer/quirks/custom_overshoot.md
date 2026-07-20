@@ -69,7 +69,4 @@ Implementation status belongs only in `docs/Status.md`.
 ## Historical source basis
 
 - `docs/v3.5/ImplementationState.md`
-- `docs/Designs/RealismBehaviour/realism-behaviour-guide.md`
-- `docs/Designs/RealismBehaviour/radial-overshoot.md`
 - `docs/Status.md`
-- Existing `docs/Designs/RealismBehaviour/*` and `docs/Implementation/RealismBehaviour/*` records where present
